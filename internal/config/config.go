@@ -15,6 +15,7 @@ import (
 
 // default configuration elements and keys
 const (
+	appName        = "FantomAPI"
 	configFileName = "apiserver"
 
 	// configuration options
@@ -28,6 +29,9 @@ const (
 
 // Config defines configuration options structure for Fantom API server.
 type Config struct {
+	// AppName holds the name of the application
+	AppName string
+
 	// BindAddress holds the API server network binding address
 	BindAddress string
 
@@ -60,6 +64,7 @@ func Load() (*Config, error) {
 
 	// Build and return the config structure
 	return &Config{
+		AppName:       appName,
 		BindAddress:   cfg.GetString(keyBindAddress),
 		LoggingLevel:  cfg.GetString(keyLoggingLevel),
 		LoggingFormat: cfg.GetString(keyLoggingFormat),
