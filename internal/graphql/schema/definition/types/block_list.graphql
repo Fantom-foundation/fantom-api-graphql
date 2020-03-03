@@ -1,0 +1,17 @@
+# BlockList is a list of block edges provided by sequential access request.
+type BlockList {
+    # Edges contains provided edges of the sequential list.
+    edges: [BlockListEdge!]!
+
+    # TotalCount is the maximum number of blocks available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of block edges.
+    pageInfo: ListPageInfo!
+}
+
+# BlockListEdge is a single edge in a sequential list of blocks.
+type BlockListEdge {
+    cursor: Cursor!
+    block: Block!
+}

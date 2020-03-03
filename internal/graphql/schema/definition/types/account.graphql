@@ -1,0 +1,11 @@
+# Account defines block-chain account information container
+type Account {
+    "Address is the address of the account."
+    address: Address!
+
+    "Balance is the current balance of the Account in WEI."
+    balance: BigInt!
+
+    "Nonce is the number of transactions sent from this account."
+    nonce: Long!
+}

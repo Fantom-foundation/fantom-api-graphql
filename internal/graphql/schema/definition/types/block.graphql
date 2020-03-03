@@ -1,0 +1,28 @@
+# Block is an Opera block chain block.
+type Block {
+    # Number is the number of this block, starting at 0 for the genesis block.
+    number: Long!
+
+    # Hash is the unique block hash of this block.
+    hash: Hash!
+
+    # Parent is the parent block of this block.
+    parent: Block
+
+    # TransactionCount is the number of transactions in this block.
+    transactionCount: Int
+
+    # Timestamp is the unix timestamp at which this block was mined.
+    timestamp: BigInt!
+
+    # TransactionHashList is the list of unique hash values of transaction
+    # assigned to the block.
+    transactionHashList: [Hash!]!
+
+    # Transactions is a list of transactions assigned to the block.
+    transactions: [Transaction!]!
+
+    # TransactionAt returns the transaction at the specified index. If
+    # the transaction is not available for this block, this field will be null.
+    transactionAt(index: Int!): Transaction
+}
