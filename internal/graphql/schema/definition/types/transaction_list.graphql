@@ -13,5 +13,5 @@ type TransactionList {
 # TransactionListEdge is a single edge in a sequential list of transactions.
 type TransactionListEdge {
     cursor: Cursor!
-    block: Transaction!
+    transaction: Transaction!
 }

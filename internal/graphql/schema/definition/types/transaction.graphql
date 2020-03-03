@@ -20,7 +20,7 @@ type Transaction {
     # Value is the value sent along with this transaction in WEI.
     value: BigInt!
 
-    # GasPrice is the price og gas per unit in WEI.
+    # GasPrice is the price of gas per unit in WEI.
     gasPrice: BigInt!
 
     # GasLimit is the maximum amount of gas this transaction can consume.

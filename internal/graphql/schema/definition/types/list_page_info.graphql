@@ -1,9 +1,9 @@
 # ListPageInfo contains information about a sequential access list page.
 type ListPageInfo {
-    # First is the cursor of the first edge of the blocks list.
+    # First is the cursor of the first edge of the edges list.
     first: Cursor!
 
-    # Last if the cusrsor of the last edge of the blocks list.
+    # Last if the cusrsor of the last edge of the edges list.
     last: Cursor!
 
     # HasNext specifies if there is another edge after the last one.
