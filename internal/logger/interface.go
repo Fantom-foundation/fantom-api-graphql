@@ -66,4 +66,7 @@ type Logger interface {
 
 	// Debugf logs regular and detailed state change with formatting and placeholder constituents replacements.
 	Debugf(format string, args ...interface{})
+
+	// Printf logs regular and detailed state change with formatting and placeholder constituents replacements.
+	Printf(string, ...interface{})
 }

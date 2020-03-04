@@ -6,6 +6,17 @@ import (
 	"os"
 )
 
+// ApiLogger defines extended logger with generic no-level logging option
+type ApiLogger struct {
+	logging.Logger
+}
+
+// Printf implements default non-leveled output.
+// We assume the information is low in importance if passed to this function so we relay it to Debug level.
+func (a ApiLogger) Printf(format string, args ...interface{}) {
+	a.Debugf(format, args...)
+}
+
 // New provides pre-configured Logger with stderr output and leveled filtering.
 // Modules are not supported at the moment, but may be added in the future to make the logging setup more granular.
 func New(cfg *config.Config) Logger {
@@ -27,5 +38,7 @@ func New(cfg *config.Config) Logger {
 
 	// assign the backend and return the new logger
 	logging.SetBackend(lvlBackend)
-	return logging.MustGetLogger(cfg.AppName)
+	l := logging.MustGetLogger(cfg.AppName)
+
+	return &ApiLogger{*l}
 }
