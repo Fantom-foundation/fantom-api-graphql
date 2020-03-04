@@ -19,12 +19,13 @@ const (
 	configFileName = "apiserver"
 
 	// configuration options
-	keyConfigFilePath = "cfg"
-	keyBindAddress    = "server.bind"
-	keyLoggingLevel   = "log.level"
-	keyLoggingFormat  = "log.format"
-	keyLachesisUrl    = "lachesis.url"
-	keyMongoUrl       = "mongo.url"
+	keyConfigFilePath   = "cfg"
+	keyBindAddress      = "server.bind"
+	keyLoggingLevel     = "log.level"
+	keyLoggingFormat    = "log.format"
+	keyLachesisUrl      = "lachesis.url"
+	keyMongoUrl         = "mongo.url"
+	keyCorsAllowOrigins = "cors.origins"
 )
 
 // Config defines configuration options structure for Fantom API server.
@@ -44,6 +45,9 @@ type Config struct {
 
 	// MongoUrl holds address of the MongoDB we use for persistent storage
 	MongoUrl string
+
+	// CorsAllowOrigins keeps list of origins allowed to make requests on the server HTTP interface
+	CorsAllowOrigins []string
 }
 
 // Load provides a loaded configuration for Fantom API server.
@@ -64,12 +68,13 @@ func Load() (*Config, error) {
 
 	// Build and return the config structure
 	return &Config{
-		AppName:       appName,
-		BindAddress:   cfg.GetString(keyBindAddress),
-		LoggingLevel:  cfg.GetString(keyLoggingLevel),
-		LoggingFormat: cfg.GetString(keyLoggingFormat),
-		LachesisUrl:   cfg.GetString(keyLachesisUrl),
-		MongoUrl:      cfg.GetString(keyMongoUrl),
+		AppName:          appName,
+		BindAddress:      cfg.GetString(keyBindAddress),
+		LoggingLevel:     cfg.GetString(keyLoggingLevel),
+		LoggingFormat:    cfg.GetString(keyLoggingFormat),
+		LachesisUrl:      cfg.GetString(keyLachesisUrl),
+		MongoUrl:         cfg.GetString(keyMongoUrl),
+		CorsAllowOrigins: cfg.GetStringSlice(keyCorsAllowOrigins),
 	}, nil
 }
 
