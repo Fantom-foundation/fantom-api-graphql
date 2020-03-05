@@ -8,18 +8,24 @@ type Query {
     "Get an Account information by hash address."
     account(address:Address!):Account!
 
-    "Get current Block information."
-    currentBlock:Block
-
-    "Get block information for given Block number."
-    block(number:Int!):Block
-
-    "Get list of Blocks with at most count edges after the cursor. If cursor is not defined, start from top."
-    blocks(cursor:ID, count:Int!):BlockList!
+    "Get block information by number or by hash. If neither is provided, the most recent block is given."
+    block(number:Long, hash: Hash):Block
 
     "Get transaction information for given transaction hash."
-    transaction(hash:ID!):Transaction
+    transaction(hash:Hash!):Transaction
 
-    "Get list of Transaction with at most count edges after the cursor. If cursor is not defined, start from top."
+    """
+    Get list of Blocks with at most <count> edges.
+    If <count> is positive, return edges after the cursor, if negative, return edges before the cursor.
+    For udefined cursor, positive <count> starts the list from top, negative <count> starts the list from bottom.
+    """
+    blocks(cursor:ID, count:Int!):BlockList!
+
+    """
+    Get list of Transactions with at most <count> edges.
+    If <count> is positive, return edges after the cursor, if negative, return edges before the cursor.
+    For udefined cursor, positive <count> starts the list from top, negative <count> starts the list from bottom.
+    """
     transactions(cursor:ID, count:Int!):TransactionList!
+
 }
