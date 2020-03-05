@@ -1,0 +1,5 @@
+# Built executable files go here
+/*
+
+# Whitelist some files
+!.gitignore

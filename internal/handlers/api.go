@@ -23,7 +23,7 @@ func corsOptions(cfg *config.Config) cors.Options {
 }
 
 // Api constructs and return the API HTTP handlers chain for serving GraphQL API calls.
-func Api(cfg *config.Config, l logger.Logger) http.Handler {
+func Api(cfg *config.Config, l logger.Logger, r repository.Repository) http.Handler {
 	// Create new CORS handler and attach the logger into it so we get information on Debug level if needed
 	corsHandler := cors.New(corsOptions(cfg))
 	corsHandler.Log = l
@@ -32,7 +32,7 @@ func Api(cfg *config.Config, l logger.Logger) http.Handler {
 	opts := []graphql.SchemaOpt{graphql.UseFieldResolvers()}
 
 	// create new parsed GraphQL schema
-	schema := graphql.MustParseSchema(gqlschema.Schema(), resolvers.New(l), opts...)
+	schema := graphql.MustParseSchema(gqlschema.Schema(), resolvers.New(l, r), opts...)
 
 	// return the constructed API handler chain
 	return &LoggingHandler{
