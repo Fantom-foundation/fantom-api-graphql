@@ -4,12 +4,13 @@ import "github.com/spf13/viper"
 
 // Expected environment variables bound to configuration options
 const (
-	envBindAddress      = "FANTOM_API_BIND"
-	envLoggingLevel     = "FANTOM_API_LOG_LEVEL"
-	envLoggingFormat    = "FANTOM_API_LOG_FORMAT"
-	envLachesisUrl      = "FANTOM_API_LACHESIS_URL"
-	envMongoUrl         = "FANTOM_API_MONGO_URL"
-	envCorsAllowOrigins = "FANTOM_API_CORS_ORIGINS"
+	envBindAddress       = "FANTOM_API_BIND"
+	envLoggingLevel      = "FANTOM_API_LOG_LEVEL"
+	envLoggingFormat     = "FANTOM_API_LOG_FORMAT"
+	envLachesisUrl       = "FANTOM_API_LACHESIS_URL"
+	envMongoUrl          = "FANTOM_API_MONGO_URL"
+	envCorsAllowOrigins  = "FANTOM_API_CORS_ORIGINS"
+	envCacheEvictionTime = "FANTOM_API_CACHE_EVICTION"
 )
 
 // bindEnv binds configuration options to environment variables.
@@ -43,6 +44,11 @@ func bindEnv(cfg *viper.Viper) error {
 
 	// CORS allowed origins
 	if err := cfg.BindEnv(keyCorsAllowOrigins, envCorsAllowOrigins); nil != err {
+		return err
+	}
+
+	// in-memory cache eviction time
+	if err := cfg.BindEnv(keyCacheEvictionTime, envCacheEvictionTime); nil != err {
 		return err
 	}
 

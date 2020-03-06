@@ -11,6 +11,7 @@ import (
 	"flag"
 	"github.com/spf13/viper"
 	"log"
+	"time"
 )
 
 // default configuration elements and keys
@@ -19,13 +20,14 @@ const (
 	configFileName = "apiserver"
 
 	// configuration options
-	keyConfigFilePath   = "cfg"
-	keyBindAddress      = "server.bind"
-	keyLoggingLevel     = "log.level"
-	keyLoggingFormat    = "log.format"
-	keyLachesisUrl      = "lachesis.url"
-	keyMongoUrl         = "mongo.url"
-	keyCorsAllowOrigins = "cors.origins"
+	keyConfigFilePath    = "cfg"
+	keyBindAddress       = "server.bind"
+	keyLoggingLevel      = "log.level"
+	keyLoggingFormat     = "log.format"
+	keyLachesisUrl       = "lachesis.url"
+	keyMongoUrl          = "mongo.url"
+	keyCorsAllowOrigins  = "cors.origins"
+	keyCacheEvictionTime = "cache.eviction"
 )
 
 // Config defines configuration options structure for Fantom API server.
@@ -48,6 +50,9 @@ type Config struct {
 
 	// CorsAllowOrigins keeps list of origins allowed to make requests on the server HTTP interface
 	CorsAllowOrigins []string
+
+	// CacheEvictionTime specifies the time after which entry can be evicted from in-memory cache
+	CacheEvictionTime time.Duration
 }
 
 // Load provides a loaded configuration for Fantom API server.
@@ -68,13 +73,14 @@ func Load() (*Config, error) {
 
 	// Build and return the config structure
 	return &Config{
-		AppName:          appName,
-		BindAddress:      cfg.GetString(keyBindAddress),
-		LoggingLevel:     cfg.GetString(keyLoggingLevel),
-		LoggingFormat:    cfg.GetString(keyLoggingFormat),
-		LachesisUrl:      cfg.GetString(keyLachesisUrl),
-		MongoUrl:         cfg.GetString(keyMongoUrl),
-		CorsAllowOrigins: cfg.GetStringSlice(keyCorsAllowOrigins),
+		AppName:           appName,
+		BindAddress:       cfg.GetString(keyBindAddress),
+		LoggingLevel:      cfg.GetString(keyLoggingLevel),
+		LoggingFormat:     cfg.GetString(keyLoggingFormat),
+		LachesisUrl:       cfg.GetString(keyLachesisUrl),
+		MongoUrl:          cfg.GetString(keyMongoUrl),
+		CorsAllowOrigins:  cfg.GetStringSlice(keyCorsAllowOrigins),
+		CacheEvictionTime: cfg.GetDuration(keyCacheEvictionTime),
 	}, nil
 }
 

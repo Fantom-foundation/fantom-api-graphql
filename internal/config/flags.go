@@ -13,6 +13,7 @@ const (
 	flagLachesisUrlUsage   = "Lachesis RPC address"
 	flagMongoUrlUsage      = "MongoDB connection string"
 	flagCorsAllowOrigins   = "List of CORS allowed origins"
+	flagCacheEvictionTime  = "Time after which entry can be evicted from in-memory cache"
 )
 
 // bindFlags defines command line flags set and binds it with the config.
@@ -23,6 +24,7 @@ func bindFlags(cfg *viper.Viper) error {
 	pflag.String(keyLoggingFormat, defLoggingFormat, flagLoggingFormatUsage)
 	pflag.String(keyLachesisUrl, defLachesisUrl, flagLachesisUrlUsage)
 	pflag.String(keyMongoUrl, defMongoUrl, flagMongoUrlUsage)
+	pflag.Duration(keyCacheEvictionTime, defCacheEvictionTime, flagCacheEvictionTime)
 	pflag.StringSlice(keyCorsAllowOrigins, defCorsAllowOrigins, flagCorsAllowOrigins)
 
 	// parse the options

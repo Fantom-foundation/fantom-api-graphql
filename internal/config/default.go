@@ -1,6 +1,9 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+	"time"
+)
 
 // Default values of configuration options
 const (
@@ -20,6 +23,9 @@ const (
 
 	// defMongoUrl holds default MongoDB connection string
 	defMongoUrl = "mongodb://localhost:27017"
+
+	// defCacheEvictionTime holds default time for in-memory eviction periods
+	defCacheEvictionTime = 60 * time.Minute
 )
 
 // defCorsAllowOrigins holds CORS default allowed origins.
@@ -33,6 +39,7 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyLoggingFormat, defLoggingFormat)
 	cfg.SetDefault(keyLachesisUrl, defLachesisUrl)
 	cfg.SetDefault(keyMongoUrl, defMongoUrl)
+	cfg.SetDefault(keyCacheEvictionTime, defCacheEvictionTime)
 
 	// cors
 	cfg.SetDefault(keyCorsAllowOrigins, defCorsAllowOrigins)
