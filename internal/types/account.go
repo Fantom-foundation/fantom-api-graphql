@@ -1,29 +1,25 @@
 package types
 
 import (
+	"encoding/json"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 )
 
 // Account represents an Opera account at the blockchain.
 type Account struct {
-	Addr    common.Address
-	Balance big.Int
-	Nonce   uint64
-	Txs     []*AccountTransaction
+	Address *common.Address `json:"address"`
+	Balance *big.Int        `json:"-"`
 }
 
-// TransactionDirection represents a direction of a Transaction at blockchain from an Account perspective.
-type TransactionDirection int
+// UnmarshalAccount parses the JSON-encoded account data.
+func UnmarshalAccount(data []byte) (Account, error) {
+	var acc Account
+	err := json.Unmarshal(data, &acc)
+	return acc, err
+}
 
-const (
-	INCOMING TransactionDirection = iota
-	OUTGOING
-)
-
-// AccountTransaction represents a Transaction associated with an Account at the blockchain.
-type AccountTransaction struct {
-	Account   *Account
-	Direction TransactionDirection
-	Hash      Hash
+// Marshal returns the JSON encoding of account.
+func (acc *Account) Marshal() ([]byte, error) {
+	return json.Marshal(acc)
 }
