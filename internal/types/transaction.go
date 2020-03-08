@@ -17,6 +17,6 @@ type Transaction struct {
 	GasUsed      uint64
 	GasPrice     big.Int
 	Fee          big.Int
-	TxIndex      uint64
+	TrxIndex     uint64
 	BlockHash    Hash
 }
