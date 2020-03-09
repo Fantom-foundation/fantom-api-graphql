@@ -20,7 +20,7 @@ import (
 )
 
 // AccountBalance reads balance of account from Lachesis node.
-func (b *Bridge) AccountBalance(addr *common.Address) (*big.Int, error) {
+func (b *OperaBridge) AccountBalance(addr *common.Address) (*big.Int, error) {
 	// use RPC to make the call
 	var balance string
 	err := b.rpc.Call(&balance, "ftm_getBalance", addr.Hex(), "latest")

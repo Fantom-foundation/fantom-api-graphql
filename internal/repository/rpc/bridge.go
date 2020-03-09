@@ -20,13 +20,13 @@ import (
 )
 
 // Bridge represents Lachesis RPC abstraction layer.
-type Bridge struct {
+type OperaBridge struct {
 	rpc *lachesisRpc.Client
 	log logger.Logger
 }
 
 // New creates new Lachesis RPC connection bridge.
-func New(cfg *config.Config, log logger.Logger) (*Bridge, error) {
+func New(cfg *config.Config, log logger.Logger) (*OperaBridge, error) {
 	// try to establish a connection
 	client, err := lachesisRpc.Dial(cfg.LachesisUrl)
 	if err != nil {
@@ -34,8 +34,11 @@ func New(cfg *config.Config, log logger.Logger) (*Bridge, error) {
 		return nil, err
 	}
 
+	// log
+	log.Notice("full node connection established")
+
 	// return the Bridge
-	return &Bridge{
+	return &OperaBridge{
 		rpc: client,
 		log: log,
 	}, nil
