@@ -9,13 +9,13 @@ import (
 )
 
 // Bridge represents BigCache abstraction layer.
-type Bridge struct {
+type MemBridge struct {
 	cache *bigcache.BigCache
 	log   logger.Logger
 }
 
 // New creates a new BigCache bridge.
-func New(cfg *config.Config, log logger.Logger) (*Bridge, error) {
+func New(cfg *config.Config, log logger.Logger) (*MemBridge, error) {
 	// create the cache
 	c, err := bigcache.NewBigCache(cacheConfig(cfg, log))
 	if err != nil {
@@ -27,7 +27,7 @@ func New(cfg *config.Config, log logger.Logger) (*Bridge, error) {
 	log.Notice("memory cache initialized")
 
 	// make a new Bridge
-	return &Bridge{
+	return &MemBridge{
 		cache: c,
 		log:   log,
 	}, nil
@@ -56,7 +56,7 @@ func cacheConfig(cfg *config.Config, log logger.Logger) bigcache.Config {
 		// cache will not allocate more memory than this limit, value in MB
 		// if value is reached then the oldest entries can be overridden for the new ones
 		// 0 value means no size limit
-		HardMaxCacheSize: 512,
+		HardMaxCacheSize: 1024,
 
 		// callback fired when the oldest entry is removed because of its expiration time or no space left
 		// for the new entry, or because delete was called. A bitmask representing the reason will be returned.

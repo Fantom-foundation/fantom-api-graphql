@@ -8,7 +8,7 @@ import (
 )
 
 // PullAccount extracts account information from the in-memory cache if available.
-func (b *Bridge) PullAccount(addr *common.Address) *types.Account {
+func (b *MemBridge) PullAccount(addr *common.Address) *types.Account {
 	// try to get the account data from the cache
 	data, err := b.cache.Get(addr.Hex())
 	if err != nil {
@@ -23,11 +23,11 @@ func (b *Bridge) PullAccount(addr *common.Address) *types.Account {
 		return nil
 	}
 
-	return &acc
+	return acc
 }
 
 // PushAccount stores provided account in the in-memory cache.
-func (b *Bridge) PushAccount(acc *types.Account) error {
+func (b *MemBridge) PushAccount(acc *types.Account) error {
 	// we need valid account
 	if nil == acc {
 		return fmt.Errorf("invalid or nil account can not be pushed to the in-memory cache")
