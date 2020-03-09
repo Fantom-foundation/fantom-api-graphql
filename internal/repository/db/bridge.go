@@ -38,7 +38,7 @@ func New(cfg *config.Config, log logger.Logger) (*MongoDbBridge, error) {
 	}
 
 	// log the event
-	log.Noticef("database backend connection established at [%]", cfg.MongoUrl)
+	log.Notice("database backend connection established")
 
 	// make a new Bridge
 	return &MongoDbBridge{

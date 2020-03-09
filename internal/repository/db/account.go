@@ -66,19 +66,19 @@ func (db *MongoDbBridge) AddTransaction(block *big.Int, trxIndex *uint64, trx *t
 	}
 
 	// store outgoing transaction ref
-	err = db.setAccountTransaction(&ctx, col, &pk, &trx.Sender, &trx.Hash)
+	err = db.setAccountTransaction(&ctx, col, &pk, &trx.From, &trx.Hash)
 	if err != nil {
 		db.log.Critical(err)
 		return err
 	}
 
 	// do we have any receiving part?
-	if trx.Recipient != nil {
+	if trx.To != nil {
 		// set the key to receiving
-		pk = pk & 1
+		pk = pk | 1
 
 		// store incoming transaction ref
-		err = db.setAccountTransaction(&ctx, col, &pk, trx.Recipient, &trx.Hash)
+		err = db.setAccountTransaction(&ctx, col, &pk, trx.To, &trx.Hash)
 		if err != nil {
 			db.log.Critical(err)
 			return err
@@ -93,7 +93,10 @@ func (db *MongoDbBridge) AddTransaction(block *big.Int, trxIndex *uint64, trx *t
 //     The lowest bit is reserved for direction; 0 = outgoing and 1 = incoming trx for the given account.
 //     Next 14 bits hold trx index inside the block; this gives us 16383 potential transactions in a block.
 //     Next 49 bits hold the block number; this gives us 562.949.953.421.311 potential blocks.
-// 	   It means that, on rate of 100kBlocks/s, we will run out of PK indexes for blocks in 178 years.
+//
+//		It means that, on rate of 100kBlocks/s, we will run out of PK indexes for blocks in 178 years.
+//		Thankfuly, the Y2198 breakdown can be easily fixed with uint256 arithmetics we plan
+//		to support as soon as possible.
 func calcAccountTransactionPk(block *big.Int, trxIndex *uint64) (uint64, error) {
 	var pk uint64
 
