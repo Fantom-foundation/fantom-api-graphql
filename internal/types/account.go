@@ -3,20 +3,18 @@ package types
 import (
 	"encoding/json"
 	"github.com/ethereum/go-ethereum/common"
-	"math/big"
 )
 
 // Account represents an Opera account at the blockchain.
 type Account struct {
 	Address *common.Address `json:"address"`
-	Balance *big.Int        `json:"-"`
 }
 
 // UnmarshalAccount parses the JSON-encoded account data.
-func UnmarshalAccount(data []byte) (Account, error) {
+func UnmarshalAccount(data []byte) (*Account, error) {
 	var acc Account
 	err := json.Unmarshal(data, &acc)
-	return acc, err
+	return &acc, err
 }
 
 // Marshal returns the JSON encoding of account.

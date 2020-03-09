@@ -71,7 +71,7 @@ func (h Hash) Value() (driver.Value, error) {
 	return h[:], nil
 }
 
-// UnmarshalGraphQL unmarshals the provided GraphQL query data.
+// UnmarshalGraphQL unmarshal the provided GraphQL query data.
 func (h *Hash) UnmarshalGraphQL(input interface{}) error {
 	var err error
 	switch input := input.(type) {
