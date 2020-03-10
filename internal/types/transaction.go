@@ -21,7 +21,7 @@ type Transaction struct {
 	Gas hexutil.Uint64 `json:"gas"`
 
 	// Gas represents gas provided by the sender.
-	GasUsed *hexutil.Uint64 `json:"-"`
+	GasUsed *hexutil.Uint64 `json:"gasUsed"`
 
 	// CumulativeGasUsed represents the total amount of gas used when this transaction was executed in the block.
 	CumulativeGasUsed *hexutil.Uint64 `json:"-"`
@@ -51,10 +51,10 @@ type Transaction struct {
 	InputData hexutil.Bytes `json:"input"`
 
 	// Index represents integer of the transaction's index position in the block.
-	Index *hexutil.Uint64 `json:"-"`
+	Index *hexutil.Uint64 `json:"index"`
 
 	// Status represents transaction status; value is either 1 (success) or 0 (failure)
-	Status *hexutil.Uint64 `json:"-"`
+	Status *hexutil.Uint64 `json:"status"`
 }
 
 // UnmarshalTransaction parses the JSON-encoded block data.
