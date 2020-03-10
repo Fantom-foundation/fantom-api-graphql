@@ -159,7 +159,7 @@ func (db *MongoDbBridge) AccountTransactions(acc *types.Account, anchor *string,
 	col := db.client.Database(offChainDatabaseName).Collection(coAccountTransactions)
 
 	// start looking for the data
-	cur, err := col.Find(ctx, db.accTrxFindFilter(col, acc.Address, anchor, count), db.accTrxFindOptions(count))
+	cur, err := col.Find(ctx, db.accTrxFindFilter(col, &acc.Address, anchor, count), db.accTrxFindOptions(count))
 	if err != nil {
 		db.log.Error("can not get account to transaction list from the off-chain database")
 		return nil, err

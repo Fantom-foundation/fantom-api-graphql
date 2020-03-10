@@ -38,3 +38,23 @@ func (b *OperaBridge) AccountBalance(addr *common.Address) (*big.Int, error) {
 
 	return val, nil
 }
+
+// AccountNonce returns the total number of transaction of account from Lachesis node.
+func (b *OperaBridge) AccountNonce(addr *common.Address) (uint64, error) {
+	// use RPC to make the call
+	var nonce string
+	err := b.rpc.Call(&nonce, "ftm_getTransactionCount", addr.Hex(), "latest")
+	if err != nil {
+		b.log.Errorf("can not get number of transaction of account [%s]", addr.Hex())
+		return 0, err
+	}
+
+	// decode the response from remote server
+	val, err := hexutil.DecodeUint64(nonce)
+	if err != nil {
+		b.log.Errorf("can not decode number of transaction of account [%s]", addr.Hex())
+		return 0, err
+	}
+
+	return val, nil
+}

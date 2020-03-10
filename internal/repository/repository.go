@@ -16,7 +16,7 @@ import (
 	"fantom-api-graphql/internal/repository/rpc"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
-	"math/big"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // Repository interface defines functions the underlying implementation provides to API resolvers.
@@ -25,13 +25,35 @@ type Repository interface {
 	Account(*common.Address) (*types.Account, error)
 
 	// AccountBalance returns the current balance of an account at Opera blockchain.
-	AccountBalance(*types.Account) (*big.Int, error)
+	AccountBalance(*types.Account) (*hexutil.Big, error)
 
-	// AccountTransactions returns slice of AccountTransaction structure for a given account at Opera blockchain.
-	AccountTransactions(*types.Account) ([]*types.AccountTransaction, error)
+	// AccountNonce returns the current number of sent transactions of an account at Opera blockchain.
+	AccountNonce(*types.Account) (*hexutil.Uint64, error)
 
-	// Block returns a block at Opera blockchain represented by a hash, nil if not found.
-	Block(*types.Hash) (*types.Block, error)
+	// AccountTransactions returns slice of transactions for account at Opera blockchain.
+	//
+	// String cursor represents anchor based on which the list is loaded. If null, it loads either from top,
+	// or bottom of the list, based on the value of the integer count. The integer represents
+	// the number of transaction loaded at most.
+	//
+	// For positive number, the list starts right after the anchor (or on top without one) and loads at most
+	// defined number of transactions older than that.
+	//
+	// For negative number, the list starts right before the anchor (or at the bottom without one) and loads at most
+	// defined number of transactions newer than that.
+	//
+	// Transaction are always sorted from newer to older.
+	AccountTransactions(*types.Account, *string, int) ([]*types.Transaction, error)
+
+	// Block returns a block at Opera blockchain represented by a number. Top block is returned if the number
+	// is not provided.
+	// If the block is not found, ErrBlockNotFound error is returned.
+	BlockByNumber(*hexutil.Uint64) (*types.Block, error)
+
+	// Block returns a block at Opera blockchain represented by a hash. Top block is returned if the hash
+	// is not provided.
+	// If the block is not found, ErrBlockNotFound error is returned.
+	BlockByHash(*types.Hash) (*types.Block, error)
 
 	// Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
 	Transaction(*types.Hash) (*types.Transaction, error)
@@ -40,21 +62,22 @@ type Repository interface {
 // Proxy represents Repository interface implementation and controls access to data
 // trough several low level bridges.
 type proxy struct {
-	cache *cache.Bridge
-	db    *db.Bridge
-	rpc   *rpc.Bridge
+	cache *cache.MemBridge
+	db    *db.MongoDbBridge
+	rpc   *rpc.OperaBridge
+	log   logger.Logger
 }
 
 // New creates new instance of Repository implementation, namely proxy structure.
 func New(cfg *config.Config, log logger.Logger) (Repository, error) {
-	// create new in-memory cache
-	mcBridge, err := cache.New(cfg, log)
+	// create new in-memory cache bridge
+	caBridge, err := cache.New(cfg, log)
 	if err != nil {
 		log.Criticalf("can not create in-memory cache bridge, %s", err.Error())
 		return nil, err
 	}
 
-	// create new database connection
+	// create new database connection bridge
 	dbBridge, err := db.New(cfg, log)
 	if err != nil {
 		log.Criticalf("can not connect backend persistent storage, %s", err.Error())
@@ -70,8 +93,9 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 
 	// construct the proxy instance
 	return &proxy{
-		cache: mcBridge,
+		cache: caBridge,
 		db:    dbBridge,
 		rpc:   rpcBridge,
+		log:   log,
 	}, nil
 }
