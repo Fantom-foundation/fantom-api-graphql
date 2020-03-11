@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 	"reflect"
 )
 
@@ -32,6 +33,11 @@ func (h Hash) Format(s fmt.State, c rune) {
 	if _, err := fmt.Fprintf(s, "%"+string(c), h[:]); err != nil {
 		return
 	}
+}
+
+// Big converts a hash to a big integer.
+func (h Hash) Big() *big.Int {
+	return new(big.Int).SetBytes(h[:])
 }
 
 // UnmarshalText parses a hash in hex syntax.
