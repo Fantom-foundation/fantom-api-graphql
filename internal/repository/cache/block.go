@@ -4,13 +4,12 @@ package cache
 import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // PullAccount extracts account information from the in-memory cache if available.
-func (b *MemBridge) PullBlock(num *hexutil.Uint64) *types.Block {
+func (b *MemBridge) PullBlock(key string) *types.Block {
 	// try to get the account data from the cache
-	data, err := b.cache.Get(num.String())
+	data, err := b.cache.Get(key)
 	if err != nil {
 		// cache returns ErrEntryNotFound if the key does not exist
 		return nil
@@ -27,7 +26,7 @@ func (b *MemBridge) PullBlock(num *hexutil.Uint64) *types.Block {
 }
 
 // PushBlockByNumber stores provided block in the in-memory cache.
-func (b *MemBridge) PushBlock(blk *types.Block) error {
+func (b *MemBridge) PushBlock(key string, blk *types.Block) error {
 	// we need valid account
 	if nil == blk {
 		return fmt.Errorf("undefined block can not be pushed to the in-memory cache")
@@ -41,5 +40,5 @@ func (b *MemBridge) PushBlock(blk *types.Block) error {
 	}
 
 	// set the data to cache by block number
-	return b.cache.Set(blk.Number.String(), data)
+	return b.cache.Set(key, data)
 }
