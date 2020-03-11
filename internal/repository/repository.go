@@ -50,6 +50,9 @@ type Repository interface {
 	// If the block is not found, ErrBlockNotFound error is returned.
 	BlockByNumber(*hexutil.Uint64) (*types.Block, error)
 
+	// BlockHeight returns the current height of the Opera blockchain in blocks.
+	BlockHeight() (*hexutil.Big, error)
+
 	// Block returns a block at Opera blockchain represented by a hash. Top block is returned if the hash
 	// is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
@@ -57,6 +60,9 @@ type Repository interface {
 
 	// Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
 	Transaction(*types.Hash) (*types.Transaction, error)
+
+	// Blocks pulls list of blocks starting on the specified block number and going up, or down based on count number.
+	Blocks(*uint64, int32) (*types.BlockList, error)
 }
 
 // Proxy represents Repository interface implementation and controls access to data

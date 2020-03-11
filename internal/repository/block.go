@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fantom-api-graphql/internal/repository/rpc"
 	"fantom-api-graphql/internal/types"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/rpc"
 )
@@ -19,56 +20,54 @@ import (
 // ErrBlockNotFound represents an error returned if a block can not be found.
 var ErrBlockNotFound = errors.New("requested block can not be found in Opera blockchain")
 
+// BlockHeight returns the current height of the Opera blockchain in blocks.
+func (p *proxy) BlockHeight() (*hexutil.Big, error) {
+	return p.rpc.BlockHeight()
+}
+
 // BlockByNumber returns a block at Opera blockchain represented by a number. Top block is returned if the number
 // is not provided.
 // If the block is not found, ErrBlockNotFound error is returned.
 func (p *proxy) BlockByNumber(num *hexutil.Uint64) (*types.Block, error) {
-	// inform what we do
-	p.log.Infof("block requested")
-
 	// return the top block if block number is not provided
 	if num == nil {
-		return p.blockByTag(rpc.BlockTypeLatest)
+		tag := rpc.BlockTypeLatest
+		return p.blockByTag(&tag)
 	}
 
-	// try to use the in-memory cache
-	if blk := p.cache.PullBlock(num); blk != nil {
-		// inform what we do
-		p.log.Infof("loaded block [%s] from cache", num.String())
-
-		// return the block
-		return blk, nil
-	}
-
-	// go to the chain
-	blk, err := p.blockByTag(num.String())
-	if err != nil {
-		return nil, err
-	}
-
-	// try to store the block in cache for future use
-	err = p.cache.PushBlock(blk)
-	if err != nil {
-		p.log.Error(err)
-	}
-
-	return blk, nil
+	return p.getBlock(num.String(), p.blockByTag)
 }
 
 // BlockByHash returns a block at Opera blockchain represented by a hash. Top block is returned if the hash
 // is not provided.
 // If the block is not found, ErrBlockNotFound error is returned.
 func (p *proxy) BlockByHash(hash *types.Hash) (*types.Block, error) {
-	// inform what we do
-	p.log.Infof("block requested")
-
-	// return the top block if hash is not provided
+	// do we have a hash?
 	if hash == nil {
-		return p.blockByTag(rpc.BlockTypeLatest)
+		tag := rpc.BlockTypeLatest
+		return p.blockByTag(&tag)
+	}
+
+	// get the block by hash
+	return p.getBlock(hash.String(), p.rpc.BlockByHash)
+}
+
+// getBlock gets a block of given tag from cache, or from a repository pull function.
+func (p *proxy) getBlock(tag string, pull func(*string) (*types.Block, error)) (*types.Block, error) {
+	// inform what we do
+	p.log.Infof("block [%s] requested", tag)
+
+	// try to use the in-memory cache
+	if blk := p.cache.PullBlock(tag); blk != nil {
+		// inform what we do
+		p.log.Infof("block [%s] loaded from cache", tag)
+
+		// return the block
+		return blk, nil
 	}
 
 	// extract the block from the chain
-	block, err := p.rpc.BlockByHash(hash)
+	blk, err := pull(&tag)
 	if err != nil {
 		// block simply not found?
 		if err == eth.ErrNoResult {
@@ -80,16 +79,22 @@ func (p *proxy) BlockByHash(hash *types.Hash) (*types.Block, error) {
 		return nil, err
 	}
 
+	// try to store the block in cache for future use
+	err = p.cache.PushBlock(tag, blk)
+	if err != nil {
+		p.log.Error(err)
+	}
+
 	// inform what we do
-	p.log.Infof("block [%s] loaded from rpc", hash.String())
-	return block, nil
+	p.log.Infof("block [%s] loaded by pulling", tag)
+	return blk, nil
 }
 
 // blockByTag returns a block at Opera blockchain represented by given tag.
 // The tag could be an encoded block number, or a predefined string tag for "earliest", "latest" or "pending" block.
-func (p *proxy) blockByTag(tag string) (*types.Block, error) {
+func (p *proxy) blockByTag(tag *string) (*types.Block, error) {
 	// inform what we do
-	p.log.Infof("loading [%s] block", tag)
+	p.log.Infof("loading block [%s]", *tag)
 
 	// extract the block
 	block, err := p.rpc.Block(tag)
@@ -105,4 +110,120 @@ func (p *proxy) blockByTag(tag string) (*types.Block, error) {
 	}
 
 	return block, nil
+}
+
+// initBlockList finds and returns the first block of the list and initializes the list internals accordingly.
+func (p *proxy) initBlockList(num *uint64, count int32) (*types.Block, *types.BlockList, error) {
+	// start from the latest block by default
+	var tag = rpc.BlockTypeLatest
+
+	// we may want to start from bottom, or specific block instead
+	if num == nil && count < 0 {
+		tag = rpc.BlockTypeEarliest
+	} else if num != nil {
+		tag = hexutil.EncodeUint64(*num)
+	}
+
+	// inform what we are about to do
+	p.log.Debugf("initializing a new blocks list using tag [%s]", tag)
+
+	// get the latest block to start from
+	fb, err := p.blockByTag(&tag)
+	if err != nil {
+		p.log.Critical("the starting block not found in the blockchain")
+		return nil, nil, err
+	}
+
+	// make sure the first block is valid
+	if fb == nil {
+		p.log.Critical("the starting block is not valid")
+		return nil, nil, fmt.Errorf("received invalid first block of the list")
+	}
+
+	// inform what we are about to do
+	p.log.Debugf("block list starts with block [%s]", fb.Number.String())
+
+	// prep an empty list marking already clear boundaries for missing block cursor/number
+	list := types.BlockList{
+		Blocks:  make([]*types.Block, 0),
+		IsStart: num == nil && count > 0,
+		IsEnd:   num == nil && count < 0,
+	}
+
+	return fb, &list, nil
+}
+
+// Blocks pulls list of blocks starting on the specified block number and going up, or down based on count number.
+// If the initial block number is not provided, we start on top, or bottom based on count value.
+//
+// No-number boundaries are handled as follows:
+// 	- For positive count we start from the most recent block and scan to older blocks.
+// 	- For negative count we start from the first block and scan to newer blocks.
+func (p *proxy) Blocks(num *uint64, count int32) (*types.BlockList, error) {
+	// nothing to load?
+	if count == 0 {
+		return nil, fmt.Errorf("nothing to do, zero blocks requested")
+	}
+
+	// init the list
+	current, list, err := p.initBlockList(num, count)
+	if err != nil {
+		return nil, err
+	}
+
+	// how many to pull at most; we try to pull one extra block to find out if we reached a boundary
+	toPull := count + 1
+	if count < 0 {
+		toPull = -count + 1
+	}
+
+	// prep the scan vars
+	var next *types.Block
+	var tag hexutil.Uint64
+
+	// loop to pull all the blocks requested
+	for i := int32(0); i < toPull; i++ {
+		// do we have any next block waiting to be used?
+		if next != nil {
+			// update the list with the current pending block only if it's valid for the list
+			if num == nil || uint64(current.Number) != *num {
+				list.Blocks = append(list.Blocks, current)
+			}
+
+			// move search to next block
+			current = next
+		}
+
+		// we always have a <current> block; either from successful initBlockList, or from previous scan iteration
+		// we assume blocks are always consecutive; if not, the search will stop on the gap gracefully
+		if count > 0 {
+			tag = hexutil.Uint64(uint64(current.Number) - 1)
+		} else {
+			tag = hexutil.Uint64(uint64(current.Number) + 1)
+		}
+
+		// try to get next block; break the loop on search issue; in that case <next> will be nil
+		next, err = p.BlockByNumber(&tag)
+		if err != nil {
+			break
+		}
+	}
+
+	// update the list with the last pending block only if it's valid for the list
+	if num == nil || uint64(current.Number) != *num {
+		list.Blocks = append(list.Blocks, current)
+	}
+
+	// we should have all the items already; we may just need to check if a boundary was reached
+	if num != nil {
+		list.IsEnd = count > 0 && next == nil
+		list.IsStart = count < 0 && next == nil
+	}
+
+	// if we scanned from bottom up, we need to reverse the list so newer blocks are on top
+	if count < 0 {
+		list.Reverse()
+	}
+
+	return list, nil
 }
