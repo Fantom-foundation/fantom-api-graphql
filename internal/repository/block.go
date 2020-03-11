@@ -171,10 +171,15 @@ func (p *proxy) Blocks(num *uint64, count int32) (*types.BlockList, error) {
 		return nil, err
 	}
 
-	// how many to pull at most; we try to pull one extra block to find out if we reached a boundary
-	toPull := count + 1
+	// how many to pull at most
+	toPull := count
 	if count < 0 {
-		toPull = -count + 1
+		toPull = -count
+	}
+
+	// if out of boundary we try to pull one extra block to find out if we reached a boundary
+	if num != nil {
+		toPull++
 	}
 
 	// prep the scan vars
