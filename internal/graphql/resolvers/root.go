@@ -20,6 +20,12 @@ type ApiResolver interface {
 		Hash   *types.Hash
 	}) (*Block, error)
 
+	// Blocks resolves list of blockchain blocks encapsulated in a listable structure.
+	Blocks(*struct {
+		Cursor *Cursor
+		Count  int32
+	}) (*BlockList, error)
+
 	// Transaction resolves blockchain transaction by hash.
 	Transaction(*struct{ Hash types.Hash }) (*Transaction, error)
 }
