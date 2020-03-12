@@ -17,6 +17,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"sync"
 )
 
 // Repository interface defines functions the underlying implementation provides to API resolvers.
@@ -75,6 +76,12 @@ type proxy struct {
 	db    *db.MongoDbBridge
 	rpc   *rpc.OperaBridge
 	log   logger.Logger
+
+	// wait group allows synced wait for go routines to terminate
+	waitGroup sync.WaitGroup
+
+	// sigScannerStop is channel for signaling interrupt to blockchain scanner
+	sigScannerStop chan bool
 }
 
 // New creates new instance of Repository implementation, namely proxy structure.
@@ -101,16 +108,32 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 	}
 
 	// construct the proxy instance
-	return &proxy{
+	p := proxy{
 		cache: caBridge,
 		db:    dbBridge,
 		rpc:   rpcBridge,
 		log:   log,
-	}, nil
+	}
+
+	// start blockchain scanner
+	p.sigScannerStop = p.ScanBlockChain(&p.waitGroup)
+
+	// return the proxy
+	return &p, nil
 }
 
 // Close with close all connections and clean up the pending work for graceful termination.
 func (p *proxy) Close() {
+	// signal routines to terminate
+	p.log.Debugf("sending terminate signal to the scanner")
+	if p.sigScannerStop != nil {
+		p.sigScannerStop <- true
+	}
+
+	// wait scanners to terminate
+	p.log.Debugf("waiting for repository to finish background jobs")
+	p.waitGroup.Wait()
+
 	// close connections
 	p.db.Close()
 	p.rpc.Close()

@@ -60,7 +60,7 @@ func (p *proxy) getBlock(tag string, pull func(*string) (*types.Block, error)) (
 	// try to use the in-memory cache
 	if blk := p.cache.PullBlock(tag); blk != nil {
 		// inform what we do
-		p.log.Infof("block [%s] loaded from cache", tag)
+		p.log.Debugf("block [%s] loaded from cache", tag)
 
 		// return the block
 		return blk, nil
@@ -86,7 +86,7 @@ func (p *proxy) getBlock(tag string, pull func(*string) (*types.Block, error)) (
 	}
 
 	// inform what we do
-	p.log.Infof("block [%s] loaded by pulling", tag)
+	p.log.Debugf("block [%s] loaded by pulling", tag)
 	return blk, nil
 }
 
@@ -94,7 +94,7 @@ func (p *proxy) getBlock(tag string, pull func(*string) (*types.Block, error)) (
 // The tag could be an encoded block number, or a predefined string tag for "earliest", "latest" or "pending" block.
 func (p *proxy) blockByTag(tag *string) (*types.Block, error) {
 	// inform what we do
-	p.log.Infof("loading block [%s]", *tag)
+	p.log.Debugf("loading block [%s]", *tag)
 
 	// extract the block
 	block, err := p.rpc.Block(tag)
