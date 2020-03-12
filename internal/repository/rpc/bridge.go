@@ -43,3 +43,12 @@ func New(cfg *config.Config, log logger.Logger) (*OperaBridge, error) {
 		log: log,
 	}, nil
 }
+
+// Close will finish all pending operations and terminate the Lachesis RPC connection
+func (b *OperaBridge) Close() {
+	// do we have a connection?
+	if b.rpc != nil {
+		b.rpc.Close()
+		b.log.Info("full node connection is closed")
+	}
+}

@@ -21,6 +21,9 @@ import (
 
 // Repository interface defines functions the underlying implementation provides to API resolvers.
 type Repository interface {
+	// Close and cleanup the repository.
+	Close()
+
 	// Account returns account at Opera blockchain for an address, nil if not found.
 	Account(*common.Address) (*types.Account, error)
 
@@ -104,4 +107,11 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 		rpc:   rpcBridge,
 		log:   log,
 	}, nil
+}
+
+// Close with close all connections and clean up the pending work for graceful termination.
+func (p *proxy) Close() {
+	// close connections
+	p.db.Close()
+	p.rpc.Close()
 }

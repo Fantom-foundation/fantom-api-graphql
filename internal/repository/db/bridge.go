@@ -47,6 +47,21 @@ func New(cfg *config.Config, log logger.Logger) (*MongoDbBridge, error) {
 	}, nil
 }
 
+// Close will terminate or finish all operations and close the connection to Mongo database.
+func (db *MongoDbBridge) Close() {
+	// do we have a client?
+	if db.client != nil {
+		// try to disconnect
+		err := db.client.Disconnect(context.Background())
+		if err != nil {
+			db.log.Errorf("error on closing database connection; %s", err.Error())
+		}
+
+		// inform
+		db.log.Info("database connection is closed")
+	}
+}
+
 // clientOptions creates a new Mongo configuration for connecting the database backend.
 func clientOptions(cfg *config.Config) *options.ClientOptions {
 	return options.Client().ApplyURI(cfg.MongoUrl)
