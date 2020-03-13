@@ -16,6 +16,9 @@ const (
 	// fiTransactionPk is the name of the primary key field of the transaction collection.
 	fiTransactionPk = "_id"
 
+	// fiTransactionOrdinalIndex is the name of the transaction ordinal index in the blockchain field.
+	fiTransactionOrdinalIndex = "orx"
+
 	// fiTransactionBlock is the name of the block number field of the transaction.
 	fiTransactionBlock = "blk"
 
@@ -76,6 +79,7 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	// try to do the insert
 	_, err = col.InsertOne(context.Background(), bson.D{
 		{fiTransactionPk, trx.Hash.String()},
+		{fiTransactionOrdinalIndex, trxOrdinalIndex(trx)},
 		{fiTransactionBlock, uint64(block.Number)},
 		{fiTransactionSender, trx.From.String()},
 		{fiTransactionRecipient, rcAddress},
@@ -89,6 +93,11 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 
 	// add the transaction to the sender's address list
 	return db.propagateTrxToAccounts(block, trx)
+}
+
+// getTrxOrdinalIndex calculates ordinal index in the whole blockchain.
+func trxOrdinalIndex(trx *types.Transaction) uint64 {
+	return (uint64(*trx.BlockNumber) << 14) | uint64(*trx.TrxIndex)
 }
 
 // propagateTrxToAccounts push given transaction to sender's account and also to recipient's account, if exists.

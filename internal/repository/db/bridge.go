@@ -5,6 +5,9 @@ import (
 	"context"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
+	"fantom-api-graphql/internal/types"
+	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,6 +20,9 @@ const offChainDatabaseName = "fantom"
 type MongoDbBridge struct {
 	client *mongo.Client
 	log    logger.Logger
+
+	// fnBalance is a function for retrieving specified account balance.
+	fnBalance func(*types.Account) (*hexutil.Big, error)
 }
 
 // New creates a new Mongo Db connection bridge.
@@ -68,6 +74,11 @@ func clientOptions(cfg *config.Config) *options.ClientOptions {
 	return options.Client().ApplyURI(cfg.MongoUrl)
 }
 
+// SetBalance sets the account balance retrieval callback.
+func (db *MongoDbBridge) SetBalance(fn func(*types.Account) (*hexutil.Big, error)) {
+	db.fnBalance = fn
+}
+
 // getAggregateValue extract single aggregate value for a given collection and aggregation pipeline.
 func (db *MongoDbBridge) getAggregateValue(col *mongo.Collection, pipeline *bson.A) (uint64, error) {
 	// work with context
@@ -98,7 +109,7 @@ func (db *MongoDbBridge) getAggregateValue(col *mongo.Collection, pipeline *bson
 	// prep container; we are interested in just one value
 	row := struct {
 		Id    string `bson:"_id"`
-		Value uint64 `bson:"value"`
+		Value int64  `bson:"value"`
 	}{}
 
 	// try to decode the response
@@ -108,5 +119,11 @@ func (db *MongoDbBridge) getAggregateValue(col *mongo.Collection, pipeline *bson
 		return 0, err
 	}
 
-	return row.Value, nil
+	// not a valid aggregate value
+	if row.Value < 0 {
+		db.log.Error("aggregate value not found")
+		return 0, fmt.Errorf("item not found")
+	}
+
+	return uint64(row.Value), nil
 }

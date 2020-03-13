@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"strconv"
+	"math/big"
 	"strings"
 )
 
@@ -23,7 +23,7 @@ const (
 	// fiAccountActivity is the name of the account last activity timestamp field.
 	fiAccountActivity = "act"
 
-	// fiAccountBalance is the name of the current account balance field.
+	// fiAccountBalance is the name of the current account balance field in special units (FTM * 1000).
 	fiAccountBalance = "bal"
 
 	// fiAccountTxList is the name of the list of account transactions sub-document structure.
@@ -45,6 +45,9 @@ const (
 	// fiAccountTxTimeStamp is the name of the account transaction time stamp field.
 	fiAccountTxTimeStamp = "ts"
 )
+
+// how many WEIs are in out account balance units (FTM*100)
+var weiInBalanceUnits = new(big.Int).Exp(big.NewInt(10), big.NewInt(15), nil)
 
 // tblAccountTransaction represents a transaction sub-document under the account master document.
 type tblAccountTransaction struct {
@@ -79,7 +82,7 @@ func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 	// do the update based on given PK; we don't need to pull the document updated
 	_, err = col.InsertOne(context.Background(), bson.D{
 		{fiAccountPk, acc.Address.String()},
-		{fiAccountBalance, uint64(0)},
+		{fiAccountBalance, "0x0"},
 		{fiAccountActivity, nil},
 		{fiAccountTxList, bson.A{}},
 	})
@@ -114,12 +117,22 @@ func (db *MongoDbBridge) AddAccountTransaction(acc *types.Account, block *types.
 		dir = 1
 	}
 
+	// get account balance
+	bal, err := db.fnBalance(acc)
+	if err != nil {
+		return fmt.Errorf("can not get account balance")
+	}
+
+	// calculate balance in FTM*100 units (so we keep some decimals without worrying about them)
+	ftm := new(big.Int).Div(bal.ToInt(), weiInBalanceUnits)
+
 	// add the transaction to the account set
-	_, err := col.UpdateOne(context.Background(),
+	_, err = col.UpdateOne(context.Background(),
 		bson.D{{fiAccountPk, acc.Address.String()}},
 		bson.D{
 			{"$set", bson.D{
 				{fiAccountActivity, uint64(block.TimeStamp)},
+				{fiAccountBalance, ftm.Uint64()},
 			}},
 			{"$addToSet", bson.D{
 				{fiAccountTxList, bson.D{
@@ -221,11 +234,14 @@ func (db *MongoDbBridge) initAccountTrxList(addr *common.Address, anchor *string
 
 	} else if anchor != nil {
 		// get the anchor id
-		anchorIdx, err := strconv.ParseUint(*anchor, 10, 64)
+		anchorIdx, err := db.accountTrxIndex(addr, anchor)
 		if err != nil {
 			db.log.Errorf("invalid anchor value; %s", err.Error())
 			return nil, err
 		}
+
+		// log the activity
+		db.log.Debugf("trx [%s] index is %d", *anchor, anchorIdx)
 
 		// positive count => new to old => button up
 		if count > 0 {
@@ -431,7 +447,7 @@ func (db *MongoDbBridge) accountTrxIndex(addr *common.Address, hash *string) (ui
 
 		/* get index of the given hash in embedded array */
 		bson.D{{"$project",
-			bson.D{{"index",
+			bson.D{{"value",
 				bson.D{{"$indexOfArray", bson.A{sb.String(), *hash}}},
 			}},
 		}},
