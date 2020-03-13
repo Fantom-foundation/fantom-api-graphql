@@ -145,15 +145,15 @@ func (p *proxy) initBlockList(num *uint64, count int32) (*types.Block, *types.Bl
 
 	// prep an empty list marking already clear boundaries for missing block cursor/number
 	list := types.BlockList{
-		Blocks:  make([]*types.Block, 0),
-		IsStart: num == nil && count > 0,
-		IsEnd:   num == nil && count < 0,
+		Collection: make([]*types.Block, 0),
+		IsStart:    num == nil && count > 0,
+		IsEnd:      num == nil && count < 0,
 	}
 
 	return fb, &list, nil
 }
 
-// Blocks pulls list of blocks starting on the specified block number and going up, or down based on count number.
+// Collection pulls list of blocks starting on the specified block number and going up, or down based on count number.
 // If the initial block number is not provided, we start on top, or bottom based on count value.
 //
 // No-number boundaries are handled as follows:
@@ -177,7 +177,7 @@ func (p *proxy) Blocks(num *uint64, count int32) (*types.BlockList, error) {
 		toPull = -count
 	}
 
-	// if out of boundary we try to pull one extra block to find out if we reached a boundary
+	// if in the middle we try to pull one extra block to find out if we reached aan end
 	if num != nil {
 		toPull++
 	}
@@ -192,7 +192,7 @@ func (p *proxy) Blocks(num *uint64, count int32) (*types.BlockList, error) {
 		if next != nil {
 			// update the list with the current pending block only if it's valid for the list
 			if num == nil || uint64(current.Number) != *num {
-				list.Blocks = append(list.Blocks, current)
+				list.Collection = append(list.Collection, current)
 			}
 
 			// move search to next block
@@ -216,7 +216,7 @@ func (p *proxy) Blocks(num *uint64, count int32) (*types.BlockList, error) {
 
 	// update the list with the last pending block only if it's valid for the list
 	if num == nil || uint64(current.Number) != *num {
-		list.Blocks = append(list.Blocks, current)
+		list.Collection = append(list.Collection, current)
 	}
 
 	// we should have all the items already; we may just need to check if a boundary was reached

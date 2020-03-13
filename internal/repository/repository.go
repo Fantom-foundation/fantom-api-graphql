@@ -34,7 +34,7 @@ type Repository interface {
 	// AccountNonce returns the current number of sent transactions of an account at Opera blockchain.
 	AccountNonce(*types.Account) (*hexutil.Uint64, error)
 
-	// AccountTransactions returns slice of transactions for account at Opera blockchain.
+	// AccountTransactions returns list of transaction hashes for account at Opera blockchain.
 	//
 	// String cursor represents anchor based on which the list is loaded. If null, it loads either from top,
 	// or bottom of the list, based on the value of the integer count. The integer represents
@@ -47,7 +47,7 @@ type Repository interface {
 	// defined number of transactions newer than that.
 	//
 	// Transaction are always sorted from newer to older.
-	AccountTransactions(*types.Account, *string, int) ([]*types.Transaction, error)
+	AccountTransactions(*types.Account, *string, int32) (*types.TransactionHashList, error)
 
 	// Block returns a block at Opera blockchain represented by a number. Top block is returned if the number
 	// is not provided.
@@ -65,7 +65,7 @@ type Repository interface {
 	// Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
 	Transaction(*types.Hash) (*types.Transaction, error)
 
-	// Blocks pulls list of blocks starting on the specified block number and going up, or down based on count number.
+	// Collection pulls list of blocks starting on the specified block number and going up, or down based on count number.
 	Blocks(*uint64, int32) (*types.BlockList, error)
 }
 
