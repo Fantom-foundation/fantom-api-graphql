@@ -3,6 +3,7 @@ package types
 import (
 	"database/sql/driver"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"reflect"
@@ -89,7 +90,31 @@ func (h *Hash) UnmarshalGraphQL(input interface{}) error {
 	return err
 }
 
+// SetBytes sets the hash to the value of b.
+// If b is larger than len(h), b will be cropped from the left.
+func (h *Hash) SetBytes(b []byte) {
+	if len(b) > len(h) {
+		b = b[len(b)-HashLength:]
+	}
+
+	copy(h[HashLength-len(b):], b)
+}
+
 // ImplementsGraphQLType returns true if Hash implements the specified GraphQL type, in this case it implements Hash.
 func (Hash) ImplementsGraphQLType(name string) bool {
 	return name == "Hash"
+}
+
+// BytesToHash sets b to hash.
+// If b is larger than len(h), b will be cropped from the left.
+func BytesToHash(b []byte) Hash {
+	var h Hash
+	h.SetBytes(b)
+	return h
+}
+
+// HexToHash sets byte representation of s to hash.
+// If b is larger than len(h), b will be cropped from the left.
+func HexToHash(s string) Hash {
+	return BytesToHash(common.FromHex(s))
 }

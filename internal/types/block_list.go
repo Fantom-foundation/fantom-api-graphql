@@ -2,8 +2,8 @@ package types
 
 // BlockList represents a list of blocks.
 type BlockList struct {
-	// List keeps the actual Blocks.
-	Blocks []*Block
+	// List keeps the actual Collection.
+	Collection []*Block
 
 	// IsStart indicates there are no blocks available above the list currently.
 	IsStart bool
@@ -15,12 +15,12 @@ type BlockList struct {
 // Reverse reverses the order of blocks in the list.
 func (b *BlockList) Reverse() {
 	// anything to swap at all?
-	if b.Blocks == nil || len(b.Blocks) < 2 {
+	if b.Collection == nil || len(b.Collection) < 2 {
 		return
 	}
 
 	// swap elements
-	for i, j := 0, len(b.Blocks)-1; i < j; i, j = i+1, j-1 {
-		b.Blocks[i], b.Blocks[j] = b.Blocks[j], b.Blocks[i]
+	for i, j := 0, len(b.Collection)-1; i < j; i, j = i+1, j-1 {
+		b.Collection[i], b.Collection[j] = b.Collection[j], b.Collection[i]
 	}
 }
