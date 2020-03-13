@@ -5,6 +5,7 @@ import (
 	"context"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -65,4 +66,47 @@ func (db *MongoDbBridge) Close() {
 // clientOptions creates a new Mongo configuration for connecting the database backend.
 func clientOptions(cfg *config.Config) *options.ClientOptions {
 	return options.Client().ApplyURI(cfg.MongoUrl)
+}
+
+// getAggregateValue extract single aggregate value for a given collection and aggregation pipeline.
+func (db *MongoDbBridge) getAggregateValue(col *mongo.Collection, pipeline *bson.A) (uint64, error) {
+	// work with context
+	ctx := context.Background()
+
+	// use aggregate pipeline to get the result set, should be just one row
+	res, err := col.Aggregate(ctx, *pipeline)
+	if err != nil {
+		db.log.Errorf("can not get aggregate value; %s", err.Error())
+		return 0, err
+	}
+
+	// don't forget to close the result cursor
+	defer func() {
+		// close the cursor
+		err = res.Close(ctx)
+		if err != nil {
+			db.log.Errorf("closing aggregation cursor failed; %s", err.Error())
+		}
+	}()
+
+	// get the value
+	if !res.Next(ctx) {
+		db.log.Error("aggregate document not found")
+		return 0, err
+	}
+
+	// prep container; we are interested in just one value
+	row := struct {
+		Id    string `bson:"_id"`
+		Value uint64 `bson:"value"`
+	}{}
+
+	// try to decode the response
+	err = res.Decode(&row)
+	if err != nil {
+		db.log.Errorf("can not parse aggregate value; %s", err.Error())
+		return 0, err
+	}
+
+	return row.Value, nil
 }

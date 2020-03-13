@@ -9,262 +9,433 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"math/big"
+	"strconv"
+	"strings"
 )
 
 const (
-	// coAccountTransactions is the name of the off-chain database collection storing reference between
-	// accounts and transactions.
-	coAccountTransactions = "acc_trx"
+	// coAccount is the name of the off-chain database collection storing account details.
+	coAccounts = "account"
 
 	// fiAccountTransactionPk is the name of the primary key field of the account to transaction collection.
-	fiAccountTransactionPk = "_id"
+	fiAccountPk = "_id"
 
-	// fiAccountHash is the name of the account address field in the collection.
-	fiAccountAddress = "acc"
+	// fiAccountActivity is the name of the account last activity timestamp field.
+	fiAccountActivity = "act"
 
-	// fiTransactionHash is the name of the transaction hash field in the collection.
-	fiTransactionHash = "trx"
+	// fiAccountBalance is the name of the current account balance field.
+	fiAccountBalance = "bal"
 
-	// hexBlockMask is a bit mask we use to validate that a block number is within available PK range (49 bits).
-	blockNumberMask uint64 = 0x1FFFFFFFFFFFF
+	// fiAccountTxList is the name of the list of account transactions sub-document structure.
+	fiAccountTxList = "trx"
 
-	// blockNumberShift represents bits to shift the block number left to make room for trx index and direction.
-	blockNumberShift uint = 15
+	// fiAccountTxHash is the name of the account transaction hash field.
+	fiAccountTxHash = "hash"
 
-	// hexBlockMask is a bit mask we use to validate that a transaction index in block is within PK range (14 bits).
-	transactionIndexMask uint64 = 0x3FFF
+	// fiAccountTxHashPath is the full path of the account transaction hash field.
+	fiAccountTxHashPath = "trx.hash"
 
-	// transactionIndexShift represents bits to shift the trx index left to make room for trx direction.
-	transactionIndexShift uint = 1
+	// fiAccountTxDirection is the name of the account transaction direction field.
+	// Direction is 0 for outgoing and 1 for incoming transactions.
+	fiAccountTxDirection = "dir"
+
+	// fiAccountTxValue is the name of the account transaction value field.
+	fiAccountTxValue = "val"
+
+	// fiAccountTxTimeStamp is the name of the account transaction time stamp field.
+	fiAccountTxTimeStamp = "ts"
 )
 
-// refAccountTransaction represents a single account hash to transaction hash reference.
-type refAccountTransaction struct {
-	// _id is unique trx identifier constructed from trx direction, a block number, and trx index inside the block.
-	_id     uint64
-	account types.Hash
-	trx     types.Hash
+// tblAccountTransaction represents a transaction sub-document under the account master document.
+type tblAccountTransaction struct {
+	Hash      string `bson:"hash" json:"hash"`
+	Direction int8   `bson:"dir" json:"dir"`
+	Value     string `bson:"val" json:"val"`
+	TimeStamp uint64 `bson:"ts" json:"tx"`
 }
 
-// AddTransaction stores a transaction reference in connected persistent storage.
-//
-// Please note that contract creation transactions will not have a recipient and so they will appear only once.
-// Regular transactions will be stored twice, for a sending address and also for a receiving address.
-func (db *MongoDbBridge) AddTransaction(block *big.Int, trxIndex *uint64, trx *types.Transaction) error {
-	// get empty and unrestricted context
-	ctx := context.Background()
+// AddAccount stores an account in the blockchain if not exists.
+func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
+	// do we have account data?
+	if acc == nil {
+		return fmt.Errorf("can not add empty account")
+	}
+
+	// check the account existence in the database
+	exists, err := db.isAccountKnown(&acc.Address)
+	if err != nil {
+		db.log.Critical(err)
+		return err
+	}
+
+	// if the account already exists, we don't need to do anything here
+	if exists {
+		return nil
+	}
 
 	// get the collection for account transactions
-	col := db.client.Database(offChainDatabaseName).Collection(coAccountTransactions)
+	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
 
-	// make the base PK if possible
-	pk, err := calcAccountTransactionPk(block, trxIndex)
+	// do the update based on given PK; we don't need to pull the document updated
+	_, err = col.InsertOne(context.Background(), bson.D{
+		{fiAccountPk, acc.Address.String()},
+		{fiAccountBalance, uint64(0)},
+		{fiAccountActivity, nil},
+		{fiAccountTxList, bson.A{}},
+	})
+
+	// error on lookup?
 	if err != nil {
-		db.log.Critical(err)
+		db.log.Error("can not insert new account")
 		return err
-	}
-
-	// store outgoing transaction ref
-	err = db.setAccountTransaction(&ctx, col, &pk, &trx.From, &trx.Hash)
-	if err != nil {
-		db.log.Critical(err)
-		return err
-	}
-
-	// do we have any receiving part?
-	if trx.To != nil {
-		// set the key to receiving
-		pk = pk | 1
-
-		// store incoming transaction ref
-		err = db.setAccountTransaction(&ctx, col, &pk, trx.To, &trx.Hash)
-		if err != nil {
-			db.log.Critical(err)
-			return err
-		}
 	}
 
 	return nil
 }
 
-// calcAccountTransactionPk calculates base transaction primary key index from the block number and trx index in the block
-// such as:
-//     The lowest bit is reserved for direction; 0 = outgoing and 1 = incoming trx for the given account.
-//     Next 14 bits hold trx index inside the block; this gives us 16383 potential transactions in a block.
-//     Next 49 bits hold the block number; this gives us 562.949.953.421.311 potential blocks.
-//
-//		It means that, on rate of 100kBlocks/s, we will run out of PK indexes for blocks in 178 years.
-//		Thankfuly, the Y2198 breakdown can be easily fixed with uint256 arithmetics we plan
-//		to support as soon as possible.
-func calcAccountTransactionPk(block *big.Int, trxIndex *uint64) (uint64, error) {
-	var pk uint64
-
-	// is it possible to convert the block number?
-	if !block.IsUint64() {
-		return pk, fmt.Errorf("block number is way too high to be stored")
+// AddAccountTransaction add a given transaction to the given account address.
+func (db *MongoDbBridge) AddAccountTransaction(acc *types.Account, block *types.Block, trx *types.Transaction) error {
+	// do we have all needed data?
+	if block == nil || trx == nil {
+		return fmt.Errorf("can not add empty transaction")
 	}
 
-	// convert and validate that we are safely within the 49 bits reserved for the block number
-	bx := block.Uint64()
-	if bx != (bx & blockNumberMask) {
-		return pk, fmt.Errorf("block number bit count is higer than available primary key space")
+	// make sure the account exists
+	if err := db.AddAccount(acc); err != nil {
+		return err
 	}
-
-	// validate transaction index
-	if *trxIndex != (*trxIndex & transactionIndexMask) {
-		return pk, fmt.Errorf("transaction index within the block is too high to be stored")
-	}
-
-	// make the PK index
-	return pk | (bx << blockNumberShift) | (*trxIndex << transactionIndexShift), nil
-}
-
-// setAccountTransaction stores the given transaction hash in relationship with the address under the given PK.
-func (db *MongoDbBridge) setAccountTransaction(ctx *context.Context, col *mongo.Collection, pk *uint64, addr *common.Address, trx *types.Hash) error {
-	// prep options
-	opt := options.Update().SetUpsert(true)
-
-	// do the update based on given PK; we don't need to pull the document updated
-	_, err := col.UpdateOne(*ctx, bson.D{{fiAccountTransactionPk, pk}}, bson.D{
-		{fiAccountTransactionPk, *pk},
-		{fiAccountAddress, addr.String()},
-		{fiTransactionHash, *trx},
-	}, opt)
-
-	return err
-}
-
-// AccountTransactions returns capped list of transaction hashes related to an account from off-chain database.
-//
-// Transactions are loaded based on following option combinations:
-//    - nil anchor, positive count => start from the most recent trx and return at most <count> older trx hashes
-//    - nil anchor, negative count => start from the oldest trx and return at most <count> newer trx hashes
-//    - NOT nil anchor, positive count => start after the anchored trx and return at most <count> older trx hashes
-//    - NOT nil anchor, negative count => start before the anchored trx and return at most <count> newer trx hashes
-//
-// Transaction hashes are always returned ordered by their relative age in ascending order, i.e. from new to old.
-// The relative age of transaction is derived from the relative age of the block they belong to (i.e. the block number)
-// and the index of the transaction inside the block.
-func (db *MongoDbBridge) AccountTransactions(acc *types.Account, anchor *string, count int) ([]*types.Hash, error) {
-	// zero count? technically correct request for an empty set, but we should not allow it
-	if count == 0 {
-		return nil, fmt.Errorf("zero cap on transaction count is not allowed")
-	}
-
-	// get empty & unrestricted context
-	ctx := context.Background()
 
 	// get the collection for account transactions
-	col := db.client.Database(offChainDatabaseName).Collection(coAccountTransactions)
+	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
 
-	// start looking for the data
-	cur, err := col.Find(ctx, db.accTrxFindFilter(col, &acc.Address, anchor, count), db.accTrxFindOptions(count))
+	// what is the direction
+	var dir = 0
+	if trx.To != nil && acc.Address.String() == trx.To.String() {
+		dir = 1
+	}
+
+	// add the transaction to the account set
+	_, err := col.UpdateOne(context.Background(),
+		bson.D{{fiAccountPk, acc.Address.String()}},
+		bson.D{
+			{"$set", bson.D{
+				{fiAccountActivity, uint64(block.TimeStamp)},
+			}},
+			{"$addToSet", bson.D{
+				{fiAccountTxList, bson.D{
+					{fiAccountTxHash, trx.Hash.String()},
+					{fiAccountTxDirection, dir},
+					{fiAccountTxValue, trx.Value.String()},
+					{fiAccountTxTimeStamp, uint64(block.TimeStamp)},
+				}},
+			}},
+		})
+
+	// error on update?
 	if err != nil {
-		db.log.Error("can not get account to transaction list from the off-chain database")
+		db.log.Errorf("can not add transaction to account; %s", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+// isAccountTransactionKnown verifies if the transaction is already listed for the account address given.
+func (db *MongoDbBridge) isAccountTransactionKnown(addr *common.Address, hash *types.Hash) (bool, error) {
+	// get the collection for account transactions
+	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
+
+	// try to find the account in the database (it may already exist)
+	sr := col.FindOne(context.Background(), bson.D{
+		{fiAccountPk, addr.String()},
+		{fiAccountTxHashPath, hash.String()},
+	}, options.FindOne().SetProjection(bson.D{{fiAccountPk, true}}))
+
+	// error on lookup?
+	if sr.Err() != nil {
+		// may be ErrNoDocuments, which we seek
+		if sr.Err() == mongo.ErrNoDocuments {
+			return false, nil
+		}
+
+		db.log.Error("can not get existing account transaction hash record")
+		return false, sr.Err()
+	}
+
+	return true, nil
+}
+
+// isAccountKnown checks if an account document already exists in the database.
+func (db *MongoDbBridge) isAccountKnown(addr *common.Address) (bool, error) {
+	// get the collection for account transactions
+	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
+
+	// try to find the account in the database (it may already exist)
+	sr := col.FindOne(context.Background(), bson.D{
+		{fiAccountPk, addr.String()},
+	}, options.FindOne().SetProjection(bson.D{{fiAccountPk, true}}))
+
+	// error on lookup?
+	if sr.Err() != nil {
+		// may be ErrNoDocuments, which we seek
+		if sr.Err() == mongo.ErrNoDocuments {
+			return false, nil
+		}
+
+		db.log.Error("can not get existing account pk")
+		return false, sr.Err()
+	}
+
+	return true, nil
+}
+
+// initAccountTrxList initializes a list of transaction for given account address.
+func (db *MongoDbBridge) initAccountTrxList(addr *common.Address, anchor *string, count int32) (*types.TransactionHashList, error) {
+	// inform what we are about to do
+	db.log.Debugf("initializing transactions list for account [%s]", addr.String())
+
+	// get the total number of transaction for the account
+	total, err := db.AccountTrxCount(addr)
+	if err != nil {
+		db.log.Errorf("can not list transaction for the account")
 		return nil, err
 	}
 
-	// always close the cursor before we leave; log errors on closing to be clean
-	defer func() {
-		if err := cur.Close(ctx); err != nil {
-			db.log.Error(err)
-		}
-	}()
+	// inform what we are about to do
+	db.log.Debugf("found %d transactions on account [%s]", total, addr.String())
 
-	// loop and decode hashes to build the result set
-	result := make([]*types.Hash, 0)
-	for cur.Next(ctx) {
-		var e refAccountTransaction
+	// transaction records are stored as an array so we work with indexes
+	// old transactions are on top and new on the bottom of the list since we $push to it
+	var start int64
+	var end int64
 
-		err := cur.Decode(&e)
+	// decide where do we start and where do we end the tx slice
+	if anchor == nil && count > 0 {
+		// no anchor and positive count => we need to go from bottom up (new to old)
+		start = int64(total - uint64(count))
+		end = int64(total) - 1
+
+	} else if anchor == nil && count < 0 {
+		// no anchor and negative count => we need to go from top to bottom (old to new)
+		end = int64(-count)
+
+	} else if anchor != nil {
+		// get the anchor id
+		anchorIdx, err := strconv.ParseUint(*anchor, 10, 64)
 		if err != nil {
-			db.log.Critical(err)
+			db.log.Errorf("invalid anchor value; %s", err.Error())
 			return nil, err
 		}
 
-		result = append(result, &e.trx)
+		// positive count => new to old => button up
+		if count > 0 {
+			start = int64(anchorIdx) - int64(count)
+			end = int64(anchorIdx) - 1
+		} else {
+			start = int64(anchorIdx) + 1
+			end = start - int64(count) - 1
+		}
 	}
 
-	// did we get an error in scan?
-	if err := cur.Err(); err != nil {
-		db.log.Critical(err)
+	// make sure we are not beyond the start
+	if start < 0 {
+		start = 0
+	}
+
+	// make sure we are not beyond the end
+	if (uint64(end) + 1) >= total {
+		end = int64(total) - 1
+	}
+
+	// make sure end is not above start
+	if end < start {
+		end = start
+	}
+
+	// inform what we are about to do
+	db.log.Debugf("new account transactions list for %d items [%d:%d]", count, start, end)
+
+	// prep an empty list marking already clear boundaries
+	// please note we have newer trx-es at the bottom and the oldest is on top, so the boundary calc may seem odd
+	list := types.TransactionHashList{
+		Collection: make([]*types.Hash, 0),
+		Total:      total,
+		First:      uint64(start),
+		Last:       uint64(end),
+		IsStart:    (uint64(end) + 1) == total,
+		IsEnd:      start == 0,
+	}
+
+	return &list, nil
+}
+
+// getAccountTrxPipeline creates an aggregation pipeline for account transactions list based on given criteria.
+func (db *MongoDbBridge) accountTrxPipeline(addr *common.Address, first uint64, last uint64) bson.A {
+	// build name of the aggregated array element
+	var sb strings.Builder
+	sb.WriteString("$")
+	sb.WriteString(fiAccountTxList)
+
+	// what is the size of the slice we need?
+	pull := last - first + 1
+
+	// use aggregation pipeline to pull the defined slice of the TX list
+	pipeline := bson.A{
+		/* match account */
+		bson.D{{"$match",
+			bson.D{{fiAccountPk, addr.String()}},
+		}},
+
+		/* use projection to get specified slice of the embedded documents */
+		bson.D{{"$project",
+			bson.D{{"trx",
+				bson.D{{"$slice",
+					bson.A{sb.String(), first, pull},
+				}},
+			}},
+		}},
+	}
+
+	return pipeline
+}
+
+// getAccountTrxList loads the list of transaction records from the Mongo database.
+func (db *MongoDbBridge) accountTrxList(addr *common.Address, first uint64, last uint64) ([]tblAccountTransaction, error) {
+	// use aggregate pipeline to get the result set, should be just one row with embedded array
+	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
+	ctx := context.Background()
+
+	// call for the data
+	res, err := col.Aggregate(ctx, db.accountTrxPipeline(addr, first, last))
+	if err != nil {
+		db.log.Errorf("can not get aggregate value; %s", err.Error())
 		return nil, err
 	}
 
-	// if we sorted from bottom up, we need to reverse the result set so newer transactions are on top
-	if count < 0 {
-		for i, j := 0, len(result)-1; i < j; i, j = i+1, j-1 {
-			result[i], result[j] = result[j], result[i]
+	// don't forget to close the result cursor
+	defer func() {
+		// close the cursor
+		err = res.Close(ctx)
+		if err != nil {
+			db.log.Errorf("closing aggregation cursor failed; %s", err.Error())
 		}
+	}()
+
+	// get the value
+	if !res.Next(ctx) {
+		db.log.Error("account not found")
+		return nil, err
 	}
 
-	return result, nil
-}
+	// prep container; we are interested in just one value
+	row := struct {
+		Id  string                  `bson:"_id"`
+		Trx []tblAccountTransaction `bson:"trx"`
+	}{}
 
-// accTrxFindFilter builds filter for account to hash query in relationship to an optional anchored trx hash.
-func (db *MongoDbBridge) accTrxFindFilter(col *mongo.Collection, addr *common.Address, anchor *string, count int) interface{} {
-	// do we need to check the anchor?
-	if nil != anchor {
-		// get PK of the anchored transaction for the account address
-		pk, err := db.accTrxPkByAnchor(col, addr, anchor)
-		if err == nil {
-			// operator to be used for find changes for negative count
-			var op = "$gt"
-			if count < 0 {
-				op = "$lt"
-			}
-
-			// prep the filter
-			return bson.D{
-				{fiAccountAddress, addr.String()},
-				{fiAccountTransactionPk, bson.D{
-					{op, pk},
-				}},
-			}
-		}
-
-		// anchored trx not found? log and fallback to simple search; maybe the anchor was wrong
-		db.log.Error("can not find anchor for account to transaction find")
-	}
-
-	// simply filter records by address
-	return bson.D{
-		{fiAccountAddress, addr.String()},
-	}
-}
-
-// accTrxPkByAnchor finds primary key of a transaction anchor for account address.
-func (db *MongoDbBridge) accTrxPkByAnchor(col *mongo.Collection, addr *common.Address, anchor *string) (uint64, error) {
-	// get empty & unrestricted context
-	ctx := context.Background()
-
-	var pk uint64
-	err := col.FindOne(ctx, bson.D{
-		{fiAccountAddress, addr.String()},
-		{fiTransactionHash, *anchor}}).Decode(&pk)
-
-	// do we have the result?
+	// try to decode the response
+	err = res.Decode(&row)
 	if err != nil {
-		return 0, err
+		db.log.Errorf("can not parse account record; %s", err.Error())
+		return nil, err
 	}
 
-	return pk, nil
+	return row.Trx, nil
 }
 
-// accTrxFindOptions builds query options based on count value of the request.
-func (db *MongoDbBridge) accTrxFindOptions(count int) *options.FindOptions {
-	// what direction do we sort depends on the value of count
-	var sd = 1
-	if count < 0 {
-		sd = -1
-		count = -count
+// AccountTransactions loads list of transaction hashes of an account.
+func (db *MongoDbBridge) AccountTransactions(acc *types.Account, anchor *string, count int32) (*types.TransactionHashList, error) {
+	// nothing to load?
+	if count == 0 {
+		return nil, fmt.Errorf("nothing to do, zero blocks requested")
 	}
 
-	// prep limit option
-	opt := options.Find()
-	opt.SetLimit(int64(count))
-	opt.SetSort(bson.D{{fiAccountTransactionPk, sd}})
+	// no account given?
+	if acc == nil {
+		return nil, fmt.Errorf("can not list transactions of empty account")
+	}
 
-	return opt
+	// init the list
+	list, err := db.initAccountTrxList(&acc.Address, anchor, count)
+	if err != nil {
+		db.log.Errorf("account transactions list init failed; %s", err.Error())
+		return nil, err
+	}
+
+	// get the data
+	trx, err := db.accountTrxList(&acc.Address, list.First, list.Last)
+	if err != nil {
+		db.log.Errorf("can not build account transactions list; %s", err.Error())
+		return nil, err
+	}
+
+	// extract data
+	for _, tx := range trx {
+		hash := types.HexToHash(tx.Hash)
+		list.Collection = append(list.Collection, &hash)
+	}
+
+	// reverse the collection since we always have newer transactions on top
+	list.Reverse()
+	return list, nil
+}
+
+// AccountTransactionsCount calculates total number of transaction associated with an account.
+func (db *MongoDbBridge) AccountTrxCount(addr *common.Address) (uint64, error) {
+	// no address?
+	if addr == nil {
+		return 0, fmt.Errorf("can not get number of transaction of empty account")
+	}
+
+	// build name of the aggregated array element
+	var sb strings.Builder
+	sb.WriteString("$")
+	sb.WriteString(fiAccountTxList)
+
+	// prep aggregation pipeline
+	pipeline := bson.A{
+		/* match account */
+		bson.D{{"$match",
+			bson.D{{fiAccountPk, addr.String()}},
+		}},
+
+		/* get the size of the embedded array */
+		bson.D{{"$project",
+			bson.D{{"value",
+				bson.D{{"$size", sb.String()}},
+			}},
+		}},
+	}
+
+	return db.getAggregateValue(db.client.Database(offChainDatabaseName).Collection(coAccounts), &pipeline)
+}
+
+// accountTrxIndex finds index of a transaction in account transactions array.
+func (db *MongoDbBridge) accountTrxIndex(addr *common.Address, hash *string) (uint64, error) {
+	// no address or no hash?
+	if addr == nil || hash == nil {
+		return 0, fmt.Errorf("can not get transaction index of empty account or transaction hash")
+	}
+
+	// build name of the aggregated array element path
+	var sb strings.Builder
+	sb.WriteString("$")
+	sb.WriteString(fiAccountTxHashPath)
+
+	// prep aggregation pipeline for index lookup
+	pipeline := bson.A{
+		/* match account */
+		bson.D{{"$match",
+			bson.D{{fiAccountPk, addr.String()}},
+		}},
+
+		/* get index of the given hash in embedded array */
+		bson.D{{"$project",
+			bson.D{{"index",
+				bson.D{{"$indexOfArray", bson.A{sb.String(), *hash}}},
+			}},
+		}},
+	}
+
+	return db.getAggregateValue(db.client.Database(offChainDatabaseName).Collection(coAccounts), &pipeline)
 }
