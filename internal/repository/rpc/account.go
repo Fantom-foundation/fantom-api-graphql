@@ -19,19 +19,19 @@ import (
 )
 
 // AccountBalance reads balance of account from Lachesis node.
-func (b *OperaBridge) AccountBalance(addr *common.Address) (*hexutil.Big, error) {
+func (ftm *FtmBridge) AccountBalance(addr *common.Address) (*hexutil.Big, error) {
 	// use RPC to make the call
 	var balance string
-	err := b.rpc.Call(&balance, "ftm_getBalance", addr.Hex(), "latest")
+	err := ftm.rpc.Call(&balance, "ftm_getBalance", addr.Hex(), "latest")
 	if err != nil {
-		b.log.Errorf("can not get balance of account [%s]", addr.Hex())
+		ftm.log.Errorf("can not get balance of account [%s]", addr.Hex())
 		return nil, err
 	}
 
 	// decode the response from remote server
 	val, err := hexutil.DecodeBig(balance)
 	if err != nil {
-		b.log.Errorf("can not decode balance of account [%s]", addr.Hex())
+		ftm.log.Errorf("can not decode balance of account [%s]", addr.Hex())
 		return nil, err
 	}
 
@@ -39,19 +39,19 @@ func (b *OperaBridge) AccountBalance(addr *common.Address) (*hexutil.Big, error)
 }
 
 // AccountNonce returns the total number of transaction of account from Lachesis node.
-func (b *OperaBridge) AccountNonce(addr *common.Address) (uint64, error) {
+func (ftm *FtmBridge) AccountNonce(addr *common.Address) (uint64, error) {
 	// use RPC to make the call
 	var nonce string
-	err := b.rpc.Call(&nonce, "ftm_getTransactionCount", addr.Hex(), "latest")
+	err := ftm.rpc.Call(&nonce, "ftm_getTransactionCount", addr.Hex(), "latest")
 	if err != nil {
-		b.log.Errorf("can not get number of transaction of account [%s]", addr.Hex())
+		ftm.log.Errorf("can not get number of transaction of account [%s]", addr.Hex())
 		return 0, err
 	}
 
 	// decode the response from remote server
 	val, err := hexutil.DecodeUint64(nonce)
 	if err != nil {
-		b.log.Errorf("can not decode number of transaction of account [%s]", addr.Hex())
+		ftm.log.Errorf("can not decode number of transaction of account [%s]", addr.Hex())
 		return 0, err
 	}
 

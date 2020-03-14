@@ -25,6 +25,11 @@ func (p *proxy) BlockHeight() (*hexutil.Big, error) {
 	return p.rpc.BlockHeight()
 }
 
+// LastKnownBlock returns number of the last block known to the repository.
+func (p *proxy) LastKnownBlock() (uint64, error) {
+	return p.db.LastKnownBlock()
+}
+
 // BlockByNumber returns a block at Opera blockchain represented by a number. Top block is returned if the number
 // is not provided.
 // If the block is not found, ErrBlockNotFound error is returned.

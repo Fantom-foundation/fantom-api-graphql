@@ -17,6 +17,12 @@ import (
 // ErrTransactionNotFound represents an error returned if a transaction can not be found.
 var ErrTransactionNotFound = errors.New("requested transaction can not be found in Opera blockchain")
 
+// AddTransaction notifies a new incoming transaction from blockchain to the repository.
+func (p *proxy) AddTransaction(block *types.Block, trx *types.Transaction) error {
+	// simply pass the transaction to DB handler for adding to off-chain database
+	return p.db.AddTransaction(block, trx)
+}
+
 // Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
 // If the transaction is not found, ErrTransactionNotFound error is returned.
 func (p *proxy) Transaction(hash *types.Hash) (*types.Transaction, error) {

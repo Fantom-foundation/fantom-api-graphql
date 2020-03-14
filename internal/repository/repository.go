@@ -17,14 +17,11 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"sync"
+	ftm "github.com/ethereum/go-ethereum/rpc"
 )
 
 // Repository interface defines functions the underlying implementation provides to API resolvers.
 type Repository interface {
-	// Close and cleanup the repository.
-	Close()
-
 	// Account returns account at Opera blockchain for an address, nil if not found.
 	Account(*common.Address) (*types.Account, error)
 
@@ -57,10 +54,16 @@ type Repository interface {
 	// BlockHeight returns the current height of the Opera blockchain in blocks.
 	BlockHeight() (*hexutil.Big, error)
 
+	// LastKnownBlock returns number of the last block known to the repository.
+	LastKnownBlock() (uint64, error)
+
 	// Block returns a block at Opera blockchain represented by a hash. Top block is returned if the hash
 	// is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
 	BlockByHash(*types.Hash) (*types.Block, error)
+
+	// AddTransaction notifies a new incoming transaction from blockchain to the repository.
+	AddTransaction(*types.Block, *types.Transaction) error
 
 	// Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
 	Transaction(*types.Hash) (*types.Transaction, error)
@@ -70,6 +73,12 @@ type Repository interface {
 
 	// Collection pulls list of blocks starting on the specified block number and going up, or down based on count number.
 	Blocks(*uint64, int32) (*types.BlockList, error)
+
+	// FtmConnection returns open connection to Opera/Lachesis full node.
+	FtmConnection() *ftm.Client
+
+	// Close and cleanup the repository.
+	Close()
 }
 
 // Proxy represents Repository interface implementation and controls access to data
@@ -77,14 +86,11 @@ type Repository interface {
 type proxy struct {
 	cache *cache.MemBridge
 	db    *db.MongoDbBridge
-	rpc   *rpc.OperaBridge
+	rpc   *rpc.FtmBridge
 	log   logger.Logger
 
-	// wait group allows synced wait for go routines to terminate
-	waitGroup sync.WaitGroup
-
-	// sigScannerStop is channel for signaling interrupt to blockchain scanner
-	sigScannerStop chan bool
+	// service orchestrator reference
+	orc *orchestrator
 }
 
 // New creates new instance of Repository implementation, namely proxy structure.
@@ -121,8 +127,8 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 	// propagate callbacks
 	dbBridge.SetBalance(p.AccountBalance)
 
-	// start blockchain scanner
-	p.sigScannerStop = p.ScanBlockChain(&p.waitGroup)
+	// make the service orchestrator
+	p.orc = newOrchestrator(&p, log)
 
 	// return the proxy
 	return &p, nil
@@ -130,17 +136,21 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 
 // Close with close all connections and clean up the pending work for graceful termination.
 func (p *proxy) Close() {
-	// signal routines to terminate
-	p.log.Debugf("sending terminate signal to the scanner")
-	if p.sigScannerStop != nil {
-		p.sigScannerStop <- true
-	}
+	// inform about actions
+	p.log.Notice("repository is closing")
 
-	// wait scanners to terminate
-	p.log.Debugf("waiting for repository to finish background jobs")
-	p.waitGroup.Wait()
+	// initiate orchestrator closing process
+	p.orc.close()
 
 	// close connections
 	p.db.Close()
 	p.rpc.Close()
+
+	// inform about actions
+	p.log.Notice("repository done")
+}
+
+// FtmClient returns open connection to Opera/Lachesis full node.
+func (p *proxy) FtmConnection() *ftm.Client {
+	return p.rpc.Connection()
 }

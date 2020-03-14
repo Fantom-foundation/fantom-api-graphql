@@ -20,15 +20,15 @@ import (
 )
 
 // Transaction returns information about a blockchain transaction by hash.
-func (b *OperaBridge) Transaction(hash *types.Hash) (*types.Transaction, error) {
+func (ftm *FtmBridge) Transaction(hash *types.Hash) (*types.Transaction, error) {
 	// keep track of the operation
-	b.log.Debugf("loading transaction %s", hash.String())
+	ftm.log.Debugf("loading transaction %s", hash.String())
 
 	// call for data
 	var trx types.Transaction
-	err := b.rpc.Call(&trx, "ftm_getTransactionByHash", hash)
+	err := ftm.rpc.Call(&trx, "ftm_getTransactionByHash", hash)
 	if err != nil {
-		b.log.Error("transaction could not be extracted")
+		ftm.log.Error("transaction could not be extracted")
 		return nil, err
 	}
 
@@ -44,9 +44,9 @@ func (b *OperaBridge) Transaction(hash *types.Hash) (*types.Transaction, error) 
 		}
 
 		// call for the transaction receipt data
-		err := b.rpc.Call(&rec, "ftm_getTransactionReceipt", hash)
+		err := ftm.rpc.Call(&rec, "ftm_getTransactionReceipt", hash)
 		if err != nil {
-			b.log.Errorf("can not get receipt for transaction %s", hash)
+			ftm.log.Errorf("can not get receipt for transaction %s", hash)
 			return nil, err
 		}
 
@@ -59,6 +59,6 @@ func (b *OperaBridge) Transaction(hash *types.Hash) (*types.Transaction, error) 
 	}
 
 	// keep track of the operation
-	b.log.Debugf("transaction %s loaded", hash.String())
+	ftm.log.Debugf("transaction %s loaded", hash.String())
 	return &trx, nil
 }

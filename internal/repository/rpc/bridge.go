@@ -16,19 +16,19 @@ package rpc
 import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
-	lachesisRpc "github.com/ethereum/go-ethereum/rpc"
+	ftm "github.com/ethereum/go-ethereum/rpc"
 )
 
 // Bridge represents Lachesis RPC abstraction layer.
-type OperaBridge struct {
-	rpc *lachesisRpc.Client
+type FtmBridge struct {
+	rpc *ftm.Client
 	log logger.Logger
 }
 
 // New creates new Lachesis RPC connection bridge.
-func New(cfg *config.Config, log logger.Logger) (*OperaBridge, error) {
+func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 	// try to establish a connection
-	client, err := lachesisRpc.Dial(cfg.LachesisUrl)
+	client, err := ftm.Dial(cfg.LachesisUrl)
 	if err != nil {
 		log.Critical(err)
 		return nil, err
@@ -38,17 +38,22 @@ func New(cfg *config.Config, log logger.Logger) (*OperaBridge, error) {
 	log.Notice("full node connection established")
 
 	// return the Bridge
-	return &OperaBridge{
+	return &FtmBridge{
 		rpc: client,
 		log: log,
 	}, nil
 }
 
 // Close will finish all pending operations and terminate the Lachesis RPC connection
-func (b *OperaBridge) Close() {
+func (ftm *FtmBridge) Close() {
 	// do we have a connection?
-	if b.rpc != nil {
-		b.rpc.Close()
-		b.log.Info("full node connection is closed")
+	if ftm.rpc != nil {
+		ftm.rpc.Close()
+		ftm.log.Info("full node connection is closed")
 	}
+}
+
+// Client returns open Opera/Lachesis connection.
+func (ftm *FtmBridge) Connection() *ftm.Client {
+	return ftm.rpc
 }
