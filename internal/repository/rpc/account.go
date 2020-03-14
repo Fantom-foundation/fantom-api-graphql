@@ -16,11 +16,10 @@ package rpc
 import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"math/big"
 )
 
 // AccountBalance reads balance of account from Lachesis node.
-func (b *OperaBridge) AccountBalance(addr *common.Address) (*big.Int, error) {
+func (b *OperaBridge) AccountBalance(addr *common.Address) (*hexutil.Big, error) {
 	// use RPC to make the call
 	var balance string
 	err := b.rpc.Call(&balance, "ftm_getBalance", addr.Hex(), "latest")
@@ -36,7 +35,7 @@ func (b *OperaBridge) AccountBalance(addr *common.Address) (*big.Int, error) {
 		return nil, err
 	}
 
-	return val, nil
+	return (*hexutil.Big)(val), nil
 }
 
 // AccountNonce returns the total number of transaction of account from Lachesis node.

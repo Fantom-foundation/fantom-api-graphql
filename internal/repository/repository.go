@@ -36,14 +36,14 @@ type Repository interface {
 
 	// AccountTransactions returns list of transaction hashes for account at Opera blockchain.
 	//
-	// String cursor represents anchor based on which the list is loaded. If null, it loads either from top,
+	// String cursor represents cursor based on which the list is loaded. If null, it loads either from top,
 	// or bottom of the list, based on the value of the integer count. The integer represents
 	// the number of transaction loaded at most.
 	//
-	// For positive number, the list starts right after the anchor (or on top without one) and loads at most
+	// For positive number, the list starts right after the cursor (or on top without one) and loads at most
 	// defined number of transactions older than that.
 	//
-	// For negative number, the list starts right before the anchor (or at the bottom without one) and loads at most
+	// For negative number, the list starts right before the cursor (or at the bottom without one) and loads at most
 	// defined number of transactions newer than that.
 	//
 	// Transaction are always sorted from newer to older.
@@ -64,6 +64,9 @@ type Repository interface {
 
 	// Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
 	Transaction(*types.Hash) (*types.Transaction, error)
+
+	// Transactions returns list of transaction hashes at Opera blockchain.
+	Transactions(*string, int32) (*types.TransactionHashList, error)
 
 	// Collection pulls list of blocks starting on the specified block number and going up, or down based on count number.
 	Blocks(*uint64, int32) (*types.BlockList, error)
@@ -114,6 +117,9 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 		rpc:   rpcBridge,
 		log:   log,
 	}
+
+	// propagate callbacks
+	dbBridge.SetBalance(p.AccountBalance)
 
 	// start blockchain scanner
 	p.sigScannerStop = p.ScanBlockChain(&p.waitGroup)

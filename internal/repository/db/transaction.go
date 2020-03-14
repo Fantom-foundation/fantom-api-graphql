@@ -183,3 +183,228 @@ func (db *MongoDbBridge) LastKnownBlock() (uint64, error) {
 
 	return tx.Block, nil
 }
+
+// initTrxList initializes list of transactions based on provided cursor and count.
+func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, count int32) (*types.TransactionHashList, error) {
+	// get the context
+	ctx := context.Background()
+
+	// find how many transactions do we have in the database
+	total, err := col.CountDocuments(ctx, bson.D{})
+	if err != nil {
+		db.log.Errorf("can not count transactions")
+		return nil, err
+	}
+
+	// inform what we are about to do
+	db.log.Debugf("found %d transactions in off-chain database", total)
+
+	list := types.TransactionHashList{
+		Collection: make([]*types.Hash, 0),
+		Total:      uint64(total),
+		First:      0,
+		Last:       0,
+		IsStart:    false,
+		IsEnd:      false,
+	}
+
+	// db.transaction.createIndex({_id:1,orx:-1},{unique:true, name:"ix-tx-ordinal"})
+	// find out the cursor ordinal index
+	if cursor == nil && count > 0 {
+		// get the highest available ordinal index (top transaction)
+		list.First, err = db.findTxOrdinalIndex(col,
+			bson.D{},
+			options.FindOne().SetSort(bson.D{{fiTransactionOrdinalIndex, -1}}))
+		list.IsStart = true
+
+	} else if cursor == nil && count < 0 {
+		// get the lowest available ordinal index (top transaction)
+		list.First, err = db.findTxOrdinalIndex(col,
+			bson.D{},
+			options.FindOne().SetSort(bson.D{{fiTransactionOrdinalIndex, 1}}))
+		list.IsEnd = true
+
+	} else if cursor != nil {
+		// get the highest available ordinal index (top transaction)
+		list.First, err = db.findTxOrdinalIndex(col,
+			bson.D{{fiTransactionPk, *cursor}},
+			options.FindOne())
+	}
+
+	// check the error
+	if err != nil {
+		db.log.Errorf("can not find the initial transactions")
+		return nil, err
+	}
+
+	// inform what we are about to do
+	db.log.Debugf("transaction list initialized with ordinal index %d", list.First)
+
+	return &list, nil
+}
+
+// borderTxOrdinalIndex finds the highest, or lowest ordinal index in the transaction database.
+// For negative sort it will return highest and for positive sort it will return lowest available value.
+func (db *MongoDbBridge) findTxOrdinalIndex(col *mongo.Collection, filter bson.D, opt *options.FindOneOptions) (uint64, error) {
+	// prep container
+	var row struct {
+		Value uint64 `bson:"orx"`
+	}
+
+	// make sure we pull only what we need
+	opt.SetProjection(bson.D{{fiTransactionOrdinalIndex, true}})
+	sr := col.FindOne(context.Background(), filter, opt)
+
+	// try to decode
+	err := sr.Decode(&row)
+	if err != nil {
+		return 0, err
+	}
+
+	return row.Value, nil
+}
+
+// txListFilter creates a filter for transaction list search.
+func (db *MongoDbBridge) txListFilter(cursor *string, count int32, list *types.TransactionHashList) *bson.D {
+	// inform what we are about to do
+	db.log.Debugf("transaction filter starts from index %d", list.First)
+
+	// build the filter query
+	var filter bson.D
+	if cursor == nil {
+		if count > 0 {
+			filter = bson.D{{fiTransactionOrdinalIndex, bson.D{{"$lte", list.First}}}}
+		} else {
+			filter = bson.D{{fiTransactionOrdinalIndex, bson.D{{"$gte", list.First}}}}
+		}
+	} else {
+		if count > 0 {
+			filter = bson.D{{fiTransactionOrdinalIndex, bson.D{{"$lt", list.First}}}}
+		} else {
+			filter = bson.D{{fiTransactionOrdinalIndex, bson.D{{"$gt", list.First}}}}
+		}
+	}
+
+	return &filter
+}
+
+// txListOptions creates a filter options set for transactions list search.
+func (db *MongoDbBridge) txListOptions(count int32) *options.FindOptions {
+	// prep options
+	opt := options.Find()
+	opt.SetProjection(bson.D{{fiTransactionPk, true}, {fiTransactionOrdinalIndex, true}})
+
+	// how to sort results in the collection
+	if count > 0 {
+		// from high (new) to low (old)
+		opt.SetSort(bson.D{{fiTransactionOrdinalIndex, -1}})
+	} else {
+		// from low (old) to high (new)
+		opt.SetSort(bson.D{{fiTransactionOrdinalIndex, 1}})
+	}
+
+	// prep the loading limit
+	var limit = int64(count)
+	if limit < 0 {
+		limit = -limit
+	}
+
+	// try to get one more
+	limit++
+
+	// apply the limit
+	opt.SetLimit(limit)
+
+	return opt
+}
+
+// txListLoad load the initialized list from database
+func (db *MongoDbBridge) txListLoad(col *mongo.Collection, cursor *string, count int32, list *types.TransactionHashList) error {
+	// get the context for loader
+	ctx := context.Background()
+
+	// load the data
+	ld, err := col.Find(ctx, db.txListFilter(cursor, count, list), db.txListOptions(count))
+	if err != nil {
+		db.log.Errorf("error loading transactions list; %s", err.Error())
+		return err
+	}
+
+	// close the cursor as we leave
+	defer func() {
+		err := ld.Close(ctx)
+		if err != nil {
+			db.log.Errorf("error closing transactions list cursor; %s", err.Error())
+		}
+	}()
+
+	// loop and load
+	var hash *types.Hash
+	for ld.Next(ctx) {
+		// process the last found hash
+		if hash != nil {
+			list.Collection = append(list.Collection, hash)
+		}
+
+		// get the next hash
+		var row struct {
+			Id  string `bson:"_id"`
+			Orx uint64 `bson:"orx"`
+		}
+
+		// try to decode the next row
+		if err := ld.Decode(&row); err != nil {
+			db.log.Errorf("can not decode the list row; %s", err.Error())
+			return err
+		}
+
+		// decode the value
+		h := types.HexToHash(row.Id)
+		hash = &h
+	}
+
+	// we should have all the items already; we may just need to check if a boundary was reached
+	if cursor != nil {
+		list.IsEnd = count > 0 && int32(len(list.Collection)) < count
+		list.IsStart = count < 0 && int32(len(list.Collection)) < -count
+
+		// add the last item as well
+		if (list.IsStart || list.IsEnd) && hash != nil {
+			list.Collection = append(list.Collection, hash)
+		}
+	}
+
+	return nil
+}
+
+// Transactions pulls list of transaction hashes starting on the specified cursor.
+func (db *MongoDbBridge) Transactions(cursor *string, count int32) (*types.TransactionHashList, error) {
+	// nothing to load?
+	if count == 0 {
+		return nil, fmt.Errorf("nothing to do, zero transactions requested")
+	}
+
+	// get the collection and context
+	col := db.client.Database(offChainDatabaseName).Collection(coTransactions)
+
+	// init the list
+	list, err := db.initTrxList(col, cursor, count)
+	if err != nil {
+		db.log.Errorf("can not build transactions list; %s", err.Error())
+		return nil, err
+	}
+
+	// load data
+	err = db.txListLoad(col, cursor, count, list)
+	if err != nil {
+		db.log.Errorf("can not load transactions list from database; %s", err.Error())
+		return nil, err
+	}
+
+	// reverse on negative so new-er transaction will be on top
+	if count < 0 {
+		list.Reverse()
+	}
+
+	return list, nil
+}

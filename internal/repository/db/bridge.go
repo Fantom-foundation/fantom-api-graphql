@@ -107,10 +107,10 @@ func (db *MongoDbBridge) getAggregateValue(col *mongo.Collection, pipeline *bson
 	}
 
 	// prep container; we are interested in just one value
-	row := struct {
+	var row struct {
 		Id    string `bson:"_id"`
 		Value int64  `bson:"value"`
-	}{}
+	}
 
 	// try to decode the response
 	err = res.Decode(&row)

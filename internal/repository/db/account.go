@@ -203,12 +203,12 @@ func (db *MongoDbBridge) isAccountKnown(addr *common.Address) (bool, error) {
 }
 
 // initAccountTrxList initializes a list of transaction for given account address.
-func (db *MongoDbBridge) initAccountTrxList(addr *common.Address, anchor *string, count int32) (*types.TransactionHashList, error) {
+func (db *MongoDbBridge) initAccountTrxList(col *mongo.Collection, addr *common.Address, cursor *string, count int32) (*types.TransactionHashList, error) {
 	// inform what we are about to do
 	db.log.Debugf("initializing transactions list for account [%s]", addr.String())
 
 	// get the total number of transaction for the account
-	total, err := db.AccountTrxCount(addr)
+	total, err := db.AccountTrxCount(col, addr)
 	if err != nil {
 		db.log.Errorf("can not list transaction for the account")
 		return nil, err
@@ -223,32 +223,32 @@ func (db *MongoDbBridge) initAccountTrxList(addr *common.Address, anchor *string
 	var end int64
 
 	// decide where do we start and where do we end the tx slice
-	if anchor == nil && count > 0 {
-		// no anchor and positive count => we need to go from bottom up (new to old)
+	if cursor == nil && count > 0 {
+		// no cursor and positive count => we need to go from bottom up (new to old)
 		start = int64(total - uint64(count))
 		end = int64(total) - 1
 
-	} else if anchor == nil && count < 0 {
-		// no anchor and negative count => we need to go from top to bottom (old to new)
+	} else if cursor == nil && count < 0 {
+		// no cursor and negative count => we need to go from top to bottom (old to new)
 		end = int64(-count)
 
-	} else if anchor != nil {
-		// get the anchor id
-		anchorIdx, err := db.accountTrxIndex(addr, anchor)
+	} else if cursor != nil {
+		// get the cursor id
+		cursorIdx, err := db.accountTrxIndex(col, addr, cursor)
 		if err != nil {
-			db.log.Errorf("invalid anchor value; %s", err.Error())
+			db.log.Errorf("invalid cursor value; %s", err.Error())
 			return nil, err
 		}
 
 		// log the activity
-		db.log.Debugf("trx [%s] index is %d", *anchor, anchorIdx)
+		db.log.Debugf("trx [%s] index is %d", *cursor, cursorIdx)
 
 		// positive count => new to old => button up
 		if count > 0 {
-			start = int64(anchorIdx) - int64(count)
-			end = int64(anchorIdx) - 1
+			start = int64(cursorIdx) - int64(count)
+			end = int64(cursorIdx) - 1
 		} else {
-			start = int64(anchorIdx) + 1
+			start = int64(cursorIdx) + 1
 			end = start - int64(count) - 1
 		}
 	}
@@ -316,9 +316,8 @@ func (db *MongoDbBridge) accountTrxPipeline(addr *common.Address, first uint64, 
 }
 
 // getAccountTrxList loads the list of transaction records from the Mongo database.
-func (db *MongoDbBridge) accountTrxList(addr *common.Address, first uint64, last uint64) ([]tblAccountTransaction, error) {
-	// use aggregate pipeline to get the result set, should be just one row with embedded array
-	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
+func (db *MongoDbBridge) accountTrxList(col *mongo.Collection, addr *common.Address, first uint64, last uint64) ([]tblAccountTransaction, error) {
+	// get context
 	ctx := context.Background()
 
 	// call for the data
@@ -360,7 +359,7 @@ func (db *MongoDbBridge) accountTrxList(addr *common.Address, first uint64, last
 }
 
 // AccountTransactions loads list of transaction hashes of an account.
-func (db *MongoDbBridge) AccountTransactions(acc *types.Account, anchor *string, count int32) (*types.TransactionHashList, error) {
+func (db *MongoDbBridge) AccountTransactions(acc *types.Account, cursor *string, count int32) (*types.TransactionHashList, error) {
 	// nothing to load?
 	if count == 0 {
 		return nil, fmt.Errorf("nothing to do, zero blocks requested")
@@ -371,15 +370,18 @@ func (db *MongoDbBridge) AccountTransactions(acc *types.Account, anchor *string,
 		return nil, fmt.Errorf("can not list transactions of empty account")
 	}
 
+	// get the collection
+	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
+
 	// init the list
-	list, err := db.initAccountTrxList(&acc.Address, anchor, count)
+	list, err := db.initAccountTrxList(col, &acc.Address, cursor, count)
 	if err != nil {
 		db.log.Errorf("account transactions list init failed; %s", err.Error())
 		return nil, err
 	}
 
 	// get the data
-	trx, err := db.accountTrxList(&acc.Address, list.First, list.Last)
+	trx, err := db.accountTrxList(col, &acc.Address, list.First, list.Last)
 	if err != nil {
 		db.log.Errorf("can not build account transactions list; %s", err.Error())
 		return nil, err
@@ -397,7 +399,7 @@ func (db *MongoDbBridge) AccountTransactions(acc *types.Account, anchor *string,
 }
 
 // AccountTransactionsCount calculates total number of transaction associated with an account.
-func (db *MongoDbBridge) AccountTrxCount(addr *common.Address) (uint64, error) {
+func (db *MongoDbBridge) AccountTrxCount(col *mongo.Collection, addr *common.Address) (uint64, error) {
 	// no address?
 	if addr == nil {
 		return 0, fmt.Errorf("can not get number of transaction of empty account")
@@ -423,11 +425,11 @@ func (db *MongoDbBridge) AccountTrxCount(addr *common.Address) (uint64, error) {
 		}},
 	}
 
-	return db.getAggregateValue(db.client.Database(offChainDatabaseName).Collection(coAccounts), &pipeline)
+	return db.getAggregateValue(col, &pipeline)
 }
 
 // accountTrxIndex finds index of a transaction in account transactions array.
-func (db *MongoDbBridge) accountTrxIndex(addr *common.Address, hash *string) (uint64, error) {
+func (db *MongoDbBridge) accountTrxIndex(col *mongo.Collection, addr *common.Address, hash *string) (uint64, error) {
 	// no address or no hash?
 	if addr == nil || hash == nil {
 		return 0, fmt.Errorf("can not get transaction index of empty account or transaction hash")
@@ -453,5 +455,5 @@ func (db *MongoDbBridge) accountTrxIndex(addr *common.Address, hash *string) (ui
 		}},
 	}
 
-	return db.getAggregateValue(db.client.Database(offChainDatabaseName).Collection(coAccounts), &pipeline)
+	return db.getAggregateValue(col, &pipeline)
 }

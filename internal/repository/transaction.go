@@ -21,7 +21,7 @@ var ErrTransactionNotFound = errors.New("requested transaction can not be found 
 // If the transaction is not found, ErrTransactionNotFound error is returned.
 func (p *proxy) Transaction(hash *types.Hash) (*types.Transaction, error) {
 	// log
-	p.log.Infof("requested transaction %s", hash.String())
+	p.log.Debugf("requested transaction %s", hash.String())
 
 	// try to use the in-memory cache
 	if trx := p.cache.PullTransaction(hash); trx != nil {
@@ -44,7 +44,7 @@ func (p *proxy) Transaction(hash *types.Hash) (*types.Transaction, error) {
 	}
 
 	// log and return
-	p.log.Infof("transaction %s loaded from rpc", hash.String())
+	p.log.Debugf("transaction %s loaded from rpc", hash.String())
 
 	// push the transaction to the cache to speed things up next time
 	err = p.cache.PushTransaction(trx)
@@ -54,4 +54,15 @@ func (p *proxy) Transaction(hash *types.Hash) (*types.Transaction, error) {
 
 	// return the value
 	return trx, nil
+}
+
+// Transactions pulls list of transaction hashes starting on the specified cursor.
+// If the initial transaction cursor is not provided, we start on top, or bottom based on count value.
+//
+// No-number boundaries are handled as follows:
+// 	- For positive count we start from the most recent transaction and scan to older transactions.
+// 	- For negative count we start from the first transaction and scan to newer transactions.
+func (p *proxy) Transactions(cursor *string, count int32) (*types.TransactionHashList, error) {
+	// go to the database for the list of hashes of transaction searched
+	return p.db.Transactions(cursor, count)
 }

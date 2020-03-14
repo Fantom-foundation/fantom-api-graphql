@@ -49,12 +49,7 @@ func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 
 // AccountBalance returns the current balance of an account at Opera blockchain.
 func (p *proxy) AccountBalance(acc *types.Account) (*hexutil.Big, error) {
-	val, err := p.rpc.AccountBalance(&acc.Address)
-	if err != nil {
-		return nil, err
-	}
-
-	return (*hexutil.Big)(val), nil
+	return p.rpc.AccountBalance(&acc.Address)
 }
 
 // AccountNonce returns the current number of sent transactions of an account at Opera blockchain.
@@ -70,12 +65,12 @@ func (p *proxy) AccountNonce(acc *types.Account) (*hexutil.Uint64, error) {
 }
 
 // AccountTransactions returns slice of AccountTransaction structure for a given account at Opera blockchain.
-func (p *proxy) AccountTransactions(acc *types.Account, anchor *string, count int32) (*types.TransactionHashList, error) {
+func (p *proxy) AccountTransactions(acc *types.Account, cursor *string, count int32) (*types.TransactionHashList, error) {
 	// do we have an account?
 	if acc == nil {
 		return nil, fmt.Errorf("can not get transaction list for empty account")
 	}
 
 	// go to the database for the list of hashes of transaction searched
-	return p.db.AccountTransactions(acc, anchor, count)
+	return p.db.AccountTransactions(acc, cursor, count)
 }

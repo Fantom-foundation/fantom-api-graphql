@@ -153,7 +153,7 @@ func (p *proxy) initBlockList(num *uint64, count int32) (*types.Block, *types.Bl
 	return fb, &list, nil
 }
 
-// Collection pulls list of blocks starting on the specified block number and going up, or down based on count number.
+// Blocks pulls list of blocks starting on the specified block number and going up, or down based on count number.
 // If the initial block number is not provided, we start on top, or bottom based on count value.
 //
 // No-number boundaries are handled as follows:

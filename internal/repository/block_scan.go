@@ -15,7 +15,7 @@ import (
 )
 
 // scanBufferCapacity is the number of transaction kept in buffer before scanner gets throttled.
-const scanBufferCapacity = 250
+const scanBufferCapacity = 2000
 
 // scanTransaction represents a single scanned transaction record to be processed.
 type scanTransaction struct {
@@ -24,7 +24,7 @@ type scanTransaction struct {
 }
 
 // ScanChain performs blockchain scan and stores found data in off-chain storage.
-// It returns a channel which can be used to singal the scanner to terminate prematurely.
+// It returns a channel which can be used to signal the scanner to terminate prematurely.
 func (p *proxy) ScanBlockChain(wg *sync.WaitGroup) chan bool {
 	// get the newest known transaction
 	lnb, err := p.db.LastKnownBlock()
