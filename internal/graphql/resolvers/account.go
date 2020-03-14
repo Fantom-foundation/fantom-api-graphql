@@ -46,7 +46,7 @@ func (acc *Account) Balance() (hexutil.Big, error) {
 	return *bal, nil
 }
 
-// Sender resolves sender account of the transaction.
+// TxCount resolves the number of transaction sent by the account, also known as nonce.
 func (acc *Account) TxCount() (hexutil.Uint64, error) {
 	// get the sender by address
 	bal, err := acc.repo.AccountNonce(&acc.Account)
@@ -55,4 +55,18 @@ func (acc *Account) TxCount() (hexutil.Uint64, error) {
 	}
 
 	return *bal, nil
+}
+
+// TxList resolves list of transaction associated with the account.
+func (acc *Account) TxList(args struct {
+	Cursor *Cursor
+	Count  int32
+}) (*TransactionList, error) {
+	// get the transaction hash list from repository
+	bl, err := acc.repo.AccountTransactions(&acc.Account, (*string)(args.Cursor), args.Count)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewTransactionList(bl, acc.repo), nil
 }

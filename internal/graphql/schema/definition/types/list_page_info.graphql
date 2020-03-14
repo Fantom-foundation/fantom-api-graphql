@@ -1,14 +1,14 @@
 # ListPageInfo contains information about a sequential access list page.
 type ListPageInfo {
-    # First is the cursor of the first edge of the edges list.
-    first: Cursor!
+    # First is the cursor of the first edge of the edges list. null for empty list.
+    first: Cursor
 
-    # Last if the cusrsor of the last edge of the edges list.
-    last: Cursor!
+    # Last if the cusrsor of the last edge of the edges list. null for empty list.
+    last: Cursor
 
     # HasNext specifies if there is another edge after the last one.
-    hasNext: Boolean
+    hasNext: Boolean!
 
     # HasNext specifies if there is another edge before the first one.
-    hasPrevious: Boolean
+    hasPrevious: Boolean!
 }

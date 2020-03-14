@@ -3,8 +3,15 @@
   "schemaPath": "schema.graphql",
   "extensions": {
     "endpoints": {
-      "Default GraphQL Endpoint": {
-        "url": "http://localhost:8000/api",
+      "Local GraphQL Endpoint": {
+        "url": "http://localhost:16761/api",
+        "headers": {
+          "user-agent": "JS GraphQL"
+        },
+        "introspect": false
+      },
+      "Remote GraphQL Endpoint": {
+        "url": "https://fantom.rocks/fapi",
         "headers": {
           "user-agent": "JS GraphQL"
         },

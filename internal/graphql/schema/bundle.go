@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created , 2020-03-03 02:50
+// Auto generated GraphQL schema bundle; created 2020-03-14 00:28
 const schema = `
 # Account defines block-chain account information container
 type Account {
@@ -10,9 +10,31 @@ type Account {
     "Balance is the current balance of the Account in WEI."
     balance: BigInt!
 
-    "Nonce is the number of transactions sent from this account."
-    nonce: Long!
+    "txCount represents number of transaction sent from the account."
+    txCount: Long!
+
+    "txList represents list of transactions of the account in form of TransactionList."
+    txList (cursor:Cursor, count:Int!): TransactionList!
 }
+
+# TransactionList is a list of transaction edges provided by sequential access request.
+type TransactionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [TransactionListEdge!]!
+
+    # TotalCount is the maximum number of transactions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of transaction edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of transactions.
+type TransactionListEdge {
+    cursor: Cursor!
+    transaction: Transaction!
+}
+
 
 # Transaction is an Opera block chain transaction.
 type Transaction {
@@ -24,23 +46,28 @@ type Transaction {
 
     # Index is the index of this transaction in the block. This will
     # be null if the transaction is in a pending pool.
-    index: Int
+    index: Long
 
-    # From is the account that sent this transaction
-    from: Account!
+    # From is the address of the account that sent this transaction
+    from: Address!
 
-    # To is the account the transaction was sent to. This is null for
-    # contract-creating transactions.
-    to: Account
+    # Sender is the account that sent this transaction
+    sender: Account!
+
+    # To is the account the transaction was sent to. This is null for contract creating transactions.
+    to: Address
+
+    # Recipient is the account that received this transaction. Null for contract creating transaction.
+    recipient: Account
 
     # Value is the value sent along with this transaction in WEI.
     value: BigInt!
 
-    # GasPrice is the price og gas per unit in WEI.
+    # GasPrice is the price of gas per unit in WEI.
     gasPrice: BigInt!
 
-    # GasLimit is the maximum amount of gas this transaction can consume.
-    gasLimit: Long!
+    # Gas represents gas provided by the sender.
+    gas: Long!
 
     # GasUsed is the amount of gas that was used on processing this transaction.
     # If the transaction is pending, this field will be null.
@@ -48,6 +75,12 @@ type Transaction {
 
     # InputData is the data supplied to the target of the transaction.
     inputData: Bytes!
+
+    # BlockHash is the hash of the block this transaction was assigned to. Null if the transaction is pending.
+    blockHash: Hash
+
+    # BlockHash is the hash of the block this transaction was assigned to. Null if the transaction is pending.
+    blockNumber: Long
 
     # Block is the block this transaction was assigned to. This will be null if
     # the transaction is pending.
@@ -80,24 +113,6 @@ scalar Bytes
 # Cursor is a string representing position in a sequential list of edges.
 scalar Cursor
 
-# TransactionList is a list of transaction edges provided by sequential access request.
-type TransactionList {
-    # Edges contains provided edges of the sequential list.
-    edges: [TransactionListEdge!]!
-
-    # TotalCount is the maximum number of transactions available for sequential access.
-    totalCount: BigInt!
-
-    # PageInfo is an information about the current page of transaction edges.
-    pageInfo: ListPageInfo!
-}
-
-# TransactionListEdge is a single edge in a sequential list of transactions.
-type TransactionListEdge {
-    cursor: Cursor!
-    block: Transaction!
-}
-
 # Block is an Opera block chain block.
 type Block {
     # Number is the number of this block, starting at 0 for the genesis block.
@@ -113,18 +128,14 @@ type Block {
     transactionCount: Int
 
     # Timestamp is the unix timestamp at which this block was mined.
-    timestamp: BigInt!
+    timestamp: Long!
 
-    # TransactionHashList is the list of unique hash values of transaction
+    # txHashList is the list of unique hash values of transaction
     # assigned to the block.
-    transactionHashList: [Hash!]!
+    txHashList: [Hash!]!
 
-    # Transactions is a list of transactions assigned to the block.
-    transactions: [Transaction!]!
-
-    # TransactionAt returns the transaction at the specified index. If
-    # the transaction is not available for this block, this field will be null.
-    transactionAt(index: Int!): Transaction
+    # txList is a list of transactions assigned to the block.
+    txList: [Transaction!]!
 }
 
 # BlockList is a list of block edges provided by sequential access request.
@@ -147,17 +158,17 @@ type BlockListEdge {
 
 # ListPageInfo contains information about a sequential access list page.
 type ListPageInfo {
-    # First is the cursor of the first edge of the blocks list.
-    first: Cursor!
+    # First is the cursor of the first edge of the edges list. null for empty list.
+    first: Cursor
 
-    # Last if the cusrsor of the last edge of the blocks list.
-    last: Cursor!
+    # Last if the cusrsor of the last edge of the edges list. null for empty list.
+    last: Cursor
 
     # HasNext specifies if there is another edge after the last one.
-    hasNext: Boolean
+    hasNext: Boolean!
 
     # HasNext specifies if there is another edge before the first one.
-    hasPrevious: Boolean
+    hasPrevious: Boolean!
 }
 # Root schema definition
 schema {
@@ -169,20 +180,25 @@ type Query {
     "Get an Account information by hash address."
     account(address:Address!):Account!
 
-    "Get current Block information."
-    currentBlock:Block
-
-    "Get block information for given Block number."
-    block(number:Int!):Block
-
-    "Get list of Blocks with at most count edges after the cursor. If cursor is not defined, start from top."
-    blocks(cursor:ID, count:Int!):BlockList!
+    "Get block information by number or by hash. If neither is provided, the most recent block is given."
+    block(number:Long, hash: Hash):Block
 
     "Get transaction information for given transaction hash."
-    transaction(hash:ID!):Transaction
+    transaction(hash:Hash!):Transaction
 
-    "Get list of Transaction with at most count edges after the cursor. If cursor is not defined, start from top."
-    transactions(cursor:ID, count:Int!):TransactionList!
+    """
+    Get list of Blocks with at most <count> edges.
+    If <count> is positive, return edges after the cursor, if negative, return edges before the cursor.
+    For udefined cursor, positive <count> starts the list from top, negative <count> starts the list from bottom.
+    """
+    blocks(cursor:Cursor, count:Int!):BlockList!
+
+    """
+    Get list of Transactions with at most <count> edges.
+    If <count> is positive, return edges after the cursor, if negative, return edges before the cursor.
+    For udefined cursor, positive <count> starts the list from top, negative <count> starts the list from bottom.
+    """
+    transactions(cursor:Cursor, count:Int!):TransactionList!
 }
 
 `

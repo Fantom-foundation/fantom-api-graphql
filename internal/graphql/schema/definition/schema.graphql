@@ -19,13 +19,12 @@ type Query {
     If <count> is positive, return edges after the cursor, if negative, return edges before the cursor.
     For udefined cursor, positive <count> starts the list from top, negative <count> starts the list from bottom.
     """
-    blocks(cursor:ID, count:Int!):BlockList!
+    blocks(cursor:Cursor, count:Int!):BlockList!
 
     """
     Get list of Transactions with at most <count> edges.
     If <count> is positive, return edges after the cursor, if negative, return edges before the cursor.
     For udefined cursor, positive <count> starts the list from top, negative <count> starts the list from bottom.
     """
-    transactions(cursor:ID, count:Int!):TransactionList!
-
+    transactions(cursor:Cursor, count:Int!):TransactionList!
 }

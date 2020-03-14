@@ -28,6 +28,12 @@ type ApiResolver interface {
 
 	// Transaction resolves blockchain transaction by hash.
 	Transaction(*struct{ Hash types.Hash }) (*Transaction, error)
+
+	// Transactions resolves list of blockchain transactions encapsulated in a listable structure.
+	Transactions(*struct {
+		Cursor *Cursor
+		Count  int32
+	}) (*TransactionList, error)
 }
 
 // rootResolver represents the ApiResolver implementation.

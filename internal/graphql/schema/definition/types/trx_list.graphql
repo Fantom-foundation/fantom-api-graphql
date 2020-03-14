@@ -15,3 +15,4 @@ type TransactionListEdge {
     cursor: Cursor!
     transaction: Transaction!
 }
+

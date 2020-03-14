@@ -64,26 +64,26 @@ func (rs *rootResolver) Blocks(args *struct {
 // PageInfo resolves the current page information for the blocks list.
 func (bl *BlockList) PageInfo() (*ListPageInfo, error) {
 	// do we have any items?
-	if bl.list == nil || bl.list.Blocks == nil || len(bl.list.Blocks) == 0 {
+	if bl.list == nil || bl.list.Collection == nil || len(bl.list.Collection) == 0 {
 		return NewListPageInfo(nil, nil, false, false)
 	}
 
 	// get the first and last elements
-	first := Cursor(bl.list.Blocks[0].Number.String())
-	last := Cursor(bl.list.Blocks[len(bl.list.Blocks)-1].Number.String())
+	first := Cursor(bl.list.Collection[0].Number.String())
+	last := Cursor(bl.list.Collection[len(bl.list.Collection)-1].Number.String())
 	return NewListPageInfo(&first, &last, !bl.list.IsEnd, !bl.list.IsStart)
 }
 
 // Edges resolves list of block list edges for the linked block list.
 func (bl *BlockList) Edges() []*BlockListEdge {
 	// do we have any items? return empty list if not
-	if bl.list == nil || bl.list.Blocks == nil || len(bl.list.Blocks) == 0 {
+	if bl.list == nil || bl.list.Collection == nil || len(bl.list.Collection) == 0 {
 		return make([]*BlockListEdge, 0)
 	}
 
 	// make the list
-	edges := make([]*BlockListEdge, len(bl.list.Blocks))
-	for i, b := range bl.list.Blocks {
+	edges := make([]*BlockListEdge, len(bl.list.Collection))
+	for i, b := range bl.list.Collection {
 		// get the resolvable block
 		blk := NewBlock(b, bl.repo)
 
