@@ -6,6 +6,9 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
+// listMaxEdgesPerRequest maximal number of edges end-client can request in one query.
+const listMaxEdgesPerRequest = 100
+
 // BlockList represents resolvable list of blockchain block edges structure.
 type BlockList struct {
 	repo       repository.Repository
@@ -49,6 +52,11 @@ func (rs *rootResolver) Blocks(args *struct {
 	bh, err := rs.repo.BlockHeight()
 	if err != nil {
 		return nil, err
+	}
+
+	// limit query size
+	if args.Count > listMaxEdgesPerRequest {
+		args.Count = listMaxEdgesPerRequest
 	}
 
 	// get the block list from repository

@@ -8,6 +8,9 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
+// accMaxTransactionsPerRequest maximal number of transaction end-client can request in one query.
+const accMaxTransactionsPerRequest = 50
+
 // Account represents resolvable blockchain account structure.
 type Account struct {
 	repo repository.Repository
@@ -62,6 +65,11 @@ func (acc *Account) TxList(args struct {
 	Cursor *Cursor
 	Count  int32
 }) (*TransactionList, error) {
+	// limit count
+	if args.Count > accMaxTransactionsPerRequest {
+		args.Count = accMaxTransactionsPerRequest
+	}
+
 	// get the transaction hash list from repository
 	bl, err := acc.repo.AccountTransactions(&acc.Account, (*string)(args.Cursor), args.Count)
 	if err != nil {
