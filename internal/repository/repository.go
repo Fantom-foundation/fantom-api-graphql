@@ -98,6 +98,9 @@ type Repository interface {
 	// DelegationsOf extract a list of delegations for a given staker.
 	DelegationsOf(hexutil.Uint64) ([]types.Delegator, error)
 
+	// Delegation returns a detail of delegation for the given address.
+	DelegationRewards(common.Address) (types.PendingRewards, error)
+
 	// FtmConnection returns open connection to Opera/Lachesis full node.
 	FtmConnection() *ftm.Client
 

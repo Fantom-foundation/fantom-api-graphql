@@ -53,3 +53,8 @@ func (p *proxy) DelegationsOf(staker hexutil.Uint64) ([]types.Delegator, error) 
 func (p *proxy) Delegation(addr common.Address) (*types.Delegator, error) {
 	return p.rpc.Delegation(addr)
 }
+
+// Delegation returns a detail of delegation for the given address.
+func (p *proxy) DelegationRewards(addr common.Address) (types.PendingRewards, error) {
+	return p.rpc.DelegationRewards(addr)
+}

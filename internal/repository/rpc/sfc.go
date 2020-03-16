@@ -149,6 +149,37 @@ func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (types.Epoch, error) {
 	}, nil
 }
 
+// Delegation returns a detail of delegation for the given address.
+func (ftm *FtmBridge) DelegationRewards(addr common.Address) (types.PendingRewards, error) {
+	// instantiate the contract and display its name
+	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		return types.PendingRewards{}, err
+	}
+
+	// get the value from the contract
+	epoch, err := contract.CurrentSealedEpoch(nil)
+	if err != nil {
+		ftm.log.Errorf("failed to get the current sealed epoch: %v", err)
+		return types.PendingRewards{}, err
+	}
+
+	// get the rewards amunt
+	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(nil, addr, big.NewInt(0), epoch)
+	if err != nil {
+		ftm.log.Errorf("failed to get the delegation rewards: %v", err)
+		return types.PendingRewards{}, err
+	}
+
+	// return the data
+	return types.PendingRewards{
+		Amount:    hexutil.Big(*amount),
+		FromEpoch: hexutil.Uint64(fromEpoch.Uint64()),
+		ToEpoch:   hexutil.Uint64(toEpoch.Uint64()),
+	}, nil
+}
+
 // DelegationsOf extract a list of delegations for a given staker.
 func (ftm *FtmBridge) DelegationsOf(staker hexutil.Uint64) ([]types.Delegator, error) {
 	// keep track of the operation
