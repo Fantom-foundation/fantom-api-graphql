@@ -1,3 +1,5 @@
+//go:generate abigen --abi ./contracts/sfc.abi --pkg rpc --type SfcContract --out ./sfc_bind.go
+
 /*
 Rpc package implements bridge to Lachesis full node API interface.
 
@@ -16,12 +18,14 @@ package rpc
 import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
+	eth "github.com/ethereum/go-ethereum/ethclient"
 	ftm "github.com/ethereum/go-ethereum/rpc"
 )
 
 // Bridge represents Lachesis RPC abstraction layer.
 type FtmBridge struct {
 	rpc *ftm.Client
+	eth *eth.Client
 	log logger.Logger
 }
 
@@ -35,11 +39,22 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 	}
 
 	// log
-	log.Notice("full node connection established")
+	log.Notice("full node rpc connection established")
+
+	// try to establish a for smart contract interaction
+	con, err := eth.Dial(cfg.LachesisUrl)
+	if err != nil {
+		log.Critical(err)
+		return nil, err
+	}
+
+	// log
+	log.Notice("smart contact connection established")
 
 	// return the Bridge
 	return &FtmBridge{
 		rpc: client,
+		eth: con,
 		log: log,
 	}, nil
 }
@@ -49,7 +64,8 @@ func (ftm *FtmBridge) Close() {
 	// do we have a connection?
 	if ftm.rpc != nil {
 		ftm.rpc.Close()
-		ftm.log.Info("full node connection is closed")
+		ftm.eth.Close()
+		ftm.log.Info("blockchain connections are closed")
 	}
 }
 
