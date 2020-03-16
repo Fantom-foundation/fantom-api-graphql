@@ -29,4 +29,5 @@ type Staker struct {
 	OriginationScore         *hexutil.Big   `json:"originationScore"`
 	ClaimedRewards           *hexutil.Big   `json:"claimedRewards"`
 	DelegationClaimedRewards *hexutil.Big   `json:"delegatorsClaimedRewards"`
+	Status                   hexutil.Uint64 `json:"status"`
 }

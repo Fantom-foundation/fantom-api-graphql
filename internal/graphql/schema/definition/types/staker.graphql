@@ -68,4 +68,7 @@ type Staker {
 
     "List of delegations of this staker."
     delegations:[Delegator!]!
+
+    "Status of the staker. Ok = 0, Fork = 1, Offline = 256"
+    status: Long!
 }

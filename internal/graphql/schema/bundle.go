@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-03-16 12:41
+// Auto generated GraphQL schema bundle; created 2020-03-16 14:54
 const schema = `
 # Delegator represents a delegation on Opera blockchain.
 type Delegator {
@@ -252,6 +252,9 @@ type Staker {
 
     "List of delegations of this staker."
     delegations:[Delegator!]!
+
+    "Status of the staker. Ok = 0, Fork = 1, Offline = 256"
+    status: Long!
 }
 
 # PendingRewards represents a detail of pending rewards for staking and delegations

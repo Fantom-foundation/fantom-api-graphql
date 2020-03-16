@@ -83,6 +83,34 @@ func (ftm *FtmBridge) StakersNum() (hexutil.Uint64, error) {
 	return hexutil.Uint64(sn.Uint64()), nil
 }
 
+// stakerUpdateFromSfc updates staker information using SFC binding.
+func (ftm *FtmBridge) stakerUpdateFromSfc(staker *types.Staker) error {
+	// instantiate the contract and display its name
+	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		return err
+	}
+
+	// get the value from the contract
+	si, err := contract.Stakers(nil, big.NewInt(int64(staker.Id)))
+	if err != nil {
+		ftm.log.Errorf("failed to get the staker infor from SFC: %v", err)
+		return err
+	}
+
+	// do we have a valid record?
+	if si.Status != nil {
+		// update some invalid information
+		staker.DelegatedMe = (*hexutil.Big)(si.DelegatedMe)
+		staker.Stake = (*hexutil.Big)(si.StakeAmount)
+		staker.Status = hexutil.Uint64(si.Status.Uint64())
+	}
+
+	// get the value
+	return nil
+}
+
 // Staker extract a staker information by numeric id.
 func (ftm *FtmBridge) Staker(id hexutil.Uint64) (*types.Staker, error) {
 	// keep track of the operation
@@ -94,6 +122,12 @@ func (ftm *FtmBridge) Staker(id hexutil.Uint64) (*types.Staker, error) {
 	if err != nil {
 		ftm.log.Error("staker information could not be extracted")
 		return nil, err
+	}
+
+	// update detail
+	err = ftm.stakerUpdateFromSfc(&st)
+	if err != nil {
+		ftm.log.Critical("staker information could not be updated from SFC")
 	}
 
 	// keep track of the operation
@@ -112,6 +146,12 @@ func (ftm *FtmBridge) StakerByAddress(addr common.Address) (*types.Staker, error
 	if err != nil {
 		ftm.log.Error("staker information could not be extracted")
 		return nil, err
+	}
+
+	// update detail
+	err = ftm.stakerUpdateFromSfc(&st)
+	if err != nil {
+		ftm.log.Critical("staker information could not be updated from SFC")
 	}
 
 	// keep track of the operation
