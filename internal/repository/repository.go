@@ -104,6 +104,9 @@ type Repository interface {
 	// Delegation returns a detail of delegation for the given address.
 	DelegationRewards(common.Address) (types.PendingRewards, error)
 
+	// Price returns a price information for the given target symbol.
+	Price(sym string) (types.Price, error)
+
 	// FtmConnection returns open connection to Opera/Lachesis full node.
 	FtmConnection() *ftm.Client
 

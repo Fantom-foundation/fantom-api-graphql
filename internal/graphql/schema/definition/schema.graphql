@@ -55,6 +55,9 @@ type Query {
 
     "Get the details of a delegator by it's address."
     delegation(address:Address!): Delegator
+
+    "Get price details of the Opera blockchain token for the given target symbols."
+    price(to:String!):Price!
 }
 
 # Subscriptions to live events broadcasting

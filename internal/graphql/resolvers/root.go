@@ -74,6 +74,9 @@ type ApiResolver interface {
 	// Resolves a list of delegations information of a staker.
 	DelegationsOf(*struct{ Staker hexutil.Uint64 }) ([]Delegator, error)
 
+	// Price resolves price details of the Opera blockchain token for the given target symbols.
+	Price(*struct{ To string }) (types.Price, error)
+
 	// Close terminates resolver broadcast management.
 	Close()
 }

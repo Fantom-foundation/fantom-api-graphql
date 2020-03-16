@@ -6,6 +6,12 @@ type Account {
     "Balance is the current balance of the Account in WEI."
     balance: BigInt!
 
+    """
+    TotalValue is the current total value fo the account in WEI. It includes available balance,
+    delegated amount and pending staking rewards.
+    """
+    totalValue: BigInt!
+
     "txCount represents number of transaction sent from the account."
     txCount: Long!
 

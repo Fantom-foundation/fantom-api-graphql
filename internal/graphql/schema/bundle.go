@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-03-16 14:54
+// Auto generated GraphQL schema bundle; created 2020-03-16 21:50
 const schema = `
 # Delegator represents a delegation on Opera blockchain.
 type Delegator {
@@ -39,6 +39,12 @@ type Account {
 
     "Balance is the current balance of the Account in WEI."
     balance: BigInt!
+
+    """
+    TotalValue is the current total value fo the account in WEI. It includes available balance,
+    delegated amount and pending staking rewards.
+    """
+    totalValue: BigInt!
 
     "txCount represents number of transaction sent from the account."
     txCount: Long!
@@ -180,6 +186,42 @@ type Epoch {
 
     "Total supply amount."
     totalSupply: BigInt!
+}
+
+# Price represents price information of core Opera token
+type Price {
+    "Source unit symbol."
+    fromSymbol: String!
+
+    "Target unit symbol."
+    toSymbol: String!
+
+    "Price of the source symbol unit in target symbol unit."
+    price: Float!
+
+    "Price change in last 24h."
+    change24: Float!
+
+    "Price change in percent in last 24h."
+    changePct24: Float!
+
+    "Open 24h price."
+    open24: Float!
+
+    "Highest 24h price."
+    high24: Float!
+
+    "Lowest 24h price."
+    low24: Float!
+
+    "Volume exchanged in last 24h price."
+    volume24: Float!
+
+    "Market cap of the source unit."
+    marketCap: Float!
+
+    "Timestamp of the last update of this price value."
+    lastUpdate: Long!
 }
 
 # Represents staker information.
@@ -383,6 +425,9 @@ type Query {
 
     "Get the details of a delegator by it's address."
     delegation(address:Address!): Delegator
+
+    "Get price details of the Opera blockchain token for the given target symbols."
+    price(to:String!):Price!
 }
 
 # Subscriptions to live events broadcasting
