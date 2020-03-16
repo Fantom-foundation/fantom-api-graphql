@@ -6,6 +6,9 @@ schema {
 
 # Entry points for querying the API
 type Query {
+    "Total number of accounts active on the Opera blockchain."
+    accountsActive:Long!
+
     "Get an Account information by hash address."
     account(address:Address!):Account!
 

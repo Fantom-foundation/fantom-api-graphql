@@ -38,6 +38,11 @@ func (rs *rootResolver) Account(args struct{ Address common.Address }) (*Account
 	return NewAccount(acc, rs.repo), nil
 }
 
+// Resolves total number of active accounts on the blockchain.
+func (rs *rootResolver) AccountsActive() (hexutil.Uint64, error) {
+	return rs.repo.AccountsActive()
+}
+
 // Sender resolves sender account of the transaction.
 func (acc *Account) Balance() (hexutil.Big, error) {
 	// get the sender by address

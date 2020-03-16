@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-03-16 11:29
+// Auto generated GraphQL schema bundle; created 2020-03-16 12:41
 const schema = `
 # Delegator represents a delegation on Opera blockchain.
 type Delegator {
@@ -331,6 +331,9 @@ schema {
 
 # Entry points for querying the API
 type Query {
+    "Total number of accounts active on the Opera blockchain."
+    accountsActive:Long!
+
     "Get an Account information by hash address."
     account(address:Address!):Account!
 

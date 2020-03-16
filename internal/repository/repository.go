@@ -46,6 +46,9 @@ type Repository interface {
 	// Transaction are always sorted from newer to older.
 	AccountTransactions(*types.Account, *string, int32) (*types.TransactionHashList, error)
 
+	// Returns total number of accounts known to repository.
+	AccountsActive() (hexutil.Uint64, error)
+
 	// Block returns a block at Opera blockchain represented by a number. Top block is returned if the number
 	// is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.

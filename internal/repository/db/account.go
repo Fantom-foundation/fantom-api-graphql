@@ -6,6 +6,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -426,6 +427,21 @@ func (db *MongoDbBridge) AccountTrxCount(col *mongo.Collection, addr *common.Add
 	}
 
 	return db.getAggregateValue(col, &pipeline)
+}
+
+// AccountCount calculates total number of accounts in the database.
+func (db *MongoDbBridge) AccountCount() (hexutil.Uint64, error) {
+	// get the collection for transactions
+	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
+
+	// do the counting
+	val, err := col.CountDocuments(context.Background(), bson.D{})
+	if err != nil {
+		db.log.Errorf("can not cound documents in accounts collection; %s", err.Error())
+		return 0, err
+	}
+
+	return hexutil.Uint64(uint64(val)), nil
 }
 
 // accountTrxIndex finds index of a transaction in account transactions array.

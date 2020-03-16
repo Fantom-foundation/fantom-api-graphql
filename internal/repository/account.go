@@ -74,3 +74,8 @@ func (p *proxy) AccountTransactions(acc *types.Account, cursor *string, count in
 	// go to the database for the list of hashes of transaction searched
 	return p.db.AccountTransactions(acc, cursor, count)
 }
+
+// AccountsActive returns total number of accounts known to repository.
+func (p *proxy) AccountsActive() (hexutil.Uint64, error) {
+	return p.db.AccountCount()
+}
