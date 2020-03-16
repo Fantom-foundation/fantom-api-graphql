@@ -85,6 +85,9 @@ func (ftm *FtmBridge) StakersNum() (hexutil.Uint64, error) {
 
 // stakerUpdateFromSfc updates staker information using SFC binding.
 func (ftm *FtmBridge) stakerUpdateFromSfc(staker *types.Staker) error {
+	// log action
+	ftm.log.Debug("updating staker info from SFC")
+
 	// instantiate the contract and display its name
 	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
 	if err != nil {
@@ -105,6 +108,12 @@ func (ftm *FtmBridge) stakerUpdateFromSfc(staker *types.Staker) error {
 		staker.DelegatedMe = (*hexutil.Big)(si.DelegatedMe)
 		staker.Stake = (*hexutil.Big)(si.StakeAmount)
 		staker.Status = hexutil.Uint64(si.Status.Uint64())
+
+		// recalculate the total stake
+		staker.TotalStake = (*hexutil.Big)(big.NewInt(0).Add(si.DelegatedMe, si.StakeAmount))
+	} else {
+		// log issue
+		ftm.log.Debug("staker info update from SFC failed, no data received")
 	}
 
 	// get the value
