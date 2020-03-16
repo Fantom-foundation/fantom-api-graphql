@@ -1,0 +1,32 @@
+# Represents epoch information.
+type Epoch {
+    "Number the epoch end."
+    id: Long!
+
+    "Timestamp of the epoch end."
+    endTime: BigInt!
+
+    "Epoch duration in secods."
+    duration: BigInt!
+
+    "Fee at the epoch."
+    epochFee: BigInt!
+
+    "Total base reward weight on epoch."
+    totalBaseRewardWeight: BigInt!
+
+    "Total transaction reward weight on epoch."
+    totalTxRewardWeight: BigInt!
+
+    "Base reward per second of epoch."
+    baseRewardPerSecond: BigInt!
+
+    "Total amount staked."
+    stakeTotalAmount: BigInt!
+
+    "Total amount delegated."
+    delegationsTotalAmount: BigInt!
+
+    "Total supply amount."
+    totalSupply: BigInt!
+}

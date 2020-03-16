@@ -1,6 +1,7 @@
 # Root schema definition
 schema {
-    query:Query
+    query: Query
+    subscription: Subscription
 }
 
 # Entry points for querying the API
@@ -27,4 +28,37 @@ type Query {
     For udefined cursor, positive <count> starts the list from top, negative <count> starts the list from bottom.
     """
     transactions(cursor:Cursor, count:Int!):TransactionList!
+
+    "Get the id of the current epoch of the Opera blockchain."
+    currentEpoch:Long!
+
+    "Get information about specified epoch. Returns current epoch information if id is not provided."
+    epoch(id: Long!): Epoch!
+
+    "The last staker id in Opera blockchain."
+    lastStakerId: Long!
+
+    "The number of stakers in Opera blockchain."
+    stakersNum: Long!
+
+    "Staker information. The staker is loaded either by numberic ID, or by address. null if none is provided."
+    staker(id: Long, address: Address): Staker
+
+    "List of staker information from SFC smart contract."
+    stakers: [Staker!]!
+
+    "The list of delegations for the given staker ID."
+    delegationsOf(staker:Long!): [Delegator!]!
+
+    "Get the details of a delegator by it's address."
+    delegation(address:Address!): Delegator
+}
+
+# Subscriptions to live events broadcasting
+type Subscription {
+    "Subscribe to receive information about new blocks in the blockchain."
+    onBlock: Block!
+
+    "Subscribe to receive information about new transactions in the blockchain."
+    onTransaction: Transaction!
 }

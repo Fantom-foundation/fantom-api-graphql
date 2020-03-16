@@ -1,7 +1,37 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-03-14 00:28
+// Auto generated GraphQL schema bundle; created 2020-03-16 08:40
 const schema = `
+# Delegator represents a delegation on Opera blockchain.
+type Delegator {
+    "Address of the delegator account."
+    address: Address!
+
+    "Identifier of the staker the delegation belongs to."
+    toStakerId: Long!
+
+    "Epoch in which the delegation was made."
+    createdEpoch: Long!
+
+    "Timestamp of the delegation creation."
+    createdTime: Long!
+
+    "Epoch in which the delegation was deactivated."
+    deactivatedEpoch: Long
+
+    "Timestamp of the deactivation of the delegation."
+    deactivatedTime: Long
+
+    "Amount delegated."
+    amount: BigInt
+
+    "Amount of rewards claimed."
+    claimedReward: BigInt
+
+    "Epoch upto which the delegation rewards have been paid."
+    paidUntilEpoch: Long
+}
+
 # Account defines block-chain account information container
 type Account {
     "Address is the address of the account."
@@ -113,6 +143,111 @@ scalar Bytes
 # Cursor is a string representing position in a sequential list of edges.
 scalar Cursor
 
+# Represents epoch information.
+type Epoch {
+    "Number the epoch end."
+    id: Long!
+
+    "Timestamp of the epoch end."
+    endTime: BigInt!
+
+    "Epoch duration in secods."
+    duration: BigInt!
+
+    "Fee at the epoch."
+    epochFee: BigInt!
+
+    "Total base reward weight on epoch."
+    totalBaseRewardWeight: BigInt!
+
+    "Total transaction reward weight on epoch."
+    totalTxRewardWeight: BigInt!
+
+    "Base reward per second of epoch."
+    baseRewardPerSecond: BigInt!
+
+    "Total amount staked."
+    stakeTotalAmount: BigInt!
+
+    "Total amount delegated."
+    delegationsTotalAmount: BigInt!
+
+    "Total supply amount."
+    totalSupply: BigInt!
+}
+
+# Represents staker information.
+type Staker {
+    "Id number the staker."
+    id: Long!
+
+    "Staker address."
+    stakerAddress: Address!
+
+    "Amount of total staked tokens in WEI."
+    totalStake: BigInt
+
+    "Amount of own staked tokens in WEI."
+    stake: BigInt
+
+    "Amount of tokens delegated to the staker."
+    delegatedMe: BigInt
+
+    "Is this a validator record."
+    isValidator: Boolean!
+
+    "Is the staker active."
+    isActive: Boolean!
+
+    "Is the staker considered to be cheater."
+    isCheater: Boolean!
+
+    "Is the staker offline."
+    isOffline: Boolean!
+
+    "Epoch in which the staker was created."
+    createdEpoch: Long!
+
+    "Timestamp of the staker creation."
+    createdTime: Long!
+
+    "Epoch in which the staker was deactivated."
+    deactivatedEpoch: Long!
+
+    "Timestamp of the staker deactivation."
+    deactivatedTime: Long!
+
+    "How many blocks the staker missed."
+    missedBlocks: Long!
+
+    "Number of seconds the staker is offline."
+    downtime: Long!
+
+    "Proof of importance score."
+    poi: BigInt
+
+    "Base weight for rewards distribution."
+    baseRewardWeight: BigInt
+
+    "Weight for transaction rewards distribution."
+    txRewardWeight: BigInt
+
+    "Validation score."
+    validationScore: BigInt
+
+    "Origination score."
+    originationScore: BigInt
+
+    "Amount of rewards claimed in WEI."
+    claimedRewards: BigInt
+
+    "Amount of rewards claimed by delegators in WEI."
+    delegationClaimedRewards: BigInt
+
+    "List of delegations of this staker."
+    delegations:[Delegator!]!
+}
+
 # Block is an Opera block chain block.
 type Block {
     # Number is the number of this block, starting at 0 for the genesis block.
@@ -172,7 +307,8 @@ type ListPageInfo {
 }
 # Root schema definition
 schema {
-    query:Query
+    query: Query
+    subscription: Subscription
 }
 
 # Entry points for querying the API
@@ -199,6 +335,39 @@ type Query {
     For udefined cursor, positive <count> starts the list from top, negative <count> starts the list from bottom.
     """
     transactions(cursor:Cursor, count:Int!):TransactionList!
+
+    "Get the id of the current epoch of the Opera blockchain."
+    currentEpoch:Long!
+
+    "Get information about specified epoch. Returns current epoch information if id is not provided."
+    epoch(id: Long!): Epoch!
+
+    "The last staker id in Opera blockchain."
+    lastStakerId: Long!
+
+    "The number of stakers in Opera blockchain."
+    stakersNum: Long!
+
+    "Staker information. The staker is loaded either by numberic ID, or by address. null if none is provided."
+    staker(id: Long, address: Address): Staker
+
+    "List of staker information from SFC smart contract."
+    stakers: [Staker!]!
+
+    "The list of delegations for the given staker ID."
+    delegationsOf(staker:Long!): [Delegator!]!
+
+    "Get the details of a delegator by it's address."
+    delegation(address:Address!): Delegator
+}
+
+# Subscriptions to live events broadcasting
+type Subscription {
+    "Subscribe to receive information about new blocks in the blockchain."
+    onBlock: Block!
+
+    "Subscribe to receive information about new transactions in the blockchain."
+    onTransaction: Transaction!
 }
 
 `

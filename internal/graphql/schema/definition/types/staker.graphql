@@ -1,0 +1,71 @@
+# Represents staker information.
+type Staker {
+    "Id number the staker."
+    id: Long!
+
+    "Staker address."
+    stakerAddress: Address!
+
+    "Amount of total staked tokens in WEI."
+    totalStake: BigInt
+
+    "Amount of own staked tokens in WEI."
+    stake: BigInt
+
+    "Amount of tokens delegated to the staker."
+    delegatedMe: BigInt
+
+    "Is this a validator record."
+    isValidator: Boolean!
+
+    "Is the staker active."
+    isActive: Boolean!
+
+    "Is the staker considered to be cheater."
+    isCheater: Boolean!
+
+    "Is the staker offline."
+    isOffline: Boolean!
+
+    "Epoch in which the staker was created."
+    createdEpoch: Long!
+
+    "Timestamp of the staker creation."
+    createdTime: Long!
+
+    "Epoch in which the staker was deactivated."
+    deactivatedEpoch: Long!
+
+    "Timestamp of the staker deactivation."
+    deactivatedTime: Long!
+
+    "How many blocks the staker missed."
+    missedBlocks: Long!
+
+    "Number of seconds the staker is offline."
+    downtime: Long!
+
+    "Proof of importance score."
+    poi: BigInt
+
+    "Base weight for rewards distribution."
+    baseRewardWeight: BigInt
+
+    "Weight for transaction rewards distribution."
+    txRewardWeight: BigInt
+
+    "Validation score."
+    validationScore: BigInt
+
+    "Origination score."
+    originationScore: BigInt
+
+    "Amount of rewards claimed in WEI."
+    claimedRewards: BigInt
+
+    "Amount of rewards claimed by delegators in WEI."
+    delegationClaimedRewards: BigInt
+
+    "List of delegations of this staker."
+    delegations:[Delegator!]!
+}

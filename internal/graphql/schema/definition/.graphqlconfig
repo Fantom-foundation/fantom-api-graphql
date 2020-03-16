@@ -10,6 +10,13 @@
         },
         "introspect": false
       },
+      "Local WebSocket Endpoint": {
+        "url": "ws://localhost:16761/api",
+        "headers": {
+          "user-agent": "JS GraphQL"
+        },
+        "introspect": false
+      },
       "Remote GraphQL Endpoint": {
         "url": "https://fantom.rocks/fapi",
         "headers": {
