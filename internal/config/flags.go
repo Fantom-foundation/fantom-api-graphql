@@ -24,8 +24,8 @@ func bindFlags(cfg *viper.Viper) error {
 	pflag.String(keyLoggingFormat, defLoggingFormat, flagLoggingFormatUsage)
 	pflag.String(keyLachesisUrl, defLachesisUrl, flagLachesisUrlUsage)
 	pflag.String(keyMongoUrl, defMongoUrl, flagMongoUrlUsage)
-	pflag.Duration(keyCacheEvictionTime, defCacheEvictionTime, flagCacheEvictionTime)
-	pflag.StringSlice(keyCorsAllowOrigins, defCorsAllowOrigins, flagCorsAllowOrigins)
+	pflag.Duration(keyCorsAllowOrigins, defCacheEvictionTime, flagCacheEvictionTime)
+	pflag.StringSlice(keyCacheEvictionTime, defCorsAllowOrigins, flagCorsAllowOrigins)
 
 	// parse the options
 	pflag.Parse()

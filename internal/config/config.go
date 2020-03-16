@@ -66,9 +66,15 @@ func Load() (*Config, error) {
 	}
 
 	// Try to read the file
-	if err := cfg.ReadInConfig(); nil != err {
-		log.Printf("can not read the server configuration")
-		return nil, err
+	if err := cfg.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			// Config file not found; ignore the error, we may not need the config file
+			log.Print("configuration file not found, using default values")
+		} else {
+			// Config file was found but another error was produced
+			log.Printf("can not read the server configuration")
+			return nil, err
+		}
 	}
 
 	// Build and return the config structure
@@ -95,6 +101,7 @@ func getReader() *viper.Viper {
 
 	// where to look for common files
 	cfg.AddConfigPath(defaultConfigDir())
+	cfg.AddConfigPath(".")
 
 	// Try to get an explicit configuration file path if present
 	var cfgPath string

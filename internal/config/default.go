@@ -8,7 +8,7 @@ import (
 // Default values of configuration options
 const (
 	// defServerBind holds default API server binding address
-	defServerBind = "localhost:8000"
+	defServerBind = "localhost:16761"
 
 	// defLoggingLevel holds default Logging level
 	// See `godoc.org/github.com/op/go-logging` for the full format specification
@@ -25,7 +25,7 @@ const (
 	defMongoUrl = "mongodb://localhost:27017"
 
 	// defCacheEvictionTime holds default time for in-memory eviction periods
-	defCacheEvictionTime = 60 * time.Minute
+	defCacheEvictionTime = 30 * time.Minute
 )
 
 // defCorsAllowOrigins holds CORS default allowed origins.
