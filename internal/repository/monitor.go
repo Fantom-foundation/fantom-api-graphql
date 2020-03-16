@@ -17,7 +17,7 @@ import (
 )
 
 // monBlocksBufferCapacity is the number of new blocks kept in the block processing channel.
-const monBlocksBufferCapacity = 500
+const monBlocksBufferCapacity = 5000
 
 // BlockMonitor represents a subscription processor capturing new blockchain blocks.
 type blockMonitor struct {
@@ -28,6 +28,10 @@ type blockMonitor struct {
 	procChan chan types.Block
 	con      *ftm.Client
 	sub      *ftm.ClientSubscription
+
+	// event broadcast channels
+	onBlock       chan *types.Block
+	onTransaction chan *types.Transaction
 }
 
 // NewBlockMonitor creates a new block monitor instance.
@@ -56,13 +60,13 @@ func (bm *blockMonitor) run() {
 		return
 	}
 
-	// start go routine for subscription reader
-	bm.wg.Add(1)
-	go bm.monitor()
-
 	// start go routine for processing
 	bm.wg.Add(1)
 	go bm.process()
+
+	// start go routine for subscription reader
+	bm.wg.Add(1)
+	go bm.monitor()
 
 	// log what we do
 	bm.log.Notice("new blocks monitoring and processing started")
@@ -137,6 +141,9 @@ func (bm *blockMonitor) monitor() {
 			} else {
 				// push for processing
 				bm.procChan <- *block
+
+				// notify event
+				bm.onBlock <- block
 			}
 		}
 	}
@@ -162,11 +169,11 @@ func (bm *blockMonitor) process() {
 			return
 		}
 
-		// log action
-		bm.log.Debugf("block #%d has %d transactions to process", uint64(block.Number), len(block.Txs))
-
 		// any transactions in the block?
 		if block.Txs != nil && len(block.Txs) > 0 {
+			// log action
+			bm.log.Debugf("block #%d has %d transactions to process", uint64(block.Number), len(block.Txs))
+
 			// loop transaction hashes
 			for i, hash := range block.Txs {
 				// log action
@@ -182,6 +189,9 @@ func (bm *blockMonitor) process() {
 				// prep sending struct and push it to the queue
 				event := evtTransaction{block: &block, trx: trx}
 				bm.txChan <- &event
+
+				// notify new transaction
+				bm.onTransaction <- trx
 			}
 
 			// log action

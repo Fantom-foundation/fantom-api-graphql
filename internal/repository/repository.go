@@ -57,6 +57,12 @@ type Repository interface {
 	// LastKnownBlock returns number of the last block known to the repository.
 	LastKnownBlock() (uint64, error)
 
+	// CurrentEpoch returns the id of the current epoch.
+	CurrentEpoch() (hexutil.Uint64, error)
+
+	// Epoch returns the id of the current epoch.
+	Epoch(hexutil.Uint64) (types.Epoch, error)
+
 	// Block returns a block at Opera blockchain represented by a hash. Top block is returned if the hash
 	// is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
@@ -74,8 +80,32 @@ type Repository interface {
 	// Collection pulls list of blocks starting on the specified block number and going up, or down based on count number.
 	Blocks(*uint64, int32) (*types.BlockList, error)
 
+	// LastStakerId returns the last staker id in Opera blockchain.
+	LastStakerId() (hexutil.Uint64, error)
+
+	// StakersNum returns the number of stakers in Opera blockchain.
+	StakersNum() (hexutil.Uint64, error)
+
+	// Staker extract a staker information from SFC smart contract.
+	Staker(hexutil.Uint64) (*types.Staker, error)
+
+	// Staker extract a staker information by address.
+	StakerByAddress(common.Address) (*types.Staker, error)
+
+	// Delegation returns a detail of delegation for the given address.
+	Delegation(common.Address) (*types.Delegator, error)
+
+	// DelegationsOf extract a list of delegations for a given staker.
+	DelegationsOf(hexutil.Uint64) ([]types.Delegator, error)
+
 	// FtmConnection returns open connection to Opera/Lachesis full node.
 	FtmConnection() *ftm.Client
+
+	// SetBlockChannel registers a channel for notifying new block events.
+	SetBlockChannel(chan *types.Block)
+
+	// SetTrxChannel registers a channel for notifying new transaction events.
+	SetTrxChannel(chan *types.Transaction)
 
 	// Close and cleanup the repository.
 	Close()
@@ -153,4 +183,14 @@ func (p *proxy) Close() {
 // FtmClient returns open connection to Opera/Lachesis full node.
 func (p *proxy) FtmConnection() *ftm.Client {
 	return p.rpc.Connection()
+}
+
+// SetBlockChannel registers a channel for notifying new block events.
+func (p *proxy) SetBlockChannel(ch chan *types.Block) {
+	p.orc.setBlockChannel(ch)
+}
+
+// SetTrxChannel registers a channel for notifying new transactions events.
+func (p *proxy) SetTrxChannel(ch chan *types.Transaction) {
+	p.orc.setTrxChannel(ch)
 }

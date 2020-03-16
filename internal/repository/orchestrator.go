@@ -10,6 +10,7 @@ package repository
 
 import (
 	"fantom-api-graphql/internal/logger"
+	"fantom-api-graphql/internal/types"
 	"sync"
 )
 
@@ -49,7 +50,7 @@ func newOrchestrator(repo Repository, log logger.Logger) *orchestrator {
 	return &or
 }
 
-// Close signals orchestrator to terminate all orchestrated services.
+// close signals orchestrator to terminate all orchestrated services.
 func (or *orchestrator) close() {
 	// signal the service to close
 	or.service.close()
@@ -81,7 +82,17 @@ func (or *orchestrator) close() {
 	or.log.Notice("orchestrator done")
 }
 
-// Start initiates the orchestrator work.
+// setBlockChannel registers a channel for notifying new block events.
+func (or *orchestrator) setBlockChannel(ch chan *types.Block) {
+	or.mon.onBlock = ch
+}
+
+// setTrxChannel registers a channel for notifying new transaction events.
+func (or *orchestrator) setTrxChannel(ch chan *types.Transaction) {
+	or.mon.onTransaction = ch
+}
+
+// init initiates the orchestrator work.
 func (or *orchestrator) init() {
 	// create a channel for transaction dispatcher
 	or.trxBuffer = make(chan *evtTransaction, trxDispatchBufferCapacity)
@@ -97,7 +108,7 @@ func (or *orchestrator) init() {
 	or.mon = NewBlockMonitor(or.repo.FtmConnection(), or.trxBuffer, or.repo, or.log, or.wg)
 }
 
-// Orchestrate starts the service orchestration.
+// orchestrate starts the service orchestration.
 func (or *orchestrator) orchestrate() {
 	// log action
 	or.log.Notice("orchestrator is running")
