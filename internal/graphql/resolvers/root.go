@@ -47,6 +47,33 @@ type ApiResolver interface {
 	// OnTransaction resolves subscription to new transactions event broadcast.
 	OnTransaction(ctx context.Context) <-chan *Transaction
 
+	// CurrentEpoch resolves id of the current epoch.
+	CurrentEpoch() (hexutil.Uint64, error)
+
+	// Epoch resolves information about epoch of the given id.
+	Epoch(*struct{ Id hexutil.Uint64 }) (types.Epoch, error)
+
+	// LastStakerId resolves the last staker id in Opera blockchain.
+	LastStakerId() (hexutil.Uint64, error)
+
+	// StakersNum resolves the number of stakers in Opera blockchain.
+	StakersNum() (hexutil.Uint64, error)
+
+	// Staker resolves a staker information from SFC smart contract.
+	Staker(*struct {
+		Id      *hexutil.Uint64
+		Address *common.Address
+	}) (*Staker, error)
+
+	// Stakers resolves a list of staker information from SFC smart contract.
+	Stakers() ([]Staker, error)
+
+	// Delegation resolves details of a delegator by it's address.
+	Delegation(*struct{ Address common.Address }) (*types.Delegator, error)
+
+	// Resolves a list of delegations information of a staker.
+	DelegationsOf(*struct{ Staker hexutil.Uint64 }) ([]types.Delegator, error)
+
 	// Close terminates resolver broadcast management.
 	Close()
 }
