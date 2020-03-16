@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-03-16 08:40
+// Auto generated GraphQL schema bundle; created 2020-03-16 11:29
 const schema = `
 # Delegator represents a delegation on Opera blockchain.
 type Delegator {
@@ -28,8 +28,8 @@ type Delegator {
     "Amount of rewards claimed."
     claimedReward: BigInt
 
-    "Epoch upto which the delegation rewards have been paid."
-    paidUntilEpoch: Long
+    "Pending rewards for the delegation."
+    pendingRewards: PendingRewards!
 }
 
 # Account defines block-chain account information container
@@ -45,6 +45,12 @@ type Account {
 
     "txList represents list of transactions of the account in form of TransactionList."
     txList (cursor:Cursor, count:Int!): TransactionList!
+
+    "Details of a staker, if the account is a staker."
+    staker: Staker
+
+    "Details of delegation, if the account is a delegator."
+    delegation: Delegator
 }
 
 # TransactionList is a list of transaction edges provided by sequential access request.
@@ -246,6 +252,18 @@ type Staker {
 
     "List of delegations of this staker."
     delegations:[Delegator!]!
+}
+
+# PendingRewards represents a detail of pending rewards for staking and delegations
+type PendingRewards {
+    "Pedning rewards amount."
+    amount: BigInt!
+
+    "The first unpaid epoch."
+    fromEpoch: Long!
+
+    "The last unpaid epoch."
+    toEpoch: Long!
 }
 
 # Block is an Opera block chain block.

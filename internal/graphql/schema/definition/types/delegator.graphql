@@ -24,6 +24,6 @@ type Delegator {
     "Amount of rewards claimed."
     claimedReward: BigInt
 
-    "Epoch upto which the delegation rewards have been paid."
-    paidUntilEpoch: Long
+    "Pending rewards for the delegation."
+    pendingRewards: PendingRewards!
 }

@@ -78,3 +78,35 @@ func (acc *Account) TxList(args struct {
 
 	return NewTransactionList(bl, acc.repo), nil
 }
+
+// Staker resolves the account staker detail, if the account is a staker.
+func (acc *Account) Staker() (*Staker, error) {
+	// try to get the staker info
+	st, err := acc.repo.StakerByAddress(acc.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	// is this a valid staker info?
+	if st.Id <= 0 {
+		return nil, nil
+	}
+
+	return NewStaker(st, acc.repo), nil
+}
+
+// Delegation resolves the account delegator detail, if the account is a delegater.
+func (acc *Account) Delegation() (*Delegator, error) {
+	// try to get the staker info
+	dl, err := acc.repo.Delegation(acc.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	// is this a valid staker info?
+	if dl.ToStakerId <= 0 {
+		return nil, nil
+	}
+
+	return NewDelegator(dl, acc.repo), nil
+}

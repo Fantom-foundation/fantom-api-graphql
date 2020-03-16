@@ -85,11 +85,29 @@ func (rs *rootResolver) Stakers() ([]Staker, error) {
 }
 
 // Resolves a list of delegations information of a staker.
-func (rs *rootResolver) DelegationsOf(args *struct{ Staker hexutil.Uint64 }) ([]types.Delegator, error) {
-	return rs.repo.DelegationsOf(args.Staker)
+func (rs *rootResolver) DelegationsOf(args *struct{ Staker hexutil.Uint64 }) ([]Delegator, error) {
+	// get the list
+	dl, err := rs.repo.DelegationsOf(args.Staker)
+	if err != nil {
+		return nil, err
+	}
+
+	// make the list
+	list := make([]Delegator, len(dl))
+	for i := 0; i < len(dl); i++ {
+		list[i] = *NewDelegator(&dl[i], rs.repo)
+	}
+
+	return list, nil
 }
 
 // Delegation resolves details of a delegator by it's address.
-func (rs *rootResolver) Delegation(args *struct{ Address common.Address }) (*types.Delegator, error) {
-	return rs.repo.Delegation(args.Address)
+func (rs *rootResolver) Delegation(args *struct{ Address common.Address }) (*Delegator, error) {
+	// get the delegator detail from backend
+	d, err := rs.repo.Delegation(args.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewDelegator(d, rs.repo), nil
 }

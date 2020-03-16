@@ -17,6 +17,20 @@ func NewStaker(st *types.Staker, repo repository.Repository) *Staker {
 }
 
 // Delegations resolves list of delegators associated with the staker.
-func (st Staker) Delegations() ([]types.Delegator, error) {
-	return st.repo.DelegationsOf(st.Id)
+func (st Staker) Delegations() ([]Delegator, error) {
+	// get delegations
+	dl, err := st.repo.DelegationsOf(st.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	// make the list
+	list := make([]Delegator, len(dl))
+
+	// prep the list
+	for i := 0; i < len(dl); i++ {
+		list[i] = *NewDelegator(&dl[i], st.repo)
+	}
+
+	return list, nil
 }

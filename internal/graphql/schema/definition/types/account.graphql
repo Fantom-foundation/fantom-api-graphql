@@ -11,4 +11,10 @@ type Account {
 
     "txList represents list of transactions of the account in form of TransactionList."
     txList (cursor:Cursor, count:Int!): TransactionList!
+
+    "Details of a staker, if the account is a staker."
+    staker: Staker
+
+    "Details of delegation, if the account is a delegator."
+    delegation: Delegator
 }

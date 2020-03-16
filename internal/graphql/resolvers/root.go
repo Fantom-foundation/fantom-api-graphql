@@ -69,10 +69,10 @@ type ApiResolver interface {
 	Stakers() ([]Staker, error)
 
 	// Delegation resolves details of a delegator by it's address.
-	Delegation(*struct{ Address common.Address }) (*types.Delegator, error)
+	Delegation(*struct{ Address common.Address }) (*Delegator, error)
 
 	// Resolves a list of delegations information of a staker.
-	DelegationsOf(*struct{ Staker hexutil.Uint64 }) ([]types.Delegator, error)
+	DelegationsOf(*struct{ Staker hexutil.Uint64 }) ([]Delegator, error)
 
 	// Close terminates resolver broadcast management.
 	Close()
