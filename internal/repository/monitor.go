@@ -26,6 +26,7 @@ type blockMonitor struct {
 	txChan   chan *evtTransaction
 	blkChan  chan types.Block
 	procChan chan types.Block
+	reScan   chan bool
 	con      *ftm.Client
 	sub      *ftm.ClientSubscription
 
@@ -35,11 +36,12 @@ type blockMonitor struct {
 }
 
 // NewBlockMonitor creates a new block monitor instance.
-func NewBlockMonitor(con *ftm.Client, buffer chan *evtTransaction, repo Repository, log logger.Logger, wg *sync.WaitGroup) *blockMonitor {
+func NewBlockMonitor(con *ftm.Client, buffer chan *evtTransaction, rescan chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *blockMonitor {
 	// create new scanner instance
 	mo := blockMonitor{
 		service: newService("block monitor", repo, log, wg),
 		txChan:  buffer,
+		reScan:  rescan,
 		con:     con,
 	}
 
@@ -125,7 +127,11 @@ func (bm *blockMonitor) monitor() {
 			return
 		case err := <-bm.sub.Err():
 			if err != nil {
+				// log issue
 				bm.log.Error("monitor subscription error; %s", err.Error())
+
+				// signal orchestrator to schedule re-scan and restart subscription
+				bm.reScan <- true
 			} else {
 				bm.log.Notice("monitor subscription has been closed")
 			}

@@ -12,6 +12,7 @@ import (
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/types"
 	"sync"
+	"time"
 )
 
 // trxDispatchBufferCapacity is the number of transactions kept in the dispatch buffer.
@@ -22,8 +23,13 @@ type orchestrator struct {
 	service
 
 	// orchestrator managed channels
-	trxBuffer chan *evtTransaction
-	sysDone   chan bool
+	trxBuffer        chan *evtTransaction
+	sysDone          chan bool
+	reScan           chan bool
+	sigKillScheduler chan bool
+
+	// count re-scans
+	reScanCounter uint
 
 	// services being orchestrated
 	txd *trxDispatcher
@@ -38,7 +44,8 @@ func newOrchestrator(repo Repository, log logger.Logger) *orchestrator {
 
 	// create new orchestrator
 	or := orchestrator{
-		service: newService("orchestrator", repo, log, &wg),
+		service:          newService("orchestrator", repo, log, &wg),
+		sigKillScheduler: make(chan bool, 1),
 	}
 
 	// init the orchestration
@@ -70,6 +77,9 @@ func (or *orchestrator) close() {
 		or.txd.close()
 	}
 
+	// kill re-scan scheduler
+	or.sigKillScheduler <- true
+
 	// wait scanners to terminate
 	or.log.Debugf("waiting for services to finish")
 	or.wg.Wait()
@@ -77,6 +87,7 @@ func (or *orchestrator) close() {
 	// close owned channels
 	close(or.trxBuffer)
 	close(or.sysDone)
+	close(or.sigKillScheduler)
 
 	// we are done
 	or.log.Notice("orchestrator done")
@@ -105,7 +116,8 @@ func (or *orchestrator) init() {
 	or.sys = newScanner(or.trxBuffer, or.sysDone, or.repo, or.log, or.wg)
 
 	// create monitor; it waits for sync scanner to finish
-	or.mon = NewBlockMonitor(or.repo.FtmConnection(), or.trxBuffer, or.repo, or.log, or.wg)
+	or.reScan = make(chan bool, 1)
+	or.mon = NewBlockMonitor(or.repo.FtmConnection(), or.trxBuffer, or.reScan, or.repo, or.log, or.wg)
 }
 
 // orchestrate starts the service orchestration.
@@ -134,6 +146,45 @@ func (or *orchestrator) orchestrate() {
 
 			// scanner is done, start monitoring
 			or.mon.run()
+		case <-or.reScan:
+			// advance counter
+			or.reScanCounter++
+
+			// log action
+			or.log.Warningf("re-scan #%d requested by terminated monitoring", or.reScanCounter)
+
+			// start re-scan scheduler
+			or.wg.Add(1)
+			go or.scheduleRescan()
+		}
+	}
+}
+
+// scheduleRescan schedules block chain re-scan on monitoring failure.
+func (or *orchestrator) scheduleRescan() {
+	// don't forget to sign off after we are done
+	defer func() {
+		// log finish
+		or.log.Notice("orchestrator re-scan scheduler is done")
+
+		// signal to wait group we are done
+		or.wg.Done()
+	}()
+
+	// calculate delay duration of this re-scan
+	// we increase delay between re-scans so we don't consume too much resources
+	// if the Lachesis is dropping subscriptions but is still available for RPC calls
+	var dur = time.Duration(or.reScanCounter*2) * time.Second
+	or.log.Warningf("re-scan scheduled after %d seconds", dur)
+
+	// wait for either stop signal, or scanner to finish
+	for {
+		select {
+		case <-or.sigKillScheduler:
+			return
+		case <-time.After(dur):
+			or.sys.run()
+			return
 		}
 	}
 }
