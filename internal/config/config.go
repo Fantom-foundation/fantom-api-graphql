@@ -22,6 +22,7 @@ const (
 	// configuration options
 	keyConfigFilePath    = "cfg"
 	keyBindAddress       = "server.bind"
+	keyDomainAddress     = "server.domain"
 	keyLoggingLevel      = "log.level"
 	keyLoggingFormat     = "log.format"
 	keyLachesisUrl       = "lachesis.url"
@@ -37,6 +38,9 @@ type Config struct {
 
 	// BindAddress holds the API server network binding address
 	BindAddress string
+
+	// DomainName holds the domain of the API server deployment.
+	DomainName string
 
 	// LoggingLevel and LoggingFormat hold configuration for the API server logger
 	LoggingLevel  string
@@ -81,6 +85,7 @@ func Load() (*Config, error) {
 	return &Config{
 		AppName:           appName,
 		BindAddress:       cfg.GetString(keyBindAddress),
+		DomainName:        cfg.GetString(keyDomainAddress),
 		LoggingLevel:      cfg.GetString(keyLoggingLevel),
 		LoggingFormat:     cfg.GetString(keyLoggingFormat),
 		LachesisUrl:       cfg.GetString(keyLachesisUrl),

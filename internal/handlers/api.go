@@ -6,7 +6,6 @@ import (
 	"fantom-api-graphql/internal/graphql/resolvers"
 	gqlSchema "fantom-api-graphql/internal/graphql/schema"
 	"fantom-api-graphql/internal/logger"
-	"fantom-api-graphql/internal/repository"
 	"github.com/graph-gophers/graphql-go"
 	"github.com/graph-gophers/graphql-go/relay"
 	"github.com/graph-gophers/graphql-transport-ws/graphqlws"
@@ -15,7 +14,7 @@ import (
 )
 
 // Api constructs and return the API HTTP handlers chain for serving GraphQL API calls.
-func Api(cfg *config.Config, log logger.Logger, repo repository.Repository) http.Handler {
+func Api(cfg *config.Config, log logger.Logger, rs resolvers.ApiResolver) http.Handler {
 	// Create new CORS handler and attach the logger into it so we get information on Debug level if needed
 	corsHandler := cors.New(corsOptions(cfg))
 	corsHandler.Log = log
@@ -24,7 +23,7 @@ func Api(cfg *config.Config, log logger.Logger, repo repository.Repository) http
 	opts := []graphql.SchemaOpt{graphql.UseFieldResolvers()}
 
 	// create new parsed GraphQL schema
-	schema := graphql.MustParseSchema(gqlSchema.Schema(), resolvers.New(log, repo), opts...)
+	schema := graphql.MustParseSchema(gqlSchema.Schema(), rs, opts...)
 
 	// return the constructed API handler chain
 	return &LoggingHandler{

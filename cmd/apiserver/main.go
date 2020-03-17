@@ -2,6 +2,7 @@ package main
 
 import (
 	"fantom-api-graphql/internal/config"
+	"fantom-api-graphql/internal/graphql/resolvers"
 	"fantom-api-graphql/internal/handlers"
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository"
@@ -28,11 +29,19 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// create root resolver
+	rs := resolvers.New(lg, repo)
+
 	// capture termination signals
-	setupSignals(repo, lg)
+	setupSignals(repo, rs, lg)
 
 	// setup GraphQL API handler
-	http.Handle("/api", handlers.Api(cfg, lg, repo))
+	h := handlers.Api(cfg, lg, rs)
+	http.Handle("/api", h)
+	http.Handle("/graphql", h)
+
+	// handle GraphiQL interface
+	http.Handle("/graphi", handlers.GraphiHandler(cfg.DomainName, lg))
 
 	// log the server opening info
 	lg.Infof("welcome to Fantom GraphQL API server network interface.")
@@ -43,7 +52,7 @@ func main() {
 }
 
 // setupSignals creates a system signal listener and handles graceful termination upon receiving one.
-func setupSignals(repo repository.Repository, log logger.Logger) {
+func setupSignals(repo repository.Repository, rs resolvers.ApiResolver, log logger.Logger) {
 	ts := make(chan os.Signal, 2)
 	signal.Notify(ts, os.Interrupt, os.Kill)
 
@@ -55,6 +64,7 @@ func setupSignals(repo repository.Repository, log logger.Logger) {
 		// log nad close
 		log.Info("server is terminating")
 		repo.Close()
+		rs.Close()
 
 		log.Info("have a great day")
 		os.Exit(0)

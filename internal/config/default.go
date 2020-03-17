@@ -10,6 +10,9 @@ const (
 	// defServerBind holds default API server binding address
 	defServerBind = "localhost:16761"
 
+	// defServerDomain holds default API server domain address
+	defServerDomain = "localhost:16761"
+
 	// defLoggingLevel holds default Logging level
 	// See `godoc.org/github.com/op/go-logging` for the full format specification
 	// See `golang.org/pkg/time/` for time format specification
@@ -35,6 +38,7 @@ var defCorsAllowOrigins = []string{"*"}
 func applyDefaults(cfg *viper.Viper) {
 	// set simple details
 	cfg.SetDefault(keyBindAddress, defServerBind)
+	cfg.SetDefault(keyDomainAddress, defServerDomain)
 	cfg.SetDefault(keyLoggingLevel, defLoggingLevel)
 	cfg.SetDefault(keyLoggingFormat, defLoggingFormat)
 	cfg.SetDefault(keyLachesisUrl, defLachesisUrl)

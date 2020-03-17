@@ -5,6 +5,7 @@ import "github.com/spf13/viper"
 // Expected environment variables bound to configuration options
 const (
 	envBindAddress       = "FANTOM_API_BIND"
+	envDomainName        = "FANTOM_API_DOMAIN"
 	envLoggingLevel      = "FANTOM_API_LOG_LEVEL"
 	envLoggingFormat     = "FANTOM_API_LOG_FORMAT"
 	envLachesisUrl       = "FANTOM_API_LACHESIS_URL"
@@ -19,6 +20,11 @@ const (
 func bindEnv(cfg *viper.Viper) error {
 	// listening address
 	if err := cfg.BindEnv(keyBindAddress, envBindAddress); nil != err {
+		return err
+	}
+
+	// domain address
+	if err := cfg.BindEnv(keyDomainAddress, envDomainName); nil != err {
 		return err
 	}
 
