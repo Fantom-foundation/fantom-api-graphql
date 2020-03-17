@@ -29,3 +29,22 @@ func (del Delegator) PendingRewards() (types.PendingRewards, error) {
 
 	return r, nil
 }
+
+// DelegationsByAge represents a list of delegations sortable by their age of creation.
+type DelegationsByAge []Delegator
+
+// Len returns size of the delegation list.
+func (d DelegationsByAge) Len() int {
+	return len(d)
+}
+
+// Less compares two delegations and returns true if the first is lower than the last.
+// We use it to sort delegations by time created having newer on top.
+func (d DelegationsByAge) Less(i, j int) bool {
+	return uint64(d[i].CreatedTime) > uint64(d[j].CreatedTime)
+}
+
+// Swap changes position of two delegations in the list.
+func (d DelegationsByAge) Swap(i, j int) {
+	d[i], d[j] = d[j], d[i]
+}

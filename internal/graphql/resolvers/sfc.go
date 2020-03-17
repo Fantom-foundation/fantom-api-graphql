@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"sort"
 )
 
 // CurrentEpoch resolves the id of the current epoch of the Opera blockchain.
@@ -98,6 +99,8 @@ func (rs *rootResolver) DelegationsOf(args *struct{ Staker hexutil.Uint64 }) ([]
 		list[i] = *NewDelegator(&dl[i], rs.repo)
 	}
 
+	// sort by the date of creation
+	sort.Sort(DelegationsByAge(list))
 	return list, nil
 }
 

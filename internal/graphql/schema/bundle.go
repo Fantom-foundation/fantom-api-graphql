@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-03-17 09:15
+// Auto generated GraphQL schema bundle; created 2020-03-17 16:54
 const schema = `
 # Delegator represents a delegation on Opera blockchain.
 type Delegator {
