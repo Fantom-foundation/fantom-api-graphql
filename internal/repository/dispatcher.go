@@ -64,6 +64,7 @@ func (td *trxDispatcher) dispatch() {
 			// validate
 			if toDispatch.block == nil || toDispatch.trx == nil {
 				td.log.Critical("dispatcher received invalid transaction")
+				continue
 			}
 
 			// dispatch the received
