@@ -98,7 +98,7 @@ func (ftm *FtmBridge) stakerUpdateFromSfc(staker *types.Staker) error {
 	// get the value from the contract
 	si, err := contract.Stakers(nil, big.NewInt(int64(staker.Id)))
 	if err != nil {
-		ftm.log.Errorf("failed to get the staker infor from SFC: %v", err)
+		ftm.log.Errorf("failed to get the staker information from SFC: %v", err)
 		return err
 	}
 
@@ -199,7 +199,10 @@ func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (types.Epoch, error) {
 }
 
 // Delegation returns a detail of delegation for the given address.
-func (ftm *FtmBridge) DelegationRewards(addr common.Address) (types.PendingRewards, error) {
+func (ftm *FtmBridge) DelegationRewards(addr string) (types.PendingRewards, error) {
+	// log action
+	ftm.log.Debugf("loading delegation rewards for account %s", addr)
+
 	// instantiate the contract and display its name
 	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
 	if err != nil {
@@ -214,11 +217,11 @@ func (ftm *FtmBridge) DelegationRewards(addr common.Address) (types.PendingRewar
 		return types.PendingRewards{}, err
 	}
 
-	// get the rewards amunt
-	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(nil, addr, big.NewInt(0), epoch)
+	// get the rewards amount
+	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(nil, common.HexToAddress(addr), big.NewInt(0), epoch)
 	if err != nil {
 		ftm.log.Errorf("failed to get the delegation rewards: %v", err)
-		return types.PendingRewards{}, err
+		return types.PendingRewards{}, nil
 	}
 
 	// return the data

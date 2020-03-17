@@ -22,7 +22,7 @@ func NewDelegator(d *types.Delegator, repo repository.Repository) *Delegator {
 // PendingRewards resolves pending rewards for the delegator account.
 func (del Delegator) PendingRewards() (types.PendingRewards, error) {
 	// get the rewards
-	r, err := del.repo.DelegationRewards(del.Address)
+	r, err := del.repo.DelegationRewards(del.Address.String())
 	if err != nil {
 		return types.PendingRewards{}, err
 	}

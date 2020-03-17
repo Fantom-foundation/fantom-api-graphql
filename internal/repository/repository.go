@@ -102,7 +102,7 @@ type Repository interface {
 	DelegationsOf(hexutil.Uint64) ([]types.Delegator, error)
 
 	// Delegation returns a detail of delegation for the given address.
-	DelegationRewards(common.Address) (types.PendingRewards, error)
+	DelegationRewards(string) (types.PendingRewards, error)
 
 	// Price returns a price information for the given target symbol.
 	Price(sym string) (types.Price, error)

@@ -14,10 +14,10 @@ const accMaxTransactionsPerRequest = 50
 
 // Account represents resolvable blockchain account structure.
 type Account struct {
-	repo       repository.Repository
-	staker     *types.Staker
-	delegation *types.Delegator
-	balance    *hexutil.Big
+	repo         repository.Repository
+	rfStaker     *types.Staker
+	rfDelegation *types.Delegator
+	rfBalance    *hexutil.Big
 	types.Account
 }
 
@@ -48,17 +48,17 @@ func (rs *rootResolver) AccountsActive() (hexutil.Uint64, error) {
 
 // Balance resolves total balance of the account.
 func (acc *Account) Balance() (hexutil.Big, error) {
-	if acc.balance == nil {
+	if acc.rfBalance == nil {
 		// get the sender by address
 		bal, err := acc.repo.AccountBalance(&acc.Account)
 		if err != nil {
 			return hexutil.Big{}, err
 		}
 
-		acc.balance = bal
+		acc.rfBalance = bal
 	}
 
-	return *acc.balance, nil
+	return *acc.rfBalance, nil
 }
 
 // TotalValue resolves address total value including delegated amount and pending rewards.
@@ -81,7 +81,7 @@ func (acc *Account) TotalValue() (hexutil.Big, error) {
 		val := big.NewInt(0).Add(balance.ToInt(), del.Amount.ToInt())
 
 		// get pending rewards
-		rw, err := acc.repo.DelegationRewards(acc.Address)
+		rw, err := acc.repo.DelegationRewards(acc.Address.String())
 		if err != nil {
 			return hexutil.Big(*val), err
 		}
@@ -159,7 +159,7 @@ func (acc *Account) Delegation() (*Delegator, error) {
 // getStaker returns lazy loaded staker information.
 func (acc *Account) getStaker() (*types.Staker, error) {
 	// try to get the staker info
-	if acc.staker == nil {
+	if acc.rfStaker == nil {
 		st, err := acc.repo.StakerByAddress(acc.Address)
 		if err != nil {
 			return nil, err
@@ -171,16 +171,16 @@ func (acc *Account) getStaker() (*types.Staker, error) {
 		}
 
 		// keep the staker info
-		acc.staker = st
+		acc.rfStaker = st
 	}
 
-	return acc.staker, nil
+	return acc.rfStaker, nil
 }
 
 // getDelegation return lazy loaded delegation detail for the account.
 func (acc *Account) getDelegation() (*types.Delegator, error) {
 	// try to get the staker info
-	if acc.delegation == nil {
+	if acc.rfDelegation == nil {
 		// try to get the staker info
 		dl, err := acc.repo.Delegation(acc.Address)
 		if err != nil {
@@ -192,8 +192,8 @@ func (acc *Account) getDelegation() (*types.Delegator, error) {
 			return nil, nil
 		}
 
-		acc.delegation = dl
+		acc.rfDelegation = dl
 	}
 
-	return acc.delegation, nil
+	return acc.rfDelegation, nil
 }

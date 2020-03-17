@@ -1,7 +1,27 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-03-16 21:50
+// Auto generated GraphQL schema bundle; created 2020-03-16 23:30
 const schema = `
+# Hash is a 32 byte binary string, represented by 0x prefixed hexadecimal.
+scalar Hash
+
+# Address is a 20 byte Opera address, represented as 0x prefixed hexadecimal number.
+scalar Address
+
+# BigInt is a large integer value. Input is accepted as either a JSON number,
+# or a hexadecimal string alternatively prefixed with 0x. Output is 0x prefixed hexadecimal.
+scalar BigInt
+
+# Long is a 64 bit unsigned integer value.
+scalar Long
+
+# Bytes is an arbitrary length binary string, represented as 0x-prefixed hexadecimal.
+# An empty byte string is represented as '0x'.
+scalar Bytes
+
+# Cursor is a string representing position in a sequential list of edges.
+scalar Cursor
+
 # Delegator represents a delegation on Opera blockchain.
 type Delegator {
     "Address of the delegator account."
@@ -77,7 +97,6 @@ type TransactionListEdge {
     transaction: Transaction!
 }
 
-
 # Transaction is an Opera block chain transaction.
 type Transaction {
     # Hash is the unique hash of this transaction.
@@ -134,26 +153,6 @@ type Transaction {
     # field will be null.
     status: Long
 }
-
-# Hash is a 32 byte binary string, represented by 0x prefixed hexadecimal.
-scalar Hash
-
-# Address is a 20 byte Opera address, represented as 0x prefixed hexadecimal number.
-scalar Address
-
-# BigInt is a large integer value. Input is accepted as either a JSON number,
-# or a hexadecimal string alternatively prefixed with 0x. Output is 0x prefixed hexadecimal.
-scalar BigInt
-
-# Long is a 64 bit unsigned integer value.
-scalar Long
-
-# Bytes is an arbitrary length binary string, represented as 0x-prefixed hexadecimal.
-# An empty byte string is represented as '0x'.
-scalar Bytes
-
-# Cursor is a string representing position in a sequential list of edges.
-scalar Cursor
 
 # Represents epoch information.
 type Epoch {
@@ -368,11 +367,6 @@ type ListPageInfo {
     # HasNext specifies if there is another edge before the first one.
     hasPrevious: Boolean!
 }
-# Root schema definition
-schema {
-    query: Query
-    subscription: Subscription
-}
 
 # Entry points for querying the API
 type Query {
@@ -439,4 +433,9 @@ type Subscription {
     onTransaction: Transaction!
 }
 
+# Root schema definition
+schema {
+    query: Query
+    subscription: Subscription
+}
 `

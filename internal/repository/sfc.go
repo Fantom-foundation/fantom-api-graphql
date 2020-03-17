@@ -55,6 +55,7 @@ func (p *proxy) Delegation(addr common.Address) (*types.Delegator, error) {
 }
 
 // Delegation returns a detail of delegation for the given address.
-func (p *proxy) DelegationRewards(addr common.Address) (types.PendingRewards, error) {
+func (p *proxy) DelegationRewards(addr string) (types.PendingRewards, error) {
+	p.log.Debugf("processing %s", addr)
 	return p.rpc.DelegationRewards(addr)
 }
