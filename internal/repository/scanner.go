@@ -15,7 +15,7 @@ import (
 	"sync"
 )
 
-// BlockchainScanner implements blockchain scanner used to extract blockchain data to off-chain storage.
+// scanner implements blockchain scanner used to extract blockchain data to off-chain storage.
 type scanner struct {
 	service
 	buffer chan *evtTransaction

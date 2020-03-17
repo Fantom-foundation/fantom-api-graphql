@@ -1,0 +1,14 @@
+# StakerInfo represents extended staker information from smart contract.
+type StakerInfo {
+    "Name represents the name of the staker."
+    name: String
+
+    "LogoUrl represents staker logo URL."
+    logoUrl: String
+
+    "Website represents a link to stakers website."
+    website: String
+
+    "Contact represents a link to contact to the staker."
+    contact: String
+}

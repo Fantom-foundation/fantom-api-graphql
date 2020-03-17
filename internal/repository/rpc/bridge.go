@@ -1,5 +1,3 @@
-//go:generate abigen --abi ./contracts/sfc.abi --pkg rpc --type SfcContract --out ./sfc_bind.go
-
 /*
 Rpc package implements bridge to Lachesis full node API interface.
 

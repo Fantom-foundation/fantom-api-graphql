@@ -35,6 +35,7 @@ type orchestrator struct {
 	txd *trxDispatcher
 	sys *scanner
 	mon *blockMonitor
+	sti *stiMonitor
 }
 
 // NewOrchestrator creates a new instance of repository orchestrator.
@@ -63,19 +64,16 @@ func (or *orchestrator) close() {
 	or.service.close()
 
 	// signal scanner
-	if or.sys != nil {
-		or.sys.close()
-	}
+	or.sys.close()
 
 	// signal monitor
-	if or.mon != nil {
-		or.mon.close()
-	}
+	or.mon.close()
 
 	// signal tx dispatcher
-	if or.txd != nil {
-		or.txd.close()
-	}
+	or.txd.close()
+
+	// signal sti monitor
+	or.sti.close()
 
 	// kill re-scan scheduler
 	or.sigKillScheduler <- true
@@ -115,9 +113,12 @@ func (or *orchestrator) init() {
 	or.sysDone = make(chan bool, 1)
 	or.sys = newScanner(or.trxBuffer, or.sysDone, or.repo, or.log, or.wg)
 
-	// create monitor; it waits for sync scanner to finish
+	// create block monitor; it waits for sync scanner to finish
 	or.reScan = make(chan bool, 1)
 	or.mon = NewBlockMonitor(or.repo.FtmConnection(), or.trxBuffer, or.reScan, or.repo, or.log, or.wg)
+
+	// create staker information monitor; it starts right away on slow peace
+	or.sti = newStiMonitor(or.repo, or.log, or.wg)
 }
 
 // orchestrate starts the service orchestration.

@@ -37,3 +37,8 @@ func (st Staker) Delegations() ([]Delegator, error) {
 	sort.Sort(DelegationsByAge(list))
 	return list, nil
 }
+
+// StakerInfo resolves extended staker information if available.
+func (st Staker) StakerInfo() *types.StakerInfo {
+	return st.repo.RetrieveStakerInfo(st.Id)
+}

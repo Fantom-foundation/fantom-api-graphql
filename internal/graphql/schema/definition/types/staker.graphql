@@ -69,6 +69,9 @@ type Staker {
     "List of delegations of this staker."
     delegations:[Delegator!]!
 
-    "Status of the staker. Ok = 0, Fork = 1, Offline = 256"
+    "Status of the staker; binary encoded. Ok = bin 0, Fork Detected = bin 1, Validator Offline = bin 256"
     status: Long!
+
+    "StakerInfo represents extended staker information from smart contract."
+    stakerInfo: StakerInfo
 }

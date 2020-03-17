@@ -1,7 +1,21 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-03-17 16:54
+// Auto generated GraphQL schema bundle; created 2020-03-17 20:18
 const schema = `
+# StakerInfo represents extended staker information from smart contract.
+type StakerInfo {
+    "Name represents the name of the staker."
+    name: String
+
+    "LogoUrl represents staker logo URL."
+    logoUrl: String
+
+    "Website represents a link to stakers website."
+    website: String
+
+    "Contact represents a link to contact to the staker."
+    contact: String
+}
 # Delegator represents a delegation on Opera blockchain.
 type Delegator {
     "Address of the delegator account."
@@ -295,8 +309,11 @@ type Staker {
     "List of delegations of this staker."
     delegations:[Delegator!]!
 
-    "Status of the staker. Ok = 0, Fork = 1, Offline = 256"
+    "Status of the staker; binary encoded. Ok = bin 0, Fork Detected = bin 1, Validator Offline = bin 256"
     status: Long!
+
+    "StakerInfo represents extended staker information from smart contract."
+    stakerInfo: StakerInfo
 }
 
 # PendingRewards represents a detail of pending rewards for staking and delegations

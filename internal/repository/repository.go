@@ -95,6 +95,15 @@ type Repository interface {
 	// Staker extract a staker information by address.
 	StakerByAddress(common.Address) (*types.Staker, error)
 
+	// StakerInfo extracts an extended staker information from smart contact.
+	PullStakerInfo(hexutil.Uint64) (*types.StakerInfo, error)
+
+	// StoreStakerInfo stores staker information to in-memory cache for future use.
+	StoreStakerInfo(hexutil.Uint64, types.StakerInfo) error
+
+	// RetrieveStakerInfo gets staker information from in-memory if available.
+	RetrieveStakerInfo(hexutil.Uint64) *types.StakerInfo
+
 	// Delegation returns a detail of delegation for the given address.
 	Delegation(common.Address) (*types.Delegator, error)
 
