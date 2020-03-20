@@ -27,7 +27,7 @@ import (
 )
 
 // stiRequestTimeout is number of seconds we wait for the staker information request to finish.
-const stiRequestTimeout = 10
+const stiRequestTimeout = 5
 
 // stiContractAddress holds deployment address of the Staker info smart contract.
 var stiContractAddress = common.HexToAddress("0x92ffad75b8a942d149621a39502cdd8ad1dd57b4")
