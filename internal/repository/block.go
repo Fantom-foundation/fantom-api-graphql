@@ -1,5 +1,5 @@
 /*
-Repository package implements repository for handling fast and efficient access to data required
+Package repository implements repository for handling fast and efficient access to data required
 by the resolvers of the API server.
 
 Internally it utilizes RPC to access Opera/Lachesis full node for blockchain interaction. Mongo database

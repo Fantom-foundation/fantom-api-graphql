@@ -1,7 +1,5 @@
-//go:generate abigen --abi ./contracts/st_info.abi --pkg rpc --type StakerInfoContract --out ./sti_bind.go
-
 /*
-Rpc package implements bridge to Lachesis full node API interface.
+Package rpc implements bridge to Lachesis full node API interface.
 
 We recommend using local IPC for fast and the most efficient inter-process communication between the API server
 and an Opera/Lachesis node. Any remote RPC connection will work, but the performance may be significantly degraded
@@ -15,6 +13,8 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
+//go:generate abigen --abi ./contracts/st_info.abi --pkg rpc --type StakerInfoContract --out ./sti_bind.go
+
 import (
 	"encoding/json"
 	"fantom-api-graphql/internal/types"
@@ -27,7 +27,7 @@ import (
 )
 
 // stiRequestTimeout is number of seconds we wait for the staker information request to finish.
-const stiRequestTimeout = 5
+const stiRequestTimeout = 10
 
 // stiContractAddress holds deployment address of the Staker info smart contract.
 var stiContractAddress = common.HexToAddress("0x92ffad75b8a942d149621a39502cdd8ad1dd57b4")

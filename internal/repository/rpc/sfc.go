@@ -1,7 +1,5 @@
-//go:generate abigen --abi ./contracts/sfc.abi --pkg rpc --type SfcContract --out ./sfc_bind.go
-
 /*
-Rpc package implements bridge to Lachesis full node API interface.
+Package rpc implements bridge to Lachesis full node API interface.
 
 We recommend using local IPC for fast and the most efficient inter-process communication between the API server
 and an Opera/Lachesis node. Any remote RPC connection will work, but the performance may be significantly degraded
@@ -14,6 +12,8 @@ and Lachesis RPC interface with connection limited to specified endpoints.
 We strongly discourage opening Lachesis RPC interface for unrestricted Internet access.
 */
 package rpc
+
+//go:generate abigen --abi ./contracts/sfc.abi --pkg rpc --type SfcContract --out ./sfc_bind.go
 
 import (
 	"fantom-api-graphql/internal/types"

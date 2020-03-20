@@ -1,3 +1,4 @@
+// Package cache implements bridge to fast in-memory object cache.
 package cache
 
 import (
