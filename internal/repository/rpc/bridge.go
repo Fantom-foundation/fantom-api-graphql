@@ -20,7 +20,7 @@ import (
 	ftm "github.com/ethereum/go-ethereum/rpc"
 )
 
-// Bridge represents Lachesis RPC abstraction layer.
+// FtmBridge represents Lachesis RPC abstraction layer.
 type FtmBridge struct {
 	rpc *ftm.Client
 	eth *eth.Client
@@ -67,7 +67,7 @@ func (ftm *FtmBridge) Close() {
 	}
 }
 
-// Client returns open Opera/Lachesis connection.
+// Connection returns open Opera/Lachesis connection.
 func (ftm *FtmBridge) Connection() *ftm.Client {
 	return ftm.rpc
 }

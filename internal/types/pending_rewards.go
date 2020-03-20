@@ -3,7 +3,7 @@ package types
 
 import "github.com/ethereum/go-ethereum/common/hexutil"
 
-// Rewards represents a rewards waiting to be paid structure.
+// PendingRewards represents a rewards waiting to be claimed structure.
 type PendingRewards struct {
 	Amount    hexutil.Big
 	FromEpoch hexutil.Uint64

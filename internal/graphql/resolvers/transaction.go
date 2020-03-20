@@ -32,7 +32,7 @@ func (rs *rootResolver) Transaction(args *struct{ Hash types.Hash }) (*Transacti
 	return NewTransaction(trx, rs.repo), nil
 }
 
-// Sender resolves sender account of the transaction.
+// Sender resolves sender's account of the transaction.
 func (trx *Transaction) Sender() (*Account, error) {
 	// get the sender by address
 	acc, err := trx.repo.Account(&trx.From)
@@ -43,7 +43,7 @@ func (trx *Transaction) Sender() (*Account, error) {
 	return NewAccount(acc, trx.repo), nil
 }
 
-// Sender resolves sender account of the transaction.
+// Recipient resolves recipient's account of the transaction.
 func (trx *Transaction) Recipient() (*Account, error) {
 	// no recipient available
 	if trx.To == nil {

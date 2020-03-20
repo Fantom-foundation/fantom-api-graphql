@@ -16,7 +16,7 @@ import (
 // offChainDatabaseName specifies the name of the database being used to store off-chain data.
 const offChainDatabaseName = "fantom"
 
-// Bridge represents Mongo DB abstraction layer.
+// MongoDbBridge represents Mongo DB abstraction layer.
 type MongoDbBridge struct {
 	client *mongo.Client
 	log    logger.Logger

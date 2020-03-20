@@ -53,7 +53,7 @@ type Query {
     """
     The list of delegations for the given staker ID.
     Cursor is used to obtain specific slice of the staker's delegations.
-    The most recent delegations are provided if cursor is omited.
+    The most recent delegations are provided if cursor is omitted.
     """
     delegationsOf(staker:Long!, cursor: Cursor, count: Int = 25): DelegatorList!
 

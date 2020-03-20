@@ -59,7 +59,7 @@ func (blk *Block) Parent() (*Block, error) {
 	return NewBlock(parent, blk.repo), nil
 }
 
-// TransactionHashList resolves list of hashes of transaction bundled in the block.
+// TxHashList resolves list of hashes of transaction bundled in the block.
 func (blk *Block) TxHashList() []types.Hash {
 	// make the container
 	txs := make([]types.Hash, len(blk.Txs))
@@ -72,7 +72,7 @@ func (blk *Block) TxHashList() []types.Hash {
 	return txs
 }
 
-// Transactions resolves list of transaction details of the transactions bundled in the block.
+// TxList resolves list of transaction details of the transactions bundled in the block.
 func (blk *Block) TxList() ([]*Transaction, error) {
 	// make the container
 	txs := make([]*Transaction, len(blk.Txs))

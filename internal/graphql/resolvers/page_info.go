@@ -3,7 +3,7 @@ package resolvers
 
 import "fmt"
 
-// PageInfo represents general resolvable information about the current page of a list of elements.
+// ListPageInfo represents general resolvable information about the current page of a list of elements.
 type ListPageInfo struct {
 	First       *Cursor
 	Last        *Cursor

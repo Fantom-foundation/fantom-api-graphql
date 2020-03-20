@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-03-20 22:09
+// Auto generated GraphQL schema bundle; created 2020-03-20 23:04
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -329,7 +329,7 @@ type Staker {
 
     """
     List of delegations of this staker. Cursor is used to obtain specific slice
-    of the staker's delegations. The most recent delegations are provided if cursor is omited.
+    of the staker's delegations. The most recent delegations are provided if cursor is omitted.
     """
     delegations(cursor: Cursor, count: Int = 25):DelegatorList!
 
@@ -467,7 +467,7 @@ type Query {
     """
     The list of delegations for the given staker ID.
     Cursor is used to obtain specific slice of the staker's delegations.
-    The most recent delegations are provided if cursor is omited.
+    The most recent delegations are provided if cursor is omitted.
     """
     delegationsOf(staker:Long!, cursor: Cursor, count: Int = 25): DelegatorList!
 

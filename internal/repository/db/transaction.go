@@ -71,7 +71,7 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	col := db.client.Database(offChainDatabaseName).Collection(coTransactions)
 
 	// recipient address may not be defined so we need to do a bit more parsing
-	var rcAddress *string = nil
+	var rcAddress *string
 	if trx.To != nil {
 		rcp := trx.To.String()
 		rcAddress = &rcp

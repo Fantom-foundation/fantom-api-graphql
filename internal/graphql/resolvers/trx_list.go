@@ -8,7 +8,7 @@ import (
 	"math/big"
 )
 
-// TransactionHashList represents resolvable list of blockchain transaction edges structure.
+// TransactionList represents resolvable list of blockchain transaction edges structure.
 type TransactionList struct {
 	repo repository.Repository
 	list *types.TransactionHashList
@@ -20,7 +20,7 @@ type TransactionListEdge struct {
 	Cursor      Cursor
 }
 
-// NewBlockList builds new resolvable list of blocks.
+// NewTransactionList builds new resolvable list of transactions.
 func NewTransactionList(txs *types.TransactionHashList, repo repository.Repository) *TransactionList {
 	return &TransactionList{
 		repo: repo,
@@ -28,7 +28,7 @@ func NewTransactionList(txs *types.TransactionHashList, repo repository.Reposito
 	}
 }
 
-// Transactions resolves list of blockchain blocks encapsulated in a listable structure.
+// Transactions resolves list of blockchain transactions encapsulated in a listable structure.
 func (rs *rootResolver) Transactions(args *struct {
 	Cursor *Cursor
 	Count  int32

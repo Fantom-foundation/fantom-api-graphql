@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Bridge represents BigCache abstraction layer.
+// MemBridge represents BigCache abstraction layer.
 type MemBridge struct {
 	cache *bigcache.BigCache
 	log   logger.Logger

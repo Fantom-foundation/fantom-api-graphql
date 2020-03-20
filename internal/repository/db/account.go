@@ -399,7 +399,7 @@ func (db *MongoDbBridge) AccountTransactions(acc *types.Account, cursor *string,
 	return list, nil
 }
 
-// AccountTransactionsCount calculates total number of transaction associated with an account.
+// AccountTrxCount calculates total number of transaction associated with an account.
 func (db *MongoDbBridge) AccountTrxCount(col *mongo.Collection, addr *common.Address) (uint64, error) {
 	// no address?
 	if addr == nil {

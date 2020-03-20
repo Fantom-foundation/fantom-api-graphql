@@ -146,7 +146,7 @@ func (ftm *FtmBridge) Staker(id hexutil.Uint64) (*types.Staker, error) {
 	return &st, nil
 }
 
-// Staker extract a staker information by address.
+// StakerByAddress extracts a staker information by address.
 func (ftm *FtmBridge) StakerByAddress(addr common.Address) (*types.Staker, error) {
 	// keep track of the operation
 	ftm.log.Debugf("loading staker %s", addr.String())
@@ -170,7 +170,7 @@ func (ftm *FtmBridge) StakerByAddress(addr common.Address) (*types.Staker, error
 	return &st, nil
 }
 
-// CurrentEpoch extract information about an epoch from SFC smart contract.
+// Epoch extract information about an epoch from SFC smart contract.
 func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (types.Epoch, error) {
 	// instantiate the contract and display its name
 	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
@@ -200,7 +200,7 @@ func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (types.Epoch, error) {
 	}, nil
 }
 
-// Delegation returns a detail of delegation for the given address.
+// DelegationRewards returns a detail of delegation rewards for the given address.
 func (ftm *FtmBridge) DelegationRewards(addr string) (types.PendingRewards, error) {
 	// log action
 	ftm.log.Debugf("loading delegation rewards for account %s", addr)

@@ -68,7 +68,7 @@ type Staker {
 
     """
     List of delegations of this staker. Cursor is used to obtain specific slice
-    of the staker's delegations. The most recent delegations are provided if cursor is omited.
+    of the staker's delegations. The most recent delegations are provided if cursor is omitted.
     """
     delegations(cursor: Cursor, count: Int = 25):DelegatorList!
 

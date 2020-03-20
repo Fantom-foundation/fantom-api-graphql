@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-// PullAccount extracts account information from the in-memory cache if available.
+// PullBlock extracts block information from the in-memory cache if available.
 func (b *MemBridge) PullBlock(key string) *types.Block {
 	// try to get the account data from the cache
 	data, err := b.cache.Get(key)
@@ -25,7 +25,7 @@ func (b *MemBridge) PullBlock(key string) *types.Block {
 	return blk
 }
 
-// PushBlockByNumber stores provided block in the in-memory cache.
+// PushBlock stores provided block in the in-memory cache.
 func (b *MemBridge) PushBlock(key string, blk *types.Block) error {
 	// we need valid account
 	if nil == blk {
