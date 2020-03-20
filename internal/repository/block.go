@@ -158,38 +158,12 @@ func (p *proxy) initBlockList(num *uint64, count int32) (*types.Block, *types.Bl
 	return fb, &list, nil
 }
 
-// Blocks pulls list of blocks starting on the specified block number and going up, or down based on count number.
-// If the initial block number is not provided, we start on top, or bottom based on count value.
-//
-// No-number boundaries are handled as follows:
-// 	- For positive count we start from the most recent block and scan to older blocks.
-// 	- For negative count we start from the first block and scan to newer blocks.
-func (p *proxy) Blocks(num *uint64, count int32) (*types.BlockList, error) {
-	// nothing to load?
-	if count == 0 {
-		return nil, fmt.Errorf("nothing to do, zero blocks requested")
-	}
-
-	// init the list
-	current, list, err := p.initBlockList(num, count)
-	if err != nil {
-		return nil, err
-	}
-
-	// how many to pull at most
-	toPull := count
-	if count < 0 {
-		toPull = -count
-	}
-
-	// if in the middle we try to pull one extra block to find out if we reached aan end
-	if num != nil {
-		toPull++
-	}
-
+// pullBlocks pulls specified list of blocks from repository and calculates boundary situation.
+func (p *proxy) pullBlocks(num *uint64, count int32, toPull int32, current *types.Block, list *types.BlockList) {
 	// prep the scan vars
 	var next *types.Block
 	var tag hexutil.Uint64
+	var err error
 
 	// loop to pull all the blocks requested
 	for i := int32(0); i < toPull; i++ {
@@ -224,11 +198,46 @@ func (p *proxy) Blocks(num *uint64, count int32) (*types.BlockList, error) {
 		list.Collection = append(list.Collection, current)
 	}
 
-	// we should have all the items already; we may just need to check if a boundary was reached
-	if num != nil {
-		list.IsEnd = count > 0 && next == nil
-		list.IsStart = count < 0 && next == nil
+	// return the result
+	list.IsStart, list.IsEnd = checkBlocksListBoundary(count, next, list)
+}
+
+// checkListBoundary verifies if the list of blocks is on one of the edges.
+func checkBlocksListBoundary(count int32, next *types.Block, list *types.BlockList) (bool, bool) {
+	return list.IsStart || (count < 0 && next == nil), list.IsEnd || (count > 0 && next == nil)
+}
+
+// Blocks pulls list of blocks starting on the specified block number and going up, or down based on count number.
+// If the initial block number is not provided, we start on top, or bottom based on count value.
+//
+// No-number boundaries are handled as follows:
+// 	- For positive count we start from the most recent block and scan to older blocks.
+// 	- For negative count we start from the first block and scan to newer blocks.
+func (p *proxy) Blocks(num *uint64, count int32) (*types.BlockList, error) {
+	// nothing to load?
+	if count == 0 {
+		return nil, fmt.Errorf("nothing to do, zero blocks requested")
 	}
+
+	// init the list
+	current, list, err := p.initBlockList(num, count)
+	if err != nil {
+		return nil, err
+	}
+
+	// how many to pull at most
+	toPull := count
+	if count < 0 {
+		toPull = -count
+	}
+
+	// if in the middle we try to pull one extra block to find out if we reached aan end
+	if num != nil {
+		toPull++
+	}
+
+	// get specified list of block from repository
+	p.pullBlocks(num, count, toPull, current, list)
 
 	// if we scanned from bottom up, we need to reverse the list so newer blocks are on top
 	if count < 0 {
