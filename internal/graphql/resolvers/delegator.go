@@ -1,8 +1,10 @@
+// Package resolvers implements GraphQL resolvers to incoming API requests.
 package resolvers
 
 import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // Delegator represents resolvable delegator detail.
@@ -19,6 +21,17 @@ func NewDelegator(d *types.Delegator, repo repository.Repository) *Delegator {
 	}
 }
 
+// Delegation resolves details of a delegator by it's address.
+func (rs *rootResolver) Delegation(args *struct{ Address common.Address }) (*Delegator, error) {
+	// get the delegator detail from backend
+	d, err := rs.repo.Delegation(args.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewDelegator(d, rs.repo), nil
+}
+
 // PendingRewards resolves pending rewards for the delegator account.
 func (del Delegator) PendingRewards() (types.PendingRewards, error) {
 	// get the rewards
@@ -31,7 +44,7 @@ func (del Delegator) PendingRewards() (types.PendingRewards, error) {
 }
 
 // DelegationsByAge represents a list of delegations sortable by their age of creation.
-type DelegationsByAge []Delegator
+type DelegationsByAge []types.Delegator
 
 // Len returns size of the delegation list.
 func (d DelegationsByAge) Len() int {

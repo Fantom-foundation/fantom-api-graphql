@@ -1,0 +1,20 @@
+# DelegatorList is a list of delegations edges provided by sequential access request.
+type DelegatorList {
+    "Edges contains provided edges of the sequential list."
+    edges: [DelegatorListEdge!]!
+
+    "TotalCount is the maximum number of delegations available for sequential access."
+    totalCount: BigInt!
+
+    "PageInfo is an information about the current page of delegation edges."
+    pageInfo: ListPageInfo!
+}
+
+# BlockListEdge is a single edge in a sequential list of blocks.
+type DelegatorListEdge {
+    "Cursor defines a scroll key to this edge."
+    cursor: Cursor!
+
+    "Delegator represents the delegator provided by this list edge."
+    delegator: Delegator!
+}

@@ -66,10 +66,16 @@ type Staker {
     "Amount of rewards claimed by delegators in WEI."
     delegationClaimedRewards: BigInt
 
-    "List of delegations of this staker."
-    delegations:[Delegator!]!
+    """
+    List of delegations of this staker. Cursor is used to obtain specific slice
+    of the staker's delegations. The most recent delegations are provided if cursor is omited.
+    """
+    delegations(cursor: Cursor, count: Int = 25):DelegatorList!
 
-    "Status of the staker; binary encoded. Ok = bin 0, Fork Detected = bin 1, Validator Offline = bin 256"
+    """
+    Status is a binary encoded status of the staker.
+    Ok = 0, bin 1 = Fork Detected, bin 256 = Validator Offline
+    """
     status: Long!
 
     "StakerInfo represents extended staker information from smart contract."

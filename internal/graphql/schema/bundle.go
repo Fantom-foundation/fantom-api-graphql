@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-03-17 20:18
+// Auto generated GraphQL schema bundle; created 2020-03-20 22:09
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -16,6 +16,27 @@ type StakerInfo {
     "Contact represents a link to contact to the staker."
     contact: String
 }
+# DelegatorList is a list of delegations edges provided by sequential access request.
+type DelegatorList {
+    "Edges contains provided edges of the sequential list."
+    edges: [DelegatorListEdge!]!
+
+    "TotalCount is the maximum number of delegations available for sequential access."
+    totalCount: BigInt!
+
+    "PageInfo is an information about the current page of delegation edges."
+    pageInfo: ListPageInfo!
+}
+
+# BlockListEdge is a single edge in a sequential list of blocks.
+type DelegatorListEdge {
+    "Cursor defines a scroll key to this edge."
+    cursor: Cursor!
+
+    "Delegator represents the delegator provided by this list edge."
+    delegator: Delegator!
+}
+
 # Delegator represents a delegation on Opera blockchain.
 type Delegator {
     "Address of the delegator account."
@@ -306,10 +327,16 @@ type Staker {
     "Amount of rewards claimed by delegators in WEI."
     delegationClaimedRewards: BigInt
 
-    "List of delegations of this staker."
-    delegations:[Delegator!]!
+    """
+    List of delegations of this staker. Cursor is used to obtain specific slice
+    of the staker's delegations. The most recent delegations are provided if cursor is omited.
+    """
+    delegations(cursor: Cursor, count: Int = 25):DelegatorList!
 
-    "Status of the staker; binary encoded. Ok = bin 0, Fork Detected = bin 1, Validator Offline = bin 256"
+    """
+    Status is a binary encoded status of the staker.
+    Ok = 0, bin 1 = Fork Detected, bin 256 = Validator Offline
+    """
     status: Long!
 
     "StakerInfo represents extended staker information from smart contract."
@@ -437,8 +464,12 @@ type Query {
     "List of staker information from SFC smart contract."
     stakers: [Staker!]!
 
-    "The list of delegations for the given staker ID."
-    delegationsOf(staker:Long!): [Delegator!]!
+    """
+    The list of delegations for the given staker ID.
+    Cursor is used to obtain specific slice of the staker's delegations.
+    The most recent delegations are provided if cursor is omited.
+    """
+    delegationsOf(staker:Long!, cursor: Cursor, count: Int = 25): DelegatorList!
 
     "Get the details of a delegator by it's address."
     delegation(address:Address!): Delegator

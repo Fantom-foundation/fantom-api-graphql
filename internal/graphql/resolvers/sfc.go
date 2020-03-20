@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"sort"
 )
 
 // CurrentEpoch resolves the id of the current epoch of the Opera blockchain.
@@ -83,34 +82,4 @@ func (rs *rootResolver) Stakers() ([]Staker, error) {
 	}
 
 	return list, nil
-}
-
-// Resolves a list of delegations information of a staker.
-func (rs *rootResolver) DelegationsOf(args *struct{ Staker hexutil.Uint64 }) ([]Delegator, error) {
-	// get the list
-	dl, err := rs.repo.DelegationsOf(args.Staker)
-	if err != nil {
-		return nil, err
-	}
-
-	// make the list
-	list := make([]Delegator, len(dl))
-	for i := 0; i < len(dl); i++ {
-		list[i] = *NewDelegator(&dl[i], rs.repo)
-	}
-
-	// sort by the date of creation
-	sort.Sort(DelegationsByAge(list))
-	return list, nil
-}
-
-// Delegation resolves details of a delegator by it's address.
-func (rs *rootResolver) Delegation(args *struct{ Address common.Address }) (*Delegator, error) {
-	// get the delegator detail from backend
-	d, err := rs.repo.Delegation(args.Address)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewDelegator(d, rs.repo), nil
 }

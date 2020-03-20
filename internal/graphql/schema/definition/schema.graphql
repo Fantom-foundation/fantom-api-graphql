@@ -50,8 +50,12 @@ type Query {
     "List of staker information from SFC smart contract."
     stakers: [Staker!]!
 
-    "The list of delegations for the given staker ID."
-    delegationsOf(staker:Long!): [Delegator!]!
+    """
+    The list of delegations for the given staker ID.
+    Cursor is used to obtain specific slice of the staker's delegations.
+    The most recent delegations are provided if cursor is omited.
+    """
+    delegationsOf(staker:Long!, cursor: Cursor, count: Int = 25): DelegatorList!
 
     "Get the details of a delegator by it's address."
     delegation(address:Address!): Delegator
