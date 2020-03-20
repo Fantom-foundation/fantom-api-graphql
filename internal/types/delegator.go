@@ -1,3 +1,4 @@
+// Package types implements different core types of the API.
 package types
 
 import (
