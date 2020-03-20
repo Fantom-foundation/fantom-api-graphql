@@ -1,4 +1,5 @@
 # Fantom GraphQL API Server
+![Go Report Card](https://goreportcard.com/badge/github.com/Fantom-foundation/fantom-api-graphql)
 
 High performance API server for Fantom powered blockchain network.
 
