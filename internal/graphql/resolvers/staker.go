@@ -8,7 +8,7 @@ import (
 	"sort"
 )
 
-// Staker represents  resolvable staker record.
+// Staker represents resolvable staker record.
 type Staker struct {
 	types.Staker
 	repo repository.Repository

@@ -56,30 +56,3 @@ func (rs *rootResolver) Staker(args *struct {
 	// return error
 	return nil, fmt.Errorf("missing staker id or address")
 }
-
-// Resolves a staker information from SFC smart contract.
-func (rs *rootResolver) Stakers() ([]Staker, error) {
-	// get the number
-	num, err := rs.repo.LastStakerId()
-	if err != nil {
-		rs.log.Errorf("can not get the highest staker id; %s", err.Error())
-		return nil, err
-	}
-
-	// make the list
-	list := make([]Staker, num)
-
-	// loop to get the data
-	for i := uint64(0); i < uint64(num); i++ {
-		// extract the staker info
-		st, err := rs.repo.Staker(hexutil.Uint64(i + 1))
-		if err != nil {
-			rs.log.Criticalf("can not extract staker information; %s", err.Error())
-		} else {
-			// store to the list
-			list[i] = *NewStaker(st, rs.repo)
-		}
-	}
-
-	return list, nil
-}
