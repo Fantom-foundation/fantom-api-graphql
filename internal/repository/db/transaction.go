@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"math/rand"
 )
 
 const (
@@ -77,10 +78,20 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		rcAddress = &rcp
 	}
 
+	// what is the transaction index
+	var txIndex uint64
+	if trx.TrxIndex != nil {
+		txIndex = uint64(*trx.TrxIndex)
+	} else {
+		// log the issue here
+		txIndex = uint64((rand.Uint32()<<10)|0xff) & 0x3fff
+		db.log.Criticalf("Block %d, Transaction %s, transaction index not set (rng %d)!", block.Number, trx.BlockHash, txIndex)
+	}
+
 	// try to do the insert
 	_, err = col.InsertOne(context.Background(), bson.D{
 		{fiTransactionPk, trx.Hash.String()},
-		{fiTransactionOrdinalIndex, trxOrdinalIndex(trx)},
+		{fiTransactionOrdinalIndex, trxOrdinalIndex(uint64(block.Number), txIndex)},
 		{fiTransactionBlock, uint64(block.Number)},
 		{fiTransactionSender, trx.From.String()},
 		{fiTransactionRecipient, rcAddress},
@@ -97,8 +108,8 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 }
 
 // getTrxOrdinalIndex calculates ordinal index in the whole blockchain.
-func trxOrdinalIndex(trx *types.Transaction) uint64 {
-	return (uint64(*trx.BlockNumber) << 14) | uint64(*trx.TrxIndex)
+func trxOrdinalIndex(block uint64, trxIndex uint64) uint64 {
+	return (block << 14) | trxIndex
 }
 
 // propagateTrxToAccounts push given transaction to sender's account and also to recipient's account, if exists.
