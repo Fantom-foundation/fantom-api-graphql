@@ -62,3 +62,20 @@ func (ftm *FtmBridge) Transaction(hash *types.Hash) (*types.Transaction, error) 
 	ftm.log.Debugf("transaction %s loaded", hash.String())
 	return &trx, nil
 }
+
+// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
+func (ftm *FtmBridge) SendTransaction(tx hexutil.Bytes) (*types.Hash, error) {
+	// keep track of the operation
+	ftm.log.Debug("sending new transaction to block chain")
+
+	var hash types.Hash
+	err := ftm.rpc.Call(&hash, "eth_sendRawTransaction", tx)
+	if err != nil {
+		ftm.log.Error("transaction could not be sent")
+		return nil, err
+	}
+
+	// keep track of the operation
+	ftm.log.Debugf("transaction has been accepted with hash %s", hash.String())
+	return &hash, nil
+}

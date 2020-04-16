@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-04-16 18:29
+// Auto generated GraphQL schema bundle; created 2020-04-16 18:54
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -415,6 +415,7 @@ type ListPageInfo {
 # Root schema definition
 schema {
     query: Query
+    mutation: Mutation
     subscription: Subscription
 }
 
@@ -479,6 +480,15 @@ type Query {
 
     "Get price details of the Opera blockchain token for the given target symbols."
     price(to:String!):Price!
+}
+
+# Mutation andpoints for modifying the data
+type Mutation {
+    """
+    SendTransaction submits a raw signed transaction into the block chain.
+    The tx parameter represents raw signed and RLP encoded transaction data.
+    """
+    sendTransaction(tx: Bytes!):Transaction
 }
 
 # Subscriptions to live events broadcasting

@@ -119,6 +119,9 @@ type Repository interface {
 	// GasPrice resolves the current amount of WEI for single Gas.
 	GasPrice() (hexutil.Uint64, error)
 
+	// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
+	SendTransaction(hexutil.Bytes) (*types.Transaction, error)
+
 	// FtmConnection returns open connection to Opera/Lachesis full node.
 	FtmConnection() *ftm.Client
 

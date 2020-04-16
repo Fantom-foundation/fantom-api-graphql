@@ -4,6 +4,7 @@ package resolvers
 import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // Transaction represents resolvable blockchain transaction structure.
@@ -26,6 +27,18 @@ func (rs *rootResolver) Transaction(args *struct{ Hash types.Hash }) (*Transacti
 	trx, err := rs.repo.Transaction(&args.Hash)
 	if err != nil {
 		rs.log.Warningf("can not get transaction %s", args.Hash)
+		return nil, err
+	}
+
+	return NewTransaction(trx, rs.repo), nil
+}
+
+// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
+func (rs *rootResolver) SendTransaction(args *struct{ Tx hexutil.Bytes }) (*Transaction, error) {
+	// get the transaction from repository
+	trx, err := rs.repo.SendTransaction(args.Tx)
+	if err != nil {
+		rs.log.Warningf("can not send transaction %s", err.Error())
 		return nil, err
 	}
 

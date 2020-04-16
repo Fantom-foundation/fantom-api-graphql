@@ -84,6 +84,9 @@ type ApiResolver interface {
 	// GasPrice resolves the current amount of WEI for single Gas.
 	GasPrice() (hexutil.Uint64, error)
 
+	// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
+	SendTransaction(*struct{ Tx hexutil.Bytes }) (*Transaction, error)
+
 	// Close terminates resolver broadcast management.
 	Close()
 }

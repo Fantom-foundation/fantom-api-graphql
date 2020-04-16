@@ -11,6 +11,7 @@ package repository
 import (
 	"errors"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -57,6 +58,39 @@ func (p *proxy) Transaction(hash *types.Hash) (*types.Transaction, error) {
 	if err != nil {
 		p.log.Errorf("can not store transaction in cache; %s", err.Error())
 	}
+
+	// return the value
+	return trx, nil
+}
+
+// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
+func (p *proxy) SendTransaction(tx hexutil.Bytes) (*types.Transaction, error) {
+	// log
+	p.log.Debugf("requested transaction submit for %s", tx.String())
+
+	// try to send it and get the tx hash
+	hash, err := p.rpc.SendTransaction(tx)
+	if err != nil {
+		p.log.Errorf("can not send transaction to block chain; %s", err.Error())
+		return nil, err
+	}
+
+	// we do have the hash so we can use it to get the transaction details
+	// we always need to go to RPC and we will not try to store the transaction in cache yet
+	trx, err := p.rpc.Transaction(hash)
+	if err != nil {
+		// transaction simply not found?
+		if err == eth.ErrNoResult {
+			p.log.Warning("transaction not found in the blockchain")
+			return nil, ErrTransactionNotFound
+		}
+
+		// something went wrong
+		return nil, err
+	}
+
+	// log and return
+	p.log.Debugf("transaction %s created and found", hash.String())
 
 	// return the value
 	return trx, nil
