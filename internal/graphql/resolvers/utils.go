@@ -5,12 +5,18 @@ import (
 	"crypto/rand"
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"io"
 )
 
 // Price resolves price details of the Opera blockchain token for the given target symbols.
 func (rs *rootResolver) Price(args *struct{ To string }) (types.Price, error) {
 	return rs.repo.Price(args.To)
+}
+
+// GasPrice resolves the current amount of WEI for single Gas.
+func (rs *rootResolver) GasPrice() (hexutil.Uint64, error) {
+	return rs.repo.GasPrice()
 }
 
 // uuid generates new random subscription UUID

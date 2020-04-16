@@ -25,6 +25,11 @@ const (
 	priceApiTargetSymbolVar = "tsyms="
 )
 
+// GasPrice resolves the current amount of WEI for single Gas.
+func (p *proxy) GasPrice() (hexutil.Uint64, error) {
+	return p.rpc.GasPrice()
+}
+
 // Price returns a price information for the given target symbol.
 func (p *proxy) Price(sym string) (types.Price, error) {
 	// inform what we do

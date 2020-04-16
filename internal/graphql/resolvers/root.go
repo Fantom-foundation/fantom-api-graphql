@@ -81,6 +81,9 @@ type ApiResolver interface {
 	// Price resolves price details of the Opera blockchain token for the given target symbols.
 	Price(*struct{ To string }) (types.Price, error)
 
+	// GasPrice resolves the current amount of WEI for single Gas.
+	GasPrice() (hexutil.Uint64, error)
+
 	// Close terminates resolver broadcast management.
 	Close()
 }

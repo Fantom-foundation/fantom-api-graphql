@@ -116,6 +116,9 @@ type Repository interface {
 	// Price returns a price information for the given target symbol.
 	Price(sym string) (types.Price, error)
 
+	// GasPrice resolves the current amount of WEI for single Gas.
+	GasPrice() (hexutil.Uint64, error)
+
 	// FtmConnection returns open connection to Opera/Lachesis full node.
 	FtmConnection() *ftm.Client
 

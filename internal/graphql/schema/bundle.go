@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-03-20 23:21
+// Auto generated GraphQL schema bundle; created 2020-04-16 18:29
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -473,6 +473,9 @@ type Query {
 
     "Get the details of a delegator by it's address."
     delegation(address:Address!): Delegator
+
+    "Returns the current price per gas in WEI units."
+    gasPrice: Long!
 
     "Get price details of the Opera blockchain token for the given target symbols."
     price(to:String!):Price!
