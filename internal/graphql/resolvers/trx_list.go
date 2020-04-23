@@ -57,7 +57,7 @@ func (tl *TransactionList) TotalCount() hexutil.Big {
 // PageInfo resolves the current page information for the transaction list.
 func (tl *TransactionList) PageInfo() (*ListPageInfo, error) {
 	// do we have any items?
-	if tl.list == nil || tl.list.Collection == nil {
+	if tl.list == nil || tl.list.Collection == nil || len(tl.list.Collection) == 0 {
 		return NewListPageInfo(nil, nil, false, false)
 	}
 

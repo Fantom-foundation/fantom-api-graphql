@@ -1,8 +1,6 @@
 // Package resolvers implements GraphQL resolvers to incoming API requests.
 package resolvers
 
-import "fmt"
-
 // ListPageInfo represents general resolvable information about the current page of a list of elements.
 type ListPageInfo struct {
 	First       *Cursor
@@ -13,11 +11,6 @@ type ListPageInfo struct {
 
 // NewListPageInfo creates a new page information structure.
 func NewListPageInfo(first *Cursor, last *Cursor, hasNext bool, hasPrevious bool) (*ListPageInfo, error) {
-	// make sure cursors are given
-	if first == nil || last == nil {
-		return nil, fmt.Errorf("missing one of the cursors")
-	}
-
 	// make the structure
 	return &ListPageInfo{
 		First:       first,

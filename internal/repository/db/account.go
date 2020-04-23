@@ -339,7 +339,7 @@ func (db *MongoDbBridge) accountTrxList(col *mongo.Collection, addr *common.Addr
 
 	// get the value
 	if !res.Next(ctx) {
-		db.log.Error("account not found")
+		db.log.Error("account and/or transaction not found")
 		return nil, err
 	}
 
