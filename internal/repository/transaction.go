@@ -54,9 +54,16 @@ func (p *proxy) Transaction(hash *types.Hash) (*types.Transaction, error) {
 	p.log.Debugf("transaction %s loaded from rpc", hash.String())
 
 	// push the transaction to the cache to speed things up next time
-	err = p.cache.PushTransaction(trx)
-	if err != nil {
-		p.log.Errorf("can not store transaction in cache; %s", err.Error())
+	// we don't cache pending transactions since it would cause issues
+	// when re-loading data of such transactions on the client side
+	if trx.BlockHash != nil {
+		err = p.cache.PushTransaction(trx)
+		if err != nil {
+			p.log.Errorf("can not store transaction in cache; %s", err.Error())
+		}
+	} else {
+		// inform about non-cached trx
+		p.log.Debugf("pending transaction [%s] not cached yet", trx.Hash)
 	}
 
 	// return the value
