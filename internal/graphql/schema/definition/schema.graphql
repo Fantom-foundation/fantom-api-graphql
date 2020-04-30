@@ -66,6 +66,12 @@ type Query {
 
     "Get price details of the Opera blockchain token for the given target symbols."
     price(to:String!):Price!
+
+    """
+    Get calculated staking rewards for an account or given staking amount.
+    At least one of the address and amount parameters must be provided.
+    """
+    estimateRewards(address:Address, amount:BigInt!):EstimatedRewards!
 }
 
 # Mutation andpoints for modifying the data

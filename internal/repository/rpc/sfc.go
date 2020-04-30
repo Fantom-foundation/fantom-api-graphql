@@ -25,7 +25,7 @@ import (
 // sfcContractAddress represents the address on which the Sfc contract is deployed.
 var sfcContractAddress = common.HexToAddress("0xfc00face00000000000000000000000000000000")
 
-// CurrentEpoch extract the current epoch from SFC smart contract.
+// CurrentEpoch extract the current epoch id from SFC smart contract.
 func (ftm *FtmBridge) CurrentEpoch() (hexutil.Uint64, error) {
 	// instantiate the contract and display its name
 	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
@@ -38,6 +38,26 @@ func (ftm *FtmBridge) CurrentEpoch() (hexutil.Uint64, error) {
 	epoch, err := contract.CurrentEpoch(nil)
 	if err != nil {
 		ftm.log.Errorf("failed to get the current epoch: %v", err)
+		return 0, err
+	}
+
+	// get the value
+	return hexutil.Uint64(epoch.Uint64()), nil
+}
+
+// CurrentSealedEpoch extract the current sealed epoch id from SFC smart contract.
+func (ftm *FtmBridge) CurrentSealedEpoch() (hexutil.Uint64, error) {
+	// instantiate the contract and display its name
+	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		return 0, err
+	}
+
+	// get the value from the contract
+	epoch, err := contract.CurrentSealedEpoch(nil)
+	if err != nil {
+		ftm.log.Errorf("failed to get the current sealed epoch: %v", err)
 		return 0, err
 	}
 

@@ -1,0 +1,18 @@
+# EstimatedRewards represents a calculated rewards etimation for an account or amount staked
+type EstimatedRewards {
+    "Amount of FTM tokens expected to be staked for the calculation."
+    staked: BigInt!
+
+    "monthlyReward represents amount of FTM tokens estimated to be rewarded in average for staked amount per month."
+    monthlyReward: BigInt!
+
+    "yearlyReward represents amount of FTM tokens estimated to be rewarded in average for staked amount per year."
+    yearlyReward: BigInt!
+
+    """
+    Information about the last sealed epoch of the Opera blockchain.
+    The epoch provides useful information about total FTM supply,
+    total amount staked, rewards rate and weight, fee, etc.
+    """
+    lastEpoch: Epoch!
+}
