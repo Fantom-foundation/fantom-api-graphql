@@ -84,6 +84,12 @@ type ApiResolver interface {
 	// GasPrice resolves the current amount of WEI for single Gas.
 	GasPrice() (hexutil.Uint64, error)
 
+	// EstimateRewards resolves reward estimation for the given address or amount staked.
+	EstimateRewards(*struct {
+		Address *common.Address
+		Amount  *hexutil.Uint64
+	}) (EstimatedRewards, error)
+
 	// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
 	SendTransaction(*struct{ Tx hexutil.Bytes }) (*Transaction, error)
 

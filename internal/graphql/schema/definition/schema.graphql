@@ -68,10 +68,11 @@ type Query {
     price(to:String!):Price!
 
     """
-    Get calculated staking rewards for an account or given staking amount.
+    Get calculated staking rewards for an account or given staking amount in FTM tokens.
     At least one of the address and amount parameters must be provided.
+    If you provide both, the address takes precedence and the amount is ignored.
     """
-    estimateRewards(address:Address, amount:BigInt!):EstimatedRewards!
+    estimateRewards(address:Address, amount:Long):EstimatedRewards!
 }
 
 # Mutation andpoints for modifying the data

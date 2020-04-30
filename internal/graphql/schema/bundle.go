@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-04-16 18:54
+// Auto generated GraphQL schema bundle; created 2020-05-01 00:34
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -94,6 +94,44 @@ type Account {
     delegation: Delegator
 }
 
+# EstimatedRewards represents a calculated rewards etimation for an account or amount staked
+type EstimatedRewards {
+    "Amount of FTM tokens expected to be staked for the calculation."
+    staked: Long!
+
+    "dailyReward represents amount of FTM tokens estimated to be rewarded for staked amount in average per day."
+    dailyReward: BigInt!
+
+    "weeklyReward represents amount of FTM tokens estimated to be rewarded for staked amount in average per week."
+    weeklyReward: BigInt!
+
+    "monthlyReward represents amount of FTM tokens estimated to be rewarded for staked amount in average per month."
+    monthlyReward: BigInt!
+
+    "yearlyReward represents amount of FTM tokens estimated to be rewarded for staked amount in average per year."
+    yearlyReward: BigInt!
+
+    """
+    currentRewardYearRate represents average reward rate for any staked amount in average per year.
+    The value is calculated as linear gross proceeds for staked amount of tokens yearly.
+    """
+    currentRewardRateYearly: Int!
+
+    """
+    Total amount of staked FTM tokens used for the calculation.
+    The estimation uses total staked amount, not the effective amount provided
+    by the last epoch. The effective amount does include current undelegations and also
+    skips offline self-stakings and flagged stakings.
+    """
+    totalStaked: BigInt!
+
+    """
+    Information about the last sealed epoch of the Opera blockchain.
+    The epoch provides useful information about total FTM supply,
+    total amount staked, rewards rate and weight, fee, etc.
+    """
+    lastEpoch: Epoch!
+}
 # TransactionList is a list of transaction edges provided by sequential access request.
 type TransactionList {
     # Edges contains provided edges of the sequential list.
@@ -480,6 +518,13 @@ type Query {
 
     "Get price details of the Opera blockchain token for the given target symbols."
     price(to:String!):Price!
+
+    """
+    Get calculated staking rewards for an account or given staking amount.
+    At least one of the address and amount parameters must be provided.
+    If you provide both, the address takes precedence and the amount is ignored.
+    """
+    estimateRewards(address:Address, amount:Long):EstimatedRewards!
 }
 
 # Mutation andpoints for modifying the data

@@ -12,6 +12,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 )
 
 // CurrentEpoch returns the id of the current epoch.
@@ -58,4 +59,90 @@ func (p *proxy) Delegation(addr common.Address) (*types.Delegator, error) {
 func (p *proxy) DelegationRewards(addr string) (types.PendingRewards, error) {
 	p.log.Debugf("processing %s", addr)
 	return p.rpc.DelegationRewards(addr)
+}
+
+// TotalStaked calculates current total staked amount for all stakers.
+func (p *proxy) TotalStaked() (*hexutil.Big, error) {
+	// try cache first
+	value := p.cache.PullTotalStaked()
+	if value != nil {
+		p.log.Debugf("total staked amount loaded from memory cache")
+		return value, nil
+	}
+
+	// get the top staker
+	topId, err := p.rpc.LastStakerId()
+	if err != nil {
+		p.log.Errorf("can not get the last staker; %s", err.Error())
+		return nil, err
+	}
+
+	// make new accumulator
+	total := new(big.Int)
+
+	// go over all the validators
+	var id uint64
+	for id = 1; id <= uint64(topId); id++ {
+		// get this validator
+		val, err := p.rpc.Staker(hexutil.Uint64(id))
+		if err == nil && val.TotalStake != nil {
+			// advance the total sum
+			total = new(big.Int).Add(total, val.TotalStake.ToInt())
+		}
+	}
+
+	// store in cache
+	if err := p.cache.PushTotalStaked((*hexutil.Big)(total)); err != nil {
+		// log issue
+		p.log.Errorf("can not store total staked amount in memory; %s", err.Error())
+	}
+
+	// return the value
+	return (*hexutil.Big)(total), nil
+}
+
+// CurrentSealedEpoch returns the data of the latest sealed epoch.
+// This is used for reward estimation calculation and we don't need
+// real time data, but rather faster response time.
+// So, we use cache for handling the response.
+// It will not be updated in sync with the SFC contract.
+// If you need real time response, please use the Epoch(id) function instead.
+func (p *proxy) CurrentSealedEpoch() (*types.Epoch, error) {
+	// inform what we do
+	p.log.Debug("latest sealed epoch requested")
+
+	// try to use the in-memory cache
+	if ep := p.cache.PullLastEpoch(); ep != nil {
+		// inform what we do
+		p.log.Debug("latest sealed epoch loaded from cache")
+
+		// return the block
+		return ep, nil
+	}
+
+	// we need to go the slow path
+	id, err := p.rpc.CurrentSealedEpoch()
+	if err != nil {
+		// inform what we do
+		p.log.Errorf("can not get the id of the last sealed epoch; %s", err.Error())
+		return nil, err
+	}
+
+	// get the epoch from SFC
+	ep, err := p.rpc.Epoch(id)
+	if err != nil {
+		// inform what we do
+		p.log.Errorf("can not get data of the last sealed epoch; %s", err.Error())
+		return nil, err
+	}
+
+	// try to store the block in cache for future use
+	err = p.cache.PushLastEpoch(&ep)
+	if err != nil {
+		p.log.Error(err)
+	}
+
+	// inform what we do
+	p.log.Debugf("epoch [%s] loaded from sfc", id.String())
+	return &ep, nil
 }

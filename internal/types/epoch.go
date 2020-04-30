@@ -2,6 +2,7 @@
 package types
 
 import (
+	"encoding/json"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
@@ -17,4 +18,16 @@ type Epoch struct {
 	StakeTotalAmount       hexutil.Big
 	DelegationsTotalAmount hexutil.Big
 	TotalSupply            hexutil.Big
+}
+
+// UnmarshalEpoch parses the JSON-encoded Epoch data.
+func UnmarshalEpoch(data []byte) (*Epoch, error) {
+	var ep Epoch
+	err := json.Unmarshal(data, &ep)
+	return &ep, err
+}
+
+// Marshal returns the JSON encoding of Epoch.
+func (e *Epoch) Marshal() ([]byte, error) {
+	return json.Marshal(e)
 }

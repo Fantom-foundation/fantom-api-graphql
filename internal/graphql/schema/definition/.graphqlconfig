@@ -6,7 +6,8 @@
       "Local GraphQL Endpoint": {
         "url": "http://localhost:16761/api",
         "headers": {
-          "user-agent": "JS GraphQL"
+          "user-agent": "JS GraphQL",
+          "origin": "http://localhost"
         },
         "introspect": false
       },
@@ -18,7 +19,14 @@
         "introspect": false
       },
       "Remote GraphQL Endpoint": {
-        "url": "https://fantom.rocks/fapi",
+        "url": "https://api.fantom.rocks/api",
+        "headers": {
+          "user-agent": "JS GraphQL"
+        },
+        "introspect": false
+      },
+      "Remote GraphQL Endpoint API2": {
+        "url": "https://api2.fantom.rocks/graphql",
         "headers": {
           "user-agent": "JS GraphQL"
         },

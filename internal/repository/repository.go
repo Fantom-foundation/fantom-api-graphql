@@ -63,6 +63,9 @@ type Repository interface {
 	// CurrentEpoch returns the id of the current epoch.
 	CurrentEpoch() (hexutil.Uint64, error)
 
+	// CurrentSealedEpoch returns the data of the latest sealed epoch.
+	CurrentSealedEpoch() (*types.Epoch, error)
+
 	// Epoch returns the id of the current epoch.
 	Epoch(hexutil.Uint64) (types.Epoch, error)
 
@@ -94,6 +97,9 @@ type Repository interface {
 
 	// Staker extract a staker information by address.
 	StakerByAddress(common.Address) (*types.Staker, error)
+
+	// TotalStaked calculates current total staked amount for all stakers.
+	TotalStaked() (*hexutil.Big, error)
 
 	// StakerInfo extracts an extended staker information from smart contact.
 	PullStakerInfo(hexutil.Uint64) (*types.StakerInfo, error)

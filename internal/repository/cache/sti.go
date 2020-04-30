@@ -3,12 +3,17 @@ package cache
 
 import (
 	"fantom-api-graphql/internal/types"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 	"strings"
 )
 
 // stiCacheKeyPrefix is the prefix used for cache key to store staker information.
 const stiCacheKeyPrefix = "staker_info_"
+
+// stiTotalStakedKey is the cache key used to store total staked amount
+const stiTotalStakedKey = "staked_total"
 
 // PullStakerInfo extracts staker information from the in-memory cache if available.
 func (b *MemBridge) PullStakerInfo(id hexutil.Uint64) *types.StakerInfo {
@@ -51,4 +56,29 @@ func getStakerInfoKey(id hexutil.Uint64) string {
 	sb.WriteString(id.String())
 
 	return sb.String()
+}
+
+// PullTotalStaked extracts total staked amount from the in-memory cache if available.
+func (b *MemBridge) PullTotalStaked() *hexutil.Big {
+	// try to get the account data from the cache
+	data, err := b.cache.Get(stiTotalStakedKey)
+	if err != nil {
+		return nil
+	}
+
+	// do we have the data?
+	val := new(big.Int).SetBytes(data)
+	return (*hexutil.Big)(val)
+}
+
+// PushTotalStaked stores provided total staked amount information in the in-memory cache.
+func (b *MemBridge) PushTotalStaked(amount *hexutil.Big) error {
+	// we must have the value
+	if amount == nil {
+		b.log.Criticalf("can not store invalid amount")
+		return fmt.Errorf("amount not provided")
+	}
+
+	// encode account
+	return b.cache.Set(stiTotalStakedKey, amount.ToInt().Bytes())
 }
