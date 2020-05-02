@@ -12,8 +12,20 @@ type Staker {
     "Amount of own staked tokens in WEI."
     stake: BigInt
 
-    "Amount of tokens delegated to the staker."
+    "Amount of tokens delegated to the staker in WEI."
     delegatedMe: BigInt
+
+    """
+    Maximum total amount of tokens allowed to be delegated to the staker in WEI.
+    This value depends on the amount of self staked tokens.
+    """
+    totalDelegatedLimit: BigInt!
+
+    """
+    Maximum amount of tokens allowed to be delegated to the staker on a new delegation in WEI.
+    This value depends on the amount of self staked tokens.
+    """
+    delegatedLimit: BigInt!
 
     "Is this a validator record."
     isValidator: Boolean!

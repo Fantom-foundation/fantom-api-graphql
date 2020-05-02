@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-05-01 00:34
+// Auto generated GraphQL schema bundle; created 2020-05-02 10:50
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -118,7 +118,7 @@ type EstimatedRewards {
     currentRewardRateYearly: Int!
 
     """
-    Total amount of staked FTM tokens used for the calculation.
+    Total amount of staked FTM tokens used for the calculation in WEI units.
     The estimation uses total staked amount, not the effective amount provided
     by the last epoch. The effective amount does include current undelegations and also
     skips offline self-stakings and flagged stakings.
@@ -313,6 +313,18 @@ type Staker {
 
     "Amount of tokens delegated to the staker."
     delegatedMe: BigInt
+
+    """
+    Maximum total amount of tokens allowed to be delegated to the staker.
+    This value depends on the amount of self staked tokens.
+    """
+    totalDelegatedLimit: BigInt!
+
+    """
+    Maximum amount of tokens allowed to be delegated to the staker on a new delegation.
+    This value depends on the amount of self staked tokens.
+    """
+    delegatedLimit: BigInt!
 
     "Is this a validator record."
     isValidator: Boolean!
@@ -520,7 +532,7 @@ type Query {
     price(to:String!):Price!
 
     """
-    Get calculated staking rewards for an account or given staking amount.
+    Get calculated staking rewards for an account or given staking amount in FTM tokens.
     At least one of the address and amount parameters must be provided.
     If you provide both, the address takes precedence and the amount is ignored.
     """

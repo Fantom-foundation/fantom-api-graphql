@@ -32,6 +32,10 @@ type Staker struct {
 	ClaimedRewards           *hexutil.Big   `json:"claimedRewards"`
 	DelegationClaimedRewards *hexutil.Big   `json:"delegatorsClaimedRewards"`
 	Status                   hexutil.Uint64 `json:"status"`
+
+	/* delegation limits */
+	TotalDelegatedLimit hexutil.Big
+	DelegatedLimit      hexutil.Big
 }
 
 // StakerInfo holds extended staker information.

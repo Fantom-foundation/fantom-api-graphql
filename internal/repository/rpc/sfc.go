@@ -131,8 +131,17 @@ func (ftm *FtmBridge) stakerUpdateFromSfc(staker *types.Staker) error {
 		staker.Stake = (*hexutil.Big)(si.StakeAmount)
 		staker.Status = hexutil.Uint64(si.Status.Uint64())
 
-		// recalculate the total stake
-		staker.TotalStake = (*hexutil.Big)(big.NewInt(0).Add(si.DelegatedMe, si.StakeAmount))
+		if staker.Stake != nil && staker.DelegatedMe != nil {
+			// recalculate the total stake
+			staker.TotalStake = (*hexutil.Big)(big.NewInt(0).Add(si.DelegatedMe, si.StakeAmount))
+
+			// calculate delegation limit
+			staker.TotalDelegatedLimit = ftm.maxDelegatedLimit(staker.Stake, contract)
+
+			// calculate available limit for staking
+			val := new(big.Int).Sub((*big.Int)(&staker.TotalDelegatedLimit), (*big.Int)(staker.DelegatedMe))
+			staker.DelegatedLimit = (hexutil.Big)(*val)
+		}
 	} else {
 		// log issue
 		ftm.log.Debug("staker info update from SFC failed, no data received")
@@ -140,6 +149,32 @@ func (ftm *FtmBridge) stakerUpdateFromSfc(staker *types.Staker) error {
 
 	// get the value
 	return nil
+}
+
+// maxDelegatedLimit calculate maximum amount of tokens allowed to be delegated to a staker.
+func (ftm *FtmBridge) maxDelegatedLimit(staked *hexutil.Big, contract *SfcContract) hexutil.Big {
+	// if we don't know the staked amount, return zero
+	if staked == nil {
+		return (hexutil.Big)(*hexutil.MustDecodeBig("0x0"))
+	}
+
+	// ratio unit is used to calculate the value (1.000.000)
+	// please note this formula is taken from SFC contract and can change
+	ratioUnit := hexutil.MustDecodeBig("0xF4240")
+
+	// get delegation ration
+	ratio, err := contract.MaxDelegatedRatio(nil)
+	if err != nil {
+		ftm.log.Errorf("can not get the delegation ratio; %s", err.Error())
+		return (hexutil.Big)(*hexutil.MustDecodeBig("0x0"))
+	}
+
+	// calculate the delegation limit temp value
+	temp := new(big.Int).Mul((*big.Int)(staked), ratio)
+
+	// adjust to percent
+	value := new(big.Int).Div(temp, ratioUnit)
+	return (hexutil.Big)(*value)
 }
 
 // Staker extract a staker information by numeric id.
