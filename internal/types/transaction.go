@@ -40,7 +40,7 @@ type Transaction struct {
 	To *common.Address `json:"to"`
 
 	// ContractAddress represents the address of contract created, if a contract creation transaction, otherwise nil.
-	ContractAddress *common.Address `json:"-"`
+	ContractAddress *common.Address `json:"contract"`
 
 	// TrxIndex represents integer of the transaction's index position in the block. nil when its pending.
 	TrxIndex *hexutil.Uint `json:"transactionIndex"`

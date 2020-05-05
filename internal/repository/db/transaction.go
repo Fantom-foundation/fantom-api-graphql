@@ -27,8 +27,13 @@ const (
 	// fiTransactionSender is the name of the address field of the sender's account.
 	fiTransactionSender = "from"
 
-	// fiTransactionRecipient is the name of the address field of the recipients's account. null for contract creation.
+	// fiTransactionRecipient is the name of the address field of the recipients's account.
+	// null for contract creation.
 	fiTransactionRecipient = "to"
+
+	// fiTransactionContract is the name of the address field of the smart contract created.
+	// null if not contract creation.
+	fiTransactionContract = "sc"
 
 	// fiTransactionValue is the name of the value transferred in WEI field.
 	fiTransactionValue = "val"
@@ -36,18 +41,6 @@ const (
 	// fiTransactionTimestamp is the name of the transaction time stamp field.
 	fiTransactionTimestamp = "ts"
 )
-
-/*
-// tblTransaction represents a single transaction record in the database.
-type tblTransaction struct {
-	Id        common.Hash    `bson:"_id"`
-	Block     uint64         `bson:"blk"`
-	From      common.Address `bson:"from"`
-	To        common.Address `bson:"to"`
-	Value     hexutil.Big    `bson:"val"`
-	Timestamp hexutil.Uint64 `bson:"tx"`
-}
-*/
 
 // AddTransaction stores a transaction reference in connected persistent storage.
 func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transaction) error {
@@ -78,6 +71,13 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		rcAddress = &rcp
 	}
 
+	// smart contract address may not be defined so we need to do a bit more parsing
+	var scAddress *string
+	if trx.ContractAddress != nil {
+		sca := trx.ContractAddress.String()
+		scAddress = &sca
+	}
+
 	// what is the transaction index
 	var txIndex uint64
 	if trx.TrxIndex != nil {
@@ -95,6 +95,7 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		{fiTransactionBlock, uint64(block.Number)},
 		{fiTransactionSender, trx.From.String()},
 		{fiTransactionRecipient, rcAddress},
+		{fiTransactionContract, scAddress},
 		{fiTransactionValue, trx.Value.String()},
 		{fiTransactionTimestamp, uint64(block.TimeStamp)},
 	})
@@ -122,14 +123,28 @@ func (db *MongoDbBridge) propagateTrxToAccounts(block *types.Block, trx *types.T
 		return err
 	}
 
+	var recipient types.Account
+
 	// do we have a receiving account? may not be present for contract creating transactions
 	if trx.To != nil {
-		recipient := types.Account{Address: *trx.To}
-		err := db.AddAccountTransaction(&recipient, block, trx)
-		if err != nil {
-			db.log.Error("can not push the transaction to sender account")
-			return err
+		// just use the real recipient
+		recipient = types.Account{Address: *trx.To, Contract: nil}
+	} else {
+		// contract address must exist
+		if trx.ContractAddress == nil {
+			db.log.Criticalf("contract creation found, but no contract address [%s]", trx.Hash.String())
+			return fmt.Errorf("contract address missing for tx creation transaction")
 		}
+
+		// log the contract found event
+		db.log.Debugf("contract creation found [%s]", trx.ContractAddress.String())
+		recipient = types.Account{Address: *trx.ContractAddress, Contract: &trx.Hash}
+	}
+
+	// add the transaction to recipient/contract
+	if err = db.AddAccountTransaction(&recipient, block, trx); err != nil {
+		db.log.Error("can not push the transaction to recipient account")
+		return err
 	}
 
 	return nil

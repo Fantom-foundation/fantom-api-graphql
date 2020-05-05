@@ -45,6 +45,9 @@ const (
 
 	// fiAccountTxTimeStamp is the name of the account transaction time stamp field.
 	fiAccountTxTimeStamp = "ts"
+
+	// fiScCreationTx is the hash of the transaction which created the contract.
+	fiScCreationTx = "sc"
 )
 
 // how many WEIs are in out account balance units (FTM*100)
@@ -83,6 +86,7 @@ func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 	// do the update based on given PK; we don't need to pull the document updated
 	_, err = col.InsertOne(context.Background(), bson.D{
 		{fiAccountPk, acc.Address.String()},
+		{fiScCreationTx, acc.Contract.String()},
 		{fiAccountBalance, "0x0"},
 		{fiAccountActivity, nil},
 		{fiAccountTxList, bson.A{}},
@@ -116,6 +120,11 @@ func (db *MongoDbBridge) AddAccountTransaction(acc *types.Account, block *types.
 	var dir = 0
 	if trx.To != nil && acc.Address.String() == trx.To.String() {
 		dir = 1
+	}
+
+	// contract creation?
+	if trx.To == nil && trx.ContractAddress != nil {
+		dir = 2
 	}
 
 	// get account balance
