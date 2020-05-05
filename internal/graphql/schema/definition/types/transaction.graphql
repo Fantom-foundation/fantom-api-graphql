@@ -16,10 +16,16 @@ type Transaction {
     # Sender is the account that sent this transaction
     sender: Account!
 
-    # To is the account the transaction was sent to. This is null for contract creating transactions.
+    # To is the account the transaction was sent to.
+    # This is null for contract creating transactions.
     to: Address
 
-    # Recipient is the account that received this transaction. Null for contract creating transaction.
+    # contractAddress represents the address of smart contract deployed by this transaction;
+    # null if the transaction is not contract creation
+    contractAddress: Address
+
+    # Recipient is the account that received this transaction.
+    # Null for contract creating transaction.
     recipient: Account
 
     # Value is the value sent along with this transaction in WEI.
@@ -36,12 +42,17 @@ type Transaction {
     gasUsed: Long
 
     # InputData is the data supplied to the target of the transaction.
+    # Contains smart contract byte code if this is contract creation.
+    # Contains encoded contract state mutating function call if recipient
+    # is a contract address.
     inputData: Bytes!
 
-    # BlockHash is the hash of the block this transaction was assigned to. Null if the transaction is pending.
+    # BlockHash is the hash of the block this transaction was assigned to.
+    # Null if the transaction is pending.
     blockHash: Hash
 
-    # BlockHash is the hash of the block this transaction was assigned to. Null if the transaction is pending.
+    # BlockHash is the hash of the block this transaction was assigned to.
+    # Null if the transaction is pending.
     blockNumber: Long
 
     # Block is the block this transaction was assigned to. This will be null if
