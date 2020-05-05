@@ -149,8 +149,9 @@ func (erw EstimatedRewards) YearlyReward() hexutil.Big {
 // CurrentRewardRateYearly calculates average reward rate
 // for any staked amount in average per year
 func (erw EstimatedRewards) CurrentRewardRateYearly() int32 {
-	// validate that we can actually calculate the value
-	if !erw.canCalculateRewards() {
+	// make sure we can calculate the yearly rate safely
+	zero := new(big.Int)
+	if erw.LastEpoch.BaseRewardPerSecond.ToInt().Cmp(zero) <= 0 || erw.TotalStaked.ToInt().Cmp(zero) <= 0 {
 		return 0
 	}
 
