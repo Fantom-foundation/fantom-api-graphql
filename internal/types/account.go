@@ -8,8 +8,8 @@ import (
 
 // Account represents an Opera account at the blockchain.
 type Account struct {
-	Address  common.Address `json:"address"`
-	Contract *Hash          `json:"contract"`
+	Address    common.Address `json:"address"`
+	ContractTx *Hash          `json:"contract"`
 }
 
 // UnmarshalAccount parses the JSON-encoded account data.

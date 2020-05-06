@@ -43,7 +43,7 @@ type Repository interface {
 	// For negative number, the list starts right before the cursor (or at the bottom without one) and loads at most
 	// defined number of transactions newer than that.
 	//
-	// Transaction are always sorted from newer to older.
+	// Transactions are always sorted from newer to older.
 	AccountTransactions(*types.Account, *string, int32) (*types.TransactionHashList, error)
 
 	// Returns total number of accounts known to repository.
@@ -136,6 +136,9 @@ type Repository interface {
 
 	// SetTrxChannel registers a channel for notifying new transaction events.
 	SetTrxChannel(chan *types.Transaction)
+
+	// Contract extract a smart contract information by address if available.
+	Contract(*common.Address) (*types.Contract, error)
 
 	// Close and cleanup the repository.
 	Close()
