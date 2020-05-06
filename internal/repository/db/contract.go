@@ -124,6 +124,11 @@ func (db *MongoDbBridge) ContractTransaction(addr *common.Address) (*types.Hash,
 		return nil, err
 	}
 
+	// contract not found
+	if c == nil {
+		return nil, nil
+	}
+
 	// return the hash
 	return &c.TransactionHash, nil
 }
@@ -135,7 +140,7 @@ func (db *MongoDbBridge) Contract(addr *common.Address) (*types.Contract, error)
 	col := db.client.Database(offChainDatabaseName).Collection(coContract)
 
 	// try to find the contract in the database (it may already exist)
-	sr := col.FindOne(context.Background(), bson.D{{fiContractPk, addr.String()}}, nil)
+	sr := col.FindOne(context.Background(), bson.D{{fiContractPk, addr.String()}})
 
 	// error on lookup?
 	if sr.Err() != nil {
