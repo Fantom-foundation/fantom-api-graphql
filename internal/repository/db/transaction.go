@@ -42,6 +42,19 @@ const (
 	fiTransactionTimestamp = "ts"
 )
 
+// shouldAddTransaction validates if the transaction should be added to the persistent storage.
+func (db *MongoDbBridge) shouldAddTransaction(col *mongo.Collection, trx *types.Transaction) bool {
+	// check if the transaction already exists
+	exists, err := db.isTransactionKnown(col, &trx.Hash)
+	if err != nil {
+		db.log.Critical(err)
+		return false
+	}
+
+	// if the transaction already exists, we don't need to do anything here
+	return !exists
+}
+
 // AddTransaction stores a transaction reference in connected persistent storage.
 func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transaction) error {
 	// do we have all needed data?
@@ -49,20 +62,13 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		return fmt.Errorf("can not add empty transaction")
 	}
 
-	// check if the transaction already exists
-	exists, err := db.isTransactionKnown(&trx.Hash)
-	if err != nil {
-		db.log.Critical(err)
-		return err
-	}
-
-	// if the transaction already exists, we don't need to do anything here
-	if exists {
-		return nil
-	}
-
 	// get the collection for transactions
 	col := db.client.Database(offChainDatabaseName).Collection(coTransactions)
+
+	// if the transaction already exists, we don't need to do anything here
+	if !db.shouldAddTransaction(col, trx) {
+		return nil
+	}
 
 	// recipient address may not be defined so we need to do a bit more parsing
 	var rcAddress *string
@@ -78,20 +84,10 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		scAddress = &sca
 	}
 
-	// what is the transaction index
-	var txIndex uint64
-	if trx.TrxIndex != nil {
-		txIndex = uint64(*trx.TrxIndex)
-	} else {
-		// log the issue here
-		txIndex = uint64((rand.Uint32()<<10)|0xff) & 0x3fff
-		db.log.Criticalf("Block %d, Transaction %s, transaction index not set (rng %d)!", block.Number, trx.BlockHash, txIndex)
-	}
-
 	// try to do the insert
-	_, err = col.InsertOne(context.Background(), bson.D{
+	_, err := col.InsertOne(context.Background(), bson.D{
 		{fiTransactionPk, trx.Hash.String()},
-		{fiTransactionOrdinalIndex, trxOrdinalIndex(uint64(block.Number), txIndex)},
+		{fiTransactionOrdinalIndex, db.transactionIndex(block, trx)},
 		{fiTransactionBlock, uint64(block.Number)},
 		{fiTransactionSender, trx.From.String()},
 		{fiTransactionRecipient, rcAddress},
@@ -104,8 +100,31 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		return err
 	}
 
+	// add smart contract to the persistent storage, too
+	if trx.ContractAddress != nil {
+		if err := db.AddContract(block, trx); err != nil {
+			db.log.Critical(err)
+			return err
+		}
+	}
+
 	// add the transaction to the sender's address list
 	return db.propagateTrxToAccounts(block, trx)
+}
+
+// mustTransactionIndex always calculate the index of the current transaction
+func (db *MongoDbBridge) transactionIndex(block *types.Block, trx *types.Transaction) uint64 {
+	// what is the transaction index
+	var txIndex uint64
+	if trx.TrxIndex != nil {
+		txIndex = uint64(*trx.TrxIndex)
+	} else {
+		// log the issue here
+		txIndex = uint64((rand.Uint32()<<10)|0xff) & 0x3fff
+		db.log.Criticalf("Block %d, Block hash %s, transaction index not set (rng %d)!", block.Number, trx.BlockHash, txIndex)
+	}
+
+	return trxOrdinalIndex(uint64(block.Number), txIndex)
 }
 
 // getTrxOrdinalIndex calculates ordinal index in the whole blockchain.
@@ -123,12 +142,13 @@ func (db *MongoDbBridge) propagateTrxToAccounts(block *types.Block, trx *types.T
 		return err
 	}
 
+	// prep recipient side (can be a smart contract creation)
 	var recipient types.Account
 
 	// do we have a receiving account? may not be present for contract creating transactions
 	if trx.To != nil {
 		// just use the real recipient
-		recipient = types.Account{Address: *trx.To, Contract: nil}
+		recipient = types.Account{Address: *trx.To, ContractTx: nil}
 	} else {
 		// contract address must exist
 		if trx.ContractAddress == nil {
@@ -138,7 +158,7 @@ func (db *MongoDbBridge) propagateTrxToAccounts(block *types.Block, trx *types.T
 
 		// log the contract found event
 		db.log.Debugf("contract creation found [%s]", trx.ContractAddress.String())
-		recipient = types.Account{Address: *trx.ContractAddress, Contract: &trx.Hash}
+		recipient = types.Account{Address: *trx.ContractAddress, ContractTx: &trx.Hash}
 	}
 
 	// add the transaction to recipient/contract
@@ -151,14 +171,13 @@ func (db *MongoDbBridge) propagateTrxToAccounts(block *types.Block, trx *types.T
 }
 
 // isTransactionKnown checks if a transaction document already exists in the database.
-func (db *MongoDbBridge) isTransactionKnown(hash *types.Hash) (bool, error) {
-	// get the collection for account transactions
-	col := db.client.Database(offChainDatabaseName).Collection(coTransactions)
-
-	// try to find the account in the database (it may already exist)
+func (db *MongoDbBridge) isTransactionKnown(col *mongo.Collection, hash *types.Hash) (bool, error) {
+	// try to find the transaction in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
 		{fiTransactionPk, hash.String()},
-	}, options.FindOne().SetProjection(bson.D{{fiTransactionPk, true}}))
+	}, options.FindOne().SetProjection(bson.D{
+		{fiTransactionPk, true},
+	}))
 
 	// error on lookup?
 	if sr.Err() != nil {
@@ -239,21 +258,21 @@ func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, coun
 	// find out the cursor ordinal index
 	if cursor == nil && count > 0 {
 		// get the highest available ordinal index (top transaction)
-		list.First, err = db.findTxOrdinalIndex(col,
+		list.First, err = db.findBorderOrdinalIndex(col,
 			bson.D{},
 			options.FindOne().SetSort(bson.D{{fiTransactionOrdinalIndex, -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available ordinal index (top transaction)
-		list.First, err = db.findTxOrdinalIndex(col,
+		list.First, err = db.findBorderOrdinalIndex(col,
 			bson.D{},
 			options.FindOne().SetSort(bson.D{{fiTransactionOrdinalIndex, 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
 		// get the highest available ordinal index (top transaction)
-		list.First, err = db.findTxOrdinalIndex(col,
+		list.First, err = db.findBorderOrdinalIndex(col,
 			bson.D{{fiTransactionPk, *cursor}},
 			options.FindOne())
 	}
@@ -270,16 +289,16 @@ func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, coun
 	return &list, nil
 }
 
-// borderTxOrdinalIndex finds the highest, or lowest ordinal index in the transaction database.
+// findBorderOrdinalIndex finds the highest, or lowest ordinal index in the collection.
 // For negative sort it will return highest and for positive sort it will return lowest available value.
-func (db *MongoDbBridge) findTxOrdinalIndex(col *mongo.Collection, filter bson.D, opt *options.FindOneOptions) (uint64, error) {
+func (db *MongoDbBridge) findBorderOrdinalIndex(col *mongo.Collection, filter bson.D, opt *options.FindOneOptions) (uint64, error) {
 	// prep container
 	var row struct {
 		Value uint64 `bson:"orx"`
 	}
 
 	// make sure we pull only what we need
-	opt.SetProjection(bson.D{{fiTransactionOrdinalIndex, true}})
+	opt.SetProjection(bson.D{{"orx", true}})
 	sr := col.FindOne(context.Background(), filter, opt)
 
 	// try to decode

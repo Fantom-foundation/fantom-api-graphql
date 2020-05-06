@@ -83,10 +83,17 @@ func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 	// get the collection for account transactions
 	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
 
+	// extract contract creation transaction if available
+	var conTx *string
+	if acc.ContractTx != nil {
+		cx := acc.ContractTx.String()
+		conTx = &cx
+	}
+
 	// do the update based on given PK; we don't need to pull the document updated
 	_, err = col.InsertOne(context.Background(), bson.D{
 		{fiAccountPk, acc.Address.String()},
-		{fiScCreationTx, acc.Contract.String()},
+		{fiScCreationTx, conTx},
 		{fiAccountBalance, "0x0"},
 		{fiAccountActivity, nil},
 		{fiAccountTxList, bson.A{}},
