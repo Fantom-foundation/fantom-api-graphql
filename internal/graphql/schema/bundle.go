@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-05-02 10:50
+// Auto generated GraphQL schema bundle; created 2020-05-07 00:04
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -21,7 +21,10 @@ type DelegatorList {
     "Edges contains provided edges of the sequential list."
     edges: [DelegatorListEdge!]!
 
-    "TotalCount is the maximum number of delegations available for sequential access."
+    """
+    TotalCount is the maximum number of delegations
+    available for sequential access.
+    """
     totalCount: BigInt!
 
     "PageInfo is an information about the current page of delegation edges."
@@ -76,7 +79,8 @@ type Account {
     balance: BigInt!
 
     """
-    TotalValue is the current total value fo the account in WEI. It includes available balance,
+    TotalValue is the current total value fo the account in WEI.
+    It includes available balance,
     delegated amount and pending staking rewards.
     """
     totalValue: BigInt!
@@ -84,7 +88,10 @@ type Account {
     "txCount represents number of transaction sent from the account."
     txCount: Long!
 
-    "txList represents list of transactions of the account in form of TransactionList."
+    """
+    txList represents list of transactions of the account
+    in form of TransactionList.
+    """
     txList (cursor:Cursor, count:Int!): TransactionList!
 
     "Details of a staker, if the account is a staker."
@@ -92,6 +99,9 @@ type Account {
 
     "Details of delegation, if the account is a delegator."
     delegation: Delegator
+
+    "Details about smart contract, if the account is a smart contract."
+    contract: SmartContract
 }
 
 # EstimatedRewards represents a calculated rewards etimation for an account or amount staked
@@ -99,21 +109,35 @@ type EstimatedRewards {
     "Amount of FTM tokens expected to be staked for the calculation."
     staked: Long!
 
-    "dailyReward represents amount of FTM tokens estimated to be rewarded for staked amount in average per day."
+    """
+    dailyReward represents amount of FTM tokens estimated
+    to be rewarded for staked amount in average per day.
+    """
     dailyReward: BigInt!
 
-    "weeklyReward represents amount of FTM tokens estimated to be rewarded for staked amount in average per week."
+    """
+    weeklyReward represents amount of FTM tokens estimated
+    to be rewarded for staked amount in average per week.
+    """
     weeklyReward: BigInt!
 
-    "monthlyReward represents amount of FTM tokens estimated to be rewarded for staked amount in average per month."
+    """
+    monthlyReward represents amount of FTM tokens estimated
+    to be rewarded for staked amount in average per month.
+    """
     monthlyReward: BigInt!
 
-    "yearlyReward represents amount of FTM tokens estimated to be rewarded for staked amount in average per year."
+    """
+    yearlyReward represents amount of FTM tokens estimated
+    to be rewarded for staked amount in average per year.
+    """
     yearlyReward: BigInt!
 
     """
-    currentRewardYearRate represents average reward rate for any staked amount in average per year.
-    The value is calculated as linear gross proceeds for staked amount of tokens yearly.
+    currentRewardYearRate represents average reward rate
+    for any staked amount in average per year.
+    The value is calculated as linear gross proceeds for staked amount
+    of tokens yearly.
     """
     currentRewardRateYearly: Int!
 
@@ -169,10 +193,16 @@ type Transaction {
     # Sender is the account that sent this transaction
     sender: Account!
 
-    # To is the account the transaction was sent to. This is null for contract creating transactions.
+    # To is the account the transaction was sent to.
+    # This is null for contract creating transactions.
     to: Address
 
-    # Recipient is the account that received this transaction. Null for contract creating transaction.
+    # contractAddress represents the address of smart contract deployed by this transaction;
+    # null if the transaction is not contract creation
+    contractAddress: Address
+
+    # Recipient is the account that received this transaction.
+    # Null for contract creating transaction.
     recipient: Account
 
     # Value is the value sent along with this transaction in WEI.
@@ -189,12 +219,17 @@ type Transaction {
     gasUsed: Long
 
     # InputData is the data supplied to the target of the transaction.
+    # Contains smart contract byte code if this is contract creation.
+    # Contains encoded contract state mutating function call if recipient
+    # is a contract address.
     inputData: Bytes!
 
-    # BlockHash is the hash of the block this transaction was assigned to. Null if the transaction is pending.
+    # BlockHash is the hash of the block this transaction was assigned to.
+    # Null if the transaction is pending.
     blockHash: Hash
 
-    # BlockHash is the hash of the block this transaction was assigned to. Null if the transaction is pending.
+    # BlockHash is the hash of the block this transaction was assigned to.
+    # Null if the transaction is pending.
     blockNumber: Long
 
     # Block is the block this transaction was assigned to. This will be null if
@@ -311,17 +346,19 @@ type Staker {
     "Amount of own staked tokens in WEI."
     stake: BigInt
 
-    "Amount of tokens delegated to the staker."
+    "Amount of tokens delegated to the staker in WEI."
     delegatedMe: BigInt
 
     """
-    Maximum total amount of tokens allowed to be delegated to the staker.
+    Maximum total amount of tokens allowed to be delegated
+    to the staker in WEI.
     This value depends on the amount of self staked tokens.
     """
     totalDelegatedLimit: BigInt!
 
     """
-    Maximum amount of tokens allowed to be delegated to the staker on a new delegation.
+    Maximum amount of tokens allowed to be delegated to the staker
+    on a new delegation in WEI.
     This value depends on the amount of self staked tokens.
     """
     delegatedLimit: BigInt!
@@ -379,7 +416,8 @@ type Staker {
 
     """
     List of delegations of this staker. Cursor is used to obtain specific slice
-    of the staker's delegations. The most recent delegations are provided if cursor is omitted.
+    of the staker's delegations. The most recent delegations
+    are provided if cursor is omitted.
     """
     delegations(cursor: Cursor, count: Int = 25):DelegatorList!
 
@@ -430,6 +468,27 @@ type Block {
     txList: [Transaction!]!
 }
 
+# SmartContract defines block-chain smart contract information container
+type SmartContract {
+    "DeployedBy represents the smart contract deployment transaction reference."
+    deployedBy: Transaction!
+
+    "transactionHash represents the smart contractdeployment transaction hash."
+    transactionHash: Hash!
+
+    "Smart contract source code. Empty if not available."
+    sourceCode: String!
+
+    """
+    Validated is the unix timestamp at which the source code was validated
+    against the deployed byte code. Null if not validated yet.
+    """
+    validated: Long
+
+    "Timestamp is the unix timestamp at which this smart contract was deployed."
+    timestamp: Long!
+}
+
 # BlockList is a list of block edges provided by sequential access request.
 type BlockList {
     # Edges contains provided edges of the sequential list.
@@ -477,7 +536,10 @@ type Query {
     "Get an Account information by hash address."
     account(address:Address!):Account!
 
-    "Get block information by number or by hash. If neither is provided, the most recent block is given."
+    """
+    Get block information by number or by hash.
+    If neither is provided, the most recent block is given.
+    """
     block(number:Long, hash: Hash):Block
 
     "Get transaction information for given transaction hash."
@@ -485,22 +547,29 @@ type Query {
 
     """
     Get list of Blocks with at most <count> edges.
-    If <count> is positive, return edges after the cursor, if negative, return edges before the cursor.
-    For udefined cursor, positive <count> starts the list from top, negative <count> starts the list from bottom.
+    If <count> is positive, return edges after the cursor,
+    if negative, return edges before the cursor.
+    For udefined cursor, positive <count> starts the list from top,
+    negative <count> starts the list from bottom.
     """
     blocks(cursor:Cursor, count:Int!):BlockList!
 
     """
     Get list of Transactions with at most <count> edges.
-    If <count> is positive, return edges after the cursor, if negative, return edges before the cursor.
-    For udefined cursor, positive <count> starts the list from top, negative <count> starts the list from bottom.
+    If <count> is positive, return edges after the cursor,
+    if negative, return edges before the cursor.
+    For udefined cursor, positive <count> starts the list from top,
+    negative <count> starts the list from bottom.
     """
     transactions(cursor:Cursor, count:Int!):TransactionList!
 
     "Get the id of the current epoch of the Opera blockchain."
     currentEpoch:Long!
 
-    "Get information about specified epoch. Returns current epoch information if id is not provided."
+    """
+    Get information about specified epoch. Returns current epoch information
+    if id is not provided.
+    """
     epoch(id: Long!): Epoch!
 
     "The last staker id in Opera blockchain."
@@ -509,7 +578,10 @@ type Query {
     "The number of stakers in Opera blockchain."
     stakersNum: Long!
 
-    "Staker information. The staker is loaded either by numberic ID, or by address. null if none is provided."
+    """
+    Staker information. The staker is loaded either by numberic ID,
+    or by address. null if none is provided.
+    """
     staker(id: Long, address: Address): Staker
 
     "List of staker information from SFC smart contract."
@@ -532,7 +604,8 @@ type Query {
     price(to:String!):Price!
 
     """
-    Get calculated staking rewards for an account or given staking amount in FTM tokens.
+    Get calculated staking rewards for an account or given
+    staking amount in FTM tokens.
     At least one of the address and amount parameters must be provided.
     If you provide both, the address takes precedence and the amount is ignored.
     """

@@ -156,6 +156,23 @@ func (acc *Account) Delegation() (*Delegator, error) {
 	return NewDelegator(dl, acc.repo), nil
 }
 
+// Contract resolves the account smart contract detail,
+// if the account is a smart contract address.
+func (acc *Account) Contract() (*Contract, error) {
+	// is this actually a contract account?
+	if acc.ContractTx == nil {
+		return nil, nil
+	}
+
+	// get new contract
+	con, err := acc.repo.Contract(&acc.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewContract(con, acc.repo), nil
+}
+
 // getStaker returns lazy loaded staker information.
 func (acc *Account) getStaker() (*types.Staker, error) {
 	// try to get the staker info

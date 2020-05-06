@@ -31,6 +31,10 @@
           "user-agent": "JS GraphQL"
         },
         "introspect": false
+      },
+      "Remote GraphQL Fantom.Network": {
+        "url": "https://xapi2.fantom.network/graphql",
+        "introspect": false
       }
     }
   }

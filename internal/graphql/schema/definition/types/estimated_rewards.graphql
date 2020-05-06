@@ -3,21 +3,35 @@ type EstimatedRewards {
     "Amount of FTM tokens expected to be staked for the calculation."
     staked: Long!
 
-    "dailyReward represents amount of FTM tokens estimated to be rewarded for staked amount in average per day."
+    """
+    dailyReward represents amount of FTM tokens estimated
+    to be rewarded for staked amount in average per day.
+    """
     dailyReward: BigInt!
 
-    "weeklyReward represents amount of FTM tokens estimated to be rewarded for staked amount in average per week."
+    """
+    weeklyReward represents amount of FTM tokens estimated
+    to be rewarded for staked amount in average per week.
+    """
     weeklyReward: BigInt!
 
-    "monthlyReward represents amount of FTM tokens estimated to be rewarded for staked amount in average per month."
+    """
+    monthlyReward represents amount of FTM tokens estimated
+    to be rewarded for staked amount in average per month.
+    """
     monthlyReward: BigInt!
 
-    "yearlyReward represents amount of FTM tokens estimated to be rewarded for staked amount in average per year."
+    """
+    yearlyReward represents amount of FTM tokens estimated
+    to be rewarded for staked amount in average per year.
+    """
     yearlyReward: BigInt!
 
     """
-    currentRewardYearRate represents average reward rate for any staked amount in average per year.
-    The value is calculated as linear gross proceeds for staked amount of tokens yearly.
+    currentRewardYearRate represents average reward rate
+    for any staked amount in average per year.
+    The value is calculated as linear gross proceeds for staked amount
+    of tokens yearly.
     """
     currentRewardRateYearly: Int!
 

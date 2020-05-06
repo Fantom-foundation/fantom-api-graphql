@@ -7,7 +7,8 @@ type Account {
     balance: BigInt!
 
     """
-    TotalValue is the current total value fo the account in WEI. It includes available balance,
+    TotalValue is the current total value fo the account in WEI.
+    It includes available balance,
     delegated amount and pending staking rewards.
     """
     totalValue: BigInt!
@@ -15,7 +16,10 @@ type Account {
     "txCount represents number of transaction sent from the account."
     txCount: Long!
 
-    "txList represents list of transactions of the account in form of TransactionList."
+    """
+    txList represents list of transactions of the account
+    in form of TransactionList.
+    """
     txList (cursor:Cursor, count:Int!): TransactionList!
 
     "Details of a staker, if the account is a staker."
@@ -23,4 +27,7 @@ type Account {
 
     "Details of delegation, if the account is a delegator."
     delegation: Delegator
+
+    "Details about smart contract, if the account is a smart contract."
+    contract: SmartContract
 }

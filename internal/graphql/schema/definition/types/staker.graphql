@@ -16,13 +16,15 @@ type Staker {
     delegatedMe: BigInt
 
     """
-    Maximum total amount of tokens allowed to be delegated to the staker in WEI.
+    Maximum total amount of tokens allowed to be delegated
+    to the staker in WEI.
     This value depends on the amount of self staked tokens.
     """
     totalDelegatedLimit: BigInt!
 
     """
-    Maximum amount of tokens allowed to be delegated to the staker on a new delegation in WEI.
+    Maximum amount of tokens allowed to be delegated to the staker
+    on a new delegation in WEI.
     This value depends on the amount of self staked tokens.
     """
     delegatedLimit: BigInt!
@@ -80,7 +82,8 @@ type Staker {
 
     """
     List of delegations of this staker. Cursor is used to obtain specific slice
-    of the staker's delegations. The most recent delegations are provided if cursor is omitted.
+    of the staker's delegations. The most recent delegations
+    are provided if cursor is omitted.
     """
     delegations(cursor: Cursor, count: Int = 25):DelegatorList!
 

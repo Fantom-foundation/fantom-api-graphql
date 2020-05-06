@@ -3,7 +3,10 @@ type DelegatorList {
     "Edges contains provided edges of the sequential list."
     edges: [DelegatorListEdge!]!
 
-    "TotalCount is the maximum number of delegations available for sequential access."
+    """
+    TotalCount is the maximum number of delegations
+    available for sequential access.
+    """
     totalCount: BigInt!
 
     "PageInfo is an information about the current page of delegation edges."

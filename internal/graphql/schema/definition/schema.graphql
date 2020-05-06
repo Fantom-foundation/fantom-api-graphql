@@ -13,7 +13,10 @@ type Query {
     "Get an Account information by hash address."
     account(address:Address!):Account!
 
-    "Get block information by number or by hash. If neither is provided, the most recent block is given."
+    """
+    Get block information by number or by hash.
+    If neither is provided, the most recent block is given.
+    """
     block(number:Long, hash: Hash):Block
 
     "Get transaction information for given transaction hash."
@@ -21,22 +24,29 @@ type Query {
 
     """
     Get list of Blocks with at most <count> edges.
-    If <count> is positive, return edges after the cursor, if negative, return edges before the cursor.
-    For udefined cursor, positive <count> starts the list from top, negative <count> starts the list from bottom.
+    If <count> is positive, return edges after the cursor,
+    if negative, return edges before the cursor.
+    For udefined cursor, positive <count> starts the list from top,
+    negative <count> starts the list from bottom.
     """
     blocks(cursor:Cursor, count:Int!):BlockList!
 
     """
     Get list of Transactions with at most <count> edges.
-    If <count> is positive, return edges after the cursor, if negative, return edges before the cursor.
-    For udefined cursor, positive <count> starts the list from top, negative <count> starts the list from bottom.
+    If <count> is positive, return edges after the cursor,
+    if negative, return edges before the cursor.
+    For udefined cursor, positive <count> starts the list from top,
+    negative <count> starts the list from bottom.
     """
     transactions(cursor:Cursor, count:Int!):TransactionList!
 
     "Get the id of the current epoch of the Opera blockchain."
     currentEpoch:Long!
 
-    "Get information about specified epoch. Returns current epoch information if id is not provided."
+    """
+    Get information about specified epoch. Returns current epoch information
+    if id is not provided.
+    """
     epoch(id: Long!): Epoch!
 
     "The last staker id in Opera blockchain."
@@ -45,7 +55,10 @@ type Query {
     "The number of stakers in Opera blockchain."
     stakersNum: Long!
 
-    "Staker information. The staker is loaded either by numberic ID, or by address. null if none is provided."
+    """
+    Staker information. The staker is loaded either by numberic ID,
+    or by address. null if none is provided.
+    """
     staker(id: Long, address: Address): Staker
 
     "List of staker information from SFC smart contract."
@@ -68,7 +81,8 @@ type Query {
     price(to:String!):Price!
 
     """
-    Get calculated staking rewards for an account or given staking amount in FTM tokens.
+    Get calculated staking rewards for an account or given
+    staking amount in FTM tokens.
     At least one of the address and amount parameters must be provided.
     If you provide both, the address takes precedence and the amount is ignored.
     """
