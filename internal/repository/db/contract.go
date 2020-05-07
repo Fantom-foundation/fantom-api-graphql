@@ -38,6 +38,9 @@ const (
 	// fiContractSource is the name of the contract source code field.
 	fiContractSource = "sol"
 
+	// fiContractAbi is the name of the contract ABI field.
+	fiContractAbi = "abi"
+
 	// fiContractSourceValidated is the name of the contract source code
 	// validation timestamp field.
 	fiContractSourceValidated = "ok"
@@ -79,6 +82,7 @@ func (db *MongoDbBridge) AddContract(block *types.Block, trx *types.Transaction)
 		{fiContractTimestamp, uint64(block.TimeStamp)},
 		{fiContractName, nil},
 		{fiContractSource, nil},
+		{fiContractAbi, nil},
 		{fiContractSourceValidated, nil},
 	})
 	if err != nil {
@@ -163,6 +167,7 @@ func (db *MongoDbBridge) Contract(addr *common.Address) (*types.Contract, error)
 		TimeStamp   uint64  `bson:"ts"`
 		Name        *string `bson:"name"`
 		SourceCode  *string `bson:"sol"`
+		Abi         *string `bson:"abi"`
 		Validated   *uint64 `bson:"ok"`
 	}
 
@@ -183,6 +188,16 @@ func (db *MongoDbBridge) Contract(addr *common.Address) (*types.Contract, error)
 	// do we have the source code?
 	if row.SourceCode != nil {
 		con.SourceCode = *row.SourceCode
+	}
+
+	// do we have the ABI definition?
+	if row.Abi != nil {
+		con.Abi = *row.Abi
+	}
+
+	// do we have the contract name?
+	if row.Name != nil {
+		con.Name = *row.Name
 	}
 
 	// do we have the validation time stamp?
