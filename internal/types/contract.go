@@ -8,6 +8,10 @@ import (
 
 // Contract represents an Opera smart contract at the blockchain.
 type Contract struct {
+	// OrdinalIndex is the ordinal contract index in the database.
+	OrdinalIndex uint64
+
+	// Address represents the address of the contract
 	Address common.Address `json:"address"`
 
 	// TransactionHash represents the hash of the contract deployment transaction.
