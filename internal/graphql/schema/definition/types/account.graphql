@@ -29,5 +29,5 @@ type Account {
     delegation: Delegator
 
     "Details about smart contract, if the account is a smart contract."
-    contract: SmartContract
+    contract: Contract
 }

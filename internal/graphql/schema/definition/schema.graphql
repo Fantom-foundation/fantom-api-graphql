@@ -14,6 +14,17 @@ type Query {
     account(address:Address!):Account!
 
     """
+    Get list of Contracts with at most <count> edges.
+    If <count> is positive, return edges after the cursor,
+    if negative, return edges before the cursor.
+    For udefined cursor, positive <count> starts the list from top,
+    negative <count> starts the list from bottom.
+    ValidatedOnly specifies if the list should contain all the Contracts,
+    or just contracts with validated bytecode and available source/ABI.
+    """
+    contracts(validatedOnly: Boolean = false, cursor:Cursor, count:Int!):ContractList!
+
+    """
     Get block information by number or by hash.
     If neither is provided, the most recent block is given.
     """

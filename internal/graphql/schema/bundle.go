@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-05-07 19:21
+// Auto generated GraphQL schema bundle; created 2020-05-07 22:30
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -101,7 +101,7 @@ type Account {
     delegation: Delegator
 
     "Details about smart contract, if the account is a smart contract."
-    contract: SmartContract
+    contract: Contract
 }
 
 # EstimatedRewards represents a calculated rewards etimation for an account or amount staked
@@ -296,6 +296,24 @@ type Epoch {
     totalSupply: BigInt!
 }
 
+# ContractList is a list of smart contract edges provided by sequential access request.
+type ContractList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ContractListEdge!]!
+
+    # TotalCount is the maximum number of contracts available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of contract edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of transactions.
+type ContractListEdge {
+    cursor: Cursor!
+    contract: Contract!
+}
+
 # Price represents price information of core Opera token
 type Price {
     "Source unit symbol."
@@ -468,8 +486,11 @@ type Block {
     txList: [Transaction!]!
 }
 
-# SmartContract defines block-chain smart contract information container
-type SmartContract {
+# Contract defines block-chain smart contract information container
+type Contract {
+    "Address represents the contract address."
+    address: Address!
+
     "DeployedBy represents the smart contract deployment transaction reference."
     deployedBy: Transaction!
 
@@ -547,6 +568,17 @@ type Query {
 
     "Get an Account information by hash address."
     account(address:Address!):Account!
+
+    """
+    Get list of Contracts with at most <count> edges.
+    If <count> is positive, return edges after the cursor,
+    if negative, return edges before the cursor.
+    For udefined cursor, positive <count> starts the list from top,
+    negative <count> starts the list from bottom.
+    ValidatedOnly specifies if the list should contain all the Contracts,
+    or just contracts with validated bytecode and available source/ABI.
+    """
+    contracts(validatedOnly: Boolean = false, cursor:Cursor, count:Int!):ContractList!
 
     """
     Get block information by number or by hash.

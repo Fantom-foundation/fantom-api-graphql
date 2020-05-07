@@ -1,5 +1,8 @@
-# SmartContract defines block-chain smart contract information container
-type SmartContract {
+# Contract defines block-chain smart contract information container
+type Contract {
+    "Address represents the contract address."
+    address: Address!
+
     "DeployedBy represents the smart contract deployment transaction reference."
     deployedBy: Transaction!
 

@@ -67,7 +67,7 @@ func (tl *TransactionList) PageInfo() (*ListPageInfo, error) {
 	return NewListPageInfo(&first, &last, !tl.list.IsEnd, !tl.list.IsStart)
 }
 
-// Edges resolves list of block list edges for the linked block list.
+// Edges resolves list of transaction list edges for the linked transaction list.
 func (tl *TransactionList) Edges() []*TransactionListEdge {
 	// do we have any items? return empty list if not
 	if tl.list == nil || tl.list.Collection == nil || len(tl.list.Collection) == 0 {
