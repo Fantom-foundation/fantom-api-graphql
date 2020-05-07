@@ -140,6 +140,9 @@ type Repository interface {
 	// Contract extract a smart contract information by address if available.
 	Contract(*common.Address) (*types.Contract, error)
 
+	// Contracts returns list of smart contracts at Opera blockchain.
+	Contracts(bool, *string, int32) (*types.ContractList, error)
+
 	// Close and cleanup the repository.
 	Close()
 }

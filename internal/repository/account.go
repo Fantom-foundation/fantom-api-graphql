@@ -33,11 +33,6 @@ func (p *proxy) Account(addr *common.Address) (*types.Account, error) {
 	return acc, nil
 }
 
-// Contract extract a smart contract information by account address, if available.
-func (p *proxy) Contract(addr *common.Address) (*types.Contract, error) {
-	return p.db.Contract(addr)
-}
-
 // getAccount builds the account representation after validating it against Lachesis node.
 func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 	// at least we know the account existed

@@ -22,7 +22,7 @@ type ContractList struct {
 	IsEnd bool
 }
 
-// Reverse reverses the order of transactions in the list.
+// Reverse reverses the order of contracts in the list.
 func (c *ContractList) Reverse() {
 	// anything to swap at all?
 	if c.Collection == nil || len(c.Collection) < 2 {
