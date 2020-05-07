@@ -128,6 +128,7 @@ func (db *MongoDbBridge) transactionIndex(block *types.Block, trx *types.Transac
 }
 
 // getTrxOrdinalIndex calculates ordinal index in the whole blockchain.
+// This gives us about 700 years of index space with 50k blocks per second rate + 10 years to fix than.
 func trxOrdinalIndex(block uint64, trxIndex uint64) uint64 {
 	return (block << 14) | trxIndex
 }
@@ -254,7 +255,7 @@ func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, coun
 		IsEnd:      false,
 	}
 
-	// db.transaction.createIndex({_id:1,orx:-1},{unique:true, name:"ix-tx-ordinal"})
+	// db.transaction.createIndex({_id:1,orx:-1},{unique:true})
 	// find out the cursor ordinal index
 	if cursor == nil && count > 0 {
 		// get the highest available ordinal index (top transaction)
