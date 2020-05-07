@@ -21,6 +21,7 @@ const (
 	fiContractPk = "_id"
 
 	// fiContractOrdinalIndex is the name of the contract ordinal index in the blockchain.
+	// db.contract.createIndex({_id:1,orx:-1},{unique:true})
 	fiContractOrdinalIndex = "orx"
 
 	// fiContractAddress is the name of the address field of the contract.
