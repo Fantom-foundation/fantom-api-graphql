@@ -3,11 +3,17 @@ type SmartContract {
     "DeployedBy represents the smart contract deployment transaction reference."
     deployedBy: Transaction!
 
-    "transactionHash represents the smart contractdeployment transaction hash."
+    "transactionHash represents the smart contract deployment transaction hash."
     transactionHash: Hash!
 
     "Smart contract name. Empty if not available."
     name: String!
+
+    "Smart contract version identifier. Empty if not available."
+    version: String!
+
+    "Smart contract compiler identifier. Empty if not available."
+    compiler: String!
 
     "Smart contract source code. Empty if not available."
     sourceCode: String!

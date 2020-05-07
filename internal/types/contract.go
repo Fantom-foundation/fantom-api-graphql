@@ -19,6 +19,12 @@ type Contract struct {
 	// Name of the smart contract, if available.
 	Name string `json:"name"`
 
+	// Smart contract version identifier, if available.
+	Version string `json:"ver"`
+
+	// Smart contract compiler identifier, if available.
+	Compiler string `json:"cv"`
+
 	// SourceCode is the smart contract source code, if available.
 	SourceCode string `json:"sol"`
 

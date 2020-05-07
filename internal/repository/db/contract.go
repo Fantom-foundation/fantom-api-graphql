@@ -35,6 +35,12 @@ const (
 	// fiContractName is the name of the contract name field.
 	fiContractName = "name"
 
+	// fiContractVersion is the name of the contract version id field.
+	fiContractVersion = "ver"
+
+	// fiContractCompiler is the name of the contract compiler id field.
+	fiContractCompiler = "cv"
+
 	// fiContractSource is the name of the contract source code field.
 	fiContractSource = "sol"
 
@@ -81,6 +87,8 @@ func (db *MongoDbBridge) AddContract(block *types.Block, trx *types.Transaction)
 		{fiContractTransaction, trx.Hash.String()},
 		{fiContractTimestamp, uint64(block.TimeStamp)},
 		{fiContractName, nil},
+		{fiContractVersion, nil},
+		{fiContractCompiler, nil},
 		{fiContractSource, nil},
 		{fiContractAbi, nil},
 		{fiContractSourceValidated, nil},
@@ -166,6 +174,8 @@ func (db *MongoDbBridge) Contract(addr *common.Address) (*types.Contract, error)
 		Transaction string  `bson:"tx"`
 		TimeStamp   uint64  `bson:"ts"`
 		Name        *string `bson:"name"`
+		Version     *string `bson:"ver"`
+		Compiler    *string `bson:"cv"`
 		SourceCode  *string `bson:"sol"`
 		Abi         *string `bson:"abi"`
 		Validated   *uint64 `bson:"ok"`

@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-05-07 08:55
+// Auto generated GraphQL schema bundle; created 2020-05-07 19:21
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -473,11 +473,17 @@ type SmartContract {
     "DeployedBy represents the smart contract deployment transaction reference."
     deployedBy: Transaction!
 
-    "transactionHash represents the smart contractdeployment transaction hash."
+    "transactionHash represents the smart contract deployment transaction hash."
     transactionHash: Hash!
 
     "Smart contract name. Empty if not available."
     name: String!
+
+    "Smart contract version identifier. Empty if not available."
+    version: String!
+
+    "Smart contract compiler identifier. Empty if not available."
+    compiler: String!
 
     "Smart contract source code. Empty if not available."
     sourceCode: String!
