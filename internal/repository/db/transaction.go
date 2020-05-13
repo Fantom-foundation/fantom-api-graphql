@@ -19,6 +19,7 @@ const (
 	fiTransactionPk = "_id"
 
 	// fiTransactionOrdinalIndex is the name of the transaction ordinal index in the blockchain field.
+	// db.transaction.createIndex({_id:1,orx:-1},{unique:true})
 	fiTransactionOrdinalIndex = "orx"
 
 	// fiTransactionBlock is the name of the block number field of the transaction.
@@ -255,7 +256,6 @@ func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, coun
 		IsEnd:      false,
 	}
 
-	// db.transaction.createIndex({_id:1,orx:-1},{unique:true})
 	// find out the cursor ordinal index
 	if cursor == nil && count > 0 {
 		// get the highest available ordinal index (top transaction)
