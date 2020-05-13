@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-05-07 22:30
+// Auto generated GraphQL schema bundle; created 2020-05-13 23:42
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -503,6 +503,9 @@ type Contract {
     "Smart contract version identifier. Empty if not available."
     version: String!
 
+    "Smart contract author contact. Empty if not available."
+    supportContact: String!
+
     "Smart contract compiler identifier. Empty if not available."
     compiler: String!
 
@@ -520,6 +523,25 @@ type Contract {
 
     "Timestamp is the unix timestamp at which this smart contract was deployed."
     timestamp: Long!
+}
+
+# ContractValidationInput represents a set of data sent from client
+# to validate deployed contract with the provided source code.
+input ContractValidationInput {
+    "Address of the contract being validated."
+    address: Address!
+
+    "Optional smart contract name."
+    name: String
+
+    "Optional smart contract version identifier."
+    version: String
+
+    "Optional smart contract author contact."
+    supportContact: String
+
+    "Smart contract source code."
+    sourceCode: String!
 }
 
 # BlockList is a list of block edges provided by sequential access request.
@@ -663,6 +685,15 @@ type Mutation {
     The tx parameter represents raw signed and RLP encoded transaction data.
     """
     sendTransaction(tx: Bytes!):Transaction
+
+    """
+    Validate a deployed contract byte code with the provided source code
+    so potential users can check the contract source code, access contract ABI
+    to be able to interact with the contract and get the right metadata.
+    Returns updated contract information. If the contract can not be validated,
+    it raises a GraphQL error.
+    """
+    validateContract(contract: ContractValidationInput): Contract!
 }
 
 # Subscriptions to live events broadcasting

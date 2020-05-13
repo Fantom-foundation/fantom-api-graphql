@@ -26,6 +26,9 @@ type Contract struct {
 	// Smart contract version identifier, if available.
 	Version string `json:"ver"`
 
+	// SupportContact represents a contact to the smart contract support, if available.
+	SupportContact string `json:"contact"`
+
 	// Smart contract compiler identifier, if available.
 	Compiler string `json:"cv"`
 

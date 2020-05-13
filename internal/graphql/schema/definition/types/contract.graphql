@@ -15,6 +15,9 @@ type Contract {
     "Smart contract version identifier. Empty if not available."
     version: String!
 
+    "Smart contract author contact. Empty if not available."
+    supportContact: String!
+
     "Smart contract compiler identifier. Empty if not available."
     compiler: String!
 
@@ -32,4 +35,23 @@ type Contract {
 
     "Timestamp is the unix timestamp at which this smart contract was deployed."
     timestamp: Long!
+}
+
+# ContractValidationInput represents a set of data sent from client
+# to validate deployed contract with the provided source code.
+input ContractValidationInput {
+    "Address of the contract being validated."
+    address: Address!
+
+    "Optional smart contract name."
+    name: String
+
+    "Optional smart contract version identifier."
+    version: String
+
+    "Optional smart contract author contact."
+    supportContact: String
+
+    "Smart contract source code."
+    sourceCode: String!
 }
