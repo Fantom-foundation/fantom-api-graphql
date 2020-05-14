@@ -115,7 +115,7 @@ type Mutation {
     Returns updated contract information. If the contract can not be validated,
     it raises a GraphQL error.
     """
-    validateContract(contract: ContractValidationInput): Contract!
+    validateContract(contract: ContractValidationInput!): Contract!
 }
 
 # Subscriptions to live events broadcasting

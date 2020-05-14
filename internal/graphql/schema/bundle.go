@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-05-13 23:42
+// Auto generated GraphQL schema bundle; created 2020-05-14 21:04
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -531,13 +531,13 @@ input ContractValidationInput {
     "Address of the contract being validated."
     address: Address!
 
-    "Optional smart contract name."
+    "Optional smart contract name. Maximum allowed length is 64 characters."
     name: String
 
-    "Optional smart contract version identifier."
+    "Optional smart contract version identifier. Maximum allowed length is 14 characters."
     version: String
 
-    "Optional smart contract author contact."
+    "Optional smart contract author contact. Maximum allowed length is 64 characters."
     supportContact: String
 
     "Smart contract source code."
@@ -693,7 +693,7 @@ type Mutation {
     Returns updated contract information. If the contract can not be validated,
     it raises a GraphQL error.
     """
-    validateContract(contract: ContractValidationInput): Contract!
+    validateContract(contract: ContractValidationInput!): Contract!
 }
 
 # Subscriptions to live events broadcasting

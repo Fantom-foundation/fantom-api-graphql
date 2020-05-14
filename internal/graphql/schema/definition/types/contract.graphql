@@ -43,13 +43,13 @@ input ContractValidationInput {
     "Address of the contract being validated."
     address: Address!
 
-    "Optional smart contract name."
+    "Optional smart contract name. Maximum allowed length is 64 characters."
     name: String
 
-    "Optional smart contract version identifier."
+    "Optional smart contract version identifier. Maximum allowed length is 14 characters."
     version: String
 
-    "Optional smart contract author contact."
+    "Optional smart contract author contact. Maximum allowed length is 64 characters."
     supportContact: String
 
     "Smart contract source code."

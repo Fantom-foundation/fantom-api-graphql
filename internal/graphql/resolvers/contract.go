@@ -4,12 +4,60 @@ package resolvers
 import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
+	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"html"
+	"regexp"
 )
+
+const (
+	// scValidationMinSourceCodeLength is the minimum length of a validated
+	// smart contract source code.
+	scMinSourceCodeLength = 32
+
+	// scMaxNameLength is the maximum accepted length of a smart contract name.
+	scMaxNameLength = 64
+
+	// scMaxNameLength is the maximum accepted length of a smart contract version.
+	scMaxVersionLength = 14
+
+	// scMaxSupportLinkLength is the maximum accepted length of smart contract
+	// support link.
+	scMaxSupportLinkLength = 64
+)
+
+// scVersionSyntaxRegexp represents a regular expression for testing smart contract
+// version string syntax. We enforce specific syntax on provided contract versions.
+var scVersionSyntaxRegexp = regexp.MustCompile("^\\w?(\\d+\\.)+\\d+$")
 
 // Contract represents resolvable blockchain smart contract structure.
 type Contract struct {
 	repo repository.Repository
 	types.Contract
+}
+
+// ContractValidationInput represents an input structure used
+// to validate contract source code against deployed contract byte code.
+type ContractValidationInput struct {
+	// Address represents the deployment address of the contract being validated.
+	Address common.Address
+
+	// Name represents an optional name of the contract.
+	Name *string
+
+	// Version represents an optional version of the contract.
+	// We assume version to be constructed from numbers and dots
+	// with optional character at the beginning.
+	// I.e. "v1.5.17"
+	Version *string
+
+	// SupportContact represents an optional contact information
+	// the contract validator wants to publish with the contract
+	// details.
+	SupportContact *string
+
+	// SourceCode represents the Solidity source code to be validated.
+	SourceCode string
 }
 
 // NewContract builds new resolvable smart contract structure.
@@ -30,4 +78,99 @@ func (con *Contract) DeployedBy() (*Transaction, error) {
 	// make the resolvable transaction object
 	trx := NewTransaction(tr, con.repo)
 	return trx, nil
+}
+
+// sanitizeStringOption sanitizes and validates optional string value from the
+// smart contract validation check.
+func sanitizeStringOption(o *string, length int) (bool, *string) {
+	// nil is always ok
+	if o == nil {
+		return true, nil
+	}
+
+	// escape the string
+	val := html.EscapeString(*o)
+	if len(val) > length {
+		return false, nil
+	}
+
+	return true, &val
+}
+
+// isValidationValid checks the contract validation input and asses
+// if it can be processed.
+func isValidationValid(in *ContractValidationInput) error {
+	// source code must be at least defined number of glyphs long
+	if len(in.SourceCode) < scMinSourceCodeLength {
+		return fmt.Errorf("contract source code is too short to be valid")
+	}
+
+	// collect sanitize result
+	var res bool
+
+	// check the name of the contract
+	if res, in.Name = sanitizeStringOption(in.Name, scMaxNameLength); !res {
+		return fmt.Errorf("contract name is too long to be valid")
+	}
+
+	// check the version of the contract
+	if res, in.Version = sanitizeStringOption(in.Version, scMaxVersionLength); !res {
+		return fmt.Errorf("contract version is too long to be valid")
+	}
+
+	// check the contact information of the contract
+	if res, in.SupportContact = sanitizeStringOption(in.SupportContact, scMaxSupportLinkLength); !res {
+		return fmt.Errorf("contract contact information is too long to be valid")
+	}
+
+	// validate the version syntax
+	if in.Version != nil && !scVersionSyntaxRegexp.MatchString(*in.Version) {
+		return fmt.Errorf("invalid version information provided")
+	}
+
+	return nil
+}
+
+// ValidateContract resolves smart contract source code vs. deployed byte code and marks
+// the contract as validated if the match is found. Peer API points are ringed on success
+// to notify them about the change.
+func (rs *rootResolver) ValidateContract(args *struct{ Contract ContractValidationInput }) (*Contract, error) {
+	// validate the input
+	if err := isValidationValid(&args.Contract); err != nil {
+		rs.log.Errorf("can not validate contract, validation request is not valid; %s", err.Error())
+		return nil, err
+	}
+
+	// get a contract to be validated if any
+	sc, err := rs.repo.Contract(&args.Contract.Address)
+	if err != nil {
+		rs.log.Errorf("contract [%s] not found", args.Contract.Address)
+		return nil, err
+	}
+
+	// update the contract detail and pass it to validation
+	sc.SourceCode = args.Contract.SourceCode
+
+	// pass the intended name
+	if args.Contract.Name != nil {
+		sc.Name = *args.Contract.Name
+	}
+
+	// pass the intended version
+	if args.Contract.Version != nil {
+		sc.Version = *args.Contract.Version
+	}
+
+	// pass the intended support contact
+	if args.Contract.SupportContact != nil {
+		sc.Name = *args.Contract.SupportContact
+	}
+
+	// do the validation
+	if err := rs.repo.ValidateContract(sc); err != nil {
+		rs.log.Errorf("contract validation failed; %s", err.Error())
+		return nil, err
+	}
+
+	return NewContract(sc, rs.repo), nil
 }
