@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"strconv"
+	"time"
 )
 
 const (
@@ -81,17 +82,17 @@ func (db *MongoDbBridge) AddContract(block *types.Block, trx *types.Transaction)
 		return fmt.Errorf("not a contract creation transaction")
 	}
 
-	// get the collection for transactions
+	// get the collection for contracts
 	col := db.client.Database(offChainDatabaseName).Collection(coContract)
 
-	// check if the transaction already exists
+	// check if the contract already exists
 	exists, err := db.isContractKnown(col, trx.ContractAddress)
 	if err != nil {
 		db.log.Critical(err)
 		return err
 	}
 
-	// if the transaction already exists, we don't need to do anything here
+	// if the contract already exists, we don't need to do anything here
 	if exists {
 		return nil
 	}
@@ -117,6 +118,48 @@ func (db *MongoDbBridge) AddContract(block *types.Block, trx *types.Transaction)
 
 	// inform and quit
 	db.log.Debugf("added smart contract reference [%s]", trx.ContractAddress.String())
+	return nil
+}
+
+// UpdateContract updates smart contract information in database to reflect
+// new validation or similar changes passed from repository.
+func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
+	// get the collection for contracts
+	col := db.client.Database(offChainDatabaseName).Collection(coContract)
+
+	// check if the contract already exists
+	exists, err := db.isContractKnown(col, &sc.Address)
+	if err != nil {
+		db.log.Critical(err)
+		return err
+	}
+
+	// if contract can not be found, we can update
+	if !exists {
+		db.log.Errorf("can not find contract %s for update", sc.Address.String())
+		return fmt.Errorf("contract not found")
+	}
+
+	// update the contract details
+	_, err = col.UpdateOne(context.Background(),
+		bson.D{{fiContractPk, sc.Address.String()}},
+		bson.D{
+			{"$set", bson.D{
+				{fiContractName, sc.Name},
+				{fiContractVersion, sc.Version},
+				{fiContractCompiler, sc.Compiler},
+				{fiContractSource, sc.SourceCode},
+				{fiContractAbi, sc.Abi},
+				{fiContractSourceValidated, uint64(time.Now().Unix())},
+			}},
+		})
+
+	// error on update?
+	if err != nil {
+		db.log.Errorf("can not update contract details; %s", err.Error())
+		return err
+	}
+
 	return nil
 }
 

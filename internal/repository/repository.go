@@ -16,6 +16,7 @@ import (
 	"fantom-api-graphql/internal/repository/rpc"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ftm "github.com/ethereum/go-ethereum/rpc"
 )
@@ -143,6 +144,11 @@ type Repository interface {
 	// Contracts returns list of smart contracts at Opera blockchain.
 	Contracts(bool, *string, int32) (*types.ContractList, error)
 
+	// ValidateContract tries to validate contract byte code using
+	// provided source code. If successful, the contract information
+	// is updated the the repository.
+	ValidateContract(*types.Contract) error
+
 	// Close and cleanup the repository.
 	Close()
 }
@@ -154,6 +160,9 @@ type proxy struct {
 	db    *db.MongoDbBridge
 	rpc   *rpc.FtmBridge
 	log   logger.Logger
+
+	// smart contract compilers
+	solCompiler string
 
 	// service orchestrator reference
 	orc *orchestrator
@@ -182,12 +191,21 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 		return nil, err
 	}
 
+	// try to validate the solidity compiler by asking for it's version
+	if _, err := compiler.SolidityVersion(cfg.SolCompilerPath); err != nil {
+		log.Criticalf("can not invoke the Solidity compiler, %s", err.Error())
+		return nil, err
+	}
+
 	// construct the proxy instance
 	p := proxy{
 		cache: caBridge,
 		db:    dbBridge,
 		rpc:   rpcBridge,
 		log:   log,
+
+		// keep reference to the SOL compiler
+		solCompiler: cfg.SolCompilerPath,
 	}
 
 	// propagate callbacks
