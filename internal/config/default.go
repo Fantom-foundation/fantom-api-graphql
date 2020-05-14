@@ -29,6 +29,9 @@ const (
 
 	// defCacheEvictionTime holds default time for in-memory eviction periods
 	defCacheEvictionTime = 30 * time.Minute
+
+	// defSolCompilerPath represents the default SOL compiler path
+	defSolCompilerPath = "/usr/bin/solc"
 )
 
 // defCorsAllowOrigins holds CORS default allowed origins.
@@ -44,6 +47,7 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyLachesisUrl, defLachesisUrl)
 	cfg.SetDefault(keyMongoUrl, defMongoUrl)
 	cfg.SetDefault(keyCacheEvictionTime, defCacheEvictionTime)
+	cfg.SetDefault(keySolCompilerPath, defSolCompilerPath)
 
 	// cors
 	cfg.SetDefault(keyCorsAllowOrigins, defCorsAllowOrigins)

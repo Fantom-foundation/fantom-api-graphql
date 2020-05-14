@@ -12,6 +12,7 @@ const (
 	envMongoUrl          = "FANTOM_API_MONGO_URL"
 	envCorsAllowOrigins  = "FANTOM_API_CORS_ORIGINS"
 	envCacheEvictionTime = "FANTOM_API_CACHE_EVICTION"
+	envSolCompilerPath   = "FANTOM_SOL_COMPILER"
 )
 
 // bindEnv binds configuration options to environment variables.
@@ -55,6 +56,11 @@ func bindEnv(cfg *viper.Viper) error {
 
 	// in-memory cache eviction time
 	if err := cfg.BindEnv(keyCacheEvictionTime, envCacheEvictionTime); nil != err {
+		return err
+	}
+
+	// SOL compiler path
+	if err := cfg.BindEnv(keySolCompilerPath, envSolCompilerPath); nil != err {
 		return err
 	}
 

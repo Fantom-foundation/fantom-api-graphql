@@ -15,6 +15,7 @@ const (
 	flagMongoUrlUsage      = "MongoDB connection string."
 	flagCorsAllowOrigins   = "List of CORS allowed origins."
 	flagCacheEvictionTime  = "Time after which entry can be evicted from in-memory cache."
+	flagSolCompilerPath    = "Path to a SOL compiler executable."
 )
 
 // bindFlags defines command line flags set and binds it with the config.
@@ -28,6 +29,7 @@ func bindFlags(cfg *viper.Viper) error {
 	pflag.String(keyMongoUrl, defMongoUrl, flagMongoUrlUsage)
 	pflag.Duration(keyCorsAllowOrigins, defCacheEvictionTime, flagCacheEvictionTime)
 	pflag.StringSlice(keyCacheEvictionTime, defCorsAllowOrigins, flagCorsAllowOrigins)
+	pflag.String(keySolCompilerPath, defSolCompilerPath, flagSolCompilerPath)
 
 	// parse the options
 	pflag.Parse()

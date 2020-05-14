@@ -29,6 +29,7 @@ const (
 	keyMongoUrl          = "mongo.url"
 	keyCorsAllowOrigins  = "cors.origins"
 	keyCacheEvictionTime = "cache.eviction"
+	keySolCompilerPath   = "sol.compiler"
 )
 
 // Config defines configuration options structure for Fantom API server.
@@ -57,6 +58,9 @@ type Config struct {
 
 	// CacheEvictionTime specifies the time after which entry can be evicted from in-memory cache
 	CacheEvictionTime time.Duration
+
+	// SolCompilerPath represents the path to sol compiler for smart contract validation.
+	SolCompilerPath string
 }
 
 // Load provides a loaded configuration for Fantom API server.
@@ -92,6 +96,7 @@ func Load() (*Config, error) {
 		MongoUrl:          cfg.GetString(keyMongoUrl),
 		CorsAllowOrigins:  cfg.GetStringSlice(keyCorsAllowOrigins),
 		CacheEvictionTime: cfg.GetDuration(keyCacheEvictionTime),
+		SolCompilerPath:   cfg.GetString(keySolCompilerPath),
 	}, nil
 }
 
