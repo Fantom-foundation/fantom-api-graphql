@@ -47,6 +47,9 @@ const (
 	// fiContractSource is the name of the contract source code field.
 	fiContractSource = "sol"
 
+	// fiContractSourceHash is the name of the contract source code hash field.
+	fiContractSourceHash = "soh"
+
 	// fiContractAbi is the name of the contract ABI field.
 	fiContractAbi = "abi"
 
@@ -57,17 +60,18 @@ const (
 
 // ContractRow defines a row in the Contract collection.
 type contractRow struct {
-	Id          string  `bson:"_id"`
-	Orx         uint64  `bson:"orx"`
-	Address     string  `bson:"adr"`
-	Transaction string  `bson:"tx"`
-	TimeStamp   uint64  `bson:"ts"`
-	Name        *string `bson:"name"`
-	Version     *string `bson:"ver"`
-	Compiler    *string `bson:"cv"`
-	SourceCode  *string `bson:"sol"`
-	Abi         *string `bson:"abi"`
-	Validated   *uint64 `bson:"ok"`
+	Id             string  `bson:"_id"`
+	Orx            uint64  `bson:"orx"`
+	Address        string  `bson:"adr"`
+	Transaction    string  `bson:"tx"`
+	TimeStamp      uint64  `bson:"ts"`
+	Name           *string `bson:"name"`
+	Version        *string `bson:"ver"`
+	Compiler       *string `bson:"cv"`
+	SourceCode     *string `bson:"sol"`
+	SourceCodeHash *string `bson:"soh"`
+	Abi            *string `bson:"abi"`
+	Validated      *uint64 `bson:"ok"`
 }
 
 // AddContract stores a smart contract reference in connected persistent storage.
@@ -108,6 +112,7 @@ func (db *MongoDbBridge) AddContract(block *types.Block, trx *types.Transaction)
 		{fiContractVersion, nil},
 		{fiContractCompiler, nil},
 		{fiContractSource, nil},
+		{fiContractSourceHash, nil},
 		{fiContractAbi, nil},
 		{fiContractSourceValidated, nil},
 	})
@@ -140,6 +145,12 @@ func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
 		return fmt.Errorf("contract not found")
 	}
 
+	// set the validation timestamp if needed
+	if sc.Validated == nil {
+		ts := hexutil.Uint64(time.Now().Unix())
+		sc.Validated = &ts
+	}
+
 	// update the contract details
 	_, err = col.UpdateOne(context.Background(),
 		bson.D{{fiContractPk, sc.Address.String()}},
@@ -149,8 +160,9 @@ func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
 				{fiContractVersion, sc.Version},
 				{fiContractCompiler, sc.Compiler},
 				{fiContractSource, sc.SourceCode},
+				{fiContractSourceHash, sc.SourceCodeHash.String()},
 				{fiContractAbi, sc.Abi},
-				{fiContractSourceValidated, uint64(time.Now().Unix())},
+				{fiContractSourceValidated, uint64(*sc.Validated)},
 			}},
 		})
 
@@ -218,6 +230,12 @@ func newContract(row *contractRow) *types.Contract {
 	// do we have the source code?
 	if row.SourceCode != nil {
 		con.SourceCode = *row.SourceCode
+	}
+
+	// do we have the source code hash?
+	if row.SourceCodeHash != nil {
+		hash := types.HexToHash(*row.SourceCodeHash)
+		con.SourceCodeHash = &hash
 	}
 
 	// do we have the ABI definition?

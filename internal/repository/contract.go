@@ -16,7 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"log"
 	"strings"
 )
 
@@ -35,26 +34,47 @@ func (p *proxy) Contracts(validatedOnly bool, cursor *string, count int32) (*typ
 	return p.db.Contracts(validatedOnly, cursor, count)
 }
 
+// cutCodeMetadata removes the IPFS/Swarm metadata information from the code
+// for partial comparison. The current version of the Solidity compiler usually
+// adds metadata to the end of the deployed byte code.
+// @see https://solidity.readthedocs.io/en/latest/metadata.html
+func cutCodeMetadata(bc []byte) []byte {
+	// last 2 bytes are expected to contain metadata length
+	bcLen := uint64(len(bc))
+	cut := uint64(bc[bcLen-2])<<8 | uint64(bc[bcLen-1])
+
+	// are we safely within the byte code size?
+	if cut == 0 || cut >= bcLen-2 {
+		return bc
+	}
+
+	return bc[:bcLen-cut-2]
+}
+
 // compareContractCode compares provided compiled code with the transaction input.
-func compareContractCode(tx *types.Transaction, code *string) (bool, error) {
+func compareContractCode(tx *types.Transaction, code string) (bool, error) {
 	// decode the detail into byte array
-	bc, err := hexutil.Decode(*code)
+	bc, err := hexutil.Decode(code)
 	if err != nil {
 		return false, err
 	}
 
-	// is the transaction input shorter than the compiled contract?
-	// if so there is no chance for pass
+	// remove meta data hash from the byte code so we can compare raw
+	// contract byte content. Such comparison is not perfect since
+	// there could be changes in the source code not reflected
+	// in the byte code. (variables renamed, unused code introduced, etc.)
+	// Safer would be to use full CBOR parser here.
+	bc = cutCodeMetadata(bc)
+
+	// Is the transaction input shorter than the compiled contract?
+	// If so there is no chance for pass.
 	if len(tx.InputData) < len(bc) {
 		return false, nil
 	}
 
-	// get the length we need to compare
-	n := len(bc)
-	res := bytes.Compare(bc, tx.InputData[:n])
-
-	// log the comparison entries and process result
-	log.Printf("[:%d] %d = [%s]\n[%s]", n, res, hexutil.Bytes(bc).String(), tx.InputData[:n].String())
+	// compare only up to <bc> length, the rest is metadata
+	// and constructor parameters
+	res := bytes.Compare(bc, tx.InputData[:len(bc)])
 
 	// return the comparison result
 	return res == 0, nil
@@ -102,11 +122,8 @@ func (p *proxy) ValidateContract(sc *types.Contract) error {
 
 	// loop over contracts ad try to validate one of them
 	for name, detail := range contracts {
-		// log the content
-		p.log.Debugf("Sol %s: [%s]", name, detail.Code)
-
 		// check if the compiled byte code match with the deployed contract
-		match, err := compareContractCode(tx, &detail.Code)
+		match, err := compareContractCode(tx, detail.Code)
 		if err != nil {
 			p.log.Errorf("contract byte code comparison failed")
 			return err
@@ -137,5 +154,5 @@ func (p *proxy) ValidateContract(sc *types.Contract) error {
 	}
 
 	// validation fails
-	return fmt.Errorf("contract source code doesnt match with the deployed byte code")
+	return fmt.Errorf("contract source code does not match with the deployed byte code")
 }

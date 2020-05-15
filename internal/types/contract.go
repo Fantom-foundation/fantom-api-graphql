@@ -35,6 +35,10 @@ type Contract struct {
 	// SourceCode is the smart contract source code, if available.
 	SourceCode string `json:"sol"`
 
+	// SourceCodeHash represents a hash code of the stored contract
+	// source code. Is nil if the source code is not available.
+	SourceCodeHash *Hash `json:"soh"`
+
 	// ABI definition of the smart contract, if available.
 	Abi string `json:"abi"`
 
