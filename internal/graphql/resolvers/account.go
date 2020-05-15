@@ -61,6 +61,20 @@ func (acc *Account) Balance() (hexutil.Big, error) {
 	return *acc.rfBalance, nil
 }
 
+// addStashedRewards adds stashed rewards to the provided total value.
+func (acc *Account) addStashedRewards(val *big.Int) *big.Int {
+	// get the delegation information
+	dl, err := acc.getDelegation()
+
+	// do we have a valid record?
+	if err != nil || dl == nil || dl.ClaimedReward == nil {
+		return val
+	}
+
+	// calculate the total
+	return new(big.Int).Add(val, dl.ClaimedReward.ToInt())
+}
+
 // TotalValue resolves address total value including delegated amount and pending rewards.
 func (acc *Account) TotalValue() (hexutil.Big, error) {
 	// get the balance
@@ -88,6 +102,9 @@ func (acc *Account) TotalValue() (hexutil.Big, error) {
 
 		// add pending rewards to the final value
 		val = big.NewInt(0).Add(val, rw.Amount.ToInt())
+
+		// add claimed/stashed rewards from staking to the total
+		val = acc.addStashedRewards(val)
 		return hexutil.Big(*val), err
 	}
 
@@ -140,7 +157,7 @@ func (acc *Account) Staker() (*Staker, error) {
 	return NewStaker(st, acc.repo), nil
 }
 
-// Delegation resolves the account delegator detail, if the account is a delegater.
+// Delegation resolves the account delegator detail, if the account is a delegator.
 func (acc *Account) Delegation() (*Delegator, error) {
 	// try to get the delegator info
 	dl, err := acc.repo.Delegation(acc.Address)
@@ -209,6 +226,8 @@ func (acc *Account) getDelegation() (*types.Delegator, error) {
 			return nil, nil
 		}
 
+		// keep the delegation reference so we don't have
+		// to load it again if needed
 		acc.rfDelegation = dl
 	}
 
