@@ -2,6 +2,7 @@
 package resolvers
 
 import (
+	"crypto/sha256"
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"fmt"
@@ -131,6 +132,14 @@ func isValidationValid(in *ContractValidationInput) error {
 	return nil
 }
 
+// sourceHash calculates hash of the given source code so we can verify that
+// incoming validation source code is not the same one we already know.
+func sourceHash(sc string) types.Hash {
+	// calculate SHA256 hash of the source code
+	sum := sha256.Sum256([]byte(sc))
+	return types.BytesToHash(sum[:])
+}
+
 // ValidateContract resolves smart contract source code vs. deployed byte code and marks
 // the contract as validated if the match is found. Peer API points are ringed on success
 // to notify them about the change.
@@ -144,12 +153,20 @@ func (rs *rootResolver) ValidateContract(args *struct{ Contract ContractValidati
 	// get a contract to be validated if any
 	sc, err := rs.repo.Contract(&args.Contract.Address)
 	if err != nil {
-		rs.log.Errorf("contract [%s] not found", args.Contract.Address)
+		rs.log.Errorf("contract [%s] not found", args.Contract.Address.String())
 		return nil, err
+	}
+
+	// if we already have this source code, no need to do any updates
+	hash := sourceHash(args.Contract.SourceCode)
+	if sc.SourceCodeHash != nil && hash.String() == sc.SourceCodeHash.String() {
+		rs.log.Debugf("contract [%s] source code is already known", sc.Address.String())
+		return NewContract(sc, rs.repo), nil
 	}
 
 	// update the contract detail and pass it to validation
 	sc.SourceCode = args.Contract.SourceCode
+	sc.SourceCodeHash = &hash
 
 	// pass the intended name
 	if args.Contract.Name != nil {
