@@ -41,24 +41,24 @@ type Contract struct {
 // to validate contract source code against deployed contract byte code.
 type ContractValidationInput struct {
 	// Address represents the deployment address of the contract being validated.
-	Address common.Address
+	Address common.Address `json:"address"`
 
 	// Name represents an optional name of the contract.
-	Name *string
+	Name *string `json:"name,omitempty"`
 
 	// Version represents an optional version of the contract.
 	// We assume version to be constructed from numbers and dots
 	// with optional character at the beginning.
 	// I.e. "v1.5.17"
-	Version *string
+	Version *string `json:"version,omitempty"`
 
 	// SupportContact represents an optional contact information
 	// the contract validator wants to publish with the contract
 	// details.
-	SupportContact *string
+	SupportContact *string `json:"supportContact,omitempty"`
 
 	// SourceCode represents the Solidity source code to be validated.
-	SourceCode string
+	SourceCode string `json:"sourceCode"`
 }
 
 // NewContract builds new resolvable smart contract structure.
@@ -189,5 +189,10 @@ func (rs *rootResolver) ValidateContract(args *struct{ Contract ContractValidati
 		return nil, err
 	}
 
+	// initiate contract syncing in a separated routine
+	// we don't really need to wait for it, so let it run
+	go rs.syncContract(*sc)
+
+	// return the final updated contract
 	return NewContract(sc, rs.repo), nil
 }
