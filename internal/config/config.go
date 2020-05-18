@@ -24,6 +24,7 @@ const (
 	keyBindAddress       = "server.bind"
 	keyDomainAddress     = "server.domain"
 	keyApiPeers          = "server.peers"
+	keyApiStateOrigin    = "server.origin"
 	keyLoggingLevel      = "log.level"
 	keyLoggingFormat     = "log.format"
 	keyLachesisUrl       = "lachesis.url"
@@ -66,6 +67,9 @@ type Config struct {
 	// ApiPeers represents a list of other API points of the same type we need to inform
 	// on possible state change.
 	ApiPeers []string
+
+	// ApiStateOrigin represents request origin used on state syncing events.
+	ApiStateOrigin string
 }
 
 // Load provides a loaded configuration for Fantom API server.
@@ -103,6 +107,7 @@ func Load() (*Config, error) {
 		CacheEvictionTime: cfg.GetDuration(keyCacheEvictionTime),
 		SolCompilerPath:   cfg.GetString(keySolCompilerPath),
 		ApiPeers:          cfg.GetStringSlice(keyApiPeers),
+		ApiStateOrigin:    cfg.GetString(keyApiStateOrigin),
 	}, nil
 }
 

@@ -32,10 +32,13 @@ const (
 
 	// defSolCompilerPath represents the default SOL compiler path
 	defSolCompilerPath = "/usr/bin/solc"
+
+	// defApiStateOrigin represents the default origin used for API state syncing
+	defApiStateOrigin = "https://localhost"
 )
 
 // default list of API peers
-var defApiPeers = []string{"https://localhost:16761/graphql"}
+var defApiPeers = []string{"https://localhost:16761/api"}
 
 // defCorsAllowOrigins holds CORS default allowed origins.
 var defCorsAllowOrigins = []string{"*"}
@@ -52,6 +55,7 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyCacheEvictionTime, defCacheEvictionTime)
 	cfg.SetDefault(keySolCompilerPath, defSolCompilerPath)
 	cfg.SetDefault(keyApiPeers, defApiPeers)
+	cfg.SetDefault(keyApiStateOrigin, defApiStateOrigin)
 
 	// cors
 	cfg.SetDefault(keyCorsAllowOrigins, defCorsAllowOrigins)
