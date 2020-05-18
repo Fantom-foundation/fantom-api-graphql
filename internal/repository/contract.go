@@ -19,10 +19,6 @@ import (
 	"strings"
 )
 
-// contractCompilerInfoDelimiter is the delimiter used to separate
-// different compiler information inside the contract detail
-const contractCompilerInfoDelimiter = "; "
-
 // Contract extract a smart contract information by account address, if available.
 func (p *proxy) Contract(addr *common.Address) (*types.Contract, error) {
 	return p.db.Contract(addr)
@@ -88,8 +84,6 @@ func updateContractDetails(sc *types.Contract, detail *compiler.Contract) {
 	str.WriteString(detail.Info.Language)
 	str.WriteString(" ")
 	str.WriteString(detail.Info.LanguageVersion)
-	str.WriteString(contractCompilerInfoDelimiter)
-	str.WriteString(detail.Info.CompilerVersion)
 	sc.Compiler = str.String()
 
 	// copy ABI
