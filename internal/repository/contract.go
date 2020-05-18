@@ -133,7 +133,7 @@ func (p *proxy) ValidateContract(sc *types.Contract) error {
 		if match {
 			// set the contract name if not done already
 			if 0 == len(sc.Name) {
-				sc.Name = name
+				sc.Name = strings.TrimPrefix(name, "<stdin>:")
 			}
 
 			// update the contract data
@@ -146,7 +146,7 @@ func (p *proxy) ValidateContract(sc *types.Contract) error {
 			}
 
 			// inform about success
-			p.log.Debugf("contract %s validated with source %s", sc.Address.String(), name)
+			p.log.Debugf("contract %s [%s] validated", sc.Address.String(), name)
 
 			// inform the upper instance we have a winner
 			return nil
