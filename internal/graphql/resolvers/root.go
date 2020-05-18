@@ -3,6 +3,7 @@ package resolvers
 
 import (
 	"context"
+	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
@@ -113,6 +114,7 @@ type ApiResolver interface {
 type rootResolver struct {
 	log  logger.Logger
 	repo repository.Repository
+	cfg  *config.Config
 
 	// service terminator
 	wg      sync.WaitGroup
@@ -132,11 +134,12 @@ type rootResolver struct {
 }
 
 // New creates a new root resolver instance and initializes it's internal structure.
-func New(log logger.Logger, repo repository.Repository) ApiResolver {
+func New(cfg *config.Config, log logger.Logger, repo repository.Repository) ApiResolver {
 	// create new resolver
 	rs := rootResolver{
 		log:  log,
 		repo: repo,
+		cfg:  cfg,
 
 		// create terminator
 		sigStop: make(chan bool, 1),

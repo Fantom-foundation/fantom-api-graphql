@@ -30,7 +30,7 @@ func main() {
 	}
 
 	// create root resolver
-	rs := resolvers.New(lg, repo)
+	rs := resolvers.New(cfg, lg, repo)
 
 	// capture termination signals
 	setupSignals(repo, rs, lg)
