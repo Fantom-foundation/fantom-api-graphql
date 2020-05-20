@@ -33,10 +33,9 @@ func (rs *rootResolver) Transactions(args *struct {
 	Cursor *Cursor
 	Count  int32
 }) (*TransactionList, error) {
-	// limit query size
-	if args.Count > listMaxEdgesPerRequest {
-		args.Count = listMaxEdgesPerRequest
-	}
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get the transaction hash list from repository
 	txs, err := rs.repo.Transactions((*string)(args.Cursor), args.Count)

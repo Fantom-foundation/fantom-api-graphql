@@ -35,6 +35,10 @@ func (st Staker) Delegations(args *struct {
 		return nil, err
 	}
 
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
+
 	// sort by the date of creation
 	sort.Sort(DelegationsByAge(dl))
 	return NewDelegatorList(dl, parseDelegationsCursor(args.Cursor, args.Count, dl), args.Count, st.repo), nil

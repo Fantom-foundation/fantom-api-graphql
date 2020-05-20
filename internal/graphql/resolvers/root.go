@@ -12,9 +12,16 @@ import (
 	"sync"
 )
 
-// subscriptionQueueCapacity is the amount of subscriptions we buffer for processing.
-const subscriptionQueueCapacity = 100
-const subscriptionInitialCapacity = 100
+const (
+	// subscriptionQueueCapacity is the amount of subscriptions we buffer for processing.
+	subscriptionQueueCapacity = 100
+
+	// subscriptionInitialCapacity is the initial length of the subscription queue.
+	subscriptionInitialCapacity = 100
+
+	// listMaxEdgesPerRequest maximal number of edges end-client can request in one query.
+	listMaxEdgesPerRequest uint32 = 100
+)
 
 // ApiResolver represents the API interface expected to handle API access points
 type ApiResolver interface {
@@ -215,4 +222,32 @@ func (rs *rootResolver) run() {
 			rs.dispatchOnTransaction(evt)
 		}
 	}
+}
+
+// listLimitCount enforces maximum size of a requested list to given limit
+// amount of edges preserving the direction of the load. Note the count can
+// be both positive and negative. It controls the direction in which the list
+// of edges is built. Limit is always positive and adjusted to the count direction
+// on return.
+func listLimitCount(count int32, limit uint32) int32 {
+	// requested count is zero?
+	// this should not happen but lets return the max range than
+	if count == 0 {
+		return int32(limit)
+	}
+
+	// is the count already inside the limit range (e.g. correct input)?
+	// return the valid original
+	if (count > 0 && uint32(count) < limit) || (count < 0 && count > -int32(limit)) {
+		return count
+	}
+
+	// the count is over the limit
+	// so we return the limit being the max. value allowed
+	// adjusted to the original direction
+	if count < 0 {
+		return -int32(limit)
+	}
+
+	return int32(limit)
 }

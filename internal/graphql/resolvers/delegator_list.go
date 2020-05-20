@@ -166,6 +166,10 @@ func (rs *rootResolver) DelegationsOf(args *struct {
 		return nil, fmt.Errorf("missing delegations input")
 	}
 
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
+
 	// get the list
 	dl, err := rs.repo.DelegationsOf(args.Staker)
 	if err != nil {

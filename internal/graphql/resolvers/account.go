@@ -127,10 +127,9 @@ func (acc *Account) TxList(args struct {
 	Cursor *Cursor
 	Count  int32
 }) (*TransactionList, error) {
-	// limit count
-	if args.Count > accMaxTransactionsPerRequest {
-		args.Count = accMaxTransactionsPerRequest
-	}
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
 
 	// get the transaction hash list from repository
 	bl, err := acc.repo.AccountTransactions(&acc.Account, (*string)(args.Cursor), args.Count)

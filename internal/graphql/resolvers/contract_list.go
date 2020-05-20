@@ -35,10 +35,9 @@ func (rs *rootResolver) Contracts(args *struct {
 	Cursor        *Cursor
 	Count         int32
 }) (*ContractList, error) {
-	// limit query size
-	if args.Count > listMaxEdgesPerRequest {
-		args.Count = listMaxEdgesPerRequest
-	}
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get the contract list from repository
 	cl, err := rs.repo.Contracts(args.ValidatedOnly, (*string)(args.Cursor), args.Count)
