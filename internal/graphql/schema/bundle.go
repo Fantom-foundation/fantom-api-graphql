@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-05-18 14:19
+// Auto generated GraphQL schema bundle; created 2020-05-27 14:53
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
