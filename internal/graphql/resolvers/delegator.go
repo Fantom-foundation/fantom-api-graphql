@@ -5,6 +5,7 @@ import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
+	"sort"
 )
 
 // Delegator represents resolvable delegator detail.
@@ -41,6 +42,29 @@ func (del Delegator) PendingRewards() (types.PendingRewards, error) {
 	}
 
 	return r, nil
+}
+
+// WithdrawRequests resolves partial withdraw requests of the delegator.
+func (del Delegator) WithdrawRequests() ([]WithdrawRequest, error) {
+	// pull the requests list from remote server
+	wr, err := del.repo.WithdrawRequests(&del.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	// create new result set
+	list := make([]WithdrawRequest, 0)
+
+	// sort the list
+	sort.Sort(WithdrawRequestsByAge(wr))
+
+	// iterate over the sorted list and populate the output array
+	for _, req := range wr {
+		list = append(list, NewWithdrawRequest(req, del.repo))
+	}
+
+	// return the final resolvable list
+	return list, nil
 }
 
 // DelegationsByAge represents a list of delegations sortable by their age of creation.
