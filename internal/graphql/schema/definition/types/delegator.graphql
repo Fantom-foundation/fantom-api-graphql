@@ -26,4 +26,7 @@ type Delegator {
 
     "Pending rewards for the delegation."
     pendingRewards: PendingRewards!
+
+    "List of withdraw requests of the delegation."
+    withdrawRequests: [WithdrawRequest!]!
 }

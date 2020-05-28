@@ -61,6 +61,16 @@ func (p *proxy) DelegationRewards(addr string) (types.PendingRewards, error) {
 	return p.rpc.DelegationRewards(addr)
 }
 
+// WithdrawRequests extracts a list of partial withdraw requests
+// for the given address.
+func (p *proxy) WithdrawRequests(addr *common.Address) ([]*types.WithdrawRequest, error) {
+	// log the action
+	p.log.Debugf("loading withdraw requests for [%s]", addr.String())
+
+	// proxy the request directly to RPC/SFC
+	return p.rpc.WithdrawRequests(addr)
+}
+
 // TotalStaked calculates current total staked amount for all stakers.
 func (p *proxy) TotalStaked() (*hexutil.Big, error) {
 	// try cache first

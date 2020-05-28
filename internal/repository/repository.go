@@ -34,15 +34,16 @@ type Repository interface {
 
 	// AccountTransactions returns list of transaction hashes for account at Opera blockchain.
 	//
-	// String cursor represents cursor based on which the list is loaded. If null, it loads either from top,
-	// or bottom of the list, based on the value of the integer count. The integer represents
-	// the number of transaction loaded at most.
+	// String cursor represents cursor based on which the list is loaded. If null,
+	// it loads either from top, or bottom of the list, based on the value
+	// of the integer count. The integer represents the number of transaction loaded at most.
 	//
-	// For positive number, the list starts right after the cursor (or on top without one) and loads at most
-	// defined number of transactions older than that.
+	// For positive number, the list starts right after the cursor
+	// (or on top without one) and loads at most defined number of transactions older than that.
 	//
-	// For negative number, the list starts right before the cursor (or at the bottom without one) and loads at most
-	// defined number of transactions newer than that.
+	// For negative number, the list starts right before the cursor
+	// (or at the bottom without one) and loads at most defined number
+	// of transactions newer than that.
 	//
 	// Transactions are always sorted from newer to older.
 	AccountTransactions(*types.Account, *string, int32) (*types.TransactionHashList, error)
@@ -50,8 +51,8 @@ type Repository interface {
 	// Returns total number of accounts known to repository.
 	AccountsActive() (hexutil.Uint64, error)
 
-	// Block returns a block at Opera blockchain represented by a number. Top block is returned if the number
-	// is not provided.
+	// Block returns a block at Opera blockchain represented by a number.
+	// Top block is returned if the number is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
 	BlockByNumber(*hexutil.Uint64) (*types.Block, error)
 
@@ -70,8 +71,8 @@ type Repository interface {
 	// Epoch returns the id of the current epoch.
 	Epoch(hexutil.Uint64) (types.Epoch, error)
 
-	// Block returns a block at Opera blockchain represented by a hash. Top block is returned if the hash
-	// is not provided.
+	// Block returns a block at Opera blockchain represented by a hash.
+	// Top block is returned if the hash is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
 	BlockByHash(*types.Hash) (*types.Block, error)
 
@@ -84,7 +85,8 @@ type Repository interface {
 	// Transactions returns list of transaction hashes at Opera blockchain.
 	Transactions(*string, int32) (*types.TransactionHashList, error)
 
-	// Collection pulls list of blocks starting on the specified block number and going up, or down based on count number.
+	// Collection pulls list of blocks starting on the specified block number
+	// and going up, or down based on count number.
 	Blocks(*uint64, int32) (*types.BlockList, error)
 
 	// LastStakerId returns the last staker id in Opera blockchain.
@@ -114,11 +116,15 @@ type Repository interface {
 	// Delegation returns a detail of delegation for the given address.
 	Delegation(common.Address) (*types.Delegator, error)
 
-	// DelegationsOf extract a list of delegations for a given staker.
+	// DelegationsOf extracts a list of delegations for a given staker.
 	DelegationsOf(hexutil.Uint64) ([]types.Delegator, error)
 
 	// Delegation returns a detail of delegation for the given address.
 	DelegationRewards(string) (types.PendingRewards, error)
+
+	// WithdrawRequests extracts a list of partial withdraw requests
+	// for the given address.
+	WithdrawRequests(*common.Address) ([]*types.WithdrawRequest, error)
 
 	// Price returns a price information for the given target symbol.
 	Price(sym string) (types.Price, error)

@@ -48,3 +48,28 @@ func (st Staker) Delegations(args *struct {
 func (st Staker) StakerInfo() *types.StakerInfo {
 	return st.repo.RetrieveStakerInfo(st.Id)
 }
+
+// WithdrawRequests resolves partial withdraw requests of the staker.
+// We load withdraw requests of the stake only, not the stake delegators.
+func (st Staker) WithdrawRequests() ([]WithdrawRequest, error) {
+	// pull the requests list from remote server
+	wr, err := st.repo.WithdrawRequests(&st.StakerAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	// create new result set
+	list := make([]WithdrawRequest, 0)
+
+	// sort the list by age of the request
+	// we want the newest requests on top
+	sort.Sort(WithdrawRequestsByAge(wr))
+
+	// iterate over the sorted list and populate the output array
+	for _, req := range wr {
+		list = append(list, NewWithdrawRequest(req, st.repo))
+	}
+
+	// return the final resolvable list
+	return list, nil
+}

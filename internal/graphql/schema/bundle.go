@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-05-27 14:53
+// Auto generated GraphQL schema bundle; created 2020-05-28 11:08
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -68,6 +68,9 @@ type Delegator {
 
     "Pending rewards for the delegation."
     pendingRewards: PendingRewards!
+
+    "List of withdraw requests of the delegation."
+    withdrawRequests: [WithdrawRequest!]!
 }
 
 # Account defines block-chain account information container
@@ -447,6 +450,13 @@ type Staker {
 
     "StakerInfo represents extended staker information from smart contract."
     stakerInfo: StakerInfo
+
+    """
+    List of withdraw requests of the stake.
+    Contains only withdrawal requests of the staking account,
+    not the requests of the stake delegators.
+    """
+    withdrawRequests: [WithdrawRequest!]!
 }
 
 # PendingRewards represents a detail of pending rewards for staking and delegations
@@ -459,6 +469,50 @@ type PendingRewards {
 
     "The last unpaid epoch."
     toEpoch: Long!
+}
+
+# WithdrawRequest represents a request for partial stake withdraw.
+type WithdrawRequest {
+    "Address of the autohorized request."
+    address: Address!
+
+    "Address of the receiving account."
+    receiver: Address!
+
+    "Account receiving the withdraw request."
+    account: Account!
+
+    "Staker Id of the staker involved in the withdraw request."
+    stakerID: Long!
+
+    "Details of the staker involved in the withdraw request."
+    staker: Staker!
+
+    "Unique withraw request identifier."
+    withdrawRequestID: BigInt!
+
+    "Is this a partial delegation withdraw, or staker withdraw?"
+    isDelegation: Boolean!
+
+    "Amount of WEI requested to be withdrawn."
+    amount: BigInt!
+
+    "Block in which the withdraw request was registered."
+    requestBlock: Block!
+
+    """
+    Block in which the withdraw request was finalized.
+    The value is NULL for pending request.
+    """
+    withdrawBlock: Block
+
+    """
+    Amount of WEI slashed as a penalty for cheating.
+    The penalty is applied not only to staker withdraw,
+    but also to delegations of a cheating staker.
+    The value is NULL for pending requests.
+    """
+    withdrawPenalty: BigInt
 }
 
 # Block is an Opera block chain block.
