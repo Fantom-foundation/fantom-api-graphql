@@ -10,10 +10,15 @@ import (
 // SFC contract. When partial withdraw is requested either on staking or delegation,
 // this record is created in the SFC contract to track the withdrawal process.
 type WithdrawRequest struct {
-	Address           common.Address
-	Receiver          common.Address
-	StakerID          hexutil.Uint64
-	WithdrawRequestID hexutil.Big
-	IsDelegation      bool
-	Amount            hexutil.Big
+	Address            common.Address
+	Receiver           common.Address
+	StakerID           hexutil.Uint64
+	WithdrawRequestID  hexutil.Big
+	IsDelegation       bool
+	Amount             hexutil.Big
+	RequestBlockNumber hexutil.Uint64
+
+	// struct members for finalized withdraw
+	WithdrawBlockNumber *hexutil.Uint64
+	WithdrawPenalty     *hexutil.Big
 }
