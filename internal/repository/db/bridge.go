@@ -13,13 +13,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// offChainDatabaseName specifies the name of the database being used to store off-chain data.
-const offChainDatabaseName = "fantom"
-
 // MongoDbBridge represents Mongo DB abstraction layer.
 type MongoDbBridge struct {
 	client *mongo.Client
 	log    logger.Logger
+	dbName string
 
 	// fnBalance is a function for retrieving specified account balance.
 	fnBalance func(*types.Account) (*hexutil.Big, error)
@@ -51,6 +49,7 @@ func New(cfg *config.Config, log logger.Logger) (*MongoDbBridge, error) {
 	return &MongoDbBridge{
 		client: client,
 		log:    log,
+		dbName: cfg.MongoDatabase,
 	}, nil
 }
 

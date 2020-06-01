@@ -64,7 +64,7 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	}
 
 	// get the collection for transactions
-	col := db.client.Database(offChainDatabaseName).Collection(coTransactions)
+	col := db.client.Database(db.dbName).Collection(coTransactions)
 
 	// if the transaction already exists, we don't need to do anything here
 	if !db.shouldAddTransaction(col, trx) {
@@ -203,7 +203,7 @@ func (db *MongoDbBridge) LastKnownBlock() (uint64, error) {
 	opt.SetProjection(bson.D{{fiTransactionBlock, true}})
 
 	// get the collection for account transactions
-	col := db.client.Database(offChainDatabaseName).Collection(coTransactions)
+	col := db.client.Database(db.dbName).Collection(coTransactions)
 	res := col.FindOne(context.Background(), bson.D{}, opt)
 	if res.Err() != nil {
 		// may be no block at all
@@ -432,7 +432,7 @@ func (db *MongoDbBridge) Transactions(cursor *string, count int32) (*types.Trans
 	}
 
 	// get the collection and context
-	col := db.client.Database(offChainDatabaseName).Collection(coTransactions)
+	col := db.client.Database(db.dbName).Collection(coTransactions)
 
 	// init the list
 	list, err := db.initTrxList(col, cursor, count)

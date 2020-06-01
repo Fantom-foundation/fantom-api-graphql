@@ -81,7 +81,7 @@ func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 	}
 
 	// get the collection for account transactions
-	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
+	col := db.client.Database(db.dbName).Collection(coAccounts)
 
 	// extract contract creation transaction if available
 	var conTx *string
@@ -121,7 +121,7 @@ func (db *MongoDbBridge) AddAccountTransaction(acc *types.Account, block *types.
 	}
 
 	// get the collection for account transactions
-	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
+	col := db.client.Database(db.dbName).Collection(coAccounts)
 
 	// what is the direction
 	var dir = 0
@@ -173,7 +173,7 @@ func (db *MongoDbBridge) AddAccountTransaction(acc *types.Account, block *types.
 // isAccountTransactionKnown verifies if the transaction is already listed for the account address given.
 func (db *MongoDbBridge) isAccountTransactionKnown(addr *common.Address, hash *types.Hash) (bool, error) {
 	// get the collection for account transactions
-	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
+	col := db.client.Database(db.dbName).Collection(coAccounts)
 
 	// try to find the account in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
@@ -198,7 +198,7 @@ func (db *MongoDbBridge) isAccountTransactionKnown(addr *common.Address, hash *t
 // isAccountKnown checks if an account document already exists in the database.
 func (db *MongoDbBridge) isAccountKnown(addr *common.Address) (bool, error) {
 	// get the collection for account transactions
-	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
+	col := db.client.Database(db.dbName).Collection(coAccounts)
 
 	// try to find the account in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
@@ -388,7 +388,7 @@ func (db *MongoDbBridge) AccountTransactions(acc *types.Account, cursor *string,
 	}
 
 	// get the collection
-	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
+	col := db.client.Database(db.dbName).Collection(coAccounts)
 
 	// init the list
 	list, err := db.initAccountTrxList(col, &acc.Address, cursor, count)
@@ -448,7 +448,7 @@ func (db *MongoDbBridge) AccountTrxCount(col *mongo.Collection, addr *common.Add
 // AccountCount calculates total number of accounts in the database.
 func (db *MongoDbBridge) AccountCount() (hexutil.Uint64, error) {
 	// get the collection for transactions
-	col := db.client.Database(offChainDatabaseName).Collection(coAccounts)
+	col := db.client.Database(db.dbName).Collection(coAccounts)
 
 	// do the counting
 	val, err := col.CountDocuments(context.Background(), bson.D{})

@@ -87,7 +87,7 @@ func (db *MongoDbBridge) AddContract(block *types.Block, trx *types.Transaction)
 	}
 
 	// get the collection for contracts
-	col := db.client.Database(offChainDatabaseName).Collection(coContract)
+	col := db.client.Database(db.dbName).Collection(coContract)
 
 	// check if the contract already exists
 	exists, err := db.isContractKnown(col, trx.ContractAddress)
@@ -130,7 +130,7 @@ func (db *MongoDbBridge) AddContract(block *types.Block, trx *types.Transaction)
 // new validation or similar changes passed from repository.
 func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
 	// get the collection for contracts
-	col := db.client.Database(offChainDatabaseName).Collection(coContract)
+	col := db.client.Database(db.dbName).Collection(coContract)
 
 	// check if the contract already exists
 	exists, err := db.isContractKnown(col, &sc.Address)
@@ -271,7 +271,7 @@ func newContract(row *contractRow) *types.Contract {
 // if available, or nil if contract does not exist.
 func (db *MongoDbBridge) Contract(addr *common.Address) (*types.Contract, error) {
 	// get the collection for transactions
-	col := db.client.Database(offChainDatabaseName).Collection(coContract)
+	col := db.client.Database(db.dbName).Collection(coContract)
 
 	// try to find the contract in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{{fiContractPk, addr.String()}})
@@ -308,7 +308,7 @@ func (db *MongoDbBridge) contractListTotal(col *mongo.Collection, validatedOnly 
 
 	// validation filter
 	if validatedOnly {
-		filter = bson.D{{fiContractSourceValidated, bson.D{{"$ne", nil}}}}
+		filter = bson.D{{db.dbName, bson.D{{"$ne", nil}}}}
 	}
 
 	// find how many transactions do we have in the database
@@ -561,7 +561,7 @@ func (db *MongoDbBridge) Contracts(validatedOnly bool, cursor *string, count int
 	}
 
 	// get the collection and context
-	col := db.client.Database(offChainDatabaseName).Collection(coContract)
+	col := db.client.Database(db.dbName).Collection(coContract)
 
 	// init the list
 	list, err := db.contractListInit(col, validatedOnly, cursor, count)
