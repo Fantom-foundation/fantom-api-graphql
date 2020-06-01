@@ -27,6 +27,9 @@ const (
 	// defMongoUrl holds default MongoDB connection string
 	defMongoUrl = "mongodb://localhost:27017"
 
+	// defMongoDatabase holds the default name of the API persistent database
+	defMongoDatabase = "fantom"
+
 	// defCacheEvictionTime holds default time for in-memory eviction periods
 	defCacheEvictionTime = 30 * time.Minute
 
@@ -52,6 +55,7 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyLoggingFormat, defLoggingFormat)
 	cfg.SetDefault(keyLachesisUrl, defLachesisUrl)
 	cfg.SetDefault(keyMongoUrl, defMongoUrl)
+	cfg.SetDefault(keyMongoDatabase, defMongoDatabase)
 	cfg.SetDefault(keyCacheEvictionTime, defCacheEvictionTime)
 	cfg.SetDefault(keySolCompilerPath, defSolCompilerPath)
 	cfg.SetDefault(keyApiPeers, defApiPeers)

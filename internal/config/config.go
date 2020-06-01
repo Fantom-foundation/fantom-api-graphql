@@ -29,6 +29,7 @@ const (
 	keyLoggingFormat     = "log.format"
 	keyLachesisUrl       = "lachesis.url"
 	keyMongoUrl          = "mongo.url"
+	keyMongoDatabase     = "mongo.db"
 	keyCorsAllowOrigins  = "cors.origins"
 	keyCacheEvictionTime = "cache.eviction"
 	keySolCompilerPath   = "sol.compiler"
@@ -54,6 +55,9 @@ type Config struct {
 
 	// MongoUrl holds address of the MongoDB we use for persistent storage
 	MongoUrl string
+
+	// MongoDatabase represents the name of the database used for the API persistent data storage.
+	MongoDatabase string
 
 	// CorsAllowOrigins keeps list of origins allowed to make requests on the server HTTP interface
 	CorsAllowOrigins []string
@@ -103,6 +107,7 @@ func Load() (*Config, error) {
 		LoggingFormat:     cfg.GetString(keyLoggingFormat),
 		LachesisUrl:       cfg.GetString(keyLachesisUrl),
 		MongoUrl:          cfg.GetString(keyMongoUrl),
+		MongoDatabase:     cfg.GetString(keyMongoDatabase),
 		CorsAllowOrigins:  cfg.GetStringSlice(keyCorsAllowOrigins),
 		CacheEvictionTime: cfg.GetDuration(keyCacheEvictionTime),
 		SolCompilerPath:   cfg.GetString(keySolCompilerPath),
