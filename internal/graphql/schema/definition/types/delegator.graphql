@@ -29,4 +29,7 @@ type Delegator {
 
     "List of withdraw requests of the delegation."
     withdrawRequests: [WithdrawRequest!]!
+
+    "List of full delegation deactivation."
+    Deactivation: [DeactivatedDelegation!]!
 }

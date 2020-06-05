@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-05-28 11:08
+// Auto generated GraphQL schema bundle; created 2020-06-05 18:52
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -71,6 +71,9 @@ type Delegator {
 
     "List of withdraw requests of the delegation."
     withdrawRequests: [WithdrawRequest!]!
+
+    "List of full delegation deactivation."
+    Deactivation: [DeactivatedDelegation!]!
 }
 
 # Account defines block-chain account information container
@@ -515,6 +518,37 @@ type WithdrawRequest {
     withdrawPenalty: BigInt
 }
 
+# DeactivatedDelegation represents a prepared delegation full withdraw
+# Fully withdrawn delegations must be prepared first and finalized
+# only after the lockdown period passes.
+type DeactivatedDelegation {
+    "Address of the delegator."
+    address: Address!
+
+    "Staker Id of the staker involved in the withdraw request."
+    stakerID: Long!
+
+    "Details of the staker involved in the withdraw request."
+    staker: Staker!
+
+    "Block in which the delegation deactivation was registered."
+    requestBlock: Block!
+
+    """
+    Block in which the delegation was withdrawn.
+    The value is NULL for pending request.
+    """
+    withdrawBlock: Block
+
+    """
+    Amount of WEI slashed as a penalty for cheating.
+    The penalty is applied not only to staker withdraw,
+    but also to delegations of a cheating staker.
+    The value is NULL for pending requests.
+    """
+    withdrawPenalty: BigInt
+}
+
 # Block is an Opera block chain block.
 type Block {
     # Number is the number of this block, starting at 0 for the genesis block.
@@ -557,6 +591,12 @@ type Contract {
     "Smart contract version identifier. Empty if not available."
     version: String!
 
+    """
+    License specifies an open source licese the contract was published with.
+    Empty if not specified.
+    """
+    license: String
+
     "Smart contract author contact. Empty if not available."
     supportContact: String!
 
@@ -593,6 +633,21 @@ input ContractValidationInput {
 
     "Optional smart contract author contact. Maximum allowed length is 64 characters."
     supportContact: String
+
+    """
+    License specifies an open source licese the contract was published with.
+    Empty if not specified.
+    """
+    license: String
+
+    "Optimized specifies if the compiler was set to optimize the byte code."
+    optimized: Boolean = true
+
+    """
+    OptimizeRuns specifies number of optimization runs the compiler was set
+    to execute during the byte code optimizing.
+    """
+    optimizeRuns: Int = 200
 
     "Smart contract source code."
     sourceCode: String!
