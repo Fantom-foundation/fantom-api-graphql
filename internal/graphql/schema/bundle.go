@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-06-05 19:26
+// Auto generated GraphQL schema bundle; created 2020-06-05 19:34
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -518,7 +518,7 @@ type WithdrawRequest {
     withdrawPenalty: BigInt
 }
 
-# DeactivatedDelegation represents a prepared delegation full withdraw
+# DeactivatedDelegation represents a prepared delegation full withdraw.
 # Fully withdrawn delegations must be prepared first and finalized
 # only after the lockdown period passes.
 type DeactivatedDelegation {
@@ -542,8 +542,8 @@ type DeactivatedDelegation {
 
     """
     Amount of WEI slashed as a penalty for cheating.
-    The penalty is applied not only to staker withdraw,
-    but also to delegations of a cheating staker.
+    The penalty is applied to delegators' rewards
+    in case their staker is flagged.
     The value is NULL for pending requests.
     """
     withdrawPenalty: BigInt
