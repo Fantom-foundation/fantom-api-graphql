@@ -38,11 +38,23 @@ const (
 	// fiContractName is the name of the contract name field.
 	fiContractName = "name"
 
+	// fiContractSupport is the name of the contract support contact field.
+	fiContractSupport = "sup"
+
 	// fiContractVersion is the name of the contract version id field.
 	fiContractVersion = "ver"
 
 	// fiContractCompiler is the name of the contract compiler id field.
 	fiContractCompiler = "cv"
+
+	// fiContractLicense is the name of the contract open source license field.
+	fiContractLicense = "lic"
+
+	// fiContractIsOptimized is the name of the contract compiler optimizer enabled field.
+	fiContractIsOptimized = "isOpt"
+
+	// fiContractOptimizationRuns is the name of the contract compiler optimization runs field.
+	fiContractOptimizationRuns = "runs"
 
 	// fiContractSource is the name of the contract source code field.
 	fiContractSource = "sol"
@@ -66,8 +78,12 @@ type contractRow struct {
 	Transaction    string  `bson:"tx"`
 	TimeStamp      uint64  `bson:"ts"`
 	Name           *string `bson:"name"`
+	Support        *string `bson:"sup"`
 	Version        *string `bson:"ver"`
 	Compiler       *string `bson:"cv"`
+	License        *string `bson:"lic"`
+	IsOptimized    bool    `bson:"isOpt"`
+	OptimizerRuns  uint64  `bson:"runs"`
 	SourceCode     *string `bson:"sol"`
 	SourceCodeHash *string `bson:"soh"`
 	Abi            *string `bson:"abi"`
@@ -109,10 +125,14 @@ func (db *MongoDbBridge) AddContract(block *types.Block, trx *types.Transaction)
 		{fiContractTransaction, trx.Hash.String()},
 		{fiContractTimestamp, uint64(block.TimeStamp)},
 		{fiContractName, nil},
+		{fiContractSupport, nil},
 		{fiContractVersion, nil},
 		{fiContractCompiler, nil},
 		{fiContractSource, nil},
 		{fiContractSourceHash, nil},
+		{fiContractLicense, nil},
+		{fiContractIsOptimized, true},
+		{fiContractOptimizationRuns, 200},
 		{fiContractAbi, nil},
 		{fiContractSourceValidated, nil},
 	})
@@ -157,8 +177,12 @@ func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
 		bson.D{
 			{"$set", bson.D{
 				{fiContractName, sc.Name},
+				{fiContractSupport, sc.SupportContact},
 				{fiContractVersion, sc.Version},
 				{fiContractCompiler, sc.Compiler},
+				{fiContractLicense, sc.License},
+				{fiContractIsOptimized, sc.IsOptimized},
+				{fiContractOptimizationRuns, sc.OptimizeRuns},
 				{fiContractSource, sc.SourceCode},
 				{fiContractSourceHash, sc.SourceCodeHash.String()},
 				{fiContractAbi, sc.Abi},
@@ -225,6 +249,8 @@ func newContract(row *contractRow) *types.Contract {
 		Address:         common.HexToAddress(row.Address),
 		TransactionHash: types.HexToHash(row.Transaction),
 		TimeStamp:       (hexutil.Uint64)(row.TimeStamp),
+		IsOptimized:     row.IsOptimized,
+		OptimizeRuns:    int32(row.OptimizerRuns),
 	}
 
 	// do we have the source code?
@@ -248,9 +274,19 @@ func newContract(row *contractRow) *types.Contract {
 		con.Name = *row.Name
 	}
 
+	// do we have the support contact name?
+	if row.Support != nil {
+		con.SupportContact = *row.Support
+	}
+
 	// do we have the contract version?
 	if row.Version != nil {
 		con.Version = *row.Version
+	}
+
+	// do we have the contract License?
+	if row.License != nil {
+		con.License = *row.License
 	}
 
 	// do we have the contract compiler?
