@@ -71,6 +71,16 @@ func (p *proxy) WithdrawRequests(addr *common.Address) ([]*types.WithdrawRequest
 	return p.rpc.WithdrawRequests(addr)
 }
 
+// DeactivatedDelegation extracts a list of deactivated delegation requests
+// for the given address.
+func (p *proxy) DeactivatedDelegation(addr *common.Address) ([]*types.DeactivatedDelegation, error) {
+	// log the action
+	p.log.Debugf("loading deactivated delegation requests for [%s]", addr.String())
+
+	// proxy the request directly to RPC/SFC
+	return p.rpc.DeactivatedDelegation(addr)
+}
+
 // TotalStaked calculates current total staked amount for all stakers.
 func (p *proxy) TotalStaked() (*hexutil.Big, error) {
 	// try cache first

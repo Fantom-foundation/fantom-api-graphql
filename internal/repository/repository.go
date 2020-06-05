@@ -126,6 +126,10 @@ type Repository interface {
 	// for the given address.
 	WithdrawRequests(*common.Address) ([]*types.WithdrawRequest, error)
 
+	// DeactivatedDelegation extracts a list of deactivated delegation requests
+	// for the given address.
+	DeactivatedDelegation(*common.Address) ([]*types.DeactivatedDelegation, error)
+
 	// Price returns a price information for the given target symbol.
 	Price(sym string) (types.Price, error)
 

@@ -21,7 +21,7 @@ type DeactivatedDelegation struct {
 
 // DeactivatedDelegationByAge represents a list of deactivated delegation
 // requests sortable by their age of creation. New requests are on top.
-type DeactivatedDelegationByAge []DeactivatedDelegation
+type DeactivatedDelegationByAge []*DeactivatedDelegation
 
 // Len returns size of the deactivated delegation requests list.
 func (dd DeactivatedDelegationByAge) Len() int {
