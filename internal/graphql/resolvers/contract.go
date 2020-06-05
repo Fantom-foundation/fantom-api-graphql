@@ -63,7 +63,7 @@ type ContractValidationInput struct {
 
 	// IsOptimized signals that the contract byte code was optimized
 	// during compilation.
-	IsOptimized bool `json:"optimized"`
+	Optimized bool `json:"optimized"`
 
 	// OptimizeRuns represents number of optimization runs used
 	// during the contract compilation.
@@ -161,7 +161,7 @@ func sourceHash(sc string) types.Hash {
 func updateContractFromInput(con *ContractValidationInput, sc *types.Contract) {
 	// update the contract detail and pass it to validation
 	sc.SourceCode = con.SourceCode
-	sc.IsOptimized = con.IsOptimized
+	sc.IsOptimized = con.Optimized
 	sc.OptimizeRuns = con.OptimizeRuns
 
 	// pass the intended name

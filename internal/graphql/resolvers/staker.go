@@ -63,7 +63,7 @@ func (st Staker) WithdrawRequests() ([]WithdrawRequest, error) {
 
 	// sort the list by age of the request
 	// we want the newest requests on top
-	sort.Sort(WithdrawRequestsByAge(wr))
+	sort.Sort(types.WithdrawRequestsByAge(wr))
 
 	// iterate over the sorted list and populate the output array
 	for _, req := range wr {

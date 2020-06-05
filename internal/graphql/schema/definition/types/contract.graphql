@@ -19,7 +19,7 @@ type Contract {
     License specifies an open source licese the contract was published with.
     Empty if not specified.
     """
-    license: String
+    license: String!
 
     "Smart contract author contact. Empty if not available."
     supportContact: String!

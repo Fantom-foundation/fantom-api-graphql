@@ -31,5 +31,5 @@ type Delegator {
     withdrawRequests: [WithdrawRequest!]!
 
     "List of full delegation deactivation."
-    Deactivation: [DeactivatedDelegation!]!
+    deactivation: [DeactivatedDelegation!]!
 }

@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-06-05 18:52
+// Auto generated GraphQL schema bundle; created 2020-06-05 19:26
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -73,7 +73,7 @@ type Delegator {
     withdrawRequests: [WithdrawRequest!]!
 
     "List of full delegation deactivation."
-    Deactivation: [DeactivatedDelegation!]!
+    deactivation: [DeactivatedDelegation!]!
 }
 
 # Account defines block-chain account information container
@@ -595,7 +595,7 @@ type Contract {
     License specifies an open source licese the contract was published with.
     Empty if not specified.
     """
-    license: String
+    license: String!
 
     "Smart contract author contact. Empty if not available."
     supportContact: String!

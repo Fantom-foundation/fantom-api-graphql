@@ -56,11 +56,34 @@ func (del Delegator) WithdrawRequests() ([]WithdrawRequest, error) {
 	list := make([]WithdrawRequest, 0)
 
 	// sort the list
-	sort.Sort(WithdrawRequestsByAge(wr))
+	sort.Sort(types.WithdrawRequestsByAge(wr))
 
 	// iterate over the sorted list and populate the output array
 	for _, req := range wr {
 		list = append(list, NewWithdrawRequest(req, del.repo))
+	}
+
+	// return the final resolvable list
+	return list, nil
+}
+
+// Deactivation resolves deactivated delegation requests of the delegator.
+func (del Delegator) Deactivation() ([]DeactivatedDelegation, error) {
+	// pull the requests list from remote server
+	wr, err := del.repo.DeactivatedDelegation(&del.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	// sort the list
+	sort.Sort(types.DeactivatedDelegationByAge(wr))
+
+	// create new result set
+	list := make([]DeactivatedDelegation, 0)
+
+	// iterate over the sorted list and populate the output array
+	for _, req := range wr {
+		list = append(list, NewDeactivatedDelegation(req, del.repo))
 	}
 
 	// return the final resolvable list

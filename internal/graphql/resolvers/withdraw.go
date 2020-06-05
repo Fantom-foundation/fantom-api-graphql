@@ -75,23 +75,3 @@ func (wr WithdrawRequest) WithdrawBlock() (*Block, error) {
 	// return the block details
 	return NewBlock(blk, wr.repo), nil
 }
-
-// WithdrawRequestsByAge represents a list of withdraw requests sortable
-// by their age of creation. New requests are on top.
-type WithdrawRequestsByAge []*types.WithdrawRequest
-
-// Len returns size of the withdraw requests list.
-func (wr WithdrawRequestsByAge) Len() int {
-	return len(wr)
-}
-
-// Less compares two withdraw requests and returns true if the first is lower than the last.
-// We use it to sort withdraw requests by time created having newer on top.
-func (wr WithdrawRequestsByAge) Less(i, j int) bool {
-	return uint64(wr[i].RequestBlockNumber) > uint64(wr[j].RequestBlockNumber)
-}
-
-// Swap changes position of two withdraw requests in the list.
-func (wr WithdrawRequestsByAge) Swap(i, j int) {
-	wr[i], wr[j] = wr[j], wr[i]
-}

@@ -31,7 +31,7 @@ func contractSyncInput(con *types.Contract) ContractValidationInput {
 		Name:         &con.Name,
 		SourceCode:   con.SourceCode,
 		OptimizeRuns: con.OptimizeRuns,
-		IsOptimized:  con.IsOptimized,
+		Optimized:    con.IsOptimized,
 	}
 
 	// transfer compiler version info, if any
