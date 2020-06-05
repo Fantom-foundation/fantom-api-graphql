@@ -27,9 +27,11 @@ const (
 func contractSyncInput(con *types.Contract) ContractValidationInput {
 	// prep the validation input to be synced
 	var cInput = ContractValidationInput{
-		Address:    con.Address,
-		Name:       &con.Name,
-		SourceCode: con.SourceCode,
+		Address:      con.Address,
+		Name:         &con.Name,
+		SourceCode:   con.SourceCode,
+		OptimizeRuns: con.OptimizeRuns,
+		IsOptimized:  con.IsOptimized,
 	}
 
 	// transfer compiler version info, if any
@@ -40,6 +42,11 @@ func contractSyncInput(con *types.Contract) ContractValidationInput {
 	// transfer support contact info, if any
 	if 0 < len(con.SupportContact) {
 		cInput.SupportContact = &con.SupportContact
+	}
+
+	// transfer contact open source license, if any
+	if 0 < len(con.License) {
+		cInput.License = &con.License
 	}
 
 	return cInput

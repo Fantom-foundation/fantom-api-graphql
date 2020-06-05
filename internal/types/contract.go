@@ -29,8 +29,20 @@ type Contract struct {
 	// SupportContact represents a contact to the smart contract support, if available.
 	SupportContact string `json:"contact"`
 
+	// License represents an optional contact open source license
+	// being used.
+	License string `json:"license,omitempty"`
+
 	// Smart contract compiler identifier, if available.
 	Compiler string `json:"cv"`
+
+	// IsOptimized signals that the contract byte code was optimized
+	// during compilation.
+	IsOptimized bool `json:"optimized"`
+
+	// OptimizeRuns represents number of optimization runs used
+	// during the contract compilation.
+	OptimizeRuns int32 `json:"optimizeRuns"`
 
 	// SourceCode is the smart contract source code, if available.
 	SourceCode string `json:"sol"`

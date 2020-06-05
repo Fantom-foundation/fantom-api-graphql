@@ -57,6 +57,18 @@ type ContractValidationInput struct {
 	// details.
 	SupportContact *string `json:"supportContact,omitempty"`
 
+	// License represents an optional contact open source license
+	// being used.
+	License *string `json:"license,omitempty"`
+
+	// IsOptimized signals that the contract byte code was optimized
+	// during compilation.
+	IsOptimized bool `json:"optimized"`
+
+	// OptimizeRuns represents number of optimization runs used
+	// during the contract compilation.
+	OptimizeRuns int32 `json:"optimizeRuns"`
+
 	// SourceCode represents the Solidity source code to be validated.
 	SourceCode string `json:"sourceCode"`
 }
@@ -129,6 +141,11 @@ func isValidationValid(in *ContractValidationInput) error {
 		return fmt.Errorf("invalid version information provided")
 	}
 
+	// validate the version syntax
+	if in.OptimizeRuns < 0 {
+		return fmt.Errorf("invalid number of optimization runs provided")
+	}
+
 	return nil
 }
 
@@ -138,6 +155,34 @@ func sourceHash(sc string) types.Hash {
 	// calculate SHA256 hash of the source code
 	sum := sha256.Sum256([]byte(sc))
 	return types.BytesToHash(sum[:])
+}
+
+// updateContractFromInput update Contract data from provided input structure.
+func updateContractFromInput(con *ContractValidationInput, sc *types.Contract) {
+	// update the contract detail and pass it to validation
+	sc.SourceCode = con.SourceCode
+	sc.IsOptimized = con.IsOptimized
+	sc.OptimizeRuns = con.OptimizeRuns
+
+	// pass the intended name
+	if con.Name != nil {
+		sc.Name = *con.Name
+	}
+
+	// pass the intended version
+	if con.Version != nil {
+		sc.Version = *con.Version
+	}
+
+	// pass the intended license
+	if con.License != nil {
+		sc.License = *con.License
+	}
+
+	// pass the intended support contact
+	if con.SupportContact != nil {
+		sc.SupportContact = *con.SupportContact
+	}
 }
 
 // ValidateContract resolves smart contract source code vs. deployed byte code and marks
@@ -164,24 +209,9 @@ func (rs *rootResolver) ValidateContract(args *struct{ Contract ContractValidati
 		return NewContract(sc, rs.repo), nil
 	}
 
-	// update the contract detail and pass it to validation
-	sc.SourceCode = args.Contract.SourceCode
+	// copy relevant information from input into the contract struct
 	sc.SourceCodeHash = &hash
-
-	// pass the intended name
-	if args.Contract.Name != nil {
-		sc.Name = *args.Contract.Name
-	}
-
-	// pass the intended version
-	if args.Contract.Version != nil {
-		sc.Version = *args.Contract.Version
-	}
-
-	// pass the intended support contact
-	if args.Contract.SupportContact != nil {
-		sc.Name = *args.Contract.SupportContact
-	}
+	updateContractFromInput(&args.Contract, sc)
 
 	// do the validation
 	if err := rs.repo.ValidateContract(sc); err != nil {

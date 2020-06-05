@@ -15,6 +15,12 @@ type Contract {
     "Smart contract version identifier. Empty if not available."
     version: String!
 
+    """
+    License specifies an open source licese the contract was published with.
+    Empty if not specified.
+    """
+    license: String
+
     "Smart contract author contact. Empty if not available."
     supportContact: String!
 
@@ -51,6 +57,21 @@ input ContractValidationInput {
 
     "Optional smart contract author contact. Maximum allowed length is 64 characters."
     supportContact: String
+
+    """
+    License specifies an open source licese the contract was published with.
+    Empty if not specified.
+    """
+    license: String
+
+    "Optimized specifies if the compiler was set to optimize the byte code."
+    optimized: Boolean = true
+
+    """
+    OptimizeRuns specifies number of optimization runs the compiler was set
+    to execute during the byte code optimizing.
+    """
+    optimizeRuns: Int = 200
 
     "Smart contract source code."
     sourceCode: String!
