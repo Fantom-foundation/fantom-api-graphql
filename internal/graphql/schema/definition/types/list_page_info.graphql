@@ -3,7 +3,7 @@ type ListPageInfo {
     # First is the cursor of the first edge of the edges list. null for empty list.
     first: Cursor
 
-    # Last if the cusrsor of the last edge of the edges list. null for empty list.
+    # Last if the cursor of the last edge of the edges list. null for empty list.
     last: Cursor
 
     # HasNext specifies if there is another edge after the last one.

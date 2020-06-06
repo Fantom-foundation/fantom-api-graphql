@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-06-05 19:34
+// Auto generated GraphQL schema bundle; created 2020-06-06 20:15
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -60,8 +60,11 @@ type Delegator {
     "Timestamp of the deactivation of the delegation."
     deactivatedTime: Long
 
-    "Amount delegated."
-    amount: BigInt
+    "Amount delegated. It includes all the pending un-delegations."
+    amount: BigInt!
+
+    "Amount locked in pending un-delegations and withdrawals."
+    amountInWithdraw: BigInt!
 
     "Amount of rewards claimed."
     claimedReward: BigInt
@@ -110,7 +113,7 @@ type Account {
     contract: Contract
 }
 
-# EstimatedRewards represents a calculated rewards etimation for an account or amount staked
+# EstimatedRewards represents a calculated rewards estimation for an account or amount staked
 type EstimatedRewards {
     "Amount of FTM tokens expected to be staked for the calculation."
     staked: Long!
@@ -150,8 +153,8 @@ type EstimatedRewards {
     """
     Total amount of staked FTM tokens used for the calculation in WEI units.
     The estimation uses total staked amount, not the effective amount provided
-    by the last epoch. The effective amount does include current undelegations and also
-    skips offline self-stakings and flagged stakings.
+    by the last epoch. The effective amount does include current
+    un-delegations and also skips offline self-staking and flagged staking.
     """
     totalStaked: BigInt!
 
@@ -277,7 +280,7 @@ type Epoch {
     "Timestamp of the epoch end."
     endTime: BigInt!
 
-    "Epoch duration in secods."
+    "Epoch duration in seconds."
     duration: BigInt!
 
     "Fee at the epoch."
@@ -464,7 +467,7 @@ type Staker {
 
 # PendingRewards represents a detail of pending rewards for staking and delegations
 type PendingRewards {
-    "Pedning rewards amount."
+    "Pending rewards amount."
     amount: BigInt!
 
     "The first unpaid epoch."
@@ -476,7 +479,7 @@ type PendingRewards {
 
 # WithdrawRequest represents a request for partial stake withdraw.
 type WithdrawRequest {
-    "Address of the autohorized request."
+    "Address of the authorized request."
     address: Address!
 
     "Address of the receiving account."
@@ -491,7 +494,7 @@ type WithdrawRequest {
     "Details of the staker involved in the withdraw request."
     staker: Staker!
 
-    "Unique withraw request identifier."
+    "Unique withdraw request identifier."
     withdrawRequestID: BigInt!
 
     "Is this a partial delegation withdraw, or staker withdraw?"
@@ -520,7 +523,7 @@ type WithdrawRequest {
 
 # DeactivatedDelegation represents a prepared delegation full withdraw.
 # Fully withdrawn delegations must be prepared first and finalized
-# only after the lockdown period passes.
+# only after the lock down period passes.
 type DeactivatedDelegation {
     "Address of the delegator."
     address: Address!
@@ -592,7 +595,7 @@ type Contract {
     version: String!
 
     """
-    License specifies an open source licese the contract was published with.
+    License specifies an open source license the contract was published with.
     Empty if not specified.
     """
     license: String!
@@ -635,7 +638,7 @@ input ContractValidationInput {
     supportContact: String
 
     """
-    License specifies an open source licese the contract was published with.
+    License specifies an open source license the contract was published with.
     Empty if not specified.
     """
     license: String
@@ -676,7 +679,7 @@ type ListPageInfo {
     # First is the cursor of the first edge of the edges list. null for empty list.
     first: Cursor
 
-    # Last if the cusrsor of the last edge of the edges list. null for empty list.
+    # Last if the cursor of the last edge of the edges list. null for empty list.
     last: Cursor
 
     # HasNext specifies if there is another edge after the last one.
@@ -704,10 +707,10 @@ type Query {
     Get list of Contracts with at most <count> edges.
     If <count> is positive, return edges after the cursor,
     if negative, return edges before the cursor.
-    For udefined cursor, positive <count> starts the list from top,
+    For undefined cursor, positive <count> starts the list from top,
     negative <count> starts the list from bottom.
     ValidatedOnly specifies if the list should contain all the Contracts,
-    or just contracts with validated bytecode and available source/ABI.
+    or just contracts with validated byte code and available source/ABI.
     """
     contracts(validatedOnly: Boolean = false, cursor:Cursor, count:Int!):ContractList!
 
@@ -724,7 +727,7 @@ type Query {
     Get list of Blocks with at most <count> edges.
     If <count> is positive, return edges after the cursor,
     if negative, return edges before the cursor.
-    For udefined cursor, positive <count> starts the list from top,
+    For undefined cursor, positive <count> starts the list from top,
     negative <count> starts the list from bottom.
     """
     blocks(cursor:Cursor, count:Int!):BlockList!
@@ -733,7 +736,7 @@ type Query {
     Get list of Transactions with at most <count> edges.
     If <count> is positive, return edges after the cursor,
     if negative, return edges before the cursor.
-    For udefined cursor, positive <count> starts the list from top,
+    For undefined cursor, positive <count> starts the list from top,
     negative <count> starts the list from bottom.
     """
     transactions(cursor:Cursor, count:Int!):TransactionList!
@@ -754,7 +757,7 @@ type Query {
     stakersNum: Long!
 
     """
-    Staker information. The staker is loaded either by numberic ID,
+    Staker information. The staker is loaded either by numeric ID,
     or by address. null if none is provided.
     """
     staker(id: Long, address: Address): Staker
@@ -787,7 +790,7 @@ type Query {
     estimateRewards(address:Address, amount:Long):EstimatedRewards!
 }
 
-# Mutation andpoints for modifying the data
+# Mutation endpoints for modifying the data
 type Mutation {
     """
     SendTransaction submits a raw signed transaction into the block chain.

@@ -6,7 +6,7 @@ type Epoch {
     "Timestamp of the epoch end."
     endTime: BigInt!
 
-    "Epoch duration in secods."
+    "Epoch duration in seconds."
     duration: BigInt!
 
     "Fee at the epoch."

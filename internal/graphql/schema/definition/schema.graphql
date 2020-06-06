@@ -17,10 +17,10 @@ type Query {
     Get list of Contracts with at most <count> edges.
     If <count> is positive, return edges after the cursor,
     if negative, return edges before the cursor.
-    For udefined cursor, positive <count> starts the list from top,
+    For undefined cursor, positive <count> starts the list from top,
     negative <count> starts the list from bottom.
     ValidatedOnly specifies if the list should contain all the Contracts,
-    or just contracts with validated bytecode and available source/ABI.
+    or just contracts with validated byte code and available source/ABI.
     """
     contracts(validatedOnly: Boolean = false, cursor:Cursor, count:Int!):ContractList!
 
@@ -37,7 +37,7 @@ type Query {
     Get list of Blocks with at most <count> edges.
     If <count> is positive, return edges after the cursor,
     if negative, return edges before the cursor.
-    For udefined cursor, positive <count> starts the list from top,
+    For undefined cursor, positive <count> starts the list from top,
     negative <count> starts the list from bottom.
     """
     blocks(cursor:Cursor, count:Int!):BlockList!
@@ -46,7 +46,7 @@ type Query {
     Get list of Transactions with at most <count> edges.
     If <count> is positive, return edges after the cursor,
     if negative, return edges before the cursor.
-    For udefined cursor, positive <count> starts the list from top,
+    For undefined cursor, positive <count> starts the list from top,
     negative <count> starts the list from bottom.
     """
     transactions(cursor:Cursor, count:Int!):TransactionList!
@@ -67,7 +67,7 @@ type Query {
     stakersNum: Long!
 
     """
-    Staker information. The staker is loaded either by numberic ID,
+    Staker information. The staker is loaded either by numeric ID,
     or by address. null if none is provided.
     """
     staker(id: Long, address: Address): Staker
@@ -100,7 +100,7 @@ type Query {
     estimateRewards(address:Address, amount:Long):EstimatedRewards!
 }
 
-# Mutation andpoints for modifying the data
+# Mutation endpoints for modifying the data
 type Mutation {
     """
     SendTransaction submits a raw signed transaction into the block chain.

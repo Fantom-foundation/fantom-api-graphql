@@ -1,6 +1,6 @@
 # WithdrawRequest represents a request for partial stake withdraw.
 type WithdrawRequest {
-    "Address of the autohorized request."
+    "Address of the authorized request."
     address: Address!
 
     "Address of the receiving account."
@@ -15,7 +15,7 @@ type WithdrawRequest {
     "Details of the staker involved in the withdraw request."
     staker: Staker!
 
-    "Unique withraw request identifier."
+    "Unique withdraw request identifier."
     withdrawRequestID: BigInt!
 
     "Is this a partial delegation withdraw, or staker withdraw?"
@@ -44,7 +44,7 @@ type WithdrawRequest {
 
 # DeactivatedDelegation represents a prepared delegation full withdraw.
 # Fully withdrawn delegations must be prepared first and finalized
-# only after the lockdown period passes.
+# only after the lock down period passes.
 type DeactivatedDelegation {
     "Address of the delegator."
     address: Address!

@@ -16,7 +16,7 @@ type Contract {
     version: String!
 
     """
-    License specifies an open source licese the contract was published with.
+    License specifies an open source license the contract was published with.
     Empty if not specified.
     """
     license: String!
@@ -59,7 +59,7 @@ input ContractValidationInput {
     supportContact: String
 
     """
-    License specifies an open source licese the contract was published with.
+    License specifies an open source license the contract was published with.
     Empty if not specified.
     """
     license: String

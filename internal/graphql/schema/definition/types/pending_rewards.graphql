@@ -1,6 +1,6 @@
 # PendingRewards represents a detail of pending rewards for staking and delegations
 type PendingRewards {
-    "Pedning rewards amount."
+    "Pending rewards amount."
     amount: BigInt!
 
     "The first unpaid epoch."
