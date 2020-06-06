@@ -18,6 +18,13 @@ type Delegator {
     "Timestamp of the deactivation of the delegation."
     deactivatedTime: Long
 
+    """
+    Amount delegated. The current amount still registered
+    by SFC contract as delegated amount. It does include pending
+    deactivation, but does not include partial un-delegations.
+    """
+    amountDelegated: BigInt
+
     "Amount delegated. It includes all the pending un-delegations."
     amount: BigInt!
 
