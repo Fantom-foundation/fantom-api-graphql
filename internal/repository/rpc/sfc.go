@@ -338,14 +338,11 @@ func (ftm *FtmBridge) Delegation(addr common.Address) (*types.Delegator, error) 
 // the delegation is closed.
 func (ftm *FtmBridge) delegatedAmount(dl *types.Delegator) error {
 	// base delegated amount is copied here
-	dl.Amount = (hexutil.Big)(*dl.SfcDelegated.ToInt())
+	dl.Amount = (hexutil.Big)(*big.NewInt(0))
 	dl.AmountInWithdraw = (hexutil.Big)(*big.NewInt(0))
 
-	// keep the amount delegated from SFC contract
-	dl.AmountDelegated = (hexutil.Big)(*new(big.Int).Set(dl.SfcDelegated.ToInt()))
-
 	// do we have any delegation active at all?
-	if nil == dl.SfcDelegated || 0 == dl.SfcDelegated.ToInt().Uint64() {
+	if nil == dl.AmountDelegated || 0 == dl.AmountDelegated.ToInt().Uint64() {
 		return nil
 	}
 
@@ -361,7 +358,8 @@ func (ftm *FtmBridge) delegatedAmount(dl *types.Delegator) error {
 	// add the pending withdrawal to the base amount value
 	// since we want it to include these pending partial un-delegations
 	// as well
-	newAmount := new(big.Int).Add(dl.SfcDelegated.ToInt(), pw)
+	dl.Amount = (hexutil.Big)(*dl.AmountDelegated.ToInt())
+	newAmount := new(big.Int).Add(dl.AmountDelegated.ToInt(), pw)
 	dl.Amount = (hexutil.Big)(*newAmount)
 
 	// try to find pending deactivation for the current staker
@@ -372,7 +370,7 @@ func (ftm *FtmBridge) delegatedAmount(dl *types.Delegator) error {
 	// calculate amount in withdraw
 	var inWithdraw *big.Int
 	if pd != nil {
-		inWithdraw = new(big.Int).Add(pw, dl.SfcDelegated.ToInt())
+		inWithdraw = new(big.Int).Add(pw, dl.AmountDelegated.ToInt())
 	} else {
 		inWithdraw = pw
 	}

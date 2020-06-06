@@ -26,7 +26,7 @@ type Delegator {
     by SFC contract as delegated amount. It does include pending
     deactivation, but does not include partial un-delegations.
     """
-    amountDelegated: BigInt!
+    amountDelegated: BigInt
 
     "Amount locked in pending un-delegations and withdrawals."
     amountInWithdraw: BigInt!

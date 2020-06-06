@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-06-06 20:48
+// Auto generated GraphQL schema bundle; created 2020-06-06 21:08
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -68,7 +68,7 @@ type Delegator {
     by SFC contract as delegated amount. It does include pending
     deactivation, but does not include partial un-delegations.
     """
-    amountDelegated: BigInt!
+    amountDelegated: BigInt
 
     "Amount locked in pending un-delegations and withdrawals."
     amountInWithdraw: BigInt!
