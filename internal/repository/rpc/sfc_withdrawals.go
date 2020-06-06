@@ -35,6 +35,11 @@ type withdrawnRequest struct {
 // WithdrawRequests extracts a list of partial withdraw requests
 // for the given address.
 func (ftm *FtmBridge) WithdrawRequests(addr *common.Address) ([]*types.WithdrawRequest, error) {
+	return ftm.withdrawRequestsList(addr, nil)
+}
+
+// withdrawRequestsList creates a list of withdraw request for the given address and staker.
+func (ftm *FtmBridge) withdrawRequestsList(addr *common.Address, staker *big.Int) ([]*types.WithdrawRequest, error) {
 	// we need to have the address to continue
 	if addr == nil {
 		ftm.log.Error("can not pull withdraw requests for empty address")
@@ -49,21 +54,58 @@ func (ftm *FtmBridge) WithdrawRequests(addr *common.Address) ([]*types.WithdrawR
 	}
 
 	// get a list of finalized requests
-	fin, err := ftm.withdrawnByRequest(contract, *addr)
+	fin, err := ftm.withdrawnByRequest(contract, *addr, nil)
 	if err != nil {
 		ftm.log.Error("can not pull finalized withdraw requests; %s", err.Error())
 		return nil, err
 	}
 
 	// get a list of requests
-	return ftm.createdWithdrawRequests(contract, *addr, fin)
+	return ftm.createdWithdrawRequests(contract, *addr, staker, fin)
+}
+
+// PendingWithdrawalsAmount calculates amount of pending withdraw requests for the given
+// address and staker id.
+func (ftm *FtmBridge) PendingWithdrawalsAmount(addr *common.Address, staker *big.Int) (*big.Int, error) {
+	// get withdraw requests list
+	list, err := ftm.withdrawRequestsList(addr, staker)
+	if err != nil {
+		return nil, err
+	}
+
+	// start with an empty value
+	value := big.NewInt(0)
+
+	// loop over the list of requests and add non-finished
+	for _, req := range list {
+		// is this request doesn't have a finalization block number
+		// it's still pending and it's amount will be added
+		// to the pending total
+		if req.WithdrawBlockNumber == nil {
+			value = new(big.Int).Add(value, req.Amount.ToInt())
+		}
+	}
+
+	return value, nil
 }
 
 // withdrawnByRequest pulls list of finalized withdraw requests
 // from the SFC contract events using filter iterator.
-func (ftm *FtmBridge) withdrawnByRequest(sfc *SfcContract, addr common.Address) ([]withdrawnRequest, error) {
+func (ftm *FtmBridge) withdrawnByRequest(sfc *SfcContract, addr common.Address, staker *big.Int) ([]withdrawnRequest, error) {
+	// prep iteration variables
+	var it *SfcContractPartialWithdrawnByRequestIterator
+	var err error
+
 	// create event iterator for the finalized withdraw requests
-	it, err := sfc.FilterPartialWithdrawnByRequest(nil, []common.Address{addr}, nil, nil)
+	if staker == nil {
+		// we don't care about the staker ID here so we pass nil to the staker filter
+		it, err = sfc.FilterPartialWithdrawnByRequest(nil, []common.Address{addr}, nil, nil)
+	} else {
+		// we want to make sure to pull requests on for the specific staker ID
+		it, err = sfc.FilterPartialWithdrawnByRequest(nil, []common.Address{addr}, nil, []*big.Int{staker})
+	}
+
+	// check for errors before will try to pull
 	if err != nil {
 		ftm.log.Errorf("failed to get finalized withdraws iterator; %s", err.Error())
 		return nil, err
@@ -77,6 +119,12 @@ func (ftm *FtmBridge) withdrawnByRequest(sfc *SfcContract, addr common.Address) 
 		}
 	}()
 
+	// pull the list from the initialized iterator
+	return ftm.withdrawnByRequestList(it)
+}
+
+// withdrawnByRequestList extracts the finalized withdrawal list from the given iterator.
+func (ftm *FtmBridge) withdrawnByRequestList(it *SfcContractPartialWithdrawnByRequestIterator) ([]withdrawnRequest, error) {
 	// make the container
 	list := make([]withdrawnRequest, 0)
 
@@ -110,9 +158,21 @@ func (ftm *FtmBridge) withdrawnByRequest(sfc *SfcContract, addr common.Address) 
 
 // createdWithdrawRequests pulls list of created withdraw requests
 // from the SFC contract events using filter iterator.
-func (ftm *FtmBridge) createdWithdrawRequests(sfc *SfcContract, addr common.Address, fin []withdrawnRequest) ([]*types.WithdrawRequest, error) {
+func (ftm *FtmBridge) createdWithdrawRequests(sfc *SfcContract, addr common.Address, staker *big.Int, fin []withdrawnRequest) ([]*types.WithdrawRequest, error) {
+	// prep iteration variables
+	var it *SfcContractCreatedWithdrawRequestIterator
+	var err error
+
 	// create event iterator for the created withdraw requests
-	it, err := sfc.FilterCreatedWithdrawRequest(nil, []common.Address{addr}, nil, nil)
+	if staker == nil {
+		// we don't care about the staker
+		it, err = sfc.FilterCreatedWithdrawRequest(nil, []common.Address{addr}, nil, nil)
+	} else {
+		// we need to make sure to pull from the specific staker only
+		it, err = sfc.FilterCreatedWithdrawRequest(nil, []common.Address{addr}, nil, []*big.Int{staker})
+	}
+
+	// check for errors before we try to pull
 	if err != nil {
 		ftm.log.Errorf("failed to get created withdraw requests iterator; %s", err.Error())
 		return nil, err
@@ -126,6 +186,11 @@ func (ftm *FtmBridge) createdWithdrawRequests(sfc *SfcContract, addr common.Addr
 		}
 	}()
 
+	return ftm.createdWithdrawRequestsList(it, fin)
+}
+
+// pullCreatedWithdrawRequestsList extracts the created withdrawal list from the given iterator.
+func (ftm *FtmBridge) createdWithdrawRequestsList(it *SfcContractCreatedWithdrawRequestIterator, fin []withdrawnRequest) ([]*types.WithdrawRequest, error) {
 	// make the container
 	list := make([]*types.WithdrawRequest, 0)
 

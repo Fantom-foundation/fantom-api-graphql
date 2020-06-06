@@ -320,7 +320,62 @@ func (ftm *FtmBridge) Delegation(addr common.Address) (*types.Delegator, error) 
 		return nil, err
 	}
 
+	// calculate real amounts delegated and amount in un-delegation
+	if err := ftm.delegatedAmount(&dl); err != nil {
+		ftm.log.Debugf("can not load delegated amount for %s; %s", addr.String(), err.Error())
+		return nil, err
+	}
+
 	// keep track of the operation
 	ftm.log.Debugf("delegation of address %s loaded", addr.String())
 	return &dl, nil
+}
+
+// delegatedAmount calculates total amount currently delegated
+// and amount locked in pending un-delegation.
+// Partial Un-delegations are subtracted during the preparation
+// phase, but total un-delegations are subtracted only when
+// the delegation is closed.
+func (ftm *FtmBridge) delegatedAmount(dl *types.Delegator) error {
+	// base delegated amount is copied here
+	dl.Amount = (hexutil.Big)(*dl.AmountDelegated.ToInt())
+	dl.AmountInWithdraw = (hexutil.Big)(*big.NewInt(0))
+
+	// do we have any delegation active at all?
+	if nil == dl.AmountDelegated || 0 == dl.AmountDelegated.ToInt().Uint64() {
+		return nil
+	}
+
+	// staker we are dealing with
+	stakerId := big.NewInt(int64(dl.ToStakerId))
+
+	// get the amount of pending withdrawals
+	pw, err := ftm.PendingWithdrawalsAmount(&dl.Address, stakerId)
+	if err != nil {
+		return err
+	}
+
+	// add the pending withdrawal to the base amount value
+	// since we want it to include these pending partial un-delegations as well
+	newAmount := new(big.Int).Add(dl.AmountDelegated.ToInt(), pw)
+	dl.Amount = (hexutil.Big)(*newAmount)
+
+	// try to find pending deactivation for the current staker
+	// since if there is one, the whole amount is going
+	// to be reclaimed and hence is subject to pending withdrawal
+	pd, err := ftm.PendingDeactivation(&dl.Address, stakerId)
+
+	// calculate amount in withdraw
+	var inWithdraw *big.Int
+	if pd != nil {
+		inWithdraw = new(big.Int).Add(pw, dl.AmountDelegated.ToInt())
+	} else {
+		inWithdraw = pw
+	}
+
+	// apply to the output
+	dl.AmountInWithdraw = (hexutil.Big)(*inWithdraw)
+
+	// we may need to add partial un-delegations
+	return nil
 }

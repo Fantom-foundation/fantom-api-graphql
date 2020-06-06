@@ -32,6 +32,32 @@ type finalizedDeactivatedDelegation struct {
 // DeactivatedDelegation extracts a list of deactivated delegation requests
 // for the given address.
 func (ftm *FtmBridge) DeactivatedDelegation(addr *common.Address) ([]*types.DeactivatedDelegation, error) {
+	// get a list of deactivation
+	return ftm.deactivatedDelegationList(addr, nil)
+}
+
+// PendingDeactivation finds pending full withdraw request for the given address and staker id.
+// If there is a pending deactivation, all the remaining amount delegated is going to be withdrawn.
+func (ftm *FtmBridge) PendingDeactivation(addr *common.Address, staker *big.Int) (*types.DeactivatedDelegation, error) {
+	// get withdraw requests list
+	list, err := ftm.deactivatedDelegationList(addr, staker)
+	if err != nil {
+		return nil, err
+	}
+
+	// loop over the list of requests and add non-finished
+	for _, req := range list {
+		if req.WithdrawBlockNumber == nil {
+			return req, nil
+		}
+	}
+
+	return nil, nil
+}
+
+// deactivatedDelegationList extracts a list of deactivated delegation requests
+// for the given address and staker.
+func (ftm *FtmBridge) deactivatedDelegationList(addr *common.Address, staker *big.Int) ([]*types.DeactivatedDelegation, error) {
 	// we need to have the address to continue
 	if addr == nil {
 		ftm.log.Error("can not pull deactivated delegation requests for empty address")
@@ -46,21 +72,32 @@ func (ftm *FtmBridge) DeactivatedDelegation(addr *common.Address) ([]*types.Deac
 	}
 
 	// get a list of finalized requests
-	fin, err := ftm.finalizedDeactivatedDelegation(contract, *addr)
+	fin, err := ftm.finalizedDeactivatedDelegation(contract, *addr, staker)
 	if err != nil {
 		ftm.log.Error("can not pull finalized deactivated delegation requests; %s", err.Error())
 		return nil, err
 	}
 
 	// get a list of requests
-	return ftm.createdDeactivatedDelegation(contract, *addr, fin)
+	return ftm.createdDeactivatedDelegation(contract, *addr, staker, fin)
 }
 
 // createdDeactivatedDelegation pulls list of created deactivated delegation requests
 // from the SFC contract events using filter iterator.
-func (ftm *FtmBridge) createdDeactivatedDelegation(sfc *SfcContract, addr common.Address, fin []finalizedDeactivatedDelegation) ([]*types.DeactivatedDelegation, error) {
+func (ftm *FtmBridge) createdDeactivatedDelegation(sfc *SfcContract, addr common.Address, staker *big.Int, fin []finalizedDeactivatedDelegation) ([]*types.DeactivatedDelegation, error) {
+	var it *SfcContractDeactivatedDelegationIterator
+	var err error
+
 	// create event iterator for the created deactivated delegation requests
-	it, err := sfc.FilterDeactivatedDelegation(nil, []common.Address{addr}, nil)
+	if staker == nil {
+		// we don't care about the staker here
+		it, err = sfc.FilterDeactivatedDelegation(nil, []common.Address{addr}, nil)
+	} else {
+		// we don't care about the staker here
+		it, err = sfc.FilterDeactivatedDelegation(nil, []common.Address{addr}, []*big.Int{staker})
+	}
+
+	// check for errors before we pull the list
 	if err != nil {
 		ftm.log.Errorf("failed to get created deactivated delegation requests iterator; %s", err.Error())
 		return nil, err
@@ -74,6 +111,13 @@ func (ftm *FtmBridge) createdDeactivatedDelegation(sfc *SfcContract, addr common
 		}
 	}()
 
+	// pull the list
+	return ftm.createdDeactivatedDelegationList(it, fin)
+}
+
+// createdDeactivatedDelegationList pulls list of created deactivated delegation requests
+// from the given iterator.
+func (ftm *FtmBridge) createdDeactivatedDelegationList(it *SfcContractDeactivatedDelegationIterator, fin []finalizedDeactivatedDelegation) ([]*types.DeactivatedDelegation, error) {
 	// make the container
 	list := make([]*types.DeactivatedDelegation, 0)
 
@@ -109,36 +153,22 @@ func (ftm *FtmBridge) createdDeactivatedDelegation(sfc *SfcContract, addr common
 	return list, nil
 }
 
-// pairDeactivatedDelegationWithFinalized tries to pair the deactivated delegation
-// request with one of the finalized deactivated delegation
-// to populate finished requests details.
-func pairDeactivatedDelegationWithFinalized(dd *types.DeactivatedDelegation, fin []finalizedDeactivatedDelegation) {
-	// loop all finalized deactivated delegation available to find
-	// the corresponding one if exists
-	for _, fr := range fin {
-		// we check for the same staker id and block number above opening request
-		if uint64(dd.StakerID) == fr.StakerID && uint64(dd.RequestBlockNumber) < fr.BlockNumber {
-			// what block is this finalized deactivated delegation registered in?
-			blk := hexutil.Uint64(fr.BlockNumber)
-
-			// what penalty has been applied
-			pen := hexutil.Big(fr.Penalty)
-
-			// update the request
-			dd.WithdrawBlockNumber = &blk
-			dd.WithdrawPenalty = &pen
-
-			// we are done here
-			break
-		}
-	}
-}
-
 // finalizedDeactivatedDelegation extracts a list of finalized deactivated delegation requests
 // for the given address.
-func (ftm *FtmBridge) finalizedDeactivatedDelegation(sfc *SfcContract, addr common.Address) ([]finalizedDeactivatedDelegation, error) {
+func (ftm *FtmBridge) finalizedDeactivatedDelegation(sfc *SfcContract, addr common.Address, staker *big.Int) ([]finalizedDeactivatedDelegation, error) {
+	var it *SfcContractWithdrawnDelegationIterator
+	var err error
+
 	// create event iterator for the finalized deactivated delegation requests
-	it, err := sfc.FilterWithdrawnDelegation(nil, []common.Address{addr}, nil)
+	if staker == nil {
+		// forget about the staker and use just the delegator address
+		it, err = sfc.FilterWithdrawnDelegation(nil, []common.Address{addr}, nil)
+	} else {
+		// make sure to limit the staker along with the delegator address
+		it, err = sfc.FilterWithdrawnDelegation(nil, []common.Address{addr}, []*big.Int{staker})
+	}
+
+	// check errors before we pull the actual list from the iterator
 	if err != nil {
 		ftm.log.Errorf("failed to get finalized deactivated delegation iterator; %s", err.Error())
 		return nil, err
@@ -152,6 +182,13 @@ func (ftm *FtmBridge) finalizedDeactivatedDelegation(sfc *SfcContract, addr comm
 		}
 	}()
 
+	// pull the list
+	return ftm.finalizedDeactivatedDelegationList(it)
+}
+
+// finalizedDeactivatedDelegation extracts a list of finalized deactivated delegation requests
+// for the given address.
+func (ftm *FtmBridge) finalizedDeactivatedDelegationList(it *SfcContractWithdrawnDelegationIterator) ([]finalizedDeactivatedDelegation, error) {
 	// make the container
 	list := make([]finalizedDeactivatedDelegation, 0)
 
@@ -181,4 +218,29 @@ func (ftm *FtmBridge) finalizedDeactivatedDelegation(sfc *SfcContract, addr comm
 	}
 
 	return list, nil
+}
+
+// pairDeactivatedDelegationWithFinalized tries to pair the deactivated delegation
+// request with one of the finalized deactivated delegation
+// to populate finished requests details.
+func pairDeactivatedDelegationWithFinalized(dd *types.DeactivatedDelegation, fin []finalizedDeactivatedDelegation) {
+	// loop all finalized deactivated delegation available to find
+	// the corresponding one if exists
+	for _, fr := range fin {
+		// we check for the same staker id and block number above opening request
+		if uint64(dd.StakerID) == fr.StakerID && uint64(dd.RequestBlockNumber) < fr.BlockNumber {
+			// what block is this finalized deactivated delegation registered in?
+			blk := hexutil.Uint64(fr.BlockNumber)
+
+			// what penalty has been applied
+			pen := hexutil.Big(fr.Penalty)
+
+			// update the request
+			dd.WithdrawBlockNumber = &blk
+			dd.WithdrawPenalty = &pen
+
+			// we are done here
+			break
+		}
+	}
 }
