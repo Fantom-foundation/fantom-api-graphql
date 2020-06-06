@@ -358,7 +358,6 @@ func (ftm *FtmBridge) delegatedAmount(dl *types.Delegator) error {
 	// add the pending withdrawal to the base amount value
 	// since we want it to include these pending partial un-delegations
 	// as well
-	dl.Amount = (hexutil.Big)(*dl.AmountDelegated.ToInt())
 	newAmount := new(big.Int).Add(dl.AmountDelegated.ToInt(), pw)
 	dl.Amount = (hexutil.Big)(*newAmount)
 
