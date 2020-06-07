@@ -5,13 +5,19 @@ import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 	"sort"
 )
 
 // Delegator represents resolvable delegator detail.
 type Delegator struct {
-	types.Delegator
 	repo repository.Repository
+	types.Delegator
+
+	/* extended delegated amounts pre-loaded */
+	extendedAmount           *big.Int
+	extendedAmountInWithdraw *big.Int
 }
 
 // NewDelegator creates new instance of resolvable Delegator.
@@ -31,6 +37,38 @@ func (rs *rootResolver) Delegation(args *struct{ Address common.Address }) (*Del
 	}
 
 	return NewDelegator(d, rs.repo), nil
+}
+
+// Amount returns total delegated amount for the delegator.
+func (del Delegator) Amount() (hexutil.Big, error) {
+	// lazy load data
+	if del.extendedAmount == nil {
+		var err error
+
+		// try to load the data
+		del.extendedAmount, del.extendedAmountInWithdraw, err = del.repo.DelegatedAmountExtended(&del.Delegator)
+		if err != nil {
+			return hexutil.Big{}, err
+		}
+	}
+
+	return (hexutil.Big)(*del.extendedAmount), nil
+}
+
+// AmountInWithdraw returns total delegated amount in pending withdrawals for the delegator.
+func (del Delegator) AmountInWithdraw() (hexutil.Big, error) {
+	// lazy load data
+	if del.extendedAmountInWithdraw == nil {
+		var err error
+
+		// try to load the data
+		del.extendedAmount, del.extendedAmountInWithdraw, err = del.repo.DelegatedAmountExtended(&del.Delegator)
+		if err != nil {
+			return hexutil.Big{}, err
+		}
+	}
+
+	return (hexutil.Big)(*del.extendedAmountInWithdraw), nil
 }
 
 // PendingRewards resolves pending rewards for the delegator account.

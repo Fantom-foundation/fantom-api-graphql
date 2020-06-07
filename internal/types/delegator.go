@@ -15,7 +15,5 @@ type Delegator struct {
 	DeactivatedEpoch *hexutil.Uint64 `json:"deactivatedEpoch"`
 	DeactivatedTime  *hexutil.Uint64 `json:"deactivatedTime"`
 	AmountDelegated  *hexutil.Big    `json:"amount"`
-	Amount           hexutil.Big     `json:"delegatedTotal"`
-	AmountInWithdraw hexutil.Big     `json:"delegatedUndo"`
 	ClaimedReward    *hexutil.Big    `json:"claimedRewards"`
 }

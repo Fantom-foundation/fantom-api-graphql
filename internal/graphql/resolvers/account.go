@@ -18,6 +18,11 @@ type Account struct {
 	rfStaker     *types.Staker
 	rfDelegation *types.Delegator
 	rfBalance    *hexutil.Big
+
+	/* extended delegated amounts pre-loaded */
+	dlExtendedAmount           *big.Int
+	dlExtendedAmountInWithdraw *big.Int
+
 	types.Account
 }
 
@@ -91,8 +96,18 @@ func (acc *Account) TotalValue() (hexutil.Big, error) {
 
 	// do we have a delegation?
 	if del != nil {
+		var err error
+
+		// try to load the data
+		if acc.dlExtendedAmount == nil {
+			acc.dlExtendedAmount, acc.dlExtendedAmountInWithdraw, err = acc.repo.DelegatedAmountExtended(del)
+			if err != nil {
+				return hexutil.Big{}, err
+			}
+		}
+
 		// add delegated amount to the balance
-		val := big.NewInt(0).Add(balance.ToInt(), del.Amount.ToInt())
+		val := big.NewInt(0).Add(balance.ToInt(), acc.dlExtendedAmount)
 
 		// get pending rewards
 		rw, err := acc.repo.DelegationRewards(acc.Address.String())

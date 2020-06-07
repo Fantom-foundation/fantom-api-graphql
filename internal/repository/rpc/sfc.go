@@ -320,12 +320,6 @@ func (ftm *FtmBridge) Delegation(addr common.Address) (*types.Delegator, error) 
 		return nil, err
 	}
 
-	// calculate real amounts delegated and amount in un-delegation
-	if err := ftm.delegatedAmount(&dl); err != nil {
-		ftm.log.Debugf("can not load delegated amount for %s; %s", addr.String(), err.Error())
-		return nil, err
-	}
-
 	// keep track of the operation
 	ftm.log.Debugf("delegation of address %s loaded", addr.String())
 	return &dl, nil
@@ -336,14 +330,15 @@ func (ftm *FtmBridge) Delegation(addr common.Address) (*types.Delegator, error) 
 // Partial Un-delegations are subtracted during the preparation
 // phase, but total un-delegations are subtracted only when
 // the delegation is closed.
-func (ftm *FtmBridge) delegatedAmount(dl *types.Delegator) error {
+func (ftm *FtmBridge) DelegatedAmountExtended(dl *types.Delegator) (*big.Int, *big.Int, error) {
 	// base delegated amount is copied here
-	dl.Amount = (hexutil.Big)(*big.NewInt(0))
-	dl.AmountInWithdraw = (hexutil.Big)(*big.NewInt(0))
+	amount := big.NewInt(0)
+	inWithdraw := big.NewInt(0)
 
 	// do we have any delegation active at all?
-	if nil == dl.AmountDelegated || 0 == dl.AmountDelegated.ToInt().Uint64() {
-		return nil
+	if nil == dl.AmountDelegated {
+		ftm.log.Debugf("no delegated amount for %s", dl.Address.String())
+		return amount, inWithdraw, nil
 	}
 
 	// staker we are dealing with
@@ -352,32 +347,31 @@ func (ftm *FtmBridge) delegatedAmount(dl *types.Delegator) error {
 	// get the amount of pending withdrawals
 	pw, err := ftm.PendingWithdrawalsAmount(&dl.Address, stakerId)
 	if err != nil {
-		return err
+		ftm.log.Debugf("error loading pending withdrawals; %s", err.Error())
+		return nil, nil, err
 	}
 
 	// add the pending withdrawal to the base amount value
 	// since we want it to include these pending partial un-delegations
 	// as well
-	dl.Amount = (hexutil.Big)(*dl.AmountDelegated.ToInt())
-	newAmount := new(big.Int).Add(dl.AmountDelegated.ToInt(), pw)
-	dl.Amount = (hexutil.Big)(*newAmount)
+	amount = new(big.Int).Add(dl.AmountDelegated.ToInt(), pw)
 
 	// try to find pending deactivation for the current staker
 	// since if there is one, the whole amount is going
 	// to be reclaimed and hence is subject to pending withdrawal
 	pd, err := ftm.PendingDeactivation(&dl.Address, stakerId)
+	if err != nil {
+		ftm.log.Debugf("error loading pending deactivation; %s", err.Error())
+		return nil, nil, err
+	}
 
 	// calculate amount in withdraw
-	var inWithdraw *big.Int
 	if pd != nil {
 		inWithdraw = new(big.Int).Add(pw, dl.AmountDelegated.ToInt())
 	} else {
 		inWithdraw = pw
 	}
 
-	// apply to the output
-	dl.AmountInWithdraw = (hexutil.Big)(*inWithdraw)
-
 	// we may need to add partial un-delegations
-	return nil
+	return amount, inWithdraw, nil
 }

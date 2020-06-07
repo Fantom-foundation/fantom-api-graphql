@@ -19,6 +19,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ftm "github.com/ethereum/go-ethereum/rpc"
+	"math/big"
 )
 
 // Repository interface defines functions the underlying implementation provides to API resolvers.
@@ -129,6 +130,13 @@ type Repository interface {
 	// DeactivatedDelegation extracts a list of deactivated delegation requests
 	// for the given address.
 	DeactivatedDelegation(*common.Address) ([]*types.DeactivatedDelegation, error)
+
+	// delegatedAmount calculates total amount currently delegated
+	// and amount locked in pending un-delegation.
+	// Partial Un-delegations are subtracted during the preparation
+	// phase, but total un-delegations are subtracted only when
+	// the delegation is closed.
+	DelegatedAmountExtended(*types.Delegator) (*big.Int, *big.Int, error)
 
 	// Price returns a price information for the given target symbol.
 	Price(sym string) (types.Price, error)

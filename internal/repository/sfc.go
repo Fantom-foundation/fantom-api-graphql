@@ -81,6 +81,19 @@ func (p *proxy) DeactivatedDelegation(addr *common.Address) ([]*types.Deactivate
 	return p.rpc.DeactivatedDelegation(addr)
 }
 
+// delegatedAmount calculates total amount currently delegated
+// and amount locked in pending un-delegation.
+// Partial Un-delegations are subtracted during the preparation
+// phase, but total un-delegations are subtracted only when
+// the delegation is closed.
+func (p *proxy) DelegatedAmountExtended(dl *types.Delegator) (*big.Int, *big.Int, error) {
+	// log the action
+	p.log.Debugf("loading extended delegation amounts for [%s]", dl.Address.String())
+
+	// proxy the request directly to RPC/SFC
+	return p.rpc.DelegatedAmountExtended(dl)
+}
+
 // TotalStaked calculates current total staked amount for all stakers.
 func (p *proxy) TotalStaked() (*hexutil.Big, error) {
 	// try cache first
