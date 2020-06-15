@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-06-06 21:08
+// Auto generated GraphQL schema bundle; created 2020-06-15 08:52
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -575,6 +575,12 @@ type Block {
 
     # Timestamp is the unix timestamp at which this block was mined.
     timestamp: Long!
+
+    # GasLimit represents the maximum gas allowed in this block.
+    gasLimit: Long!
+
+    # GasUsed represents the actual total used gas by all transactions in this block.
+    gasUsed: Long!
 
     # txHashList is the list of unique hash values of transaction
     # assigned to the block.

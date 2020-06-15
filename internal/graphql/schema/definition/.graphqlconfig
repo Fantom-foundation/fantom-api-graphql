@@ -32,8 +32,16 @@
         },
         "introspect": false
       },
-      "Remote GraphQL Fantom.Network": {
+      "XAPI1 Fantom.Network": {
+        "url": "https://xapi1.fantom.network/graphql",
+        "introspect": false
+      },
+      "XAPI2 Fantom.Network": {
         "url": "https://xapi2.fantom.network/graphql",
+        "introspect": false
+      },
+      "XAPI3 Fantom.Network": {
+        "url": "https://xapi3.fantom.network/graphql",
         "introspect": false
       }
     }
