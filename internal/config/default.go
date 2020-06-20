@@ -46,6 +46,9 @@ var defApiPeers = []string{"https://localhost:16761/api"}
 // defCorsAllowOrigins holds CORS default allowed origins.
 var defCorsAllowOrigins = []string{"*"}
 
+// default list of API peers
+var defVotingSources = make([]string, 0)
+
 // applyDefaults sets default values for configuration options.
 func applyDefaults(cfg *viper.Viper) {
 	// set simple details
@@ -60,6 +63,9 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keySolCompilerPath, defSolCompilerPath)
 	cfg.SetDefault(keyApiPeers, defApiPeers)
 	cfg.SetDefault(keyApiStateOrigin, defApiStateOrigin)
+
+	// no voting sources by default
+	cfg.SetDefault(keyVotingSources, defVotingSources)
 
 	// cors
 	cfg.SetDefault(keyCorsAllowOrigins, defCorsAllowOrigins)

@@ -33,6 +33,7 @@ const (
 	keyCorsAllowOrigins  = "cors.origins"
 	keyCacheEvictionTime = "cache.eviction"
 	keySolCompilerPath   = "sol.compiler"
+	keyVotingSources     = "voting.sources"
 )
 
 // Config defines configuration options structure for Fantom API server.
@@ -71,6 +72,10 @@ type Config struct {
 	// ApiPeers represents a list of other API points of the same type we need to inform
 	// on possible state change.
 	ApiPeers []string
+
+	// VotingSources represents a list of addresses used to deploy voting smart contracts
+	// for official Fantom ballots.
+	VotingSources []string
 
 	// ApiStateOrigin represents request origin used on state syncing events.
 	ApiStateOrigin string
@@ -113,6 +118,7 @@ func Load() (*Config, error) {
 		SolCompilerPath:   cfg.GetString(keySolCompilerPath),
 		ApiPeers:          cfg.GetStringSlice(keyApiPeers),
 		ApiStateOrigin:    cfg.GetString(keyApiStateOrigin),
+		VotingSources:     cfg.GetStringSlice(keyVotingSources),
 	}, nil
 }
 
