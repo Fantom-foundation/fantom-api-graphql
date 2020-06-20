@@ -1,0 +1,56 @@
+# Ballot represents an official deployed ballot contract
+# used for Fantom Opera related voting poll.
+type Ballot {
+    # Address of the ballot, correspond with the smart contract address.
+    address: Address!
+
+    # Deployed smart contract handling the ballot voting.
+    contract: Contract!
+
+    # Short name of the ballot.
+    name: String!
+
+    # URL of the ballot detailed information page.
+    detailsUrl: String!
+
+    # An approximate timestamp after which the ballot opens for voting.
+    start: Long!
+
+    # An approximate timestamp after which the ballot
+    # is closed and no longer accepts votes.
+    end: Long!
+
+    # Informs if the ballot is open for voting.
+    isOpen: Boolean!
+
+    # Informs if the ballot has already been finalized
+    # and the winning proposal is available.
+    isFinalized: Boolean!
+
+    # List of proposals of the ballot.
+    proposals: [String!]!
+
+    # Index of the winning proposal.
+    # Is NULL if the ballot has not been finalized yet.
+    winner: Long
+}
+
+# BallotList is a list of ballot edges provided by sequential access request.
+type BallotList {
+    # Edges contains provided edges of the sequential list.
+    edges: [BallotListEdge!]!
+
+    # TotalCount is the maximum number of ballots available
+    # for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page
+    # of ballot edges.
+    pageInfo: ListPageInfo!
+}
+
+# BallotListEdge is a single edge in a sequential list of ballots.
+type BallotListEdge {
+    cursor: Cursor!
+    ballot: Ballot!
+}

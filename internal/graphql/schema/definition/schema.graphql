@@ -98,6 +98,18 @@ type Query {
     If you provide both, the address takes precedence and the amount is ignored.
     """
     estimateRewards(address:Address, amount:Long):EstimatedRewards!
+
+    "Get official ballot information by its address."
+    ballot(address: Address):Ballot
+
+    """
+    Get list of official Ballots with at most <count> edges.
+    If <count> is positive, return edges after the cursor,
+    if negative, return edges before the cursor.
+    For undefined cursor, positive <count> starts the list from top,
+    negative <count> starts the list from bottom.
+    """
+    ballots(cursor: Cursor, count: Int!):BallotList!
 }
 
 # Mutation endpoints for modifying the data

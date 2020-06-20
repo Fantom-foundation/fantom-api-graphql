@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-06-15 08:52
+// Auto generated GraphQL schema bundle; created 2020-06-20 18:33
 const schema = `
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
@@ -559,6 +559,63 @@ type DeactivatedDelegation {
     withdrawPenalty: BigInt
 }
 
+# Ballot represents an official deployed ballot contract
+# used for Fantom Opera related voting poll.
+type Ballot {
+    # Address of the ballot, correspond with the smart contract address.
+    address: Address!
+
+    # Deployed smart contract handling the ballot voting.
+    contract: Contract!
+
+    # Short name of the ballot.
+    name: String!
+
+    # URL of the ballot detailed information page.
+    detailsUrl: String!
+
+    # An approximate timestamp after which the ballot opens for voting.
+    start: Long!
+
+    # An approximate timestamp after which the ballot
+    # is closed and no longer accepts votes.
+    end: Long!
+
+    # Informs if the ballot is open for voting.
+    isOpen: Boolean!
+
+    # Informs if the ballot has already been finalized
+    # and the winning proposal is available.
+    isFinalized: Boolean!
+
+    # List of proposals of the ballot.
+    proposals: [String!]!
+
+    # Index of the winning proposal.
+    # Is NULL if the ballot has not been finalized yet.
+    winner: Long
+}
+
+# BallotList is a list of ballot edges provided by sequential access request.
+type BallotList {
+    # Edges contains provided edges of the sequential list.
+    edges: [BallotListEdge!]!
+
+    # TotalCount is the maximum number of ballots available
+    # for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page
+    # of ballot edges.
+    pageInfo: ListPageInfo!
+}
+
+# BallotListEdge is a single edge in a sequential list of ballots.
+type BallotListEdge {
+    cursor: Cursor!
+    ballot: Ballot!
+}
+
 # Block is an Opera block chain block.
 type Block {
     # Number is the number of this block, starting at 0 for the genesis block.
@@ -801,6 +858,18 @@ type Query {
     If you provide both, the address takes precedence and the amount is ignored.
     """
     estimateRewards(address:Address, amount:Long):EstimatedRewards!
+
+    "Get official ballot information by its address."
+    ballot(address: Address):Ballot
+
+    """
+    Get list of official Ballots with at most <count> edges.
+    If <count> is positive, return edges after the cursor,
+    if negative, return edges before the cursor.
+    For undefined cursor, positive <count> starts the list from top,
+    negative <count> starts the list from bottom.
+    """
+    ballots(cursor: Cursor, count: Int!):BallotList!
 }
 
 # Mutation endpoints for modifying the data
