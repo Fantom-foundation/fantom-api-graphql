@@ -35,6 +35,21 @@ type Ballot {
     winner: Long
 }
 
+# Vote represents a selected vote in a ballot.
+type Vote {
+    # Address of the ballot the Vote relates to.
+    ballot: Address!
+
+    # Address of the voter who placed the vote.
+    voter: Address!
+
+    # Account of the voter who placed the vote.
+    account: Account!
+
+    # The selected proposal index the voter chose.
+    vote: Long
+}
+
 # BallotList is a list of ballot edges provided by sequential access request.
 type BallotList {
     # Edges contains provided edges of the sequential list.

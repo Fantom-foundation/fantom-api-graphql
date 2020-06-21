@@ -110,6 +110,13 @@ type Query {
     negative <count> starts the list from bottom.
     """
     ballots(cursor: Cursor, count: Int!):BallotList!
+
+    """
+    List of all votes of the given voter identified by the address
+    for the given list of ballots identified by an array of ballot
+    addresses.
+    """
+    votes(voter:Address!, ballots:[Address!]!):[Vote!]!
 }
 
 # Mutation endpoints for modifying the data

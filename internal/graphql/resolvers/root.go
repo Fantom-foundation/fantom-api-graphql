@@ -40,6 +40,21 @@ type ApiResolver interface {
 	// to notify them about the change.
 	ValidateContract(*struct{ Contract ContractValidationInput }) (*Contract, error)
 
+	// Ballot resolves details of a voting ballot by it's address.
+	Ballot(*struct{ Address common.Address }) (*Ballot, error)
+
+	// Ballots resolves list of official ballots.
+	Ballots(*struct {
+		Cursor *Cursor
+		Count  int32
+	}) (*BallotList, error)
+
+	// Votes resolves list of votes for the given voter address and list of ballots.
+	Votes(*struct {
+		Voter   common.Address
+		Ballots []common.Address
+	}) ([]Vote, error)
+
 	// Block resolves blockchain block by number or by hash. If neither is provided, the most recent block is given.
 	Block(*struct {
 		Number *hexutil.Uint64
