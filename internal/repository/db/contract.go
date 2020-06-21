@@ -120,7 +120,7 @@ func (db *MongoDbBridge) AddContract(block *types.Block, trx *types.Transaction)
 	// try to do the insert
 	_, err = col.InsertOne(context.Background(), bson.D{
 		{fiContractPk, trx.ContractAddress.String()},
-		{fiContractOrdinalIndex, db.transactionIndex(block, trx)},
+		{fiContractOrdinalIndex, db.TransactionIndex(block, trx)},
 		{fiContractAddress, trx.ContractAddress.String()},
 		{fiContractTransaction, trx.Hash.String()},
 		{fiContractTimestamp, uint64(block.TimeStamp)},
@@ -347,7 +347,7 @@ func (db *MongoDbBridge) contractListTotal(col *mongo.Collection, validatedOnly 
 		filter = bson.D{{db.dbName, bson.D{{"$ne", nil}}}}
 	}
 
-	// find how many transactions do we have in the database
+	// find how many contracts do we have in the database
 	total, err := col.CountDocuments(context.Background(), filter)
 	if err != nil {
 		db.log.Errorf("can not count contracts")

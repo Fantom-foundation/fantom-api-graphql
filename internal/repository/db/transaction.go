@@ -88,7 +88,7 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	// try to do the insert
 	_, err := col.InsertOne(context.Background(), bson.D{
 		{fiTransactionPk, trx.Hash.String()},
-		{fiTransactionOrdinalIndex, db.transactionIndex(block, trx)},
+		{fiTransactionOrdinalIndex, db.TransactionIndex(block, trx)},
 		{fiTransactionBlock, uint64(block.Number)},
 		{fiTransactionSender, trx.From.String()},
 		{fiTransactionRecipient, rcAddress},
@@ -96,17 +96,11 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		{fiTransactionValue, trx.Value.String()},
 		{fiTransactionTimestamp, uint64(block.TimeStamp)},
 	})
+
+	// check for errors
 	if err != nil {
 		db.log.Critical(err)
 		return err
-	}
-
-	// add smart contract to the persistent storage, too
-	if trx.ContractAddress != nil {
-		if err := db.AddContract(block, trx); err != nil {
-			db.log.Critical(err)
-			return err
-		}
 	}
 
 	// add the transaction to the sender's address list
@@ -114,7 +108,7 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 }
 
 // mustTransactionIndex always calculate the index of the current transaction
-func (db *MongoDbBridge) transactionIndex(block *types.Block, trx *types.Transaction) uint64 {
+func (db *MongoDbBridge) TransactionIndex(block *types.Block, trx *types.Transaction) uint64 {
 	// what is the transaction index
 	var txIndex uint64
 	if trx.TrxIndex != nil {
