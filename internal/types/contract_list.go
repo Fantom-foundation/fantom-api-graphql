@@ -6,7 +6,7 @@ type ContractList struct {
 	// List keeps the actual Collection.
 	Collection []*Contract
 
-	// Total indicates total number of transaction in the whole collection.
+	// Total indicates total number of contracts in the whole collection.
 	Total uint64
 
 	// First is the index of the first item on the list
