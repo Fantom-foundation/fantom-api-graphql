@@ -167,6 +167,21 @@ type Repository interface {
 	// is updated the the repository.
 	ValidateContract(*types.Contract) error
 
+	// Ballots returns list of ballots at Opera blockchain.
+	Ballots(*string, int32) (*types.BallotList, error)
+
+	// BallotByAddress returns a ballot information by the contract address.
+	BallotByAddress(*common.Address) (*types.Ballot, error)
+
+	// BallotIsFinalized returns the finalized status of a ballot.
+	BallotIsFinalized(*common.Address) (bool, error)
+
+	// BallotWinner returns the winning proposal index, or nil if not decided.
+	BallotWinner(*common.Address) (*hexutil.Uint64, error)
+
+	// Votes returns a list of votes for the given votes and list of ballots.
+	Votes(common.Address, []common.Address) ([]types.Vote, error)
+
 	// Close and cleanup the repository.
 	Close()
 }
@@ -181,6 +196,9 @@ type proxy struct {
 
 	// smart contract compilers
 	solCompiler string
+
+	// official ballot source addresses
+	ballotSources []string
 
 	// service orchestrator reference
 	orc *orchestrator
@@ -224,6 +242,9 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 
 		// keep reference to the SOL compiler
 		solCompiler: cfg.SolCompilerPath,
+
+		// keep the ballot sources ref
+		ballotSources: cfg.VotingSources,
 	}
 
 	// propagate callbacks

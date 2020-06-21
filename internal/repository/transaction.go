@@ -13,6 +13,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/rpc"
+	"strings"
 )
 
 // ErrTransactionNotFound represents an error returned if a transaction can not be found.
@@ -21,7 +22,78 @@ var ErrTransactionNotFound = errors.New("requested transaction can not be found 
 // AddTransaction notifies a new incoming transaction from blockchain to the repository.
 func (p *proxy) AddTransaction(block *types.Block, trx *types.Transaction) error {
 	// simply pass the transaction to DB handler for adding to off-chain database
-	return p.db.AddTransaction(block, trx)
+	if err := p.db.AddTransaction(block, trx); err != nil {
+		return err
+	}
+
+	// add smart contract to the persistent storage, too
+	if trx.ContractAddress != nil {
+		// add the smart contract
+		if err := p.db.AddContract(block, trx); err != nil {
+			p.log.Critical(err)
+			return err
+		}
+
+		// check if the smart contract is an official ballot
+		if err := p.processBallot(block, trx); err != nil {
+			p.log.Critical(err)
+			return err
+		}
+	}
+
+	// everything seems to be ok
+	return nil
+}
+
+// isBallotContract checks if the given contract transaction is an official
+// Fantom ballot smart contract. We expect the ballots to come from configured set
+// of internal addresses.
+func (p *proxy) isBallotContract(trx *types.Transaction) bool {
+	// make sure this is a contract
+	if trx.ContractAddress == nil {
+		return false
+	}
+
+	// make sure we know any ballot sources
+	if p.ballotSources == nil {
+		return false
+	}
+
+	// loop all ballot sources known and compare
+	for _, addr := range p.ballotSources {
+		if strings.EqualFold(addr, trx.From.String()) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// processBallot validates if the given transaction is an official ballot contract
+// and adds it into the list of ballots if so.
+func (p *proxy) processBallot(block *types.Block, trx *types.Transaction) error {
+	// is a ballot contract?
+	if p.isBallotContract(trx) {
+		// ballotIndex = db.transactionIndex(block, trx)
+		ballot := types.Ballot{
+			OrdinalIndex: p.db.TransactionIndex(block, trx),
+			Address:      *trx.ContractAddress,
+		}
+
+		// collect ballot information from the ballot contract
+		if err := p.rpc.LoadBallotDetails(&ballot); err != nil {
+			p.log.Critical(err)
+			return err
+		}
+
+		// add the ballot into the database; capture any possible error
+		if err := p.db.AddBallot(&ballot); err != nil {
+			p.log.Critical(err)
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
