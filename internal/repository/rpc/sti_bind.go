@@ -20,7 +20,6 @@ var (
 	_ = big.NewInt
 	_ = strings.NewReader
 	_ = ethereum.NotFound
-	_ = abi.U256
 	_ = bind.Bind
 	_ = common.Big1
 	_ = types.BloomLookup
@@ -174,7 +173,7 @@ func (_StakerInfoContract *StakerInfoContractTransactorRaw) Transact(opts *bind.
 
 // GetInfo is a free data retrieval call binding the contract method 0x1a3cd59a.
 //
-// Solidity: function getInfo(uint256 _stakerID) constant returns(string)
+// Solidity: function getInfo(uint256 _stakerID) view returns(string)
 func (_StakerInfoContract *StakerInfoContractCaller) GetInfo(opts *bind.CallOpts, _stakerID *big.Int) (string, error) {
 	var (
 		ret0 = new(string)
@@ -186,21 +185,21 @@ func (_StakerInfoContract *StakerInfoContractCaller) GetInfo(opts *bind.CallOpts
 
 // GetInfo is a free data retrieval call binding the contract method 0x1a3cd59a.
 //
-// Solidity: function getInfo(uint256 _stakerID) constant returns(string)
+// Solidity: function getInfo(uint256 _stakerID) view returns(string)
 func (_StakerInfoContract *StakerInfoContractSession) GetInfo(_stakerID *big.Int) (string, error) {
 	return _StakerInfoContract.Contract.GetInfo(&_StakerInfoContract.CallOpts, _stakerID)
 }
 
 // GetInfo is a free data retrieval call binding the contract method 0x1a3cd59a.
 //
-// Solidity: function getInfo(uint256 _stakerID) constant returns(string)
+// Solidity: function getInfo(uint256 _stakerID) view returns(string)
 func (_StakerInfoContract *StakerInfoContractCallerSession) GetInfo(_stakerID *big.Int) (string, error) {
 	return _StakerInfoContract.Contract.GetInfo(&_StakerInfoContract.CallOpts, _stakerID)
 }
 
 // IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
 //
-// Solidity: function isOwner() constant returns(bool)
+// Solidity: function isOwner() view returns(bool)
 func (_StakerInfoContract *StakerInfoContractCaller) IsOwner(opts *bind.CallOpts) (bool, error) {
 	var (
 		ret0 = new(bool)
@@ -212,21 +211,21 @@ func (_StakerInfoContract *StakerInfoContractCaller) IsOwner(opts *bind.CallOpts
 
 // IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
 //
-// Solidity: function isOwner() constant returns(bool)
+// Solidity: function isOwner() view returns(bool)
 func (_StakerInfoContract *StakerInfoContractSession) IsOwner() (bool, error) {
 	return _StakerInfoContract.Contract.IsOwner(&_StakerInfoContract.CallOpts)
 }
 
 // IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
 //
-// Solidity: function isOwner() constant returns(bool)
+// Solidity: function isOwner() view returns(bool)
 func (_StakerInfoContract *StakerInfoContractCallerSession) IsOwner() (bool, error) {
 	return _StakerInfoContract.Contract.IsOwner(&_StakerInfoContract.CallOpts)
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 //
-// Solidity: function owner() constant returns(address)
+// Solidity: function owner() view returns(address)
 func (_StakerInfoContract *StakerInfoContractCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
 	var (
 		ret0 = new(common.Address)
@@ -238,21 +237,21 @@ func (_StakerInfoContract *StakerInfoContractCaller) Owner(opts *bind.CallOpts) 
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 //
-// Solidity: function owner() constant returns(address)
+// Solidity: function owner() view returns(address)
 func (_StakerInfoContract *StakerInfoContractSession) Owner() (common.Address, error) {
 	return _StakerInfoContract.Contract.Owner(&_StakerInfoContract.CallOpts)
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 //
-// Solidity: function owner() constant returns(address)
+// Solidity: function owner() view returns(address)
 func (_StakerInfoContract *StakerInfoContractCallerSession) Owner() (common.Address, error) {
 	return _StakerInfoContract.Contract.Owner(&_StakerInfoContract.CallOpts)
 }
 
 // StakerInfos is a free data retrieval call binding the contract method 0x33470433.
 //
-// Solidity: function stakerInfos(uint256 ) constant returns(string)
+// Solidity: function stakerInfos(uint256 ) view returns(string)
 func (_StakerInfoContract *StakerInfoContractCaller) StakerInfos(opts *bind.CallOpts, arg0 *big.Int) (string, error) {
 	var (
 		ret0 = new(string)
@@ -264,14 +263,14 @@ func (_StakerInfoContract *StakerInfoContractCaller) StakerInfos(opts *bind.Call
 
 // StakerInfos is a free data retrieval call binding the contract method 0x33470433.
 //
-// Solidity: function stakerInfos(uint256 ) constant returns(string)
+// Solidity: function stakerInfos(uint256 ) view returns(string)
 func (_StakerInfoContract *StakerInfoContractSession) StakerInfos(arg0 *big.Int) (string, error) {
 	return _StakerInfoContract.Contract.StakerInfos(&_StakerInfoContract.CallOpts, arg0)
 }
 
 // StakerInfos is a free data retrieval call binding the contract method 0x33470433.
 //
-// Solidity: function stakerInfos(uint256 ) constant returns(string)
+// Solidity: function stakerInfos(uint256 ) view returns(string)
 func (_StakerInfoContract *StakerInfoContractCallerSession) StakerInfos(arg0 *big.Int) (string, error) {
 	return _StakerInfoContract.Contract.StakerInfos(&_StakerInfoContract.CallOpts, arg0)
 }
