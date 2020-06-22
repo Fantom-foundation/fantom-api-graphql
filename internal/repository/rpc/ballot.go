@@ -33,6 +33,9 @@ type ballotDetails struct {
 	Finalized bool
 }
 
+// VotesList represents a list of votes.
+type VotesList []types.Vote
+
 // LoadBallotDetails loads additional ballot details from a deployed smart contract.
 // The initial ballot address is supposed to be already available
 // so the contract connection can be made.
@@ -121,7 +124,7 @@ func (ftm *FtmBridge) BallotWinner(addr *common.Address) (*hexutil.Uint64, error
 }
 
 // Votes exports list of votes for the given voter on a list of ballots.
-func (ftm *FtmBridge) Votes(voter common.Address, ballots []common.Address) ([]types.Vote, error) {
+func (ftm *FtmBridge) Votes(voter common.Address, ballots []common.Address) (VotesList, error) {
 	// make the container
 	list := make([]types.Vote, 0)
 
@@ -142,7 +145,7 @@ func (ftm *FtmBridge) Votes(voter common.Address, ballots []common.Address) ([]t
 
 // VotesByBallot export list of all votes on the given ballot.
 // Optionally, the voter can be filtered by the wallet address.
-func (ftm *FtmBridge) VotesByBallot(ballot common.Address, voter *common.Address) ([]types.Vote, error) {
+func (ftm *FtmBridge) VotesByBallot(ballot common.Address, voter *common.Address) (VotesList, error) {
 	// get the iterator
 	it, err := ftm.votesIterator(ballot, voter)
 	if err != nil {
@@ -158,13 +161,15 @@ func (ftm *FtmBridge) VotesByBallot(ballot common.Address, voter *common.Address
 	}()
 
 	// make the container
-	list := make([]types.Vote, 0)
+	list := make(VotesList, 0)
 
 	// pull the list from the initialized iterator
-	err = ftm.votesList(it, list)
+	err = ftm.votesList(it, &list)
 	if err != nil {
 		return nil, err
 	}
+
+	ftm.log.Infof("Ballot %s, votes %d", ballot.String(), len(list))
 
 	return list, nil
 }
@@ -200,7 +205,7 @@ func (ftm *FtmBridge) votesIterator(ballot common.Address, voter *common.Address
 }
 
 // votedByBallotList creates a list of votes from the given filtered iterator.
-func (ftm *FtmBridge) votesList(it *BallotContractVotedIterator, list []types.Vote) error {
+func (ftm *FtmBridge) votesList(it *BallotContractVotedIterator, list *VotesList) error {
 	// loop through the iterator
 	for it.Next() {
 		// make sure this is a valid record
@@ -220,7 +225,8 @@ func (ftm *FtmBridge) votesList(it *BallotContractVotedIterator, list []types.Vo
 		}
 
 		// add to the list
-		list = append(list, vote)
+		inList := *list
+		*list = append(inList, vote)
 	}
 
 	// detect possible error in traversing the iterator
