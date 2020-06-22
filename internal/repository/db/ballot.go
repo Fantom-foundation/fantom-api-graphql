@@ -66,7 +66,7 @@ func (db *MongoDbBridge) AddBallot(ballot *types.Ballot) error {
 	// try to do the insert
 	_, err = col.InsertOne(context.Background(), bson.D{
 		{fiBallotPk, ballot.Address.String()},
-		{fiBallotOrdinalIndex, uint64(ballot.OrdinalIndex)},
+		{fiBallotOrdinalIndex, ballot.OrdinalIndex},
 		{fiBallotAddress, ballot.Address.String()},
 		{fiBallotName, ballot.Name},
 		{fiBallotDetailsUrl, ballot.DetailsUrl},
@@ -239,13 +239,17 @@ func (db *MongoDbBridge) ballotListInit(col *mongo.Collection, cursor *string, c
 	// inform what we are about to do
 	db.log.Debugf("found %d ballots in off-chain database", list.Total)
 
-	// find the top contract of the list
-	if err := db.ballotListTop(col, cursor, count, &list); err != nil {
-		return nil, err
+	// any ballots in the list?
+	if list.Total > 0 {
+		// find the top contract of the list
+		if err := db.ballotListTop(col, cursor, count, &list); err != nil {
+			return nil, err
+		}
+
+		// inform what we are about to do
+		db.log.Debugf("ballots list initialized with ordinal index %d", list.First)
 	}
 
-	// inform what we are about to do
-	db.log.Debugf("ballots list initialized with ordinal index %d", list.First)
 	return &list, nil
 }
 
@@ -378,21 +382,24 @@ func (db *MongoDbBridge) Ballots(cursor *string, count int32) (*types.BallotList
 		return nil, err
 	}
 
-	// load data
-	err = db.ballotListLoad(col, cursor, count, list)
-	if err != nil {
-		db.log.Errorf("can not load ballots list data from database; %s", err.Error())
-		return nil, err
-	}
+	// any items in the list at all?
+	if list.Total > 0 {
+		// load data
+		err = db.ballotListLoad(col, cursor, count, list)
+		if err != nil {
+			db.log.Errorf("can not load ballots list data from database; %s", err.Error())
+			return nil, err
+		}
 
-	// shift the first item on cursor
-	if cursor != nil {
-		list.First = list.Collection[0].OrdinalIndex
-	}
+		// shift the first item on cursor
+		if cursor != nil {
+			list.First = list.Collection[0].OrdinalIndex
+		}
 
-	// reverse on negative so new-er ballots will be on top
-	if count < 0 {
-		list.Reverse()
+		// reverse on negative so new-er ballots will be on top
+		if count < 0 {
+			list.Reverse()
+		}
 	}
 
 	return list, nil
