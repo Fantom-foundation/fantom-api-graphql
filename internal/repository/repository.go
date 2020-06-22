@@ -247,6 +247,9 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 		ballotSources: cfg.VotingSources,
 	}
 
+	// inform about voting sources
+	log.Infof("voting ballots accepted from %s", cfg.VotingSources)
+
 	// propagate callbacks
 	dbBridge.SetBalance(p.AccountBalance)
 

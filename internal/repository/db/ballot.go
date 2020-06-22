@@ -14,7 +14,7 @@ import (
 
 const (
 	// coBallot is the name of the off-chain database collection storing ballot smart contract details.
-	coBallot = "contract"
+	coBallot = "ballot"
 
 	// fiBallotPk is the name of the primary key field of the ballot contract collection.
 	fiBallotPk = "_id"
