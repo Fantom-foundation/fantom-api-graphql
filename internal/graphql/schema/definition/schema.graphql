@@ -100,7 +100,7 @@ type Query {
     estimateRewards(address:Address, amount:Long):EstimatedRewards!
 
     "Get official ballot information by its address."
-    ballot(address: Address):Ballot
+    ballot(address: Address!):Ballot
 
     """
     Get list of official Ballots with at most <count> edges.

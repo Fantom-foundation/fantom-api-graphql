@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-06-21 15:50
+// Auto generated GraphQL schema bundle; created 2020-06-22 05:32
 const schema = `
 # Root schema definition
 schema {
@@ -104,7 +104,7 @@ type Query {
     estimateRewards(address:Address, amount:Long):EstimatedRewards!
 
     "Get official ballot information by its address."
-    ballot(address: Address):Ballot
+    ballot(address: Address!):Ballot
 
     """
     Get list of official Ballots with at most <count> edges.
@@ -114,6 +114,13 @@ type Query {
     negative <count> starts the list from bottom.
     """
     ballots(cursor: Cursor, count: Int!):BallotList!
+
+    """
+    List of all votes of the given voter identified by the address
+    for the given list of ballots identified by an array of ballot
+    addresses.
+    """
+    votes(voter:Address!, ballots:[Address!]!):[Vote!]!
 }
 
 # Mutation endpoints for modifying the data
@@ -802,6 +809,21 @@ type Ballot {
     # Index of the winning proposal.
     # Is NULL if the ballot has not been finalized yet.
     winner: Long
+}
+
+# Vote represents a selected vote in a ballot.
+type Vote {
+    # Address of the ballot the Vote relates to.
+    ballot: Address!
+
+    # Address of the voter who placed the vote.
+    voter: Address!
+
+    # Account of the voter who placed the vote.
+    account: Account!
+
+    # The selected proposal index the voter chose.
+    vote: Long
 }
 
 # BallotList is a list of ballot edges provided by sequential access request.

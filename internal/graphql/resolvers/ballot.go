@@ -50,3 +50,14 @@ func (bt *Ballot) IsFinalized() (bool, error) {
 func (bt *Ballot) Winner() (*hexutil.Uint64, error) {
 	return bt.repo.BallotWinner(&bt.Address)
 }
+
+// Contract resolves managing smart contract of the ballot.
+func (bt *Ballot) Contract() (*Contract, error) {
+	// get a contract to be validated if any
+	sc, err := bt.repo.Contract(&bt.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewContract(sc, bt.repo), nil
+}
