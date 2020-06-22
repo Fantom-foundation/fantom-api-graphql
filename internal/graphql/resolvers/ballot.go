@@ -12,7 +12,8 @@ import (
 // Ballot represents resolvable ballot record.
 type Ballot struct {
 	types.Ballot
-	repo repository.Repository
+	isFinalized *bool
+	repo        repository.Repository
 }
 
 // NewBallot creates a new resolvable ballot structure
@@ -42,12 +43,35 @@ func (bt *Ballot) IsOpen() bool {
 // IsFinalized resolves finalized status of a ballot.
 // If a ballot has been finalized, the winner is known.
 func (bt *Ballot) IsFinalized() (bool, error) {
-	return bt.repo.BallotIsFinalized(&bt.Address)
+	// do we have the value pre-cached?
+	if bt.isFinalized == nil {
+		fin, err := bt.repo.BallotIsFinalized(&bt.Address)
+		if err != nil {
+			return false, err
+		}
+
+		// rewrite the value
+		bt.isFinalized = &fin
+	}
+
+	return *bt.isFinalized, nil
 }
 
 // Winner resolves the winning proposal index, if the ballot
 // has been finalized already. Returns nil if the ballot is pending.
 func (bt *Ballot) Winner() (*hexutil.Uint64, error) {
+	// make sure the ballot is already finalized
+	fin, err := bt.IsFinalized()
+	if err != nil {
+		return nil, err
+	}
+
+	// if the ballot is not resolved, do not dare
+	if !fin {
+		return nil, nil
+	}
+
+	// check the ballot winner
 	return bt.repo.BallotWinner(&bt.Address)
 }
 
