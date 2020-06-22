@@ -12,7 +12,8 @@ type Ballot struct {
 	OrdinalIndex uint64 `json:"orx" bson:"orx"`
 
 	// Address represents the address of the ballot contract
-	Address common.Address `json:"addr" bson:"addr"`
+	AddressString string         `json:"addr" bson:"addr"`
+	Address       common.Address `json:"-" bson:"-"`
 
 	// Name of the ballot smart contract, if available.
 	Name string `json:"name" bson:"name"`

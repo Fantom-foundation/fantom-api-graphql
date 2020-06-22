@@ -18,15 +18,8 @@
         },
         "introspect": false
       },
-      "Remote GraphQL Endpoint": {
-        "url": "https://api.fantom.rocks/api",
-        "headers": {
-          "user-agent": "JS GraphQL"
-        },
-        "introspect": false
-      },
-      "Remote GraphQL Endpoint API2": {
-        "url": "https://api2.fantom.rocks/graphql",
+      "VM GraphQL Endpoint": {
+        "url": "http://crypto.vm.lan:16761/api",
         "headers": {
           "user-agent": "JS GraphQL"
         },

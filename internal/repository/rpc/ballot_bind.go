@@ -27,7 +27,7 @@ var (
 )
 
 // BallotContractABI is the input ABI used to generate the binding from.
-const BallotContractABI = "[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"url\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"end\",\"type\":\"uint256\"},{\"internalType\":\"bytes32[]\",\"name\":\"proposalNames\",\"type\":\"bytes32[]\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"ballot\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"winner\",\"type\":\"uint256\"}],\"name\":\"Finalized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"ballot\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"voter\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"vote\",\"type\":\"uint256\"}],\"name\":\"Voted\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"ballot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"url\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"end\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"finalized\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"chairperson\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"voters\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"totals\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"stamps\",\"type\":\"uint256[]\"}],\"name\":\"feedWeights\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"finalize\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"proposals\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"weight\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"proposalsCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposal\",\"type\":\"uint256\"}],\"name\":\"vote\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"votes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"vote\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"weight\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"weightStamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"winner\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const BallotContractABI = "[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"url\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"end\",\"type\":\"uint256\"},{\"internalType\":\"bytes32[]\",\"name\":\"proposalNames\",\"type\":\"bytes32[]\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"ballot\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"winner\",\"type\":\"uint256\"}],\"name\":\"Finalized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"ballot\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"voter\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"vote\",\"type\":\"uint256\"}],\"name\":\"Voted\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"ballot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"url\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"end\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"finalized\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"chairperson\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"voters\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"totals\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"stamps\",\"type\":\"uint256[]\"}],\"name\":\"feedWeights\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"finalize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"proposals\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"weight\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"proposalsCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposal\",\"type\":\"uint256\"}],\"name\":\"vote\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"votes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"vote\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"weight\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"weightStamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"winner\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // BallotContract is an auto generated Go binding around an Ethereum contract.
 type BallotContract struct {
@@ -385,63 +385,63 @@ func (_BallotContract *BallotContractCallerSession) Winner() (*big.Int, *big.Int
 
 // FeedWeights is a paid mutator transaction binding the contract method 0xee2ef228.
 //
-// Solidity: function feedWeights(address[] voters, uint256[] totals, uint256[] stamps) payable returns()
+// Solidity: function feedWeights(address[] voters, uint256[] totals, uint256[] stamps) returns()
 func (_BallotContract *BallotContractTransactor) FeedWeights(opts *bind.TransactOpts, voters []common.Address, totals []*big.Int, stamps []*big.Int) (*types.Transaction, error) {
 	return _BallotContract.contract.Transact(opts, "feedWeights", voters, totals, stamps)
 }
 
 // FeedWeights is a paid mutator transaction binding the contract method 0xee2ef228.
 //
-// Solidity: function feedWeights(address[] voters, uint256[] totals, uint256[] stamps) payable returns()
+// Solidity: function feedWeights(address[] voters, uint256[] totals, uint256[] stamps) returns()
 func (_BallotContract *BallotContractSession) FeedWeights(voters []common.Address, totals []*big.Int, stamps []*big.Int) (*types.Transaction, error) {
 	return _BallotContract.Contract.FeedWeights(&_BallotContract.TransactOpts, voters, totals, stamps)
 }
 
 // FeedWeights is a paid mutator transaction binding the contract method 0xee2ef228.
 //
-// Solidity: function feedWeights(address[] voters, uint256[] totals, uint256[] stamps) payable returns()
+// Solidity: function feedWeights(address[] voters, uint256[] totals, uint256[] stamps) returns()
 func (_BallotContract *BallotContractTransactorSession) FeedWeights(voters []common.Address, totals []*big.Int, stamps []*big.Int) (*types.Transaction, error) {
 	return _BallotContract.Contract.FeedWeights(&_BallotContract.TransactOpts, voters, totals, stamps)
 }
 
 // Finalize is a paid mutator transaction binding the contract method 0x4bb278f3.
 //
-// Solidity: function finalize() payable returns()
+// Solidity: function finalize() returns()
 func (_BallotContract *BallotContractTransactor) Finalize(opts *bind.TransactOpts) (*types.Transaction, error) {
 	return _BallotContract.contract.Transact(opts, "finalize")
 }
 
 // Finalize is a paid mutator transaction binding the contract method 0x4bb278f3.
 //
-// Solidity: function finalize() payable returns()
+// Solidity: function finalize() returns()
 func (_BallotContract *BallotContractSession) Finalize() (*types.Transaction, error) {
 	return _BallotContract.Contract.Finalize(&_BallotContract.TransactOpts)
 }
 
 // Finalize is a paid mutator transaction binding the contract method 0x4bb278f3.
 //
-// Solidity: function finalize() payable returns()
+// Solidity: function finalize() returns()
 func (_BallotContract *BallotContractTransactorSession) Finalize() (*types.Transaction, error) {
 	return _BallotContract.Contract.Finalize(&_BallotContract.TransactOpts)
 }
 
 // Vote is a paid mutator transaction binding the contract method 0x0121b93f.
 //
-// Solidity: function vote(uint256 proposal) payable returns()
+// Solidity: function vote(uint256 proposal) returns()
 func (_BallotContract *BallotContractTransactor) Vote(opts *bind.TransactOpts, proposal *big.Int) (*types.Transaction, error) {
 	return _BallotContract.contract.Transact(opts, "vote", proposal)
 }
 
 // Vote is a paid mutator transaction binding the contract method 0x0121b93f.
 //
-// Solidity: function vote(uint256 proposal) payable returns()
+// Solidity: function vote(uint256 proposal) returns()
 func (_BallotContract *BallotContractSession) Vote(proposal *big.Int) (*types.Transaction, error) {
 	return _BallotContract.Contract.Vote(&_BallotContract.TransactOpts, proposal)
 }
 
 // Vote is a paid mutator transaction binding the contract method 0x0121b93f.
 //
-// Solidity: function vote(uint256 proposal) payable returns()
+// Solidity: function vote(uint256 proposal) returns()
 func (_BallotContract *BallotContractTransactorSession) Vote(proposal *big.Int) (*types.Transaction, error) {
 	return _BallotContract.Contract.Vote(&_BallotContract.TransactOpts, proposal)
 }

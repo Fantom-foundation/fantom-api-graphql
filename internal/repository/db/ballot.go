@@ -72,7 +72,7 @@ func (db *MongoDbBridge) AddBallot(ballot *types.Ballot) error {
 		{fiBallotDetailsUrl, ballot.DetailsUrl},
 		{fiBallotStart, uint64(ballot.Start)},
 		{fiBallotEnd, uint64(ballot.End)},
-		{fiBallotProposalsList, bson.A{ballot.Proposals}},
+		{fiBallotProposalsList, ballot.Proposals},
 	})
 
 	// make sure we are ok
@@ -342,24 +342,29 @@ func (db *MongoDbBridge) ballotListLoad(col *mongo.Collection, cursor *string, c
 
 		// try to decode the next row
 		if err := ld.Decode(&row); err != nil {
-			db.log.Errorf("can not decode ballot the list row; %s", err.Error())
+			db.log.Errorf("can not decode ballot list row; %s", err.Error())
 			return err
 		}
 
 		// decode the value
+		row.Address = common.HexToAddress(row.AddressString)
 		ballot = &row
 	}
 
-	// we should have all the items already; we may just need to check if a boundary was reached
-	if cursor != nil {
-		list.IsEnd = count > 0 && int32(len(list.Collection)) < count
+	// if the start is not decided yet; calculate from the results
+	if !list.IsStart {
 		list.IsStart = count < 0 && int32(len(list.Collection)) < -count
+	}
 
-		// add the last item as well
-		if (list.IsStart || list.IsEnd) && ballot != nil {
-			list.Collection = append(list.Collection, ballot)
-			list.Last = ballot.OrdinalIndex
-		}
+	// if the end is not decided yet; calculate from the results
+	if !list.IsEnd {
+		list.IsEnd = count > 0 && int32(len(list.Collection)) < count
+	}
+
+	// add the last item as well
+	if (list.IsStart || list.IsEnd) && ballot != nil {
+		list.Collection = append(list.Collection, ballot)
+		list.Last = ballot.OrdinalIndex
 	}
 
 	return nil

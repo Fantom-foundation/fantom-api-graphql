@@ -19,6 +19,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"strings"
 )
 
 //go:generate abigen --abi ./contracts/ballot.abi --pkg rpc --type BallotContract --out ./ballot_bind.go
@@ -235,8 +236,13 @@ func (ftm *FtmBridge) votesList(it *BallotContractVotedIterator, list []types.Vo
 // structure into the general Ballot type.
 func extendBallotFromDetails(ballot *types.Ballot, details *ballotDetails) {
 	// transfer the basics
-	ballot.Name = string(details.Name[:])
-	ballot.DetailsUrl = details.Url
+	ballot.Name = strings.TrimRight(string(details.Name[:]), "\u0000 ")
+
+	// decode URL address
+	url, err := hexutil.Decode(details.Url)
+	if err == nil {
+		ballot.DetailsUrl = strings.TrimRight(string(url[:]), "\u0000 ")
+	}
 
 	// start date/time
 	if details.Start != nil {
@@ -288,7 +294,7 @@ func (ftm *FtmBridge) ballotProposals(contract *BallotContract) ([]string, error
 		}
 
 		// add the proposal to the list
-		list = append(list, string(prop.Name[:]))
+		list = append(list, strings.TrimRight(string(prop.Name[:]), "\u0000 "))
 	}
 
 	return list, nil
