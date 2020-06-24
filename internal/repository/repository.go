@@ -131,6 +131,12 @@ type Repository interface {
 	// for the given address.
 	DeactivatedDelegation(*common.Address) ([]*types.DeactivatedDelegation, error)
 
+	// RewardsAllowed returns the reward lock status from SFC.
+	RewardsAllowed() (bool, error)
+
+	// RewardsStash returns the amount of WEI stashed for the given address.
+	RewardsStash(*common.Address) (*big.Int, error)
+
 	// delegatedAmount calculates total amount currently delegated
 	// and amount locked in pending un-delegation.
 	// Partial Un-delegations are subtracted during the preparation

@@ -13,6 +13,19 @@ type Account {
     """
     totalValue: BigInt!
 
+    """
+    Stashed represents the amount of WEI stashed
+    on this account, if any. Stashed amount comes from
+    the delegation and validation rewards.
+    """
+    stashed: BigInt!
+
+    """
+    canUnStash informs if there is a stash which can be claimed.
+    Please note that stash claiming can be locked inside SFC.
+    """
+    canUnStash: Boolean!
+
     "txCount represents number of transaction sent from the account."
     txCount: Long!
 

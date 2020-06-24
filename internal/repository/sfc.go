@@ -179,3 +179,13 @@ func (p *proxy) CurrentSealedEpoch() (*types.Epoch, error) {
 	p.log.Debugf("epoch [%s] loaded from sfc", id.String())
 	return &ep, nil
 }
+
+// RewardsAllowed returns the reward lock status from SFC.
+func (p *proxy) RewardsAllowed() (bool, error) {
+	return p.rpc.RewardsAllowed()
+}
+
+// RewardsStash returns the amount of WEI stashed for the given address.
+func (p *proxy) RewardsStash(addr *common.Address) (*big.Int, error) {
+	return p.rpc.Stashed(*addr, big.NewInt(0))
+}

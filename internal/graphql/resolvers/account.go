@@ -18,6 +18,7 @@ type Account struct {
 	rfStaker     *types.Staker
 	rfDelegation *types.Delegator
 	rfBalance    *hexutil.Big
+	stashBalance *big.Int
 
 	/* extended delegated amounts pre-loaded */
 	dlExtendedAmount           *big.Int
@@ -78,6 +79,56 @@ func (acc *Account) addStashedRewards(val *big.Int) *big.Int {
 
 	// calculate the total
 	return new(big.Int).Add(val, dl.ClaimedReward.ToInt())
+}
+
+// stashedBalance returns the current stash balance on account.
+func (acc *Account) stashedBalance() (*big.Int, error) {
+	// return pre-cached stash balance
+	if acc.stashBalance == nil {
+		// get the stash amount from SFC
+		val, err := acc.repo.RewardsStash(&acc.Address)
+		if err != nil {
+			return nil, err
+		}
+
+		// keep cached
+		acc.stashBalance = val
+	}
+
+	return acc.stashBalance, nil
+}
+
+// Stashed resolves the amount of WEI stashed for this account.
+func (acc *Account) Stashed() (hexutil.Big, error) {
+	// get the stash amount from SFC
+	val, err := acc.stashedBalance()
+	if err != nil {
+		return hexutil.Big{}, err
+	}
+
+	return hexutil.Big(*val), nil
+}
+
+// CanUnStash resolves the stash status for this account.
+func (acc *Account) CanUnStash() (bool, error) {
+	// get the current lock status
+	allowed, err := acc.repo.RewardsAllowed()
+	if err != nil {
+		return false, err
+	}
+
+	// rewards are still locked, no luck
+	if !allowed {
+		return false, nil
+	}
+
+	// get the stash amount from SFC
+	val, err := acc.stashedBalance()
+	if err != nil || val == nil {
+		return false, err
+	}
+
+	return val.Cmp(big.NewInt(0)) > 0, nil
 }
 
 // TotalValue resolves address total value including delegated amount and pending rewards.
