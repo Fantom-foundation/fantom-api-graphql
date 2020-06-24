@@ -375,3 +375,47 @@ func (ftm *FtmBridge) DelegatedAmountExtended(dl *types.Delegator) (*big.Int, *b
 	// we may need to add partial un-delegations
 	return amount, inWithdraw, nil
 }
+
+// Stashed returns amount of WEI stashed for the given address.
+func (ftm *FtmBridge) Stashed(addr common.Address, stash *big.Int) (*big.Int, error) {
+	// keep track of the operation
+	ftm.log.Debugf("loading stashed amount of address %s", addr.String())
+
+	// instantiate the contract and display its name
+	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		return nil, err
+	}
+
+	val, err := contract.RewardsStash(nil, addr, stash)
+	if err != nil {
+		ftm.log.Errorf("failed to get rewards stash for %s: %v", addr.String(), err)
+		return nil, err
+	}
+
+	// return the value
+	return val, nil
+}
+
+// RewardsAllowed returns if the rewards can be manipulated with.
+func (ftm *FtmBridge) RewardsAllowed() (bool, error) {
+	// keep track of the operation
+	ftm.log.Debug("loading rewards lock status")
+
+	// instantiate the contract and display its name
+	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		return false, err
+	}
+
+	val, err := contract.RewardsAllowed(nil)
+	if err != nil {
+		ftm.log.Errorf("failed to get rewards lock status: %v", err)
+		return false, err
+	}
+
+	// return the value
+	return val, nil
+}
