@@ -69,16 +69,24 @@ func (acc *Account) Balance() (hexutil.Big, error) {
 
 // addStashedRewards adds stashed rewards to the provided total value.
 func (acc *Account) addStashedRewards(val *big.Int) *big.Int {
-	// get the delegation information
-	dl, err := acc.getDelegation()
+	/*
+		// get the delegation information
+		dl, err := acc.getDelegation()
 
-	// do we have a valid record?
-	if err != nil || dl == nil || dl.ClaimedReward == nil {
+		// do we have a valid record?
+		if err != nil || dl == nil || dl.ClaimedReward == nil {
+			return val
+		}
+	*/
+
+	// get the delegation information
+	sb, err := acc.stashedBalance()
+	if err != nil {
 		return val
 	}
 
-	// calculate the total
-	return new(big.Int).Add(val, dl.ClaimedReward.ToInt())
+	// calculate the new total by adding the stashed amount
+	return new(big.Int).Add(val, sb)
 }
 
 // stashedBalance returns the current stash balance on account.
