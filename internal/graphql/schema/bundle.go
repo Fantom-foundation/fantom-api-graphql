@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-06-22 12:44
+// Auto generated GraphQL schema bundle; created 2020-06-27 20:18
 const schema = `
 # Root schema definition
 schema {
@@ -114,6 +114,14 @@ type Query {
     negative <count> starts the list from bottom.
     """
     ballots(cursor: Cursor, count: Int!):BallotList!
+
+    """
+    Get list of recently closed official Ballots
+    with at most <count> edges. If the <finalized> is set to false
+    the list contains ballots, which ended, but were not resolved
+    yet.
+    """
+    ballotsClosed(finalized: Boolean = true, count: Int = 25):[Ballot!]!
 
     """
     List of all votes of the given voter identified by the address

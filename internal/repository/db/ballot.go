@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"strconv"
+	"time"
 )
 
 const (
@@ -159,7 +160,7 @@ func (db *MongoDbBridge) ballotListTotal(col *mongo.Collection, list *types.Ball
 }
 
 // ballotListTopFilter constructs a filter for finding the top item of the list.
-// Consider creating DB index db.contract.createIndex({_id:1,orx:-1},{unique:true}).
+// Consider creating DB index db.ballot.createIndex({_id:1,orx:-1},{unique:true}).
 func ballotListTopFilter(cursor *string) (*bson.D, error) {
 	// no filter by default
 	filter := bson.D{}
@@ -405,6 +406,53 @@ func (db *MongoDbBridge) Ballots(cursor *string, count int32) (*types.BallotList
 		if count < 0 {
 			list.Reverse()
 		}
+	}
+
+	return list, nil
+}
+
+// BallotsClosed returns a list of <count> recently closed Ballots.
+// We can not decide if the ballot has been already resolved here since we don't
+// keep that information in the database, so this has to be resolved later if needed.
+// NOTE: Consider creating DB index db.ballot.createIndex({end:-1},{unique:false}).
+func (db *MongoDbBridge) BallotsClosed(count uint32) ([]types.Ballot, error) {
+	// get the collection and context
+	col := db.client.Database(db.dbName).Collection(coBallot)
+
+	// prepare search options and filter
+	filter := bson.D{{fiBallotEnd, bson.D{{"$lt", time.Now().UTC().Unix()}}}}
+	opt := options.Find().SetSort(bson.D{{fiBallotOrdinalIndex, -1}}).SetLimit(int64(count))
+
+	// load the data
+	ld, err := col.Find(context.Background(), filter, opt)
+	if err != nil {
+		db.log.Errorf("error loading closed ballots list; %s", err.Error())
+		return nil, err
+	}
+
+	// close the cursor as we leave
+	defer func() {
+		err := ld.Close(context.Background())
+		if err != nil {
+			db.log.Errorf("error closing closed ballots list cursor; %s", err.Error())
+		}
+	}()
+
+	// loop and load
+	list := make([]types.Ballot, 0)
+	for ld.Next(context.Background()) {
+		// make the ballot record
+		var row types.Ballot
+
+		// try to decode the next row
+		if err := ld.Decode(&row); err != nil {
+			db.log.Errorf("can not decode closed ballot list row; %s", err.Error())
+			return nil, err
+		}
+
+		// decode the value
+		row.Address = common.HexToAddress(row.AddressString)
+		list = append(list, row)
 	}
 
 	return list, nil

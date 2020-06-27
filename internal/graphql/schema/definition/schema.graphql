@@ -112,6 +112,14 @@ type Query {
     ballots(cursor: Cursor, count: Int!):BallotList!
 
     """
+    Get list of recently closed official Ballots
+    with at most <count> edges. If the <finalized> is set to false
+    the list contains ballots, which ended, but were not resolved
+    yet.
+    """
+    ballotsClosed(finalized: Boolean = true, count: Int = 25):[Ballot!]!
+
+    """
     List of all votes of the given voter identified by the address
     for the given list of ballots identified by an array of ballot
     addresses.

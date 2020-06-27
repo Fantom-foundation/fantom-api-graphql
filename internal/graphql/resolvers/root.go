@@ -49,6 +49,12 @@ type ApiResolver interface {
 		Count  int32
 	}) (*BallotList, error)
 
+	// BallotsClosed resolves list of official ballots recently closed.
+	BallotsClosed(*struct {
+		Finalized *bool
+		Count     *int32
+	}) ([]Ballot, error)
+
 	// Votes resolves list of votes for the given voter address and list of ballots.
 	Votes(*struct {
 		Voter   common.Address
