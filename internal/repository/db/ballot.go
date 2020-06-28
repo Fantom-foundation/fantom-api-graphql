@@ -419,8 +419,12 @@ func (db *MongoDbBridge) BallotsClosed(count uint32) ([]types.Ballot, error) {
 	// get the collection and context
 	col := db.client.Database(db.dbName).Collection(coBallot)
 
+	// what closing time we want to check?
+	var theTime = time.Now().UTC().Unix()
+	db.log.Debugf("loading closed ballots before %d", theTime)
+
 	// prepare search options and filter
-	filter := bson.D{{fiBallotEnd, bson.D{{"$lt", time.Now().UTC().Unix()}}}}
+	filter := bson.D{{fiBallotEnd, bson.D{{"$lt", theTime}}}}
 	opt := options.Find().SetSort(bson.D{{fiBallotOrdinalIndex, -1}}).SetLimit(int64(count))
 
 	// load the data
@@ -455,5 +459,7 @@ func (db *MongoDbBridge) BallotsClosed(count uint32) ([]types.Ballot, error) {
 		list = append(list, row)
 	}
 
+	// inform and return
+	db.log.Debugf("found %d closed ballot candidates", len(list))
 	return list, nil
 }

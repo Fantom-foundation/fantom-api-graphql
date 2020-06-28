@@ -31,35 +31,25 @@ func NewBallotList(bl *types.BallotList, repo repository.Repository) *BallotList
 
 // BallotsClosed resolves list of official ballots recently closed.
 func (rs *rootResolver) BallotsClosed(args *struct {
-	Finalized *bool
-	Count     *int32
-}) ([]Ballot, error) {
-	// make sure to use a default count if none, or invalid value is given
-	if args.Count == nil || *args.Count <= 0 {
-		*args.Count = 25
-	}
-
-	// always have a value here
-	if args.Finalized == nil {
-		*args.Finalized = true
-	}
-
+	Finalized bool
+	Count     int32
+}) ([]*Ballot, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction
-	*args.Count = listLimitCount(*args.Count, listMaxEdgesPerRequest)
+	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get list of ballot addresses
-	bl, err := rs.repo.BallotsClosed(*args.Finalized, uint32(*args.Count))
+	bl, err := rs.repo.BallotsClosed(args.Finalized, uint32(args.Count))
 	if err != nil {
 		rs.log.Errorf("can not get closed ballots list; %s", err.Error())
 		return nil, err
 	}
 
 	// create the list
-	list := make([]Ballot, 0)
+	list := make([]*Ballot, 0)
 	for _, b := range bl {
 		bal := NewBallot(&b, rs.repo)
-		list = append(list, *bal)
+		list = append(list, bal)
 	}
 
 	return list, nil
