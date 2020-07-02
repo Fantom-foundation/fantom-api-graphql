@@ -31,6 +31,8 @@ type ballotDetails struct {
 	Start     *big.Int
 	End       *big.Int
 	Finalized bool
+	Votes     *big.Int
+	Feeds     *big.Int
 }
 
 // VotesList represents a list of votes.

@@ -16,6 +16,12 @@ type Ballot struct {
 	repo        repository.Repository
 }
 
+// BallotProposal represents a single resolved ballot proposal.
+type BallotProposal struct {
+	Id   hexutil.Uint64
+	Name string
+}
+
 // NewBallot creates a new resolvable ballot structure
 func NewBallot(bt *types.Ballot, repo repository.Repository) *Ballot {
 	return &Ballot{Ballot: *bt, repo: repo}
@@ -84,4 +90,23 @@ func (bt *Ballot) Contract() (*Contract, error) {
 	}
 
 	return NewContract(sc, bt.repo), nil
+}
+
+// Proposals resolves a list of available proposals
+// e.g. options to vote for.
+func (bt *Ballot) Proposals() ([]BallotProposal, error) {
+	// make the container
+	props := make([]BallotProposal, 0)
+
+	// loop all proposals available
+	for ix, prop := range bt.Ballot.Proposals {
+		if ix > 0 {
+			props = append(props, BallotProposal{
+				Id:   hexutil.Uint64(uint64(ix)),
+				Name: prop,
+			})
+		}
+	}
+
+	return props, nil
 }

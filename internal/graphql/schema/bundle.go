@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-06-27 20:18
+// Auto generated GraphQL schema bundle; created 2020-07-02 20:03
 const schema = `
 # Root schema definition
 schema {
@@ -825,11 +825,20 @@ type Ballot {
     isFinalized: Boolean!
 
     # List of proposals of the ballot.
-    proposals: [String!]!
+    proposals: [BallotProposal!]!
 
     # Index of the winning proposal.
     # Is NULL if the ballot has not been finalized yet.
     winner: Long
+}
+
+# BallotProposal represents a proposal in the ballot.
+type BallotProposal {
+    # id is the ballot proposal identifier.
+    id: Long!
+
+    # name is the name of the proposal option.
+    name: String!
 }
 
 # Vote represents a selected vote in a ballot.
