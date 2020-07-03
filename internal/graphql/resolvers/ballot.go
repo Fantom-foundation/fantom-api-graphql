@@ -18,7 +18,7 @@ type Ballot struct {
 
 // BallotProposal represents a single resolved ballot proposal.
 type BallotProposal struct {
-	Id   hexutil.Uint64
+	Id   int32
 	Name string
 }
 
@@ -100,9 +100,10 @@ func (bt *Ballot) Proposals() ([]BallotProposal, error) {
 
 	// loop all proposals available
 	for ix, prop := range bt.Ballot.Proposals {
-		if ix > 0 {
+		// hack the smart contract update after 7/1/2020
+		if ix > 0 || uint64(bt.Ballot.End) < 1593561600 {
 			props = append(props, BallotProposal{
-				Id:   hexutil.Uint64(uint64(ix)),
+				Id:   int32(ix),
 				Name: prop,
 			})
 		}
