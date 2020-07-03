@@ -142,6 +142,8 @@ func (db *MongoDbBridge) Ballot(addr *common.Address) (*types.Ballot, error) {
 		return nil, err
 	}
 
+	// decode address from string
+	row.Address = common.HexToAddress(row.AddressString)
 	return &row, nil
 }
 
