@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-07-02 20:03
+// Auto generated GraphQL schema bundle; created 2020-07-03 06:39
 const schema = `
 # Root schema definition
 schema {
@@ -835,7 +835,7 @@ type Ballot {
 # BallotProposal represents a proposal in the ballot.
 type BallotProposal {
     # id is the ballot proposal identifier.
-    id: Long!
+    id: Int!
 
     # name is the name of the proposal option.
     name: String!

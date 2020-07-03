@@ -38,7 +38,7 @@ type Ballot {
 # BallotProposal represents a proposal in the ballot.
 type BallotProposal {
     # id is the ballot proposal identifier.
-    id: Long!
+    id: Int!
 
     # name is the name of the proposal option.
     name: String!
