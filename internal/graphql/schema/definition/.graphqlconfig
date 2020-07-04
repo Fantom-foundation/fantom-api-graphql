@@ -3,21 +3,6 @@
   "schemaPath": "schema.graphql",
   "extensions": {
     "endpoints": {
-      "Local GraphQL Endpoint": {
-        "url": "http://localhost:16761/api",
-        "headers": {
-          "user-agent": "JS GraphQL",
-          "origin": "http://localhost"
-        },
-        "introspect": false
-      },
-      "Local WebSocket Endpoint": {
-        "url": "ws://localhost:16761/api",
-        "headers": {
-          "user-agent": "JS GraphQL"
-        },
-        "introspect": false
-      },
       "VM GraphQL Endpoint": {
         "url": "http://crypto.vm.lan:16761/api",
         "headers": {
@@ -35,6 +20,18 @@
       },
       "XAPI3 Fantom.Network": {
         "url": "https://xapi3.fantom.network/graphql",
+        "introspect": false
+      },
+      "XAPI4 Fantom.Network": {
+        "url": "https://xapi4.fantom.network/graphql",
+        "introspect": false
+      },
+      "XAPI5 Fantom.Network": {
+        "url": "https://xapi5.fantom.network/graphql",
+        "introspect": false
+      },
+      "Local GraphQL Endpoint": {
+        "url": "http://localhost:16761/api",
         "introspect": false
       }
     }
