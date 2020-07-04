@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-07-03 06:39
+// Auto generated GraphQL schema bundle; created 2020-07-04 08:28
 const schema = `
 # Root schema definition
 schema {
@@ -829,7 +829,7 @@ type Ballot {
 
     # Index of the winning proposal.
     # Is NULL if the ballot has not been finalized yet.
-    winner: Long
+    winner: Int
 }
 
 # BallotProposal represents a proposal in the ballot.
@@ -853,7 +853,7 @@ type Vote {
     account: Account!
 
     # The selected proposal index the voter chose.
-    vote: Long
+    vote: Int
 }
 
 # BallotList is a list of ballot edges provided by sequential access request.

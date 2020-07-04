@@ -95,7 +95,7 @@ func (ftm *FtmBridge) BallotIsFinalized(addr *common.Address) (bool, error) {
 
 // BallotWinner checks if the given ballot has already been finalized and has a winner.
 // The function returns nil if the winner is not decided yet.
-func (ftm *FtmBridge) BallotWinner(addr *common.Address) (*hexutil.Uint64, error) {
+func (ftm *FtmBridge) BallotWinner(addr *common.Address) (*uint64, error) {
 	// address has to be valid
 	if addr == nil {
 		return nil, fmt.Errorf("missing ballot address")
@@ -121,7 +121,7 @@ func (ftm *FtmBridge) BallotWinner(addr *common.Address) (*hexutil.Uint64, error
 	}
 
 	// convert the winning index
-	index := hexutil.Uint64(win.Uint64())
+	index := win.Uint64()
 	return &index, nil
 }
 
@@ -217,7 +217,7 @@ func (ftm *FtmBridge) votesList(it *BallotContractVotedIterator, list *VotesList
 		}
 
 		// get the vote index
-		ix := hexutil.Uint64(it.Event.Vote.Uint64())
+		ix := int32(it.Event.Vote.Uint64())
 
 		// populate the local struct with data we need
 		vote := types.Vote{

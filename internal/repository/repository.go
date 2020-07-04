@@ -188,7 +188,7 @@ type Repository interface {
 	BallotIsFinalized(*common.Address) (bool, error)
 
 	// BallotWinner returns the winning proposal index, or nil if not decided.
-	BallotWinner(*common.Address) (*hexutil.Uint64, error)
+	BallotWinner(*common.Address) (*uint64, error)
 
 	// Votes returns a list of votes for the given votes and list of ballots.
 	Votes(common.Address, []common.Address) ([]types.Vote, error)

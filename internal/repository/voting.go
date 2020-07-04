@@ -11,7 +11,6 @@ package repository
 import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // ballotsListExtraCount represents the number ballots we will pull extra
@@ -29,7 +28,7 @@ func (p *proxy) BallotIsFinalized(addr *common.Address) (bool, error) {
 }
 
 // BallotWinner returns the winning proposal index, or nil if not decided.
-func (p *proxy) BallotWinner(addr *common.Address) (*hexutil.Uint64, error) {
+func (p *proxy) BallotWinner(addr *common.Address) (*uint64, error) {
 	return p.rpc.BallotWinner(addr)
 }
 

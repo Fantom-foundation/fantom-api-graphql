@@ -5,7 +5,6 @@ import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"time"
 )
 
@@ -65,7 +64,7 @@ func (bt *Ballot) IsFinalized() (bool, error) {
 
 // Winner resolves the winning proposal index, if the ballot
 // has been finalized already. Returns nil if the ballot is pending.
-func (bt *Ballot) Winner() (*hexutil.Uint64, error) {
+func (bt *Ballot) Winner() (*int32, error) {
 	// make sure the ballot is already finalized
 	fin, err := bt.IsFinalized()
 	if err != nil {
@@ -78,7 +77,19 @@ func (bt *Ballot) Winner() (*hexutil.Uint64, error) {
 	}
 
 	// check the ballot winner
-	return bt.repo.BallotWinner(&bt.Address)
+	win, err := bt.repo.BallotWinner(&bt.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	// no winner
+	if win == nil {
+		return nil, nil
+	}
+
+	// convert
+	val := int32(*win)
+	return &val, nil
 }
 
 // Contract resolves managing smart contract of the ballot.
