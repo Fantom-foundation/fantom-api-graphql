@@ -84,12 +84,10 @@ type Config struct {
 // Load provides a loaded configuration for Fantom API server.
 func Load() (*Config, error) {
 	// Get the config reader
-	cfg := getReader()
+	cfg := reader()
 
-	// Pre-configure the reader by applying different type of bonds
-	if err := applyBonds(cfg); nil != err {
-		return nil, err
-	}
+	// set default values
+	applyDefaults(cfg)
 
 	// Try to read the file
 	if err := cfg.ReadInConfig(); err != nil {
@@ -122,9 +120,9 @@ func Load() (*Config, error) {
 	}, nil
 }
 
-// getConfig provides instance of the config reader.
+// reader provides instance of the config reader.
 // It accepts an explicit path to a config file if it was requested by `cfg` flag.
-func getReader() *viper.Viper {
+func reader() *viper.Viper {
 	// make new Viper
 	cfg := viper.New()
 
@@ -144,24 +142,4 @@ func getReader() *viper.Viper {
 	cfg.SetConfigFile(cfgPath)
 
 	return cfg
-}
-
-// setupConfig prepares config reader by applying default values and bonds
-func applyBonds(cfg *viper.Viper) error {
-	// set default values
-	applyDefaults(cfg)
-
-	// bind environment vars; we want to be able to configure the app deployment in twelve-factor sense
-	if err := bindEnv(cfg); nil != err {
-		log.Printf("can not bind configuration to environment")
-		return err
-	}
-
-	// bind command line params
-	if err := bindFlags(cfg); nil != err {
-		log.Printf("can not bind configuration to command line flags")
-		return err
-	}
-
-	return nil
 }
