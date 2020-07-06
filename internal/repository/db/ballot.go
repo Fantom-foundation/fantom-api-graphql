@@ -413,26 +413,16 @@ func (db *MongoDbBridge) Ballots(cursor *string, count int32) (*types.BallotList
 	return list, nil
 }
 
-// BallotsClosed returns a list of <count> recently closed Ballots.
-// We can not decide if the ballot has been already resolved here since we don't
-// keep that information in the database, so this has to be resolved later if needed.
-// NOTE: Consider creating DB index db.ballot.createIndex({end:-1},{unique:false}).
-func (db *MongoDbBridge) BallotsClosed(count uint32) ([]types.Ballot, error) {
+// ballotsList load a slice of ballots based on provided filter and options
+// from persistent database.
+func (db *MongoDbBridge) ballotsList(filter interface{}, opt *options.FindOptions) ([]types.Ballot, error) {
 	// get the collection and context
 	col := db.client.Database(db.dbName).Collection(coBallot)
-
-	// what closing time we want to check?
-	var theTime = time.Now().UTC().Unix()
-	db.log.Debugf("loading closed ballots before %d", theTime)
-
-	// prepare search options and filter
-	filter := bson.D{{fiBallotEnd, bson.D{{"$lt", theTime}}}}
-	opt := options.Find().SetSort(bson.D{{fiBallotOrdinalIndex, -1}}).SetLimit(int64(count))
 
 	// load the data
 	ld, err := col.Find(context.Background(), filter, opt)
 	if err != nil {
-		db.log.Errorf("error loading closed ballots list; %s", err.Error())
+		db.log.Errorf("error loading filtered ballots list; %s", err.Error())
 		return nil, err
 	}
 
@@ -440,7 +430,7 @@ func (db *MongoDbBridge) BallotsClosed(count uint32) ([]types.Ballot, error) {
 	defer func() {
 		err := ld.Close(context.Background())
 		if err != nil {
-			db.log.Errorf("error closing closed ballots list cursor; %s", err.Error())
+			db.log.Errorf("error closing filtered ballots list cursor; %s", err.Error())
 		}
 	}()
 
@@ -452,7 +442,7 @@ func (db *MongoDbBridge) BallotsClosed(count uint32) ([]types.Ballot, error) {
 
 		// try to decode the next row
 		if err := ld.Decode(&row); err != nil {
-			db.log.Errorf("can not decode closed ballot list row; %s", err.Error())
+			db.log.Errorf("can not decode filtered ballot list row; %s", err.Error())
 			return nil, err
 		}
 
@@ -462,6 +452,45 @@ func (db *MongoDbBridge) BallotsClosed(count uint32) ([]types.Ballot, error) {
 	}
 
 	// inform and return
-	db.log.Debugf("found %d closed ballot candidates", len(list))
+	db.log.Debugf("found %d filtered ballots", len(list))
 	return list, nil
+}
+
+// BallotsClosed returns a list of <count> recently closed Ballots.
+// We can not decide if the ballot has been already resolved here since we don't
+// keep that information in the database, so this has to be resolved later if needed.
+// NOTE: Consider creating DB index db.ballot.createIndex({end:-1},{unique:false}).
+func (db *MongoDbBridge) BallotsClosed(count uint32) ([]types.Ballot, error) {
+	// what closing time we want to check?
+	var theTime = time.Now().UTC().Unix()
+	db.log.Debugf("loading closed ballots before %d", theTime)
+
+	// prepare search options and filter
+	filter := bson.D{{fiBallotEnd, bson.D{{"$lt", theTime}}}}
+	opt := options.Find().SetSort(bson.D{{fiBallotOrdinalIndex, -1}}).SetLimit(int64(count))
+
+	// load the list
+	return db.ballotsList(filter, opt)
+}
+
+// BallotsClosed returns a list of <count> recently closed Ballots.
+// We can not decide if the ballot has been already resolved here since we don't
+// keep that information in the database, so this has to be resolved later if needed.
+// NOTE: Consider creating DB index db.ballot.createIndex({end:-1},{unique:false}).
+func (db *MongoDbBridge) BallotsActive(count uint32) ([]types.Ballot, error) {
+	// what closing time we want to check?
+	var theTime = time.Now().UTC().Unix()
+	db.log.Debugf("loading active ballots for UTC time %d", theTime)
+
+	// prepare search options and filter
+	filter := bson.D{
+		{"$and", bson.A{
+			bson.D{{fiBallotStart, bson.D{{"$lt", theTime}}}},
+			bson.D{{fiBallotEnd, bson.D{{"$gt", theTime}}}},
+		}},
+	}
+	opt := options.Find().SetSort(bson.D{{fiBallotOrdinalIndex, -1}}).SetLimit(int64(count))
+
+	// load the list
+	return db.ballotsList(filter, opt)
 }

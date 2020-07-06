@@ -119,6 +119,9 @@ type Query {
     """
     ballotsClosed(finalized: Boolean = true, count: Int = 25):[Ballot!]!
 
+    "Get list of currently active Ballots with at most <count> edges."
+    ballotsActive(count: Int = 25):[Ballot!]!
+
     """
     List of all votes of the given voter identified by the address
     for the given list of ballots identified by an array of ballot

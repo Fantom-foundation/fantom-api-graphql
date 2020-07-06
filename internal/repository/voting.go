@@ -42,6 +42,11 @@ func (p *proxy) Votes(voter common.Address, ballots []common.Address) ([]types.V
 	return p.rpc.Votes(voter, ballots)
 }
 
+// BallotsActive returns a list of at most <count> currently active Ballots.
+func (p *proxy) BallotsActive(count uint32) ([]types.Ballot, error) {
+	return p.db.BallotsActive(count)
+}
+
 // BallotsClosed returns a list of <count> recently closed Ballots.
 // If the finalized is set to false, the list contains Ballots waiting
 // to be resolved.

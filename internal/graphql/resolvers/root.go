@@ -55,6 +55,11 @@ type ApiResolver interface {
 		Count     int32
 	}) ([]*Ballot, error)
 
+	// BallotsActive resolves list of currently active ballots.
+	BallotsActive(*struct {
+		Count int32
+	}) ([]*Ballot, error)
+
 	// Votes resolves list of votes for the given voter address and list of ballots.
 	Votes(*struct {
 		Voter   common.Address

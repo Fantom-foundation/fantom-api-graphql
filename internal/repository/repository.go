@@ -179,7 +179,10 @@ type Repository interface {
 	// BallotsClosed returns a list of <count> recently closed Ballots.
 	// If the finalized is set to false, the list contains Ballots waiting
 	// to be resolved.
-	BallotsClosed(finalized bool, count uint32) ([]types.Ballot, error)
+	BallotsClosed(bool, uint32) ([]types.Ballot, error)
+
+	// BallotsActive returns a list of at most <count> currently active Ballots.
+	BallotsActive(uint32) ([]types.Ballot, error)
 
 	// BallotByAddress returns a ballot information by the contract address.
 	BallotByAddress(*common.Address) (*types.Ballot, error)

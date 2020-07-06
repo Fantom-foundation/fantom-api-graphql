@@ -29,6 +29,19 @@ func NewBallotList(bl *types.BallotList, repo repository.Repository) *BallotList
 	}
 }
 
+// newBallotsArray creates an array of resolvable Ballots from a slice
+// of ballot type data records.
+func (rs *rootResolver) newBallotsSlice(ballots []types.Ballot) []*Ballot {
+	// create the list
+	list := make([]*Ballot, 0)
+	for _, b := range ballots {
+		bal := NewBallot(&b, rs.repo)
+		list = append(list, bal)
+	}
+
+	return list
+}
+
 // BallotsClosed resolves list of official ballots recently closed.
 func (rs *rootResolver) BallotsClosed(args *struct {
 	Finalized bool
@@ -45,14 +58,25 @@ func (rs *rootResolver) BallotsClosed(args *struct {
 		return nil, err
 	}
 
-	// create the list
-	list := make([]*Ballot, 0)
-	for _, b := range bl {
-		bal := NewBallot(&b, rs.repo)
-		list = append(list, bal)
+	return rs.newBallotsSlice(bl), nil
+}
+
+// BallotsActive resolves list of official ballots recently closed.
+func (rs *rootResolver) BallotsActive(args *struct {
+	Count int32
+}) ([]*Ballot, error) {
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
+
+	// get list of ballot addresses
+	bl, err := rs.repo.BallotsActive(uint32(args.Count))
+	if err != nil {
+		rs.log.Errorf("can not get active ballots list; %s", err.Error())
+		return nil, err
 	}
 
-	return list, nil
+	return rs.newBallotsSlice(bl), nil
 }
 
 // Ballots resolves list of ballots encapsulated in a listable structure.

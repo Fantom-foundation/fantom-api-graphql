@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-07-04 08:28
+// Auto generated GraphQL schema bundle; created 2020-07-06 07:48
 const schema = `
 # Root schema definition
 schema {
@@ -122,6 +122,9 @@ type Query {
     yet.
     """
     ballotsClosed(finalized: Boolean = true, count: Int = 25):[Ballot!]!
+
+    "Get list of currently active Ballots with at most <count> edges."
+    ballotsActive(count: Int = 25):[Ballot!]!
 
     """
     List of all votes of the given voter identified by the address
