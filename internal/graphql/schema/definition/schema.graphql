@@ -13,6 +13,12 @@ type Query {
     "Get an Account information by hash address."
     account(address:Address!):Account!
 
+    "defiSettings resolves the current DeFi environment settings."
+    defiSettings:DefiSettings!
+
+    "defiAccount resolves DeFi account information by the address."
+    defiAccount(address:Address!):DefiAccount!
+
     """
     Get list of Contracts with at most <count> edges.
     If <count> is positive, return edges after the cursor,
@@ -128,6 +134,9 @@ type Query {
     addresses.
     """
     votes(voter:Address!, ballots:[Address!]!):[Vote!]!
+
+    "defiTokens represents a list of all available DeFi tokens."
+    defiTokens:[DefiToken!]!
 }
 
 # Mutation endpoints for modifying the data
