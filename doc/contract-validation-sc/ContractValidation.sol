@@ -26,11 +26,17 @@ contract ContractValidation {
     // contracts maps contract address to the validation record.
     mapping(address => ValidatedContract) public contracts;
 
+    // ValidatorAdded is emitted when a new validator is added to the contract.
+    event ValidatorAdded(address indexed addr, uint timestamp);
+
+    // ValidatorDropped is emitted when a validator is removed from the contract.
+    event ValidatorDropped(address indexed addr, uint timestamp);
+
     // ContractValidated signals contract validation for the given contract address.
-    event ContractValidated(address indexed addr, bytes32 srcHash);
+    event ContractValidated(address indexed addr, bytes32 srcHash, uint timestamp);
 
     // ContractValidationDropped signals contract validation has been canceled.
-    event ContractValidationDropped(address indexed addr);
+    event ContractValidationDropped(address indexed addr, uint timestamp);
 
     // constructor create new instance of the validation contract.
     constructor() public {
@@ -41,22 +47,28 @@ contract ContractValidation {
         validators[msg.sender] = true;
     }
 
-    // addValidator adds new validator address to the contract.
-    function addValidator(address val) public {
+    // addValidators function adds new validators to the contract.
+    function addValidators(address[] memory validators) external {
         // only administrator can do this
         require(msg.sender == admin, "only admin can add validators");
 
-        // add the new validator to the list
-        validators[val] = true;
+        // add new validators to the list
+        for (uint i = 0; i < validators.length; i++) {
+            validators[validators[i]] = true;
+            emit ValidatorAdded(validators[i], now);
+        }
     }
 
-    // dropValidator disables specified validator from being able to send new validations.
-    function dropValidator(address val) public {
+    // dropValidators function removes specified validators from the contract.
+    function dropValidators(address[] memory validators) external {
         // only administrator can do this
         require(msg.sender == admin, "only admin can drop validators");
 
-        // delete the validator off the list
-        delete (validators[val]);
+        // delete the validators off the list
+        for (uint i = 0; i < validators.length; i++) {
+            delete (validators[validators[i]]);
+            emit ValidatorDropped(validators[i], now);
+        }
     }
 
     // validate registers new validated deployed contract and stores the validation
@@ -71,12 +83,14 @@ contract ContractValidation {
         bytes32 clVersion,
         bool isOptimized,
         int32 optRounds,
-        bytes memory source) public
+        bytes memory source) external
     {
         // only validators ca do this
         require(validators[msg.sender], "only validators can validate");
 
         // get the storage for the contract
+        // we deliberately allow editing here, the information about previous
+        // validation is still available on-chain in the event log.
         ValidatedContract storage inContract = contracts[addr];
 
         // update the contract details from incoming data
@@ -90,11 +104,14 @@ contract ContractValidation {
         inContract.optRounds = optRounds;
         inContract.validated = now;
 
-        // calculate the hash
+        // calculate the hash for the source code
+        // we don't store the source here, but it's still part of the call
+        // so a re-check can extract it from the transaction,
+        // verify the hash,if needed, and use it for local re-validation.
         inContract.srcHash = keccak256(source);
 
         // emit the event for new validated contract
-        emit ContractValidated(addr, inContract.srcHash);
+        emit ContractValidated(addr, inContract.srcHash, now);
     }
 
     // dropValidation removes validation information from the contract.
@@ -106,6 +123,6 @@ contract ContractValidation {
         delete (contracts[addr]);
 
         // emit an event about it
-        emit ContractValidationDropped(addr);
+        emit ContractValidationDropped(addr, now);
     }
 }
