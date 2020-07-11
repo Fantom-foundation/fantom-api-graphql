@@ -3,6 +3,7 @@ package db
 
 import (
 	"context"
+	"encoding/base64"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -183,7 +184,7 @@ func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
 				{fiContractLicense, sc.License},
 				{fiContractIsOptimized, sc.IsOptimized},
 				{fiContractOptimizationRuns, sc.OptimizeRuns},
-				{fiContractSource, sc.SourceCode},
+				{fiContractSource, base64.StdEncoding.EncodeToString(sc.SourceCode)},
 				{fiContractSourceHash, sc.SourceCodeHash.String()},
 				{fiContractAbi, sc.Abi},
 				{fiContractSourceValidated, uint64(*sc.Validated)},
@@ -247,7 +248,7 @@ func newContract(row *contractRow) *types.Contract {
 	con := types.Contract{
 		OrdinalIndex:    row.Orx,
 		Address:         common.HexToAddress(row.Address),
-		TransactionHash: types.HexToHash(row.Transaction),
+		TransactionHash: common.HexToHash(row.Transaction),
 		TimeStamp:       (hexutil.Uint64)(row.TimeStamp),
 		IsOptimized:     row.IsOptimized,
 		OptimizeRuns:    int32(row.OptimizerRuns),
@@ -255,12 +256,12 @@ func newContract(row *contractRow) *types.Contract {
 
 	// do we have the source code?
 	if row.SourceCode != nil {
-		con.SourceCode = *row.SourceCode
+		con.SourceCode, _ = base64.StdEncoding.DecodeString(*row.SourceCode)
 	}
 
 	// do we have the source code hash?
 	if row.SourceCodeHash != nil {
-		hash := types.HexToHash(*row.SourceCodeHash)
+		hash := common.HexToHash(*row.SourceCodeHash)
 		con.SourceCodeHash = &hash
 	}
 
