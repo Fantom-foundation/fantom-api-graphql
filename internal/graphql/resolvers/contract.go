@@ -189,32 +189,32 @@ func updateContractFromInput(con *ContractValidationInput, sc *types.Contract) {
 // compressContractSourceCode compresses the given contract source code.
 // The compressed source code is what we save in the persistent database
 // and also what we use for on-chain validation repository.
-func compressContractSourceCode(src string) (string, error) {
+func compressContractSourceCode(src string) ([]byte, error) {
 	// prep the GZIP compressor
 	buf := new(bytes.Buffer)
 	w, err := gzip.NewWriterLevel(buf, gzip.BestCompression)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// write the source code into the GZIP writer
 	if _, err := w.Write([]byte(src)); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// flush the writer so we have all the data in
 	// this may not be needed, but we want to make sure
 	if err := w.Flush(); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// close the writer
 	if err := w.Close(); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// return the compressed data
-	return buf.String(), nil
+	return buf.Bytes(), nil
 }
 
 // ValidateContract resolves smart contract source code vs. deployed byte code and marks
@@ -242,7 +242,7 @@ func (rs *rootResolver) ValidateContract(args *struct{ Contract ContractValidati
 	}
 
 	// if we already have this source code, no need to do any updates
-	hash := crypto.Keccak256Hash([]byte(src))
+	hash := crypto.Keccak256Hash(src)
 	if sc.SourceCodeHash != nil && hash.String() == sc.SourceCodeHash.String() {
 		rs.log.Debugf("contract [%s] source code is already known", sc.Address.String())
 		return NewContract(sc, rs.repo), nil
@@ -254,7 +254,7 @@ func (rs *rootResolver) ValidateContract(args *struct{ Contract ContractValidati
 	sc.SourceCode = src
 
 	// do the validation
-	if err := rs.repo.ValidateContract(sc); err != nil {
+	if err := rs.repo.ValidateContract(sc, args.Contract.SourceCode); err != nil {
 		rs.log.Errorf("contract validation failed; %s", err.Error())
 		return nil, err
 	}

@@ -45,7 +45,7 @@ type Contract struct {
 	OptimizeRuns int32 `json:"optimizeRuns"`
 
 	// SourceCode is the smart contract source code, if available.
-	SourceCode string `json:"sol"`
+	SourceCode []byte `json:"sol"`
 
 	// SourceCodeHash represents a hash code of the stored contract
 	// source code. Is nil if the source code is not available.

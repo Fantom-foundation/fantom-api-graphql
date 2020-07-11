@@ -91,15 +91,12 @@ func updateContractDetails(sc *types.Contract, detail *compiler.Contract) {
 	if err == nil {
 		sc.Abi = string(abi)
 	}
-
-	// copy the source code
-	sc.SourceCode = detail.Info.Source
 }
 
 // ValidateContract tries to validate contract byte code using
 // provided source code. If successful, the contract information
 // is updated the the repository.
-func (p *proxy) ValidateContract(sc *types.Contract) error {
+func (p *proxy) ValidateContract(sc *types.Contract, srcCode string) error {
 	// get the byte code of the actual contract
 	tx, err := p.Transaction(&sc.TransactionHash)
 	if err != nil {
@@ -108,7 +105,7 @@ func (p *proxy) ValidateContract(sc *types.Contract) error {
 	}
 
 	// try to compile the source code provided
-	contracts, err := compiler.CompileSolidityString(p.solCompiler, sc.SourceCode)
+	contracts, err := compiler.CompileSolidityString(p.solCompiler, srcCode)
 	if err != nil {
 		p.log.Errorf("solidity code compilation failed")
 		return err
@@ -147,7 +144,7 @@ func (p *proxy) validateContractSet(contracts map[string]*compiler.Contract, tx 
 			}
 
 			// inform about success
-			p.log.Debugf("contract %s [%s] validated", sc.Address.String(), name)
+			p.log.Debugf("contract [%s] is validated as [%s]", sc.Address.String(), name)
 
 			// inform the upper instance we have a winner
 			return nil

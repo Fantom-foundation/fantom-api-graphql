@@ -171,7 +171,7 @@ type Repository interface {
 	// ValidateContract tries to validate contract byte code using
 	// provided source code. If successful, the contract information
 	// is updated the the repository.
-	ValidateContract(*types.Contract) error
+	ValidateContract(*types.Contract, string) error
 
 	// Ballots returns list of ballots at Opera blockchain.
 	Ballots(*string, int32) (*types.BallotList, error)
