@@ -64,6 +64,9 @@ input ContractValidationInput {
     """
     license: String
 
+    "Compiler to be used to validate the contract. Default solc will be used if not set."
+    compiler: String
+
     "Optimized specifies if the compiler was set to optimize the byte code."
     optimized: Boolean = true
 

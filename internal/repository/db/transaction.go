@@ -5,6 +5,7 @@ import (
 	"context"
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -167,7 +168,7 @@ func (db *MongoDbBridge) propagateTrxToAccounts(block *types.Block, trx *types.T
 }
 
 // isTransactionKnown checks if a transaction document already exists in the database.
-func (db *MongoDbBridge) isTransactionKnown(col *mongo.Collection, hash *types.Hash) (bool, error) {
+func (db *MongoDbBridge) isTransactionKnown(col *mongo.Collection, hash *common.Hash) (bool, error) {
 	// try to find the transaction in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
 		{fiTransactionPk, hash.String()},
@@ -242,7 +243,7 @@ func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, coun
 	db.log.Debugf("found %d transactions in off-chain database", total)
 
 	list := types.TransactionHashList{
-		Collection: make([]*types.Hash, 0),
+		Collection: make([]*common.Hash, 0),
 		Total:      uint64(total),
 		First:      0,
 		Last:       0,

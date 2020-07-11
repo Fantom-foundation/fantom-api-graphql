@@ -23,7 +23,6 @@ const (
 	keyConfigFilePath    = "cfg"
 	keyBindAddress       = "server.bind"
 	keyDomainAddress     = "server.domain"
-	keyApiPeers          = "server.peers"
 	keyApiStateOrigin    = "server.origin"
 	keyLoggingLevel      = "log.level"
 	keyLoggingFormat     = "log.format"
@@ -34,6 +33,11 @@ const (
 	keyCacheEvictionTime = "cache.eviction"
 	keySolCompilerPath   = "sol.compiler"
 	keyVotingSources     = "voting.sources"
+
+	// contract validation details
+	keyContractValidatorRepository  = "contracts.repository"
+	keyContractValidatorSigKey      = "contracts.validation.key"
+	keyContractValidatorSigPassword = "contracts.validation.password"
 )
 
 // Config defines configuration options structure for Fantom API server.
@@ -69,16 +73,21 @@ type Config struct {
 	// SolCompilerPath represents the path to sol compiler for smart contract validation.
 	SolCompilerPath string
 
-	// ApiPeers represents a list of other API points of the same type we need to inform
-	// on possible state change.
-	ApiPeers []string
-
 	// VotingSources represents a list of addresses used to deploy voting smart contracts
 	// for official Fantom ballots.
 	VotingSources []string
 
 	// ApiStateOrigin represents request origin used on state syncing events.
 	ApiStateOrigin string
+
+	// ContractValidatorRepository is the address of the on-chain contract validation repo.
+	ContractValidatorRepository string
+
+	// ContractValidatorSigKey is the path to the contract validation signing key file.
+	ContractValidatorSigKey string
+
+	// ContractValidatorSigPassword is the password for the contract validation signing key.
+	ContractValidatorSigPassword string
 }
 
 // Load provides a loaded configuration for Fantom API server.
@@ -114,9 +123,13 @@ func Load() (*Config, error) {
 		CorsAllowOrigins:  cfg.GetStringSlice(keyCorsAllowOrigins),
 		CacheEvictionTime: cfg.GetDuration(keyCacheEvictionTime),
 		SolCompilerPath:   cfg.GetString(keySolCompilerPath),
-		ApiPeers:          cfg.GetStringSlice(keyApiPeers),
 		ApiStateOrigin:    cfg.GetString(keyApiStateOrigin),
 		VotingSources:     cfg.GetStringSlice(keyVotingSources),
+
+		// contract validation related configuration
+		ContractValidatorRepository:  cfg.GetString(keyContractValidatorRepository),
+		ContractValidatorSigKey:      cfg.GetString(keyContractValidatorSigKey),
+		ContractValidatorSigPassword: cfg.GetString(keyContractValidatorSigPassword),
 	}, nil
 }
 

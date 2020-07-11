@@ -224,7 +224,7 @@ func (db *MongoDbBridge) isContractKnown(col *mongo.Collection, addr *common.Add
 }
 
 // ContractTransaction returns contract creation transaction hash if available.
-func (db *MongoDbBridge) ContractTransaction(addr *common.Address) (*types.Hash, error) {
+func (db *MongoDbBridge) ContractTransaction(addr *common.Address) (*common.Hash, error) {
 	// get the contract details from database
 	c, err := db.Contract(addr)
 	if err != nil {

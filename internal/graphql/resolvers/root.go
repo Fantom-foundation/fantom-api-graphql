@@ -69,7 +69,7 @@ type ApiResolver interface {
 	// Block resolves blockchain block by number or by hash. If neither is provided, the most recent block is given.
 	Block(*struct {
 		Number *hexutil.Uint64
-		Hash   *types.Hash
+		Hash   *common.Hash
 	}) (*Block, error)
 
 	// Blocks resolves list of blockchain blocks encapsulated in a listable structure.
@@ -79,7 +79,7 @@ type ApiResolver interface {
 	}) (*BlockList, error)
 
 	// Transaction resolves blockchain transaction by hash.
-	Transaction(*struct{ Hash types.Hash }) (*Transaction, error)
+	Transaction(*struct{ Hash common.Hash }) (*Transaction, error)
 
 	// Transactions resolves list of blockchain transactions encapsulated in a listable structure.
 	Transactions(*struct {

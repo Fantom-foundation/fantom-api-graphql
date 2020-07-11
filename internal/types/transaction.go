@@ -31,7 +31,7 @@ type Transaction struct {
 	GasPrice hexutil.Big `json:"gasPrice"`
 
 	// Hash represents 32 bytes hash of the transaction.
-	Hash Hash `json:"hash"`
+	Hash common.Hash `json:"hash"`
 
 	// Nonce represents the number of transactions made by the sender prior to this one.
 	Nonce hexutil.Uint64 `json:"nonce"`

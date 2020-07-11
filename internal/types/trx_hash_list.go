@@ -1,10 +1,12 @@
 // Package types implements different core types of the API.
 package types
 
+import "github.com/ethereum/go-ethereum/common"
+
 // TransactionHashList represents a list of transaction hashes.
 type TransactionHashList struct {
 	// Collection represent list of transactions' hash.
-	Collection []*Hash
+	Collection []*common.Hash
 
 	// Total indicates total number of transaction in the whole collection.
 	Total uint64

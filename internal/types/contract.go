@@ -15,7 +15,7 @@ type Contract struct {
 	Address common.Address `json:"address"`
 
 	// TransactionHash represents the hash of the contract deployment transaction.
-	TransactionHash Hash `json:"tx"`
+	TransactionHash common.Hash `json:"tx"`
 
 	// TimeStamp represents the unix timestamp of the contract deployment.
 	TimeStamp hexutil.Uint64 `json:"timestamp"`
@@ -49,7 +49,7 @@ type Contract struct {
 
 	// SourceCodeHash represents a hash code of the stored contract
 	// source code. Is nil if the source code is not available.
-	SourceCodeHash *Hash `json:"soh"`
+	SourceCodeHash *common.Hash `json:"soh"`
 
 	// ABI definition of the smart contract, if available.
 	Abi string `json:"abi"`

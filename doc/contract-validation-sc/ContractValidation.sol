@@ -20,7 +20,7 @@ contract ContractValidation {
     // admin is the address managing the contract validation container.
     address public admin;
 
-    // validators are the addresses of the nodes allowed to submit contract validations.
+    // validators are the addresses allowed to submit contract validations.
     mapping(address => bool) public validators;
 
     // contracts maps contract address to the validation record.
@@ -38,7 +38,7 @@ contract ContractValidation {
     // ContractValidationDropped signals contract validation has been canceled.
     event ContractValidationDropped(address indexed addr, uint timestamp);
 
-    // constructor create new instance of the validation contract.
+    // constructor creates new instance of the validation contract.
     constructor() public {
         // keep the contract creator as the admin
         admin = msg.sender;
@@ -48,26 +48,26 @@ contract ContractValidation {
     }
 
     // addValidators function adds new validators to the contract.
-    function addValidators(address[] memory validators) external {
+    function addValidators(address[] calldata list) external {
         // only administrator can do this
         require(msg.sender == admin, "only admin can add validators");
 
         // add new validators to the list
-        for (uint i = 0; i < validators.length; i++) {
-            validators[validators[i]] = true;
-            emit ValidatorAdded(validators[i], now);
+        for (uint i = 0; i < list.length; i++) {
+            validators[list[i]] = true;
+            emit ValidatorAdded(list[i], now);
         }
     }
 
     // dropValidators function removes specified validators from the contract.
-    function dropValidators(address[] memory validators) external {
+    function dropValidators(address[] calldata list) external {
         // only administrator can do this
         require(msg.sender == admin, "only admin can drop validators");
 
         // delete the validators off the list
-        for (uint i = 0; i < validators.length; i++) {
-            delete (validators[validators[i]]);
-            emit ValidatorDropped(validators[i], now);
+        for (uint i = 0; i < list.length; i++) {
+            delete (validators[list[i]]);
+            emit ValidatorDropped(list[i], now);
         }
     }
 
@@ -75,15 +75,15 @@ contract ContractValidation {
     // information in so it can be used later.
     function validated(
         address addr,
-        string memory name,
+        string calldata name,
         bytes32 version,
         bytes32 license,
-        string memory contact,
+        string calldata contact,
         bytes32 compiler,
         bytes32 clVersion,
         bool isOptimized,
         int32 optRounds,
-        bytes memory source) external
+        bytes calldata source) external
     {
         // only validators ca do this
         require(validators[msg.sender], "only validators can validate");
@@ -115,7 +115,7 @@ contract ContractValidation {
     }
 
     // dropValidation removes validation information from the contract.
-    function dropValidation(address addr) public {
+    function dropValidation(address addr) external {
         // only administrator can drop validation
         require(msg.sender == admin, "only admin can drop validation");
 

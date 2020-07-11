@@ -16,6 +16,7 @@ package rpc
 import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
+	"github.com/ethereum/go-ethereum/common"
 	eth "github.com/ethereum/go-ethereum/ethclient"
 	ftm "github.com/ethereum/go-ethereum/rpc"
 )
@@ -25,19 +26,27 @@ type FtmBridge struct {
 	rpc *ftm.Client
 	eth *eth.Client
 	log logger.Logger
+
+	// validation repository address
+	valRepository  common.Address
+	valSigKey      string
+	valSigPassword string
 }
 
 // New creates new Lachesis RPC connection bridge.
 func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
+	// check if we have all the validation related details we need
+	if err := checkValidationConfig(cfg); err != nil {
+		log.Critical(err)
+		return nil, err
+	}
+
 	// try to establish a connection
 	client, err := ftm.Dial(cfg.LachesisUrl)
 	if err != nil {
 		log.Critical(err)
 		return nil, err
 	}
-
-	// log
-	log.Notice("full node rpc connection established")
 
 	// try to establish a for smart contract interaction
 	con, err := eth.Dial(cfg.LachesisUrl)
@@ -47,13 +56,16 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 	}
 
 	// log
-	log.Notice("smart contact connection established")
+	log.Notice("full node rpc connection established")
 
 	// return the Bridge
 	return &FtmBridge{
-		rpc: client,
-		eth: con,
-		log: log,
+		rpc:            client,
+		eth:            con,
+		log:            log,
+		valRepository:  common.HexToAddress(cfg.ContractValidatorRepository),
+		valSigKey:      cfg.ContractValidatorSigKey,
+		valSigPassword: cfg.ContractValidatorSigPassword,
 	}, nil
 }
 

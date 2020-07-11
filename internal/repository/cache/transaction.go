@@ -4,10 +4,11 @@ package cache
 import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // PullTransaction extracts transaction information from the in-memory cache if available.
-func (b *MemBridge) PullTransaction(hash *types.Hash) *types.Transaction {
+func (b *MemBridge) PullTransaction(hash *common.Hash) *types.Transaction {
 	// try to get the account data from the cache
 	data, err := b.cache.Get(hash.String())
 	if err != nil {

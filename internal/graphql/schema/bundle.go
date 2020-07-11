@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-07-06 07:48
+// Auto generated GraphQL schema bundle; created 2020-07-11 12:35
 const schema = `
 # Root schema definition
 schema {
@@ -322,6 +322,9 @@ input ContractValidationInput {
     Empty if not specified.
     """
     license: String
+
+    "Compiler to be used to validate the contract. Default solc will be used if not set."
+    compiler: String
 
     "Optimized specifies if the compiler was set to optimize the byte code."
     optimized: Boolean = true

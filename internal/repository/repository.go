@@ -75,13 +75,13 @@ type Repository interface {
 	// Block returns a block at Opera blockchain represented by a hash.
 	// Top block is returned if the hash is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
-	BlockByHash(*types.Hash) (*types.Block, error)
+	BlockByHash(*common.Hash) (*types.Block, error)
 
 	// AddTransaction notifies a new incoming transaction from blockchain to the repository.
 	AddTransaction(*types.Block, *types.Transaction) error
 
 	// Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
-	Transaction(*types.Hash) (*types.Transaction, error)
+	Transaction(*common.Hash) (*types.Transaction, error)
 
 	// Transactions returns list of transaction hashes at Opera blockchain.
 	Transactions(*string, int32) (*types.TransactionHashList, error)

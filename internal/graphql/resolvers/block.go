@@ -4,6 +4,7 @@ package resolvers
 import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
@@ -24,7 +25,7 @@ func NewBlock(blk *types.Block, repo repository.Repository) *Block {
 // Block resolves blockchain block by number or by hash. If neither is provided, the most recent block is given.
 func (rs *rootResolver) Block(args *struct {
 	Number *hexutil.Uint64
-	Hash   *types.Hash
+	Hash   *common.Hash
 }) (*Block, error) {
 	// do we have the number, or hash is not given?
 	if args.Number != nil || args.Hash == nil {
@@ -60,9 +61,9 @@ func (blk *Block) Parent() (*Block, error) {
 }
 
 // TxHashList resolves list of hashes of transaction bundled in the block.
-func (blk *Block) TxHashList() []types.Hash {
+func (blk *Block) TxHashList() []common.Hash {
 	// make the container
-	txs := make([]types.Hash, len(blk.Txs))
+	txs := make([]common.Hash, len(blk.Txs))
 
 	// loop hashes and extract them
 	for i, hash := range blk.Txs {

@@ -37,7 +37,7 @@ type Block struct {
 	TimeStamp hexutil.Uint64 `json:"timestamp"`
 
 	// Txs represents array of 32 bytes hashes of transactions included in the block.
-	Txs []*Hash `json:"transactions"`
+	Txs []*common.Hash `json:"transactions"`
 }
 
 // UnmarshalBlock parses the JSON-encoded block data.

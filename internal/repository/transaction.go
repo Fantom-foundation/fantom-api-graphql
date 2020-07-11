@@ -11,6 +11,7 @@ package repository
 import (
 	"errors"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/rpc"
 	"strings"
@@ -98,7 +99,7 @@ func (p *proxy) processBallot(block *types.Block, trx *types.Transaction) error 
 
 // Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
 // If the transaction is not found, ErrTransactionNotFound error is returned.
-func (p *proxy) Transaction(hash *types.Hash) (*types.Transaction, error) {
+func (p *proxy) Transaction(hash *common.Hash) (*types.Transaction, error) {
 	// log
 	p.log.Debugf("requested transaction %s", hash.String())
 

@@ -114,6 +114,13 @@ func (p *proxy) ValidateContract(sc *types.Contract) error {
 		return err
 	}
 
+	return p.validateContractSet(contracts, tx, sc)
+}
+
+// ValidateContract tries to validate contract byte code using
+// provided source code. If successful, the contract information
+// is updated the the repository.
+func (p *proxy) validateContractSet(contracts map[string]*compiler.Contract, tx *types.Transaction, sc *types.Contract) error {
 	// loop over contracts ad try to validate one of them
 	for name, detail := range contracts {
 		// check if the compiled byte code match with the deployed contract
