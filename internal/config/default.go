@@ -19,7 +19,7 @@ const (
 	defLoggingLevel = "INFO"
 
 	// defLoggingFormat holds default format of the Logger output
-	defLoggingFormat = "%{color}%{time:2006-01-02 15:04:05.000} %{shortfunc} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}"
+	defLoggingFormat = "%{color} %{shortfunc} > %{level:.4s} %{id:03x}%{color:reset} %{message}"
 
 	// defLachesisUrl holds default Lachesis connection string
 	defLachesisUrl = "~/.lachesis/data/lachesis.ipc"
