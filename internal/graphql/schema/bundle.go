@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-07-06 07:48
+// Auto generated GraphQL schema bundle; created 2020-07-15 08:28
 const schema = `
 # Root schema definition
 schema {
@@ -132,6 +132,9 @@ type Query {
     addresses.
     """
     votes(voter:Address!, ballots:[Address!]!):[Vote!]!
+
+    "defiTokens represents a list of all available DeFi tokens."
+    defiTokens:[DefiToken!]!
 }
 
 # Mutation endpoints for modifying the data
@@ -352,6 +355,106 @@ type ContractList {
 type ContractListEdge {
     cursor: Cursor!
     contract: Contract!
+}
+
+# DefiToken represents a token available for DeFi operations.
+type DefiToken {
+    # address of the token is used as the token's unique identifier.
+    address: Address!
+
+    # name of the token.
+    name: String!
+
+    # symbol used as an abbreviation for the token.
+    symbol: String!
+
+    # decimals is the number of decimals the token supports.
+    # The most common value is 18 to mimic the ETH to WEI relationship.
+    decimals: Int!
+
+    # isActive signals if the token can be used
+    # in the DeFi functions at all.
+    isActive: Boolean!
+
+    # canDeposit signals if the token can be used
+    # in deposit as a collateral asset.
+    canDeposit: Boolean!
+
+    # canBorrow signals if the token is available
+    # for FLend borrow operations.
+    canBorrow: Boolean!
+
+    # canTrade signals if the token is available
+    # for FTrade direct trading operations.
+    canTrade: Boolean!
+
+    # volatilityIndex is an index of volatility of the token.
+    volatilityIndex: BigInt!
+}
+
+# DefiBalance represents a balance of a specific DeFi token on an account.
+# The balance is used for both collateral deposits and FLend debt.
+type DefiBalance {
+    # tokenAddress represents unique identifier of the token.
+    tokenAddress: Address!
+
+    # token represents the detail of the token
+    token: DefiToken!
+
+    # current balance of the token on the account.
+    balance: BigInt!
+
+    # value of the current balance of the token on the account
+    # in ref. denomination (fUSD).
+    value: BigInt!
+}
+
+# DefiAccount represents an informastion about account details
+# in DeFi module.
+type DefiAccount {
+    # address of the DeFi account.
+    address: Address!
+
+    # collaterals represents a list of all collateral assets.
+    collaterals: [DefiBalance!]!
+
+    # collateralValue represents the current collateral value
+    # in ref. denomination (fUSD).
+    collateralValue: BigInt!
+
+    # debts represents the list of all the current borrowed tokens.
+    debts: [DefiBalance!]!
+
+    # debtValue represents the current debt value
+    # in ref. denomination (fUSD).
+    debtValue: BigInt!
+}
+
+# DefiSettings represents the set of current settings and limits
+# applied to DeFi operations.
+type DefiSettings {
+    # tradeFee4 is the current fee applied to all direct trading operations.
+    # Value is represented in 4 digits, e.g. value 25 = 0.0025 => 0.25% fee.
+    tradeFee4: BigInt!
+
+    # loanFee4 is the current entry fee applied to all lending operations.
+    # Value is represented in 4 digits, e.g. value 25 = 0.0025 => 0.25% fee.
+    loanFee4: BigInt!
+
+    # minCollateralRatio4 is the minimal allowed ratio between
+    # colateral and debt values in ref. denomination (fUSD)
+    # on which the borrow trade is allowed.
+    # Value is represented in 4 digits,
+    # e.g. value 25000 = 2.5x => (debt x 2.5 <= collateral)
+    minCollateralRatio4: BigInt!
+
+    # liqCollateralRatio4 is the liquidation ratio between
+    # colateral and debt values in ref. denomination (fUSD).
+    # If the current ratio drops below this value, the position
+    # is liquidated.
+    # Value is represented in 4 digits,
+    # e.g. value 15000 = 1.5x => (debt x 1.5 <= collateral)
+    liqCollateralRatio4: BigInt!
 }
 
 # Delegator represents a delegation on Opera blockchain.

@@ -10,6 +10,13 @@
         },
         "introspect": false
       },
+      "VM GraphQL Endpoint for TestNET": {
+        "url": "http://crypto.vm.lan:16861/api",
+        "headers": {
+          "user-agent": "JS GraphQL"
+        },
+        "introspect": false
+      },
       "XAPI1 Fantom.Network": {
         "url": "https://xapi1.fantom.network/graphql",
         "introspect": false

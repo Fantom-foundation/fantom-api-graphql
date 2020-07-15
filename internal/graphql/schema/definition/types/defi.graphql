@@ -13,6 +13,10 @@ type DefiToken {
     # The most common value is 18 to mimic the ETH to WEI relationship.
     decimals: Int!
 
+    # isActive signals if the token can be used
+    # in the DeFi functions at all.
+    isActive: Boolean!
+
     # canDeposit signals if the token can be used
     # in deposit as a collateral asset.
     canDeposit: Boolean!
@@ -24,6 +28,9 @@ type DefiToken {
     # canTrade signals if the token is available
     # for FTrade direct trading operations.
     canTrade: Boolean!
+
+    # volatilityIndex is an index of volatility of the token.
+    volatilityIndex: BigInt!
 }
 
 # DefiBalance represents a balance of a specific DeFi token on an account.
