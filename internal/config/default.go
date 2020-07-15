@@ -38,6 +38,9 @@ const (
 
 	// defApiStateOrigin represents the default origin used for API state syncing
 	defApiStateOrigin = "https://localhost"
+
+	// defDefiRefAggregatorContract represents the address of the DeFi Reference Aggregator
+	defDefiRefAggregatorContract = "0x0000000000000000000000000000000000000000"
 )
 
 // default list of API peers
@@ -69,4 +72,7 @@ func applyDefaults(cfg *viper.Viper) {
 
 	// cors
 	cfg.SetDefault(keyCorsAllowOrigins, defCorsAllowOrigins)
+
+	// defi
+	cfg.SetDefault(keyDefiRefAggregatorContract, defDefiRefAggregatorContract)
 }
