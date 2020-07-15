@@ -16,6 +16,7 @@ package rpc
 import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
+	"github.com/ethereum/go-ethereum/common"
 	eth "github.com/ethereum/go-ethereum/ethclient"
 	ftm "github.com/ethereum/go-ethereum/rpc"
 )
@@ -25,6 +26,9 @@ type FtmBridge struct {
 	rpc *ftm.Client
 	eth *eth.Client
 	log logger.Logger
+
+	// defiRfAggregatorAddress is the address of the DeFi Reference Aggregator contract
+	defiRfAggregatorAddress common.Address
 }
 
 // New creates new Lachesis RPC connection bridge.
@@ -54,6 +58,8 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 		rpc: client,
 		eth: con,
 		log: log,
+
+		defiRfAggregatorAddress: common.HexToAddress(cfg.DefiReferenceAggregatorContract),
 	}, nil
 }
 

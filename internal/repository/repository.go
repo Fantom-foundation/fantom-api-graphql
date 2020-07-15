@@ -196,6 +196,9 @@ type Repository interface {
 	// Votes returns a list of votes for the given votes and list of ballots.
 	Votes(common.Address, []common.Address) ([]types.Vote, error)
 
+	// DefiTokens resolves list of DeFi tokens available for the DeFi functions.
+	DefiTokens() ([]types.DefiToken, error)
+
 	// Close and cleanup the repository.
 	Close()
 }
