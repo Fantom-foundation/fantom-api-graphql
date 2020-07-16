@@ -29,6 +29,9 @@ type FtmBridge struct {
 
 	// defiRfAggregatorAddress is the address of the DeFi Reference Aggregator contract
 	defiRfAggregatorAddress common.Address
+
+	// defiLiquidityPoolAddress is the address of the DeFi Liquidity Pool contract
+	defiLiquidityPoolAddress common.Address
 }
 
 // New creates new Lachesis RPC connection bridge.
@@ -59,7 +62,9 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 		eth: con,
 		log: log,
 
-		defiRfAggregatorAddress: common.HexToAddress(cfg.DefiReferenceAggregatorContract),
+		// special configuration options below this line
+		defiRfAggregatorAddress:  common.HexToAddress(cfg.DefiOracleReferenceAggregatorContract),
+		defiLiquidityPoolAddress: common.HexToAddress(cfg.DefiLiquidityPoolContract),
 	}, nil
 }
 
