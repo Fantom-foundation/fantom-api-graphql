@@ -145,6 +145,9 @@ type ApiResolver interface {
 	// DefiTokens resolves list of DeFi tokens available for the DeFi functions.
 	DefiTokens() ([]types.DefiToken, error)
 
+	// DefiAccount resolves details of a specified DeFi account.
+	DefiAccount(*struct{ Owner common.Address }) (*DefiAccount, error)
+
 	// Close terminates resolver broadcast management.
 	Close()
 }

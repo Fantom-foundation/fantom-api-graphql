@@ -134,6 +134,9 @@ type Query {
 
     "defiConfiguration exposes the current DeFi contract setup."
     defiConfiguration:DefiSettings!
+
+    "defiAccount provides DeFi information about an account."
+    defiAccount(owner: Address!):DefiAccount!
 }
 
 # Mutation endpoints for modifying the data

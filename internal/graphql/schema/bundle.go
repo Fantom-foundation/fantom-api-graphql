@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-07-16 15:34
+// Auto generated GraphQL schema bundle; created 2020-07-16 20:07
 const schema = `
 # Root schema definition
 schema {
@@ -138,6 +138,9 @@ type Query {
 
     "defiConfiguration exposes the current DeFi contract setup."
     defiConfiguration:DefiSettings!
+
+    "defiAccount provides DeFi information about an account."
+    defiAccount(owner: Address!):DefiAccount!
 }
 
 # Mutation endpoints for modifying the data
@@ -395,9 +398,18 @@ type DefiToken {
     volatilityIndex: BigInt!
 }
 
-# DefiBalance represents a balance of a specific DeFi token on an account.
+# DefiTokenBalanceType represents the type of DeFi token balance record.
+enum DefiTokenBalanceType {
+    COLLATERAL
+    DEBT
+}
+
+# DefiTokenBalance represents a balance of a specific DeFi token on an account.
 # The balance is used for both collateral deposits and FLend debt.
-type DefiBalance {
+type DefiTokenBalance {
+    # type represents the type of the balance record.
+    type: DefiTokenBalanceType!
+
     # tokenAddress represents unique identifier of the token.
     tokenAddress: Address!
 
@@ -418,15 +430,22 @@ type DefiAccount {
     # address of the DeFi account.
     address: Address!
 
+    # collateralList represents a list of all collateral tokens
+    # linked with the account.
+    collateralList: [Address!]!
+
     # collaterals represents a list of all collateral assets.
-    collaterals: [DefiBalance!]!
+    collateral: [DefiTokenBalance!]!
 
     # collateralValue represents the current collateral value
     # in ref. denomination (fUSD).
     collateralValue: BigInt!
 
+    # debtList represents a list of all debt tokens linked with the account.
+    debtList: [Address!]!
+
     # debts represents the list of all the current borrowed tokens.
-    debts: [DefiBalance!]!
+    debt: [DefiTokenBalance!]!
 
     # debtValue represents the current debt value
     # in ref. denomination (fUSD).
