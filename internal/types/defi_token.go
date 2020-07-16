@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
+// DefiToken represents a single DeFi managed token information.
 type DefiToken struct {
 	// Address of the token is used as the token's unique identifier.
 	Address common.Address `json:"address"`
