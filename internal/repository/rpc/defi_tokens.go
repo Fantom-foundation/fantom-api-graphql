@@ -13,7 +13,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
-//go:generate abigen --abi ./contracts/defi_rf_aggregator.abi --pkg rpc --type DefiReferenceAggregator --out ./defi_ref_aggregator.go
+//go:generate abigen --abi ./contracts/defi_oracle_aggregator.abi --pkg rpc --type DefiOracleReferenceAggregator --out ./defi_oracle_aggregator.go
 
 import (
 	"fantom-api-graphql/internal/types"
@@ -27,7 +27,7 @@ import (
 // DefiTokens resolves list of DeFi tokens available for the DeFi functions.
 func (ftm *FtmBridge) DefiTokens() ([]types.DefiToken, error) {
 	// connect the contract
-	contract, err := NewDefiReferenceAggregator(ftm.defiRfAggregatorAddress, ftm.eth)
+	contract, err := NewDefiOracleReferenceAggregator(ftm.defiRfAggregatorAddress, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not open reference aggregator contract connection; %s", err.Error())
 		return nil, err
@@ -74,7 +74,7 @@ func decodeToken(tk struct {
 }
 
 // defiTokensList load list of DeFi tokens from the smart contract.
-func (ftm *FtmBridge) defiTokensList(contract *DefiReferenceAggregator) ([]types.DefiToken, error) {
+func (ftm *FtmBridge) defiTokensList(contract *DefiOracleReferenceAggregator) ([]types.DefiToken, error) {
 	// get the number of tokens in the reference aggregator
 	count, err := contract.TokensCount(nil)
 	if err != nil {

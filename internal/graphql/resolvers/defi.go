@@ -8,3 +8,9 @@ func (rs *rootResolver) DefiTokens() ([]types.DefiToken, error) {
 	// pass the call to repository
 	return rs.repo.DefiTokens()
 }
+
+// DefiConfiguration resolves the current DeFi contract settings.
+func (rs *rootResolver) DefiConfiguration() (*types.DefiSettings, error) {
+	// pass the call to repository
+	return rs.repo.DefiConfiguration()
+}

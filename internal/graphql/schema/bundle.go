@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-07-15 08:28
+// Auto generated GraphQL schema bundle; created 2020-07-16 15:34
 const schema = `
 # Root schema definition
 schema {
@@ -135,6 +135,9 @@ type Query {
 
     "defiTokens represents a list of all available DeFi tokens."
     defiTokens:[DefiToken!]!
+
+    "defiConfiguration exposes the current DeFi contract setup."
+    defiConfiguration:DefiSettings!
 }
 
 # Mutation endpoints for modifying the data
@@ -442,19 +445,35 @@ type DefiSettings {
     loanFee4: BigInt!
 
     # minCollateralRatio4 is the minimal allowed ratio between
-    # colateral and debt values in ref. denomination (fUSD)
+    # collateral and debt values in ref. denomination (fUSD)
     # on which the borrow trade is allowed.
     # Value is represented in 4 digits,
-    # e.g. value 25000 = 2.5x => (debt x 2.5 <= collateral)
+    # e.g. value 25000 = 3.0x => (debt x 3.0 <= collateral)
     minCollateralRatio4: BigInt!
 
+    # minCollateralRatio4 is the minimal allowed ratio between
+    # collateral and debt values in ref. denomination (fUSD)
+    # on which the borrow trade is allowed.
+    # Value is represented in 4 digits,
+    # e.g. value 25000 = 2.5x => (debt x 2.25 <= collateral)
+    warningCollateralRatio4: BigInt!
+
     # liqCollateralRatio4 is the liquidation ratio between
-    # colateral and debt values in ref. denomination (fUSD).
+    # collateral and debt values in ref. denomination (fUSD).
     # If the current ratio drops below this value, the position
     # is liquidated.
     # Value is represented in 4 digits,
     # e.g. value 15000 = 1.5x => (debt x 1.5 <= collateral)
     liqCollateralRatio4: BigInt!
+
+    # decimals represents the decimals / digits correction
+    # applied to the fees and ratios internally to correctly represent
+    # fraction numbers. E.g. correction value 4 => ratio/fee x 10000.
+    decimals: Int!
+
+    # priceOracleAggregate is the address of the current price oracle
+    # aggregate used by the DeFe to obtain USD price of tokens managed.
+    priceOracleAggregate: Address!
 }
 
 # Delegator represents a delegation on Opera blockchain.

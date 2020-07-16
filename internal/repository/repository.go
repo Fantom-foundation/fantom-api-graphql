@@ -199,6 +199,9 @@ type Repository interface {
 	// DefiTokens resolves list of DeFi tokens available for the DeFi functions.
 	DefiTokens() ([]types.DefiToken, error)
 
+	// DefiConfiguration resolves the current DeFi contract settings.
+	DefiConfiguration() (*types.DefiSettings, error)
+
 	// Close and cleanup the repository.
 	Close()
 }

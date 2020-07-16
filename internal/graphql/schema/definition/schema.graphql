@@ -131,6 +131,9 @@ type Query {
 
     "defiTokens represents a list of all available DeFi tokens."
     defiTokens:[DefiToken!]!
+
+    "defiConfiguration exposes the current DeFi contract setup."
+    defiConfiguration:DefiSettings!
 }
 
 # Mutation endpoints for modifying the data

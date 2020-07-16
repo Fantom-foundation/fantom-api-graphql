@@ -6,3 +6,8 @@ import "fantom-api-graphql/internal/types"
 func (p *proxy) DefiTokens() ([]types.DefiToken, error) {
 	return p.rpc.DefiTokens()
 }
+
+// DefiConfiguration resolves the current DeFi contract settings.
+func (p *proxy) DefiConfiguration() (*types.DefiSettings, error) {
+	return p.rpc.DefiConfiguration()
+}
