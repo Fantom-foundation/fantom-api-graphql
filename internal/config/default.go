@@ -41,6 +41,9 @@ const (
 
 	// defDefiRefAggregatorContract represents the address of the DeFi Reference Aggregator
 	defDefiRefAggregatorContract = "0x0000000000000000000000000000000000000000"
+
+	// defLiquidityPoolContract represents the address of the DeFi Liquidity Pool Contract
+	defDefiLiquidityPoolContract = "0x0000000000000000000000000000000000000000"
 )
 
 // default list of API peers
@@ -73,6 +76,7 @@ func applyDefaults(cfg *viper.Viper) {
 	// cors
 	cfg.SetDefault(keyCorsAllowOrigins, defCorsAllowOrigins)
 
-	// defi
+	// DeFi configuration
 	cfg.SetDefault(keyDefiRefAggregatorContract, defDefiRefAggregatorContract)
+	cfg.SetDefault(keyDefiLiquidityPoolContract, defDefiLiquidityPoolContract)
 }

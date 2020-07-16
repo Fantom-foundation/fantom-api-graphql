@@ -37,6 +37,7 @@ const (
 
 	// defi related configs
 	keyDefiRefAggregatorContract = "defi.ref-aggregator"
+	keyDefiLiquidityPoolContract = "defi.liquidity-pool"
 )
 
 // Config defines configuration options structure for Fantom API server.
@@ -83,8 +84,11 @@ type Config struct {
 	// ApiStateOrigin represents request origin used on state syncing events.
 	ApiStateOrigin string
 
-	// DefiReferenceAggregatorContract is the address of the DeFi Reference Aggregator contract.
-	DefiReferenceAggregatorContract string
+	// DefiOracleReferenceAggregatorContract is the address of the DeFi Reference Aggregator contract.
+	DefiOracleReferenceAggregatorContract string
+
+	// DefiLiquidityPoolContract is the address of the DeFi Liquidity Pool control contract.
+	DefiLiquidityPoolContract string
 }
 
 // Load provides a loaded configuration for Fantom API server.
@@ -109,21 +113,24 @@ func Load() (*Config, error) {
 
 	// Build and return the config structure
 	return &Config{
-		AppName:                         appName,
-		BindAddress:                     cfg.GetString(keyBindAddress),
-		DomainName:                      cfg.GetString(keyDomainAddress),
-		LoggingLevel:                    cfg.GetString(keyLoggingLevel),
-		LoggingFormat:                   cfg.GetString(keyLoggingFormat),
-		LachesisUrl:                     cfg.GetString(keyLachesisUrl),
-		MongoUrl:                        cfg.GetString(keyMongoUrl),
-		MongoDatabase:                   cfg.GetString(keyMongoDatabase),
-		CorsAllowOrigins:                cfg.GetStringSlice(keyCorsAllowOrigins),
-		CacheEvictionTime:               cfg.GetDuration(keyCacheEvictionTime),
-		SolCompilerPath:                 cfg.GetString(keySolCompilerPath),
-		ApiPeers:                        cfg.GetStringSlice(keyApiPeers),
-		ApiStateOrigin:                  cfg.GetString(keyApiStateOrigin),
-		VotingSources:                   cfg.GetStringSlice(keyVotingSources),
-		DefiReferenceAggregatorContract: cfg.GetString(keyDefiRefAggregatorContract),
+		AppName:           appName,
+		BindAddress:       cfg.GetString(keyBindAddress),
+		DomainName:        cfg.GetString(keyDomainAddress),
+		LoggingLevel:      cfg.GetString(keyLoggingLevel),
+		LoggingFormat:     cfg.GetString(keyLoggingFormat),
+		LachesisUrl:       cfg.GetString(keyLachesisUrl),
+		MongoUrl:          cfg.GetString(keyMongoUrl),
+		MongoDatabase:     cfg.GetString(keyMongoDatabase),
+		CorsAllowOrigins:  cfg.GetStringSlice(keyCorsAllowOrigins),
+		CacheEvictionTime: cfg.GetDuration(keyCacheEvictionTime),
+		SolCompilerPath:   cfg.GetString(keySolCompilerPath),
+		ApiPeers:          cfg.GetStringSlice(keyApiPeers),
+		ApiStateOrigin:    cfg.GetString(keyApiStateOrigin),
+		VotingSources:     cfg.GetStringSlice(keyVotingSources),
+
+		// DeFi below this line
+		DefiOracleReferenceAggregatorContract: cfg.GetString(keyDefiRefAggregatorContract),
+		DefiLiquidityPoolContract:             cfg.GetString(keyDefiLiquidityPoolContract),
 	}, nil
 }
 
