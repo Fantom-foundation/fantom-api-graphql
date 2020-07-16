@@ -24,6 +24,45 @@ import (
 	"strings"
 )
 
+// DefiToken loads details of a single DeFi token by it's address.
+func (ftm *FtmBridge) DefiToken(token *common.Address) (*types.DefiToken, error) {
+	// connect the contract
+	contract, err := NewDefiOracleReferenceAggregator(ftm.defiRfAggregatorAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("can not open reference aggregator contract connection; %s", err.Error())
+		return nil, err
+	}
+
+	// get the token index
+	ix, err := contract.FindTokenIndex(nil, *token)
+	if err != nil {
+		ftm.log.Errorf("can not get token index by address; %s", err.Error())
+		return nil, err
+	}
+
+	// if the index valid?
+	if 0 > ix.Int64() {
+		ftm.log.Debugf("token %s not found", token.String())
+		return nil, nil
+	}
+
+	// get the token details
+	tk, err := contract.Tokens(nil, ix)
+	if err != nil {
+		ftm.log.Errorf("can not get token %s details for index %d; %s", token.String(), ix.Int64(), err.Error())
+		return nil, err
+	}
+
+	// decode token details
+	dt, err := decodeToken(tk)
+	if err != nil {
+		ftm.log.Errorf("can not decode token %s details for index %d; %s", token.String(), ix.Int64(), err.Error())
+		return nil, err
+	}
+
+	return &dt, nil
+}
+
 // DefiTokens resolves list of DeFi tokens available for the DeFi functions.
 func (ftm *FtmBridge) DefiTokens() ([]types.DefiToken, error) {
 	// connect the contract
@@ -107,4 +146,66 @@ func (ftm *FtmBridge) defiTokensList(contract *DefiOracleReferenceAggregator) ([
 	}
 
 	return list, nil
+}
+
+// DefiTokenBalance loads balance of a single DeFi token by it's address.
+func (ftm *FtmBridge) DefiTokenBalance(owner *common.Address, token *common.Address, tt string) (hexutil.Big, error) {
+	// connect the contract
+	contract, err := NewDefiLiquidityPool(ftm.defiLiquidityPoolAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("can not open liquidity pool contract connection; %s", err.Error())
+		return hexutil.Big{}, err
+	}
+
+	// get the collateral token balance
+	var val *big.Int
+
+	// pull the right value based to token type
+	if tt == "COLLATERAL" {
+		val, err = contract.CollateralTokens(nil, *owner, *token)
+	} else {
+		val, err = contract.DebtTokens(nil, *owner, *token)
+	}
+
+	// do we have the value?
+	if val == nil {
+		ftm.log.Debugf("token %s balance not available for owner %s", token.String(), owner.String())
+		return hexutil.Big{}, err
+	}
+
+	return hexutil.Big(*val), err
+}
+
+// DefiTokenValue loads value of a single DeFi token by it's address in fUSD.
+func (ftm *FtmBridge) DefiTokenValue(owner *common.Address, token *common.Address, tt string) (hexutil.Big, error) {
+	// get the price oracle address
+	priceOracle, err := NewDefiOracleReferenceAggregator(ftm.defiRfAggregatorAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("can not open price oracle contract connection; %s", err.Error())
+		return hexutil.Big{}, err
+	}
+
+	// get the balance
+	balance, err := ftm.DefiTokenBalance(owner, token, tt)
+	if err != nil {
+		ftm.log.Errorf("can not get token balance; %s", err.Error())
+		return hexutil.Big{}, err
+	}
+
+	// get the price for the given token from oracle
+	val, err := priceOracle.GetPrice(nil, *token)
+	if err != nil {
+		ftm.log.Errorf("price not available for token %s; %s", token.String(), err.Error())
+		return hexutil.Big{}, err
+	}
+
+	// do we have the value?
+	if val == nil {
+		ftm.log.Debugf("token %s has not value", token.String())
+		return hexutil.Big{}, err
+	}
+
+	// calculate the target value
+	value := new(big.Int).Mul(val, balance.ToInt())
+	return hexutil.Big(*value), nil
 }

@@ -199,8 +199,20 @@ type Repository interface {
 	// DefiTokens resolves list of DeFi tokens available for the DeFi functions.
 	DefiTokens() ([]types.DefiToken, error)
 
-	// DefiConfiguration resolves the current DeFi contract settings.
+	// DefiToken loads details of a single DeFi token by it's address.
+	DefiToken(*common.Address) (*types.DefiToken, error)
+
+	// DefiTokenBalance loads balance of a single DeFi token by it's address.
+	DefiTokenBalance(*common.Address, *common.Address, string) (hexutil.Big, error)
+
+	// DefiTokenValue loads value of a single DeFi token by it's address in fUSD.
+	DefiTokenValue(*common.Address, *common.Address, string) (hexutil.Big, error)
+
+	// DefiConfiguration loads the current DeFi contract settings.
 	DefiConfiguration() (*types.DefiSettings, error)
+
+	// DefiAccount loads details of a DeFi account identified by the owner address.
+	DefiAccount(common.Address) (*types.DefiAccount, error)
 
 	// Close and cleanup the repository.
 	Close()
