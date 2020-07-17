@@ -84,8 +84,15 @@ func (da *DefiAccount) Debt() []*DefiTokenBalance {
 }
 
 // Token resolves the token information from the related token address.
-func (dtb *DefiTokenBalance) Token() (*types.DefiToken, error) {
-	return dtb.repo.DefiToken(&dtb.TokenAddress)
+func (dtb *DefiTokenBalance) Token() (*DefiToken, error) {
+	// get the token backend
+	tk, err := dtb.repo.DefiToken(&dtb.TokenAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	// resolve the token
+	return NewDefiToken(tk, dtb.repo), nil
 }
 
 // Balance resolves the balance of the token for the related token address.

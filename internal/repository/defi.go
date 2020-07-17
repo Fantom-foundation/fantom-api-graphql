@@ -35,3 +35,9 @@ func (p *proxy) DefiTokenBalance(owner *common.Address, token *common.Address, t
 func (p *proxy) DefiTokenValue(owner *common.Address, token *common.Address, tt string) (hexutil.Big, error) {
 	return p.rpc.DefiTokenValue(owner, token, tt)
 }
+
+// DefiTokenPrice loads the current price of the given token
+// from on-chain price oracle.
+func (p *proxy) DefiTokenPrice(token *common.Address) (hexutil.Big, error) {
+	return p.rpc.DefiTokenPrice(token)
+}

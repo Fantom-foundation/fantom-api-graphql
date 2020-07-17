@@ -17,6 +17,9 @@ type DefiToken struct {
 	// Symbol represents an abbreviation for the token.
 	Symbol string `json:"symbol"`
 
+	// LogoUrl represents an URL address of the token logo image.
+	LogoUrl string `json:"logo"`
+
 	// Decimals is the number of decimals the token supports.
 	// The most common value is 18 to mimic the ETH to WEI relationship.
 	// USD pairs on ChainLink (we use for price oracles) use 8 digits.

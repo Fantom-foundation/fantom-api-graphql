@@ -81,6 +81,7 @@ func decodeToken(tk struct {
 	Addr       common.Address
 	Name       [32]byte
 	Symbol     [32]byte
+	Logo       string
 	Decimals   *big.Int
 	IsActive   bool
 	CanDeposit bool
@@ -103,6 +104,7 @@ func decodeToken(tk struct {
 		Address:         tk.Addr,
 		Name:            strings.TrimRight(string(tk.Name[:]), "\u0000 "),
 		Symbol:          strings.TrimRight(string(tk.Symbol[:]), "\u0000 "),
+		LogoUrl:         tk.Logo,
 		Decimals:        int32(tk.Decimals.Uint64()),
 		IsActive:        tk.IsActive,
 		CanDeposit:      tk.CanDeposit,
@@ -178,17 +180,35 @@ func (ftm *FtmBridge) DefiTokenBalance(owner *common.Address, token *common.Addr
 
 // DefiTokenValue loads value of a single DeFi token by it's address in fUSD.
 func (ftm *FtmBridge) DefiTokenValue(owner *common.Address, token *common.Address, tt string) (hexutil.Big, error) {
-	// get the price oracle address
-	priceOracle, err := NewDefiOracleReferenceAggregator(ftm.defiRfAggregatorAddress, ftm.eth)
-	if err != nil {
-		ftm.log.Errorf("can not open price oracle contract connection; %s", err.Error())
-		return hexutil.Big{}, err
-	}
-
 	// get the balance
 	balance, err := ftm.DefiTokenBalance(owner, token, tt)
 	if err != nil {
 		ftm.log.Errorf("can not get token balance; %s", err.Error())
+		return hexutil.Big{}, err
+	}
+
+	// get the price for the given token from oracle
+	val, err := ftm.DefiTokenPrice(token)
+	if err != nil {
+		ftm.log.Errorf("price not available for token %s; %s", token.String(), err.Error())
+		return hexutil.Big{}, err
+	}
+
+	// calculate the target value
+	value := new(big.Int).Mul(val.ToInt(), balance.ToInt())
+	return hexutil.Big(*value), nil
+}
+
+// DefiTokenPrice loads the current price of the given token
+// from on-chain price oracle.
+func (ftm *FtmBridge) DefiTokenPrice(token *common.Address) (hexutil.Big, error) {
+	// log actions
+	ftm.log.Debugf("connecting price oracle %s", ftm.defiRfAggregatorAddress.String())
+
+	// get the price oracle address
+	priceOracle, err := NewDefiOracleReferenceAggregator(ftm.defiRfAggregatorAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("can not open price oracle contract connection; %s", err.Error())
 		return hexutil.Big{}, err
 	}
 
@@ -202,10 +222,8 @@ func (ftm *FtmBridge) DefiTokenValue(owner *common.Address, token *common.Addres
 	// do we have the value?
 	if val == nil {
 		ftm.log.Debugf("token %s has not value", token.String())
-		return hexutil.Big{}, err
+		return hexutil.Big{}, nil
 	}
 
-	// calculate the target value
-	value := new(big.Int).Mul(val, balance.ToInt())
-	return hexutil.Big(*value), nil
+	return hexutil.Big(*val), nil
 }

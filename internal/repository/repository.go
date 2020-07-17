@@ -202,6 +202,10 @@ type Repository interface {
 	// DefiToken loads details of a single DeFi token by it's address.
 	DefiToken(*common.Address) (*types.DefiToken, error)
 
+	// DefiTokenPrice loads the current price of the given token
+	// from on-chain price oracle.
+	DefiTokenPrice(*common.Address) (hexutil.Big, error)
+
 	// DefiTokenBalance loads balance of a single DeFi token by it's address.
 	DefiTokenBalance(*common.Address, *common.Address, string) (hexutil.Big, error)
 

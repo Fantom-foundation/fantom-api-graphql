@@ -143,7 +143,7 @@ type ApiResolver interface {
 	DefiConfiguration() (*types.DefiSettings, error)
 
 	// DefiTokens resolves list of DeFi tokens available for the DeFi functions.
-	DefiTokens() ([]types.DefiToken, error)
+	DefiTokens() ([]*DefiToken, error)
 
 	// DefiAccount resolves details of a specified DeFi account.
 	DefiAccount(*struct{ Owner common.Address }) (*DefiAccount, error)

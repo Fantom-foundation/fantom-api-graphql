@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-07-16 20:07
+// Auto generated GraphQL schema bundle; created 2020-07-17 09:08
 const schema = `
 # Root schema definition
 schema {
@@ -374,6 +374,9 @@ type DefiToken {
     # symbol used as an abbreviation for the token.
     symbol: String!
 
+    # logoUrl is the URL of the token logo image.
+    logoUrl: String!
+    
     # decimals is the number of decimals the token supports.
     # The most common value is 18 to mimic the ETH to WEI relationship.
     decimals: Int!
@@ -396,6 +399,14 @@ type DefiToken {
 
     # volatilityIndex is an index of volatility of the token.
     volatilityIndex: BigInt!
+
+    # price represents the value of the token in ref. denomination.
+    # We use fUSD tokens as the synth reference value.
+    price: BigInt!
+
+    # priceDecimals is the number of decimals used on the price
+    # field to properly handle value calculations without loosing precision.
+    priceDecimals: Int!
 }
 
 # DefiTokenBalanceType represents the type of DeFi token balance record.
