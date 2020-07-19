@@ -21,7 +21,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
-	"strings"
 )
 
 // DefiToken loads details of a single DeFi token by it's address.
@@ -78,22 +77,18 @@ func (ftm *FtmBridge) DefiTokens() ([]types.DefiToken, error) {
 // decodeToken decodes the contract internal token representation
 // into the API structure.
 func decodeToken(tk struct {
-	Addr       common.Address
-	Name       [32]byte
-	Symbol     [32]byte
-	Logo       string
-	Decimals   *big.Int
-	IsActive   bool
-	CanDeposit bool
-	CanBorrow  bool
-	CanTrade   bool
-	Volatility *big.Int
+	Token         common.Address
+	Name          string
+	Symbol        string
+	Logo          string
+	Decimals      uint8
+	PriceDecimals uint8
+	IsActive      bool
+	CanDeposit    bool
+	CanBorrow     bool
+	CanTrade      bool
+	Volatility    *big.Int
 }) (types.DefiToken, error) {
-	// make sure the number of decimals is available
-	if tk.Decimals == nil {
-		return types.DefiToken{}, fmt.Errorf("decimals not available")
-	}
-
 	// make sure the volatility is available
 	if tk.Volatility == nil {
 		return types.DefiToken{}, fmt.Errorf("volatility index not available")
@@ -101,11 +96,12 @@ func decodeToken(tk struct {
 
 	// decode and return
 	return types.DefiToken{
-		Address:         tk.Addr,
-		Name:            strings.TrimRight(string(tk.Name[:]), "\u0000 "),
-		Symbol:          strings.TrimRight(string(tk.Symbol[:]), "\u0000 "),
+		Address:         tk.Token,
+		Name:            tk.Name,
+		Symbol:          tk.Symbol,
 		LogoUrl:         tk.Logo,
-		Decimals:        int32(tk.Decimals.Uint64()),
+		Decimals:        int32(tk.Decimals),
+		PriceDecimals:   int32(tk.PriceDecimals),
 		IsActive:        tk.IsActive,
 		CanDeposit:      tk.CanDeposit,
 		CanBorrow:       tk.CanBorrow,

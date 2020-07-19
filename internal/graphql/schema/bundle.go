@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-07-17 09:08
+// Auto generated GraphQL schema bundle; created 2020-07-19 13:17
 const schema = `
 # Root schema definition
 schema {

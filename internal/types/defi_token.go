@@ -25,6 +25,11 @@ type DefiToken struct {
 	// USD pairs on ChainLink (we use for price oracles) use 8 digits.
 	Decimals int32 `json:"decimals"`
 
+	// PriceDecimals is the number of decimals the price oracle of the token uses.
+	// USD pairs of the the ChainLink compatible price oracle we utilize
+	// usually have 8 digits.
+	PriceDecimals int32 `json:"priceDecimals"`
+
 	// IsActive signals if the token can be used in the DeFi functions at all.
 	IsActive bool `json:"isActive"`
 

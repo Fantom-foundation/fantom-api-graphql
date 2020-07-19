@@ -44,11 +44,6 @@ func (dt *DefiToken) Price() (hexutil.Big, error) {
 	return dt.repo.DefiTokenPrice(&dt.Address)
 }
 
-// PriceDecimals resolves the number of decimals used on the price field.
-func (dt *DefiToken) PriceDecimals() int32 {
-	return 8
-}
-
 // DefiConfiguration resolves the current DeFi contract settings.
 func (rs *rootResolver) DefiConfiguration() (*types.DefiSettings, error) {
 	// pass the call to repository
