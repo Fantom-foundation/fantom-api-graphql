@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fantom-api-graphql/internal/repository/rpc"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -40,4 +41,20 @@ func (p *proxy) DefiTokenValue(owner *common.Address, token *common.Address, tt 
 // from on-chain price oracle.
 func (p *proxy) DefiTokenPrice(token *common.Address) (hexutil.Big, error) {
 	return p.rpc.DefiTokenPrice(token)
+}
+
+// Erc20Balance load the current available balance of and ERC20 token identified by the token
+// contract address for an identified owner address.
+func (p *proxy) Erc20Balance(owner *common.Address, token *common.Address) (hexutil.Big, error) {
+	// make sure to treat native FTM tokens differently
+	if token.String() == rpc.NativeTokenAddress {
+		val, err := p.rpc.AccountBalance(owner)
+		if err != nil {
+			return hexutil.Big{}, err
+		}
+		return *val, nil
+	}
+
+	// handle ERC20 token balance
+	return p.rpc.Erc20Balance(owner, token)
 }

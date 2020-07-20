@@ -218,6 +218,10 @@ type Repository interface {
 	// DefiAccount loads details of a DeFi account identified by the owner address.
 	DefiAccount(common.Address) (*types.DefiAccount, error)
 
+	// Erc20Balance load the current available balance of and ERC20 token identified by the token
+	// contract address for an identified owner address.
+	Erc20Balance(*common.Address, *common.Address) (hexutil.Big, error)
+
 	// Close and cleanup the repository.
 	Close()
 }
