@@ -21,8 +21,11 @@ import (
 	"math/big"
 )
 
-// emptyAddress represents an empty address returned from a contract call.
-const emptyAddress = `0x0000000000000000000000000000000000000000`
+// EmptyAddress represents an empty address returned from a contract call.
+const EmptyAddress = `0x0000000000000000000000000000000000000000`
+
+// NativeTokenAddress represents an address of the native FTM token.
+const NativeTokenAddress = `0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF`
 
 // DefiAccount loads details of a DeFi account identified by the owner address.
 func (ftm *FtmBridge) DefiAccount(owner *common.Address) (*types.DefiAccount, error) {
@@ -86,7 +89,7 @@ func (ftm *FtmBridge) defiAccountTokensList(
 		}
 
 		// do we have a valid address?
-		tokenFound = addr.String() != emptyAddress
+		tokenFound = addr.String() != EmptyAddress
 		if tokenFound {
 			// add the address to the list
 			list = append(list, addr)
