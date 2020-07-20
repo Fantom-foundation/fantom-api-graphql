@@ -4,6 +4,7 @@ package resolvers
 import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
@@ -44,8 +45,23 @@ func (dt *DefiToken) Price() (hexutil.Big, error) {
 	return dt.repo.DefiTokenPrice(&dt.Address)
 }
 
+// Price resolves the value of the token in ref. denomination
+// using on-chain price oracle.
+func (dt *DefiToken) AvailableBalance(args *struct{ Owner common.Address }) (hexutil.Big, error) {
+	return dt.repo.Erc20Balance(&args.Owner, &dt.Address)
+}
+
 // DefiConfiguration resolves the current DeFi contract settings.
 func (rs *rootResolver) DefiConfiguration() (*types.DefiSettings, error) {
 	// pass the call to repository
 	return rs.repo.DefiConfiguration()
+}
+
+// ErcTokenBalance resolves the current available balance of the specified token
+// for the specified owner.
+func (rs *rootResolver) ErcTokenBalance(args *struct {
+	Owner common.Address
+	Token common.Address
+}) (hexutil.Big, error) {
+	return rs.repo.Erc20Balance(&args.Owner, &args.Token)
 }

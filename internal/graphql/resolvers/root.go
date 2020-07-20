@@ -148,6 +148,13 @@ type ApiResolver interface {
 	// DefiAccount resolves details of a specified DeFi account.
 	DefiAccount(*struct{ Owner common.Address }) (*DefiAccount, error)
 
+	// ErcTokenBalance resolves the current available balance of the specified token
+	// for the specified owner.
+	ErcTokenBalance(args *struct {
+		Owner common.Address
+		Token common.Address
+	}) (hexutil.Big, error)
+
 	// Close terminates resolver broadcast management.
 	Close()
 }

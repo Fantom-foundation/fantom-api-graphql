@@ -137,6 +137,12 @@ type Query {
 
     "defiAccount provides DeFi information about an account."
     defiAccount(owner: Address!):DefiAccount!
+
+    """
+    ercTokenBalance provides the current available balance of a specified ERC20 token
+    identified by it's ERC20 contract address.
+    """
+    ercTokenBalance(owner: Address!, token: Address!):BigInt!
 }
 
 # Mutation endpoints for modifying the data
