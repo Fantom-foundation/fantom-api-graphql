@@ -222,6 +222,10 @@ type Repository interface {
 	// contract address for an identified owner address.
 	Erc20Balance(*common.Address, *common.Address) (hexutil.Big, error)
 
+	// Erc20Allowance loads the current amount of ERC20 tokens unlocked for DeFi
+	// contract by the token owner.
+	Erc20Allowance(*common.Address, *common.Address) (hexutil.Big, error)
+
 	// Close and cleanup the repository.
 	Close()
 }

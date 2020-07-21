@@ -45,10 +45,16 @@ func (dt *DefiToken) Price() (hexutil.Big, error) {
 	return dt.repo.DefiTokenPrice(&dt.Address)
 }
 
-// Price resolves the value of the token in ref. denomination
-// using on-chain price oracle.
+// AvailableBalance resolves the total amount of ERC20 tokens
+// available to the specified token holder.
 func (dt *DefiToken) AvailableBalance(args *struct{ Owner common.Address }) (hexutil.Big, error) {
 	return dt.repo.Erc20Balance(&args.Owner, &dt.Address)
+}
+
+// Allowance resolves the total amount of ERC20 tokens unlocked
+// by the token holder for DeFi operations.
+func (dt *DefiToken) Allowance(args *struct{ Owner common.Address }) (hexutil.Big, error) {
+	return dt.repo.Erc20Allowance(&args.Owner, &dt.Address)
 }
 
 // DefiConfiguration resolves the current DeFi contract settings.
@@ -64,4 +70,13 @@ func (rs *rootResolver) ErcTokenBalance(args *struct {
 	Token common.Address
 }) (hexutil.Big, error) {
 	return rs.repo.Erc20Balance(&args.Owner, &args.Token)
+}
+
+// defiTokenAllowance resolves the amount of ERC20 tokens unlocked
+// by the token owner for DeFi operations.
+func (rs *rootResolver) DefiTokenAllowance(args *struct {
+	Owner common.Address
+	Token common.Address
+}) (hexutil.Big, error) {
+	return rs.repo.Erc20Allowance(&args.Owner, &args.Token)
 }

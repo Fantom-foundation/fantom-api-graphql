@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-07-21 08:54
+// Auto generated GraphQL schema bundle; created 2020-07-21 18:22
 const schema = `
 # Root schema definition
 schema {
@@ -141,6 +141,12 @@ type Query {
 
     "defiAccount provides DeFi information about an account."
     defiAccount(owner: Address!):DefiAccount!
+
+    """
+    defiTokenAllowance resolves the amount of ERC20 tokens unlocked
+    by the token owner for DeFi operations.
+    """
+    defiTokenAllowance(owner: Address!, token: Address!):BigInt!
 
     """
     ercTokenBalance provides the current available balance of a specified ERC20 token
@@ -419,6 +425,14 @@ type DefiToken {
     # It's effectively the amount available held by the ERC20 token
     # on the account behalf.
     availableBalance(owner: Address!): BigInt!
+
+    # defiAllowance represents the amount of ERC20 tokens unlocked
+    # by the owner / token holder to be accessible for DeFi operations.
+    # If an operation requires access to certain ERC20 token, the DeFi
+    # contract must be allowed to make a transfer of required amount
+    # of tokens from the owner to the DeFi Liquidity Poll.
+    # If it's not given, the operation will fail.
+    allowance(owner: Address!): BigInt!
 }
 
 # DefiTokenBalanceType represents the type of DeFi token balance record.

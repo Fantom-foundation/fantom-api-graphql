@@ -58,3 +58,16 @@ func (p *proxy) Erc20Balance(owner *common.Address, token *common.Address) (hexu
 	// handle ERC20 token balance
 	return p.rpc.Erc20Balance(owner, token)
 }
+
+// Erc20Allowance loads the current amount of ERC20 tokens unlocked for DeFi
+// contract by the token owner.
+func (p *proxy) Erc20Allowance(owner *common.Address, token *common.Address) (hexutil.Big, error) {
+	// if this is native FTM token, all available tokens
+	// are allowed to be handled by DeFi calls (if supported by DeFi)
+	if token.String() == rpc.NativeTokenAddress {
+		return p.Erc20Balance(owner, token)
+	}
+
+	// handle ERC20 token allowance
+	return p.rpc.Erc20Allowance(owner, token)
+}

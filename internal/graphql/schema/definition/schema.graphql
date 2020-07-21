@@ -139,6 +139,12 @@ type Query {
     defiAccount(owner: Address!):DefiAccount!
 
     """
+    defiTokenAllowance resolves the amount of ERC20 tokens unlocked
+    by the token owner for DeFi operations.
+    """
+    defiTokenAllowance(owner: Address!, token: Address!):BigInt!
+
+    """
     ercTokenBalance provides the current available balance of a specified ERC20 token
     identified by it's ERC20 contract address.
     """

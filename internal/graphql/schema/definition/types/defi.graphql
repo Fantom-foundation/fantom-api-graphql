@@ -48,6 +48,14 @@ type DefiToken {
     # It's effectively the amount available held by the ERC20 token
     # on the account behalf.
     availableBalance(owner: Address!): BigInt!
+
+    # defiAllowance represents the amount of ERC20 tokens unlocked
+    # by the owner / token holder to be accessible for DeFi operations.
+    # If an operation requires access to certain ERC20 token, the DeFi
+    # contract must be allowed to make a transfer of required amount
+    # of tokens from the owner to the DeFi Liquidity Poll.
+    # If it's not given, the operation will fail.
+    allowance(owner: Address!): BigInt!
 }
 
 # DefiTokenBalanceType represents the type of DeFi token balance record.
