@@ -15,19 +15,29 @@ func (rs *rootResolver) Stakers() ([]Staker, error) {
 	}
 
 	// make the list
-	list := make([]Staker, num)
+	list := make([]Staker, 0)
 
 	// loop to get the data
 	for i := uint64(0); i < uint64(num); i++ {
 		// extract the staker info
 		st, err := rs.repo.Staker(hexutil.Uint64(i + 1))
 		if err != nil {
-			rs.log.Criticalf("can not extract staker information; %s", err.Error())
-		} else {
-			// store to the list
-			list[i] = *NewStaker(st, rs.repo)
+			rs.log.Criticalf("can not extract staker #%d information; %s", i, err.Error())
+			continue
 		}
+
+		// staker not valid?
+		if st.Id == 0 {
+			rs.log.Debugf("staker #%d has been deactivated", i)
+			continue
+		}
+
+		// store the staker into the list
+		list = append(list, *NewStaker(st, rs.repo))
 	}
+
+	// inform
+	rs.log.Debugf("found %d stakers", len(list))
 
 	// sort the list by total amount delegated and return the result
 	sort.Sort(StakesByTotalStaked(list))
