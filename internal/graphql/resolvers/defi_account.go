@@ -83,6 +83,12 @@ func (da *DefiAccount) Debt() []*DefiTokenBalance {
 	return list
 }
 
+// TotalCollateralRewardsAmount resolves the total amount of rewards
+// accumulated on the account for the excessive collateral deposits.
+func (da *DefiAccount) TotalCollateralRewardsAmount() hexutil.Big {
+	return hexutil.Big{}
+}
+
 // Token resolves the token information from the related token address.
 func (dtb *DefiTokenBalance) Token() (*DefiToken, error) {
 	// get the token backend

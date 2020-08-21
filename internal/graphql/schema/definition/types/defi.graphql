@@ -101,6 +101,10 @@ type DefiAccount {
     # in ref. denomination (fUSD).
     collateralValue: BigInt!
 
+    # accumulated rewards of the DeFi account for the excessive
+    # collateral value.
+    totalCollateralRewardsAmount: BigInt!
+
     # debtList represents a list of all debt tokens linked with the account.
     debtList: [Address!]!
 
