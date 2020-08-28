@@ -56,9 +56,9 @@ func (p *proxy) Delegation(addr common.Address) (*types.Delegator, error) {
 }
 
 // Delegation returns a detail of delegation for the given address.
-func (p *proxy) DelegationRewards(addr string) (types.PendingRewards, error) {
-	p.log.Debugf("processing %s", addr)
-	return p.rpc.DelegationRewards(addr)
+func (p *proxy) DelegationRewards(addr string, staker hexutil.Uint64) (types.PendingRewards, error) {
+	p.log.Debugf("loading rewards of %s to %d", addr, staker)
+	return p.rpc.DelegationRewards(addr, staker)
 }
 
 // WithdrawRequests extracts a list of partial withdraw requests

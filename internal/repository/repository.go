@@ -121,7 +121,7 @@ type Repository interface {
 	DelegationsOf(hexutil.Uint64) ([]types.Delegator, error)
 
 	// Delegation returns a detail of delegation for the given address.
-	DelegationRewards(string) (types.PendingRewards, error)
+	DelegationRewards(string, hexutil.Uint64) (types.PendingRewards, error)
 
 	// WithdrawRequests extracts a list of partial withdraw requests
 	// for the given address.

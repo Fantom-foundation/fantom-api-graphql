@@ -13,7 +13,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
-//go:generate abigen --abi ./contracts/sfc.abi --pkg rpc --type SfcContract --out ./sfc_bind.go
+//go:generate abigen --abi ./contracts/sfc-2.0.2-rc1.abi --pkg rpc --type SfcContract --out ./sfc_bind.go
 
 import (
 	"fantom-api-graphql/internal/types"
@@ -256,7 +256,7 @@ func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (types.Epoch, error) {
 }
 
 // DelegationRewards returns a detail of delegation rewards for the given address.
-func (ftm *FtmBridge) DelegationRewards(addr string) (types.PendingRewards, error) {
+func (ftm *FtmBridge) DelegationRewards(addr string, staker hexutil.Uint64) (types.PendingRewards, error) {
 	// log action
 	ftm.log.Debugf("loading delegation rewards for account %s", addr)
 
@@ -275,7 +275,7 @@ func (ftm *FtmBridge) DelegationRewards(addr string) (types.PendingRewards, erro
 	}
 
 	// get the rewards amount
-	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(nil, common.HexToAddress(addr), big.NewInt(0), epoch)
+	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(nil, common.HexToAddress(addr), big.NewInt(int64(staker)), big.NewInt(0), epoch)
 	if err != nil {
 		ftm.log.Errorf("failed to get the delegation rewards: %v", err)
 		return types.PendingRewards{}, nil
@@ -283,6 +283,7 @@ func (ftm *FtmBridge) DelegationRewards(addr string) (types.PendingRewards, erro
 
 	// return the data
 	return types.PendingRewards{
+		Staker:    staker,
 		Amount:    hexutil.Big(*amount),
 		FromEpoch: hexutil.Uint64(fromEpoch.Uint64()),
 		ToEpoch:   hexutil.Uint64(toEpoch.Uint64()),
@@ -403,6 +404,7 @@ func (ftm *FtmBridge) RewardsAllowed() (bool, error) {
 	// keep track of the operation
 	ftm.log.Debug("loading rewards lock status")
 
+	/*
 	// instantiate the contract and display its name
 	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
 	if err != nil {
@@ -418,4 +420,8 @@ func (ftm *FtmBridge) RewardsAllowed() (bool, error) {
 
 	// return the value
 	return val, nil
+	 */
+
+	ftm.log.Debug("rewards lock status not supported")
+	return true, nil
 }

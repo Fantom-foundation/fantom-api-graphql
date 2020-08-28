@@ -27,7 +27,7 @@ var (
 )
 
 // SfcContractABI is the input ABI used to generate the binding from.
-const SfcContractABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"isDelegation\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"BurntRewardStash\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reward\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fromEpoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"untilEpoch\",\"type\":\"uint256\"}],\"name\":\"ClaimedDelegationReward\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reward\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fromEpoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"untilEpoch\",\"type\":\"uint256\"}],\"name\":\"ClaimedValidatorReward\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"toStakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"CreatedDelegation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"dagSfcAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"CreatedStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"auth\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"wrID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"delegation\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"CreatedWithdrawRequest\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"DeactivatedDelegation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"DeactivatedStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"diff\",\"type\":\"uint256\"}],\"name\":\"IncreasedDelegation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"diff\",\"type\":\"uint256\"}],\"name\":\"IncreasedStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"auth\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"wrID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"delegation\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"penalty\",\"type\":\"uint256\"}],\"name\":\"PartialWithdrawnByRequest\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"PreparedToWithdrawDelegation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"PreparedToWithdrawStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"auth\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"rewards\",\"type\":\"uint256\"}],\"name\":\"UnstashedRewards\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"UpdatedBaseRewardPerSec\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"oldStakerID\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"newStakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"UpdatedDelegation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"short\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"long\",\"type\":\"uint256\"}],\"name\":\"UpdatedGasPowerAllocationRate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"delegatedMe\",\"type\":\"uint256\"}],\"name\":\"UpdatedStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"UpdatedStakerMetadata\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldSfcAddress\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newSfcAddress\",\"type\":\"address\"}],\"name\":\"UpdatedStakerSfcAddress\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"penalty\",\"type\":\"uint256\"}],\"name\":\"WithdrawnDelegation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"penalty\",\"type\":\"uint256\"}],\"name\":\"WithdrawnStake\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"delegationAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"commission\",\"type\":\"uint256\"}],\"name\":\"_calcDelegationEpochReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"}],\"name\":\"_calcRawValidatorEpochReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"commission\",\"type\":\"uint256\"}],\"name\":\"_calcValidatorEpochReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bool\",\"name\":\"isDelegation\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"_rewardsBurnableOnDeactivation\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"sfcAddress\",\"type\":\"address\"}],\"name\":\"_sfcAddressToStakerID\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"}],\"name\":\"_syncDelegator\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"_syncStaker\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"_upgradeStakerStorage\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"bondedRatio\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"bondedTargetPeriod\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"bondedTargetRewardUnlock\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"bondedTargetStart\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_fromEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxEpochs\",\"type\":\"uint256\"}],\"name\":\"calcDelegationRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_fromEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxEpochs\",\"type\":\"uint256\"}],\"name\":\"calcValidatorRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"maxEpochs\",\"type\":\"uint256\"}],\"name\":\"claimDelegationRewards\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"maxEpochs\",\"type\":\"uint256\"}],\"name\":\"claimValidatorRewards\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"contractCommission\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"to\",\"type\":\"uint256\"}],\"name\":\"createDelegation\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"metadata\",\"type\":\"bytes\"}],\"name\":\"createStake\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"dagAdrress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"sfcAddress\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"metadata\",\"type\":\"bytes\"}],\"name\":\"createStakeWithAddresses\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"currentEpoch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"currentSealedEpoch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"delegationLockPeriodEpochs\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"delegationLockPeriodTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"delegations\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"createdEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"createdTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deactivatedEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deactivatedTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"paidUntilEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"toStakerID\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"delegationsNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"delegationsTotalAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"epochSnapshots\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalBaseRewardWeight\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalTxRewardWeight\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"baseRewardPerSecond\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"stakeTotalAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"delegationsTotalAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalSupply\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"e\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"v\",\"type\":\"uint256\"}],\"name\":\"epochValidator\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"stakeAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"delegatedMe\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"baseRewardWeight\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txRewardWeight\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"getStakerID\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"increaseDelegation\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"increaseStake\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"maxDelegatedRatio\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"maxStakerMetadataSize\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minDelegation\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minDelegationDecrease\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minDelegationIncrease\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minStakeDecrease\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minStakeIncrease\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"wrID\",\"type\":\"uint256\"}],\"name\":\"partialWithdrawByRequest\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"prepareToWithdrawDelegation\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"wrID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"prepareToWithdrawDelegationPartial\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"prepareToWithdrawStake\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"wrID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"prepareToWithdrawStakePartial\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardsAllowed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"rewardsStash\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"slashedDelegationsTotalAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"slashedStakeTotalAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"stakeLockPeriodEpochs\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"stakeLockPeriodTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"stakeTotalAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"stakerMetadata\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"stakers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"status\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"createdEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"createdTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deactivatedEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deactivatedTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"stakeAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"paidUntilEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"delegatedMe\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"dagAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"sfcAddress\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"stakersLastID\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"stakersNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"unbondingStartDate\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"unbondingUnlockPeriod\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"unstashRewards\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"updateBaseRewardPerSec\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"short\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"long\",\"type\":\"uint256\"}],\"name\":\"updateGasPowerAllocationRate\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"metadata\",\"type\":\"bytes\"}],\"name\":\"updateStakerMetadata\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newSfcAddress\",\"type\":\"address\"}],\"name\":\"updateStakerSfcAddress\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"validatorCommission\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"withdrawDelegation\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"withdrawStake\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"withdrawalRequests\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"delegation\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const SfcContractABI = "[{\"constant\":true,\"inputs\":[],\"name\":\"minDelegation\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"stakersNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"slashedStakeTotalAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minStakeDecrease\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"short\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"long\",\"type\":\"uint256\"}],\"name\":\"_updateGasPowerAllocationRate\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"delegationLockPeriodEpochs\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"epochSnapshots\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalBaseRewardWeight\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalTxRewardWeight\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"baseRewardPerSecond\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"stakeTotalAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"delegationsTotalAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalSupply\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"delegations\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"createdEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"createdTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deactivatedEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deactivatedTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"paidUntilEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"toStakerID\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"maxDelegatedRatio\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"wrID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"prepareToWithdrawStakePartial\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"contractCommission\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"_upgradeStakerStorage\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"maxEpochs\",\"type\":\"uint256\"}],\"name\":\"claimValidatorRewards\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"blocksNum\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"period\",\"type\":\"uint256\"}],\"name\":\"_updateOfflinePenaltyThreshold\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"delegationsTotalAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"metadata\",\"type\":\"bytes\"}],\"name\":\"updateStakerMetadata\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"stakeTotalAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"stakeLockPeriodTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"delegationsNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"withdrawalRequests\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"delegation\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"stakeLockPeriodEpochs\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"bytes3\",\"name\":\"\",\"type\":\"bytes3\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"legacyDelegations\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"createdEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"createdTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deactivatedEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deactivatedTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"paidUntilEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"toStakerID\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"unlockedRewardRatio\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minDelegationIncrease\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"getStakerID\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"delegationEarlyWithdrawalPenalty\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"firstLockedUpEpoch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"rewardsStash\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"toStakerID\",\"type\":\"uint256\"}],\"name\":\"_syncDelegation\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"currentEpoch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"_updateBaseRewardPerSec\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"currentSealedEpoch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"stakersLastID\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"}],\"name\":\"_upgradeDelegationStorage\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"unstashRewards\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"dagAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"sfcAddress\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"metadata\",\"type\":\"bytes\"}],\"name\":\"createStakeWithAddresses\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_fromEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxEpochs\",\"type\":\"uint256\"}],\"name\":\"calcValidatorRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"stakerMetadata\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"totalBurntLockupRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"lockDuration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"toStakerID\",\"type\":\"uint256\"}],\"name\":\"lockUpDelegation\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"slashedDelegationsTotalAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"validatorCommission\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"maxStakerMetadataSize\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bool\",\"name\":\"isDelegation\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"_rewardsBurnableOnDeactivation\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"toStakerID\",\"type\":\"uint256\"}],\"name\":\"prepareToWithdrawDelegation\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"sfcAddress\",\"type\":\"address\"}],\"name\":\"_sfcAddressToStakerID\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"e\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"v\",\"type\":\"uint256\"}],\"name\":\"epochValidator\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"stakeAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"delegatedMe\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"baseRewardWeight\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txRewardWeight\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"wrID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"toStakerID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"prepareToWithdrawDelegationPartial\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"withdrawStake\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"to\",\"type\":\"uint256\"}],\"name\":\"createDelegation\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newSfcAddress\",\"type\":\"address\"}],\"name\":\"updateStakerSfcAddress\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"prepareToWithdrawStake\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minStakeIncrease\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epochNum\",\"type\":\"uint256\"}],\"name\":\"startLockedUp\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minDelegationDecrease\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"metadata\",\"type\":\"bytes\"}],\"name\":\"createStake\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"toStakerID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_fromEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxEpochs\",\"type\":\"uint256\"}],\"name\":\"calcDelegationRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"increaseStake\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"to\",\"type\":\"uint256\"}],\"name\":\"increaseDelegation\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"lockedDelegations\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"fromEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"toStakerID\",\"type\":\"uint256\"}],\"name\":\"withdrawDelegation\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"lockedStakes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"fromEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"_syncStaker\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"delegationLockPeriodTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"lockDuration\",\"type\":\"uint256\"}],\"name\":\"lockUpStake\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"wrID\",\"type\":\"uint256\"}],\"name\":\"partialWithdrawByRequest\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"maxEpochs\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"toStakerID\",\"type\":\"uint256\"}],\"name\":\"claimDelegationRewards\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"stakers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"status\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"createdEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"createdTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deactivatedEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deactivatedTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"stakeAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"paidUntilEpoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"delegatedMe\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"dagAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"sfcAddress\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"dagSfcAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"CreatedStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldSfcAddress\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newSfcAddress\",\"type\":\"address\"}],\"name\":\"UpdatedStakerSfcAddress\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"UpdatedStakerMetadata\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"diff\",\"type\":\"uint256\"}],\"name\":\"IncreasedStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"toStakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"CreatedDelegation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"diff\",\"type\":\"uint256\"}],\"name\":\"IncreasedDelegation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reward\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fromEpoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"untilEpoch\",\"type\":\"uint256\"}],\"name\":\"ClaimedDelegationReward\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reward\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fromEpoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"untilEpoch\",\"type\":\"uint256\"}],\"name\":\"ClaimedValidatorReward\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"auth\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"rewards\",\"type\":\"uint256\"}],\"name\":\"UnstashedRewards\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"isDelegation\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"BurntRewardStash\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"PreparedToWithdrawStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"DeactivatedStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"auth\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"wrID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"delegation\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"CreatedWithdrawRequest\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"penalty\",\"type\":\"uint256\"}],\"name\":\"WithdrawnStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"PreparedToWithdrawDelegation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"}],\"name\":\"DeactivatedDelegation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"toStakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"penalty\",\"type\":\"uint256\"}],\"name\":\"WithdrawnDelegation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"auth\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"wrID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"delegation\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"penalty\",\"type\":\"uint256\"}],\"name\":\"PartialWithdrawnByRequest\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fromEpoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"}],\"name\":\"LockingStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fromEpoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"}],\"name\":\"LockingDelegation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"oldStakerID\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"newStakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"UpdatedDelegation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"stakerID\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"delegatedMe\",\"type\":\"uint256\"}],\"name\":\"UpdatedStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"UpdatedBaseRewardPerSec\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"short\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"long\",\"type\":\"uint256\"}],\"name\":\"UpdatedGasPowerAllocationRate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"blocksNum\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"period\",\"type\":\"uint256\"}],\"name\":\"UpdatedOfflinePenaltyThreshold\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"}]"
 
 // SfcContract is an auto generated Go binding around an Ethereum contract.
 type SfcContract struct {
@@ -171,84 +171,6 @@ func (_SfcContract *SfcContractTransactorRaw) Transact(opts *bind.TransactOpts, 
 	return _SfcContract.Contract.contract.Transact(opts, method, params...)
 }
 
-// CalcDelegationEpochReward is a free data retrieval call binding the contract method 0x6af49928.
-//
-// Solidity: function _calcDelegationEpochReward(uint256 stakerID, uint256 epoch, uint256 delegationAmount, uint256 commission) view returns(uint256)
-func (_SfcContract *SfcContractCaller) CalcDelegationEpochReward(opts *bind.CallOpts, stakerID *big.Int, epoch *big.Int, delegationAmount *big.Int, commission *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "_calcDelegationEpochReward", stakerID, epoch, delegationAmount, commission)
-	return *ret0, err
-}
-
-// CalcDelegationEpochReward is a free data retrieval call binding the contract method 0x6af49928.
-//
-// Solidity: function _calcDelegationEpochReward(uint256 stakerID, uint256 epoch, uint256 delegationAmount, uint256 commission) view returns(uint256)
-func (_SfcContract *SfcContractSession) CalcDelegationEpochReward(stakerID *big.Int, epoch *big.Int, delegationAmount *big.Int, commission *big.Int) (*big.Int, error) {
-	return _SfcContract.Contract.CalcDelegationEpochReward(&_SfcContract.CallOpts, stakerID, epoch, delegationAmount, commission)
-}
-
-// CalcDelegationEpochReward is a free data retrieval call binding the contract method 0x6af49928.
-//
-// Solidity: function _calcDelegationEpochReward(uint256 stakerID, uint256 epoch, uint256 delegationAmount, uint256 commission) view returns(uint256)
-func (_SfcContract *SfcContractCallerSession) CalcDelegationEpochReward(stakerID *big.Int, epoch *big.Int, delegationAmount *big.Int, commission *big.Int) (*big.Int, error) {
-	return _SfcContract.Contract.CalcDelegationEpochReward(&_SfcContract.CallOpts, stakerID, epoch, delegationAmount, commission)
-}
-
-// CalcRawValidatorEpochReward is a free data retrieval call binding the contract method 0x6459cf86.
-//
-// Solidity: function _calcRawValidatorEpochReward(uint256 stakerID, uint256 epoch) view returns(uint256)
-func (_SfcContract *SfcContractCaller) CalcRawValidatorEpochReward(opts *bind.CallOpts, stakerID *big.Int, epoch *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "_calcRawValidatorEpochReward", stakerID, epoch)
-	return *ret0, err
-}
-
-// CalcRawValidatorEpochReward is a free data retrieval call binding the contract method 0x6459cf86.
-//
-// Solidity: function _calcRawValidatorEpochReward(uint256 stakerID, uint256 epoch) view returns(uint256)
-func (_SfcContract *SfcContractSession) CalcRawValidatorEpochReward(stakerID *big.Int, epoch *big.Int) (*big.Int, error) {
-	return _SfcContract.Contract.CalcRawValidatorEpochReward(&_SfcContract.CallOpts, stakerID, epoch)
-}
-
-// CalcRawValidatorEpochReward is a free data retrieval call binding the contract method 0x6459cf86.
-//
-// Solidity: function _calcRawValidatorEpochReward(uint256 stakerID, uint256 epoch) view returns(uint256)
-func (_SfcContract *SfcContractCallerSession) CalcRawValidatorEpochReward(stakerID *big.Int, epoch *big.Int) (*big.Int, error) {
-	return _SfcContract.Contract.CalcRawValidatorEpochReward(&_SfcContract.CallOpts, stakerID, epoch)
-}
-
-// CalcValidatorEpochReward is a free data retrieval call binding the contract method 0x53bbb754.
-//
-// Solidity: function _calcValidatorEpochReward(uint256 stakerID, uint256 epoch, uint256 commission) view returns(uint256)
-func (_SfcContract *SfcContractCaller) CalcValidatorEpochReward(opts *bind.CallOpts, stakerID *big.Int, epoch *big.Int, commission *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "_calcValidatorEpochReward", stakerID, epoch, commission)
-	return *ret0, err
-}
-
-// CalcValidatorEpochReward is a free data retrieval call binding the contract method 0x53bbb754.
-//
-// Solidity: function _calcValidatorEpochReward(uint256 stakerID, uint256 epoch, uint256 commission) view returns(uint256)
-func (_SfcContract *SfcContractSession) CalcValidatorEpochReward(stakerID *big.Int, epoch *big.Int, commission *big.Int) (*big.Int, error) {
-	return _SfcContract.Contract.CalcValidatorEpochReward(&_SfcContract.CallOpts, stakerID, epoch, commission)
-}
-
-// CalcValidatorEpochReward is a free data retrieval call binding the contract method 0x53bbb754.
-//
-// Solidity: function _calcValidatorEpochReward(uint256 stakerID, uint256 epoch, uint256 commission) view returns(uint256)
-func (_SfcContract *SfcContractCallerSession) CalcValidatorEpochReward(stakerID *big.Int, epoch *big.Int, commission *big.Int) (*big.Int, error) {
-	return _SfcContract.Contract.CalcValidatorEpochReward(&_SfcContract.CallOpts, stakerID, epoch, commission)
-}
-
 // RewardsBurnableOnDeactivation is a free data retrieval call binding the contract method 0xb1a3ebfa.
 //
 // Solidity: function _rewardsBurnableOnDeactivation(bool isDelegation, uint256 stakerID) view returns(bool)
@@ -301,114 +223,10 @@ func (_SfcContract *SfcContractCallerSession) SfcAddressToStakerID(sfcAddress co
 	return _SfcContract.Contract.SfcAddressToStakerID(&_SfcContract.CallOpts, sfcAddress)
 }
 
-// BondedRatio is a free data retrieval call binding the contract method 0x041d97a3.
+// CalcDelegationRewards is a free data retrieval call binding the contract method 0xd845fc90.
 //
-// Solidity: function bondedRatio() view returns(uint256)
-func (_SfcContract *SfcContractCaller) BondedRatio(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "bondedRatio")
-	return *ret0, err
-}
-
-// BondedRatio is a free data retrieval call binding the contract method 0x041d97a3.
-//
-// Solidity: function bondedRatio() view returns(uint256)
-func (_SfcContract *SfcContractSession) BondedRatio() (*big.Int, error) {
-	return _SfcContract.Contract.BondedRatio(&_SfcContract.CallOpts)
-}
-
-// BondedRatio is a free data retrieval call binding the contract method 0x041d97a3.
-//
-// Solidity: function bondedRatio() view returns(uint256)
-func (_SfcContract *SfcContractCallerSession) BondedRatio() (*big.Int, error) {
-	return _SfcContract.Contract.BondedRatio(&_SfcContract.CallOpts)
-}
-
-// BondedTargetPeriod is a free data retrieval call binding the contract method 0x7b8c6b02.
-//
-// Solidity: function bondedTargetPeriod() pure returns(uint256)
-func (_SfcContract *SfcContractCaller) BondedTargetPeriod(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "bondedTargetPeriod")
-	return *ret0, err
-}
-
-// BondedTargetPeriod is a free data retrieval call binding the contract method 0x7b8c6b02.
-//
-// Solidity: function bondedTargetPeriod() pure returns(uint256)
-func (_SfcContract *SfcContractSession) BondedTargetPeriod() (*big.Int, error) {
-	return _SfcContract.Contract.BondedTargetPeriod(&_SfcContract.CallOpts)
-}
-
-// BondedTargetPeriod is a free data retrieval call binding the contract method 0x7b8c6b02.
-//
-// Solidity: function bondedTargetPeriod() pure returns(uint256)
-func (_SfcContract *SfcContractCallerSession) BondedTargetPeriod() (*big.Int, error) {
-	return _SfcContract.Contract.BondedTargetPeriod(&_SfcContract.CallOpts)
-}
-
-// BondedTargetRewardUnlock is a free data retrieval call binding the contract method 0x6a1cf400.
-//
-// Solidity: function bondedTargetRewardUnlock() view returns(uint256)
-func (_SfcContract *SfcContractCaller) BondedTargetRewardUnlock(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "bondedTargetRewardUnlock")
-	return *ret0, err
-}
-
-// BondedTargetRewardUnlock is a free data retrieval call binding the contract method 0x6a1cf400.
-//
-// Solidity: function bondedTargetRewardUnlock() view returns(uint256)
-func (_SfcContract *SfcContractSession) BondedTargetRewardUnlock() (*big.Int, error) {
-	return _SfcContract.Contract.BondedTargetRewardUnlock(&_SfcContract.CallOpts)
-}
-
-// BondedTargetRewardUnlock is a free data retrieval call binding the contract method 0x6a1cf400.
-//
-// Solidity: function bondedTargetRewardUnlock() view returns(uint256)
-func (_SfcContract *SfcContractCallerSession) BondedTargetRewardUnlock() (*big.Int, error) {
-	return _SfcContract.Contract.BondedTargetRewardUnlock(&_SfcContract.CallOpts)
-}
-
-// BondedTargetStart is a free data retrieval call binding the contract method 0xce5aa000.
-//
-// Solidity: function bondedTargetStart() pure returns(uint256)
-func (_SfcContract *SfcContractCaller) BondedTargetStart(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "bondedTargetStart")
-	return *ret0, err
-}
-
-// BondedTargetStart is a free data retrieval call binding the contract method 0xce5aa000.
-//
-// Solidity: function bondedTargetStart() pure returns(uint256)
-func (_SfcContract *SfcContractSession) BondedTargetStart() (*big.Int, error) {
-	return _SfcContract.Contract.BondedTargetStart(&_SfcContract.CallOpts)
-}
-
-// BondedTargetStart is a free data retrieval call binding the contract method 0xce5aa000.
-//
-// Solidity: function bondedTargetStart() pure returns(uint256)
-func (_SfcContract *SfcContractCallerSession) BondedTargetStart() (*big.Int, error) {
-	return _SfcContract.Contract.BondedTargetStart(&_SfcContract.CallOpts)
-}
-
-// CalcDelegationRewards is a free data retrieval call binding the contract method 0xb6732f3d.
-//
-// Solidity: function calcDelegationRewards(address delegator, uint256 _fromEpoch, uint256 maxEpochs) view returns(uint256, uint256, uint256)
-func (_SfcContract *SfcContractCaller) CalcDelegationRewards(opts *bind.CallOpts, delegator common.Address, _fromEpoch *big.Int, maxEpochs *big.Int) (*big.Int, *big.Int, *big.Int, error) {
+// Solidity: function calcDelegationRewards(address delegator, uint256 toStakerID, uint256 _fromEpoch, uint256 maxEpochs) view returns(uint256, uint256, uint256)
+func (_SfcContract *SfcContractCaller) CalcDelegationRewards(opts *bind.CallOpts, delegator common.Address, toStakerID *big.Int, _fromEpoch *big.Int, maxEpochs *big.Int) (*big.Int, *big.Int, *big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 		ret1 = new(*big.Int)
@@ -419,22 +237,22 @@ func (_SfcContract *SfcContractCaller) CalcDelegationRewards(opts *bind.CallOpts
 		ret1,
 		ret2,
 	}
-	err := _SfcContract.contract.Call(opts, out, "calcDelegationRewards", delegator, _fromEpoch, maxEpochs)
+	err := _SfcContract.contract.Call(opts, out, "calcDelegationRewards", delegator, toStakerID, _fromEpoch, maxEpochs)
 	return *ret0, *ret1, *ret2, err
 }
 
-// CalcDelegationRewards is a free data retrieval call binding the contract method 0xb6732f3d.
+// CalcDelegationRewards is a free data retrieval call binding the contract method 0xd845fc90.
 //
-// Solidity: function calcDelegationRewards(address delegator, uint256 _fromEpoch, uint256 maxEpochs) view returns(uint256, uint256, uint256)
-func (_SfcContract *SfcContractSession) CalcDelegationRewards(delegator common.Address, _fromEpoch *big.Int, maxEpochs *big.Int) (*big.Int, *big.Int, *big.Int, error) {
-	return _SfcContract.Contract.CalcDelegationRewards(&_SfcContract.CallOpts, delegator, _fromEpoch, maxEpochs)
+// Solidity: function calcDelegationRewards(address delegator, uint256 toStakerID, uint256 _fromEpoch, uint256 maxEpochs) view returns(uint256, uint256, uint256)
+func (_SfcContract *SfcContractSession) CalcDelegationRewards(delegator common.Address, toStakerID *big.Int, _fromEpoch *big.Int, maxEpochs *big.Int) (*big.Int, *big.Int, *big.Int, error) {
+	return _SfcContract.Contract.CalcDelegationRewards(&_SfcContract.CallOpts, delegator, toStakerID, _fromEpoch, maxEpochs)
 }
 
-// CalcDelegationRewards is a free data retrieval call binding the contract method 0xb6732f3d.
+// CalcDelegationRewards is a free data retrieval call binding the contract method 0xd845fc90.
 //
-// Solidity: function calcDelegationRewards(address delegator, uint256 _fromEpoch, uint256 maxEpochs) view returns(uint256, uint256, uint256)
-func (_SfcContract *SfcContractCallerSession) CalcDelegationRewards(delegator common.Address, _fromEpoch *big.Int, maxEpochs *big.Int) (*big.Int, *big.Int, *big.Int, error) {
-	return _SfcContract.Contract.CalcDelegationRewards(&_SfcContract.CallOpts, delegator, _fromEpoch, maxEpochs)
+// Solidity: function calcDelegationRewards(address delegator, uint256 toStakerID, uint256 _fromEpoch, uint256 maxEpochs) view returns(uint256, uint256, uint256)
+func (_SfcContract *SfcContractCallerSession) CalcDelegationRewards(delegator common.Address, toStakerID *big.Int, _fromEpoch *big.Int, maxEpochs *big.Int) (*big.Int, *big.Int, *big.Int, error) {
+	return _SfcContract.Contract.CalcDelegationRewards(&_SfcContract.CallOpts, delegator, toStakerID, _fromEpoch, maxEpochs)
 }
 
 // CalcValidatorRewards is a free data retrieval call binding the contract method 0x96060e71.
@@ -547,6 +365,32 @@ func (_SfcContract *SfcContractCallerSession) CurrentSealedEpoch() (*big.Int, er
 	return _SfcContract.Contract.CurrentSealedEpoch(&_SfcContract.CallOpts)
 }
 
+// DelegationEarlyWithdrawalPenalty is a free data retrieval call binding the contract method 0x66799a54.
+//
+// Solidity: function delegationEarlyWithdrawalPenalty(address , uint256 ) view returns(uint256)
+func (_SfcContract *SfcContractCaller) DelegationEarlyWithdrawalPenalty(opts *bind.CallOpts, arg0 common.Address, arg1 *big.Int) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _SfcContract.contract.Call(opts, out, "delegationEarlyWithdrawalPenalty", arg0, arg1)
+	return *ret0, err
+}
+
+// DelegationEarlyWithdrawalPenalty is a free data retrieval call binding the contract method 0x66799a54.
+//
+// Solidity: function delegationEarlyWithdrawalPenalty(address , uint256 ) view returns(uint256)
+func (_SfcContract *SfcContractSession) DelegationEarlyWithdrawalPenalty(arg0 common.Address, arg1 *big.Int) (*big.Int, error) {
+	return _SfcContract.Contract.DelegationEarlyWithdrawalPenalty(&_SfcContract.CallOpts, arg0, arg1)
+}
+
+// DelegationEarlyWithdrawalPenalty is a free data retrieval call binding the contract method 0x66799a54.
+//
+// Solidity: function delegationEarlyWithdrawalPenalty(address , uint256 ) view returns(uint256)
+func (_SfcContract *SfcContractCallerSession) DelegationEarlyWithdrawalPenalty(arg0 common.Address, arg1 *big.Int) (*big.Int, error) {
+	return _SfcContract.Contract.DelegationEarlyWithdrawalPenalty(&_SfcContract.CallOpts, arg0, arg1)
+}
+
 // DelegationLockPeriodEpochs is a free data retrieval call binding the contract method 0x1d58179c.
 //
 // Solidity: function delegationLockPeriodEpochs() pure returns(uint256)
@@ -599,10 +443,10 @@ func (_SfcContract *SfcContractCallerSession) DelegationLockPeriodTime() (*big.I
 	return _SfcContract.Contract.DelegationLockPeriodTime(&_SfcContract.CallOpts)
 }
 
-// Delegations is a free data retrieval call binding the contract method 0xbffe3486.
+// Delegations is a free data retrieval call binding the contract method 0x223fae09.
 //
-// Solidity: function delegations(address ) view returns(uint256 createdEpoch, uint256 createdTime, uint256 deactivatedEpoch, uint256 deactivatedTime, uint256 amount, uint256 paidUntilEpoch, uint256 toStakerID)
-func (_SfcContract *SfcContractCaller) Delegations(opts *bind.CallOpts, arg0 common.Address) (struct {
+// Solidity: function delegations(address , uint256 ) view returns(uint256 createdEpoch, uint256 createdTime, uint256 deactivatedEpoch, uint256 deactivatedTime, uint256 amount, uint256 paidUntilEpoch, uint256 toStakerID)
+func (_SfcContract *SfcContractCaller) Delegations(opts *bind.CallOpts, arg0 common.Address, arg1 *big.Int) (struct {
 	CreatedEpoch     *big.Int
 	CreatedTime      *big.Int
 	DeactivatedEpoch *big.Int
@@ -621,14 +465,14 @@ func (_SfcContract *SfcContractCaller) Delegations(opts *bind.CallOpts, arg0 com
 		ToStakerID       *big.Int
 	})
 	out := ret
-	err := _SfcContract.contract.Call(opts, out, "delegations", arg0)
+	err := _SfcContract.contract.Call(opts, out, "delegations", arg0, arg1)
 	return *ret, err
 }
 
-// Delegations is a free data retrieval call binding the contract method 0xbffe3486.
+// Delegations is a free data retrieval call binding the contract method 0x223fae09.
 //
-// Solidity: function delegations(address ) view returns(uint256 createdEpoch, uint256 createdTime, uint256 deactivatedEpoch, uint256 deactivatedTime, uint256 amount, uint256 paidUntilEpoch, uint256 toStakerID)
-func (_SfcContract *SfcContractSession) Delegations(arg0 common.Address) (struct {
+// Solidity: function delegations(address , uint256 ) view returns(uint256 createdEpoch, uint256 createdTime, uint256 deactivatedEpoch, uint256 deactivatedTime, uint256 amount, uint256 paidUntilEpoch, uint256 toStakerID)
+func (_SfcContract *SfcContractSession) Delegations(arg0 common.Address, arg1 *big.Int) (struct {
 	CreatedEpoch     *big.Int
 	CreatedTime      *big.Int
 	DeactivatedEpoch *big.Int
@@ -637,13 +481,13 @@ func (_SfcContract *SfcContractSession) Delegations(arg0 common.Address) (struct
 	PaidUntilEpoch   *big.Int
 	ToStakerID       *big.Int
 }, error) {
-	return _SfcContract.Contract.Delegations(&_SfcContract.CallOpts, arg0)
+	return _SfcContract.Contract.Delegations(&_SfcContract.CallOpts, arg0, arg1)
 }
 
-// Delegations is a free data retrieval call binding the contract method 0xbffe3486.
+// Delegations is a free data retrieval call binding the contract method 0x223fae09.
 //
-// Solidity: function delegations(address ) view returns(uint256 createdEpoch, uint256 createdTime, uint256 deactivatedEpoch, uint256 deactivatedTime, uint256 amount, uint256 paidUntilEpoch, uint256 toStakerID)
-func (_SfcContract *SfcContractCallerSession) Delegations(arg0 common.Address) (struct {
+// Solidity: function delegations(address , uint256 ) view returns(uint256 createdEpoch, uint256 createdTime, uint256 deactivatedEpoch, uint256 deactivatedTime, uint256 amount, uint256 paidUntilEpoch, uint256 toStakerID)
+func (_SfcContract *SfcContractCallerSession) Delegations(arg0 common.Address, arg1 *big.Int) (struct {
 	CreatedEpoch     *big.Int
 	CreatedTime      *big.Int
 	DeactivatedEpoch *big.Int
@@ -652,7 +496,7 @@ func (_SfcContract *SfcContractCallerSession) Delegations(arg0 common.Address) (
 	PaidUntilEpoch   *big.Int
 	ToStakerID       *big.Int
 }, error) {
-	return _SfcContract.Contract.Delegations(&_SfcContract.CallOpts, arg0)
+	return _SfcContract.Contract.Delegations(&_SfcContract.CallOpts, arg0, arg1)
 }
 
 // DelegationsNum is a free data retrieval call binding the contract method 0x4bd202dc.
@@ -815,6 +659,32 @@ func (_SfcContract *SfcContractCallerSession) EpochValidator(e *big.Int, v *big.
 	return _SfcContract.Contract.EpochValidator(&_SfcContract.CallOpts, e, v)
 }
 
+// FirstLockedUpEpoch is a free data retrieval call binding the contract method 0x6e1a767a.
+//
+// Solidity: function firstLockedUpEpoch() view returns(uint256)
+func (_SfcContract *SfcContractCaller) FirstLockedUpEpoch(opts *bind.CallOpts) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _SfcContract.contract.Call(opts, out, "firstLockedUpEpoch")
+	return *ret0, err
+}
+
+// FirstLockedUpEpoch is a free data retrieval call binding the contract method 0x6e1a767a.
+//
+// Solidity: function firstLockedUpEpoch() view returns(uint256)
+func (_SfcContract *SfcContractSession) FirstLockedUpEpoch() (*big.Int, error) {
+	return _SfcContract.Contract.FirstLockedUpEpoch(&_SfcContract.CallOpts)
+}
+
+// FirstLockedUpEpoch is a free data retrieval call binding the contract method 0x6e1a767a.
+//
+// Solidity: function firstLockedUpEpoch() view returns(uint256)
+func (_SfcContract *SfcContractCallerSession) FirstLockedUpEpoch() (*big.Int, error) {
+	return _SfcContract.Contract.FirstLockedUpEpoch(&_SfcContract.CallOpts)
+}
+
 // GetStakerID is a free data retrieval call binding the contract method 0x63321e27.
 //
 // Solidity: function getStakerID(address addr) view returns(uint256)
@@ -865,6 +735,134 @@ func (_SfcContract *SfcContractSession) IsOwner() (bool, error) {
 // Solidity: function isOwner() view returns(bool)
 func (_SfcContract *SfcContractCallerSession) IsOwner() (bool, error) {
 	return _SfcContract.Contract.IsOwner(&_SfcContract.CallOpts)
+}
+
+// LegacyDelegations is a free data retrieval call binding the contract method 0x5b81b886.
+//
+// Solidity: function legacyDelegations(address ) view returns(uint256 createdEpoch, uint256 createdTime, uint256 deactivatedEpoch, uint256 deactivatedTime, uint256 amount, uint256 paidUntilEpoch, uint256 toStakerID)
+func (_SfcContract *SfcContractCaller) LegacyDelegations(opts *bind.CallOpts, arg0 common.Address) (struct {
+	CreatedEpoch     *big.Int
+	CreatedTime      *big.Int
+	DeactivatedEpoch *big.Int
+	DeactivatedTime  *big.Int
+	Amount           *big.Int
+	PaidUntilEpoch   *big.Int
+	ToStakerID       *big.Int
+}, error) {
+	ret := new(struct {
+		CreatedEpoch     *big.Int
+		CreatedTime      *big.Int
+		DeactivatedEpoch *big.Int
+		DeactivatedTime  *big.Int
+		Amount           *big.Int
+		PaidUntilEpoch   *big.Int
+		ToStakerID       *big.Int
+	})
+	out := ret
+	err := _SfcContract.contract.Call(opts, out, "legacyDelegations", arg0)
+	return *ret, err
+}
+
+// LegacyDelegations is a free data retrieval call binding the contract method 0x5b81b886.
+//
+// Solidity: function legacyDelegations(address ) view returns(uint256 createdEpoch, uint256 createdTime, uint256 deactivatedEpoch, uint256 deactivatedTime, uint256 amount, uint256 paidUntilEpoch, uint256 toStakerID)
+func (_SfcContract *SfcContractSession) LegacyDelegations(arg0 common.Address) (struct {
+	CreatedEpoch     *big.Int
+	CreatedTime      *big.Int
+	DeactivatedEpoch *big.Int
+	DeactivatedTime  *big.Int
+	Amount           *big.Int
+	PaidUntilEpoch   *big.Int
+	ToStakerID       *big.Int
+}, error) {
+	return _SfcContract.Contract.LegacyDelegations(&_SfcContract.CallOpts, arg0)
+}
+
+// LegacyDelegations is a free data retrieval call binding the contract method 0x5b81b886.
+//
+// Solidity: function legacyDelegations(address ) view returns(uint256 createdEpoch, uint256 createdTime, uint256 deactivatedEpoch, uint256 deactivatedTime, uint256 amount, uint256 paidUntilEpoch, uint256 toStakerID)
+func (_SfcContract *SfcContractCallerSession) LegacyDelegations(arg0 common.Address) (struct {
+	CreatedEpoch     *big.Int
+	CreatedTime      *big.Int
+	DeactivatedEpoch *big.Int
+	DeactivatedTime  *big.Int
+	Amount           *big.Int
+	PaidUntilEpoch   *big.Int
+	ToStakerID       *big.Int
+}, error) {
+	return _SfcContract.Contract.LegacyDelegations(&_SfcContract.CallOpts, arg0)
+}
+
+// LockedDelegations is a free data retrieval call binding the contract method 0xdd099bb6.
+//
+// Solidity: function lockedDelegations(address , uint256 ) view returns(uint256 fromEpoch, uint256 endTime)
+func (_SfcContract *SfcContractCaller) LockedDelegations(opts *bind.CallOpts, arg0 common.Address, arg1 *big.Int) (struct {
+	FromEpoch *big.Int
+	EndTime   *big.Int
+}, error) {
+	ret := new(struct {
+		FromEpoch *big.Int
+		EndTime   *big.Int
+	})
+	out := ret
+	err := _SfcContract.contract.Call(opts, out, "lockedDelegations", arg0, arg1)
+	return *ret, err
+}
+
+// LockedDelegations is a free data retrieval call binding the contract method 0xdd099bb6.
+//
+// Solidity: function lockedDelegations(address , uint256 ) view returns(uint256 fromEpoch, uint256 endTime)
+func (_SfcContract *SfcContractSession) LockedDelegations(arg0 common.Address, arg1 *big.Int) (struct {
+	FromEpoch *big.Int
+	EndTime   *big.Int
+}, error) {
+	return _SfcContract.Contract.LockedDelegations(&_SfcContract.CallOpts, arg0, arg1)
+}
+
+// LockedDelegations is a free data retrieval call binding the contract method 0xdd099bb6.
+//
+// Solidity: function lockedDelegations(address , uint256 ) view returns(uint256 fromEpoch, uint256 endTime)
+func (_SfcContract *SfcContractCallerSession) LockedDelegations(arg0 common.Address, arg1 *big.Int) (struct {
+	FromEpoch *big.Int
+	EndTime   *big.Int
+}, error) {
+	return _SfcContract.Contract.LockedDelegations(&_SfcContract.CallOpts, arg0, arg1)
+}
+
+// LockedStakes is a free data retrieval call binding the contract method 0xdf4f49d4.
+//
+// Solidity: function lockedStakes(uint256 ) view returns(uint256 fromEpoch, uint256 endTime)
+func (_SfcContract *SfcContractCaller) LockedStakes(opts *bind.CallOpts, arg0 *big.Int) (struct {
+	FromEpoch *big.Int
+	EndTime   *big.Int
+}, error) {
+	ret := new(struct {
+		FromEpoch *big.Int
+		EndTime   *big.Int
+	})
+	out := ret
+	err := _SfcContract.contract.Call(opts, out, "lockedStakes", arg0)
+	return *ret, err
+}
+
+// LockedStakes is a free data retrieval call binding the contract method 0xdf4f49d4.
+//
+// Solidity: function lockedStakes(uint256 ) view returns(uint256 fromEpoch, uint256 endTime)
+func (_SfcContract *SfcContractSession) LockedStakes(arg0 *big.Int) (struct {
+	FromEpoch *big.Int
+	EndTime   *big.Int
+}, error) {
+	return _SfcContract.Contract.LockedStakes(&_SfcContract.CallOpts, arg0)
+}
+
+// LockedStakes is a free data retrieval call binding the contract method 0xdf4f49d4.
+//
+// Solidity: function lockedStakes(uint256 ) view returns(uint256 fromEpoch, uint256 endTime)
+func (_SfcContract *SfcContractCallerSession) LockedStakes(arg0 *big.Int) (struct {
+	FromEpoch *big.Int
+	EndTime   *big.Int
+}, error) {
+	return _SfcContract.Contract.LockedStakes(&_SfcContract.CallOpts, arg0)
 }
 
 // MaxDelegatedRatio is a free data retrieval call binding the contract method 0x2265f284.
@@ -1099,32 +1097,6 @@ func (_SfcContract *SfcContractSession) Owner() (common.Address, error) {
 // Solidity: function owner() view returns(address)
 func (_SfcContract *SfcContractCallerSession) Owner() (common.Address, error) {
 	return _SfcContract.Contract.Owner(&_SfcContract.CallOpts)
-}
-
-// RewardsAllowed is a free data retrieval call binding the contract method 0x8447c4df.
-//
-// Solidity: function rewardsAllowed() view returns(bool)
-func (_SfcContract *SfcContractCaller) RewardsAllowed(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "rewardsAllowed")
-	return *ret0, err
-}
-
-// RewardsAllowed is a free data retrieval call binding the contract method 0x8447c4df.
-//
-// Solidity: function rewardsAllowed() view returns(bool)
-func (_SfcContract *SfcContractSession) RewardsAllowed() (bool, error) {
-	return _SfcContract.Contract.RewardsAllowed(&_SfcContract.CallOpts)
-}
-
-// RewardsAllowed is a free data retrieval call binding the contract method 0x8447c4df.
-//
-// Solidity: function rewardsAllowed() view returns(bool)
-func (_SfcContract *SfcContractCallerSession) RewardsAllowed() (bool, error) {
-	return _SfcContract.Contract.RewardsAllowed(&_SfcContract.CallOpts)
 }
 
 // RewardsStash is a free data retrieval call binding the contract method 0x6f498663.
@@ -1429,56 +1401,56 @@ func (_SfcContract *SfcContractCallerSession) StakersNum() (*big.Int, error) {
 	return _SfcContract.Contract.StakersNum(&_SfcContract.CallOpts)
 }
 
-// UnbondingStartDate is a free data retrieval call binding the contract method 0x53a72586.
+// TotalBurntLockupRewards is a free data retrieval call binding the contract method 0xa289ad6e.
 //
-// Solidity: function unbondingStartDate() pure returns(uint256)
-func (_SfcContract *SfcContractCaller) UnbondingStartDate(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function totalBurntLockupRewards() view returns(uint256)
+func (_SfcContract *SfcContractCaller) TotalBurntLockupRewards(opts *bind.CallOpts) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "unbondingStartDate")
+	err := _SfcContract.contract.Call(opts, out, "totalBurntLockupRewards")
 	return *ret0, err
 }
 
-// UnbondingStartDate is a free data retrieval call binding the contract method 0x53a72586.
+// TotalBurntLockupRewards is a free data retrieval call binding the contract method 0xa289ad6e.
 //
-// Solidity: function unbondingStartDate() pure returns(uint256)
-func (_SfcContract *SfcContractSession) UnbondingStartDate() (*big.Int, error) {
-	return _SfcContract.Contract.UnbondingStartDate(&_SfcContract.CallOpts)
+// Solidity: function totalBurntLockupRewards() view returns(uint256)
+func (_SfcContract *SfcContractSession) TotalBurntLockupRewards() (*big.Int, error) {
+	return _SfcContract.Contract.TotalBurntLockupRewards(&_SfcContract.CallOpts)
 }
 
-// UnbondingStartDate is a free data retrieval call binding the contract method 0x53a72586.
+// TotalBurntLockupRewards is a free data retrieval call binding the contract method 0xa289ad6e.
 //
-// Solidity: function unbondingStartDate() pure returns(uint256)
-func (_SfcContract *SfcContractCallerSession) UnbondingStartDate() (*big.Int, error) {
-	return _SfcContract.Contract.UnbondingStartDate(&_SfcContract.CallOpts)
+// Solidity: function totalBurntLockupRewards() view returns(uint256)
+func (_SfcContract *SfcContractCallerSession) TotalBurntLockupRewards() (*big.Int, error) {
+	return _SfcContract.Contract.TotalBurntLockupRewards(&_SfcContract.CallOpts)
 }
 
-// UnbondingUnlockPeriod is a free data retrieval call binding the contract method 0x3a0af4d4.
+// UnlockedRewardRatio is a free data retrieval call binding the contract method 0x5e2308d2.
 //
-// Solidity: function unbondingUnlockPeriod() pure returns(uint256)
-func (_SfcContract *SfcContractCaller) UnbondingUnlockPeriod(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function unlockedRewardRatio() pure returns(uint256)
+func (_SfcContract *SfcContractCaller) UnlockedRewardRatio(opts *bind.CallOpts) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "unbondingUnlockPeriod")
+	err := _SfcContract.contract.Call(opts, out, "unlockedRewardRatio")
 	return *ret0, err
 }
 
-// UnbondingUnlockPeriod is a free data retrieval call binding the contract method 0x3a0af4d4.
+// UnlockedRewardRatio is a free data retrieval call binding the contract method 0x5e2308d2.
 //
-// Solidity: function unbondingUnlockPeriod() pure returns(uint256)
-func (_SfcContract *SfcContractSession) UnbondingUnlockPeriod() (*big.Int, error) {
-	return _SfcContract.Contract.UnbondingUnlockPeriod(&_SfcContract.CallOpts)
+// Solidity: function unlockedRewardRatio() pure returns(uint256)
+func (_SfcContract *SfcContractSession) UnlockedRewardRatio() (*big.Int, error) {
+	return _SfcContract.Contract.UnlockedRewardRatio(&_SfcContract.CallOpts)
 }
 
-// UnbondingUnlockPeriod is a free data retrieval call binding the contract method 0x3a0af4d4.
+// UnlockedRewardRatio is a free data retrieval call binding the contract method 0x5e2308d2.
 //
-// Solidity: function unbondingUnlockPeriod() pure returns(uint256)
-func (_SfcContract *SfcContractCallerSession) UnbondingUnlockPeriod() (*big.Int, error) {
-	return _SfcContract.Contract.UnbondingUnlockPeriod(&_SfcContract.CallOpts)
+// Solidity: function unlockedRewardRatio() pure returns(uint256)
+func (_SfcContract *SfcContractCallerSession) UnlockedRewardRatio() (*big.Int, error) {
+	return _SfcContract.Contract.UnlockedRewardRatio(&_SfcContract.CallOpts)
 }
 
 // ValidatorCommission is a free data retrieval call binding the contract method 0xa7786515.
@@ -1505,6 +1477,32 @@ func (_SfcContract *SfcContractSession) ValidatorCommission() (*big.Int, error) 
 // Solidity: function validatorCommission() pure returns(uint256)
 func (_SfcContract *SfcContractCallerSession) ValidatorCommission() (*big.Int, error) {
 	return _SfcContract.Contract.ValidatorCommission(&_SfcContract.CallOpts)
+}
+
+// Version is a free data retrieval call binding the contract method 0x54fd4d50.
+//
+// Solidity: function version() pure returns(bytes3)
+func (_SfcContract *SfcContractCaller) Version(opts *bind.CallOpts) ([3]byte, error) {
+	var (
+		ret0 = new([3]byte)
+	)
+	out := ret0
+	err := _SfcContract.contract.Call(opts, out, "version")
+	return *ret0, err
+}
+
+// Version is a free data retrieval call binding the contract method 0x54fd4d50.
+//
+// Solidity: function version() pure returns(bytes3)
+func (_SfcContract *SfcContractSession) Version() ([3]byte, error) {
+	return _SfcContract.Contract.Version(&_SfcContract.CallOpts)
+}
+
+// Version is a free data retrieval call binding the contract method 0x54fd4d50.
+//
+// Solidity: function version() pure returns(bytes3)
+func (_SfcContract *SfcContractCallerSession) Version() ([3]byte, error) {
+	return _SfcContract.Contract.Version(&_SfcContract.CallOpts)
 }
 
 // WithdrawalRequests is a free data retrieval call binding the contract method 0x4e5a2328.
@@ -1555,25 +1553,25 @@ func (_SfcContract *SfcContractCallerSession) WithdrawalRequests(arg0 common.Add
 	return _SfcContract.Contract.WithdrawalRequests(&_SfcContract.CallOpts, arg0, arg1)
 }
 
-// SyncDelegator is a paid mutator transaction binding the contract method 0x424219a4.
+// SyncDelegation is a paid mutator transaction binding the contract method 0x75b9d3d8.
 //
-// Solidity: function _syncDelegator(address delegator) returns()
-func (_SfcContract *SfcContractTransactor) SyncDelegator(opts *bind.TransactOpts, delegator common.Address) (*types.Transaction, error) {
-	return _SfcContract.contract.Transact(opts, "_syncDelegator", delegator)
+// Solidity: function _syncDelegation(address delegator, uint256 toStakerID) returns()
+func (_SfcContract *SfcContractTransactor) SyncDelegation(opts *bind.TransactOpts, delegator common.Address, toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "_syncDelegation", delegator, toStakerID)
 }
 
-// SyncDelegator is a paid mutator transaction binding the contract method 0x424219a4.
+// SyncDelegation is a paid mutator transaction binding the contract method 0x75b9d3d8.
 //
-// Solidity: function _syncDelegator(address delegator) returns()
-func (_SfcContract *SfcContractSession) SyncDelegator(delegator common.Address) (*types.Transaction, error) {
-	return _SfcContract.Contract.SyncDelegator(&_SfcContract.TransactOpts, delegator)
+// Solidity: function _syncDelegation(address delegator, uint256 toStakerID) returns()
+func (_SfcContract *SfcContractSession) SyncDelegation(delegator common.Address, toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.SyncDelegation(&_SfcContract.TransactOpts, delegator, toStakerID)
 }
 
-// SyncDelegator is a paid mutator transaction binding the contract method 0x424219a4.
+// SyncDelegation is a paid mutator transaction binding the contract method 0x75b9d3d8.
 //
-// Solidity: function _syncDelegator(address delegator) returns()
-func (_SfcContract *SfcContractTransactorSession) SyncDelegator(delegator common.Address) (*types.Transaction, error) {
-	return _SfcContract.Contract.SyncDelegator(&_SfcContract.TransactOpts, delegator)
+// Solidity: function _syncDelegation(address delegator, uint256 toStakerID) returns()
+func (_SfcContract *SfcContractTransactorSession) SyncDelegation(delegator common.Address, toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.SyncDelegation(&_SfcContract.TransactOpts, delegator, toStakerID)
 }
 
 // SyncStaker is a paid mutator transaction binding the contract method 0xeac3baf2.
@@ -1597,6 +1595,90 @@ func (_SfcContract *SfcContractTransactorSession) SyncStaker(stakerID *big.Int) 
 	return _SfcContract.Contract.SyncStaker(&_SfcContract.TransactOpts, stakerID)
 }
 
+// UpdateBaseRewardPerSec is a paid mutator transaction binding the contract method 0x7b015db9.
+//
+// Solidity: function _updateBaseRewardPerSec(uint256 value) returns()
+func (_SfcContract *SfcContractTransactor) UpdateBaseRewardPerSec(opts *bind.TransactOpts, value *big.Int) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "_updateBaseRewardPerSec", value)
+}
+
+// UpdateBaseRewardPerSec is a paid mutator transaction binding the contract method 0x7b015db9.
+//
+// Solidity: function _updateBaseRewardPerSec(uint256 value) returns()
+func (_SfcContract *SfcContractSession) UpdateBaseRewardPerSec(value *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.UpdateBaseRewardPerSec(&_SfcContract.TransactOpts, value)
+}
+
+// UpdateBaseRewardPerSec is a paid mutator transaction binding the contract method 0x7b015db9.
+//
+// Solidity: function _updateBaseRewardPerSec(uint256 value) returns()
+func (_SfcContract *SfcContractTransactorSession) UpdateBaseRewardPerSec(value *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.UpdateBaseRewardPerSec(&_SfcContract.TransactOpts, value)
+}
+
+// UpdateGasPowerAllocationRate is a paid mutator transaction binding the contract method 0x1c3c60c8.
+//
+// Solidity: function _updateGasPowerAllocationRate(uint256 short, uint256 long) returns()
+func (_SfcContract *SfcContractTransactor) UpdateGasPowerAllocationRate(opts *bind.TransactOpts, short *big.Int, long *big.Int) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "_updateGasPowerAllocationRate", short, long)
+}
+
+// UpdateGasPowerAllocationRate is a paid mutator transaction binding the contract method 0x1c3c60c8.
+//
+// Solidity: function _updateGasPowerAllocationRate(uint256 short, uint256 long) returns()
+func (_SfcContract *SfcContractSession) UpdateGasPowerAllocationRate(short *big.Int, long *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.UpdateGasPowerAllocationRate(&_SfcContract.TransactOpts, short, long)
+}
+
+// UpdateGasPowerAllocationRate is a paid mutator transaction binding the contract method 0x1c3c60c8.
+//
+// Solidity: function _updateGasPowerAllocationRate(uint256 short, uint256 long) returns()
+func (_SfcContract *SfcContractTransactorSession) UpdateGasPowerAllocationRate(short *big.Int, long *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.UpdateGasPowerAllocationRate(&_SfcContract.TransactOpts, short, long)
+}
+
+// UpdateOfflinePenaltyThreshold is a paid mutator transaction binding the contract method 0x2e5f75ef.
+//
+// Solidity: function _updateOfflinePenaltyThreshold(uint256 blocksNum, uint256 period) returns()
+func (_SfcContract *SfcContractTransactor) UpdateOfflinePenaltyThreshold(opts *bind.TransactOpts, blocksNum *big.Int, period *big.Int) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "_updateOfflinePenaltyThreshold", blocksNum, period)
+}
+
+// UpdateOfflinePenaltyThreshold is a paid mutator transaction binding the contract method 0x2e5f75ef.
+//
+// Solidity: function _updateOfflinePenaltyThreshold(uint256 blocksNum, uint256 period) returns()
+func (_SfcContract *SfcContractSession) UpdateOfflinePenaltyThreshold(blocksNum *big.Int, period *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.UpdateOfflinePenaltyThreshold(&_SfcContract.TransactOpts, blocksNum, period)
+}
+
+// UpdateOfflinePenaltyThreshold is a paid mutator transaction binding the contract method 0x2e5f75ef.
+//
+// Solidity: function _updateOfflinePenaltyThreshold(uint256 blocksNum, uint256 period) returns()
+func (_SfcContract *SfcContractTransactorSession) UpdateOfflinePenaltyThreshold(blocksNum *big.Int, period *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.UpdateOfflinePenaltyThreshold(&_SfcContract.TransactOpts, blocksNum, period)
+}
+
+// UpgradeDelegationStorage is a paid mutator transaction binding the contract method 0x846ebb77.
+//
+// Solidity: function _upgradeDelegationStorage(address delegator) returns()
+func (_SfcContract *SfcContractTransactor) UpgradeDelegationStorage(opts *bind.TransactOpts, delegator common.Address) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "_upgradeDelegationStorage", delegator)
+}
+
+// UpgradeDelegationStorage is a paid mutator transaction binding the contract method 0x846ebb77.
+//
+// Solidity: function _upgradeDelegationStorage(address delegator) returns()
+func (_SfcContract *SfcContractSession) UpgradeDelegationStorage(delegator common.Address) (*types.Transaction, error) {
+	return _SfcContract.Contract.UpgradeDelegationStorage(&_SfcContract.TransactOpts, delegator)
+}
+
+// UpgradeDelegationStorage is a paid mutator transaction binding the contract method 0x846ebb77.
+//
+// Solidity: function _upgradeDelegationStorage(address delegator) returns()
+func (_SfcContract *SfcContractTransactorSession) UpgradeDelegationStorage(delegator common.Address) (*types.Transaction, error) {
+	return _SfcContract.Contract.UpgradeDelegationStorage(&_SfcContract.TransactOpts, delegator)
+}
+
 // UpgradeStakerStorage is a paid mutator transaction binding the contract method 0x28dca8ff.
 //
 // Solidity: function _upgradeStakerStorage(uint256 stakerID) returns()
@@ -1618,25 +1700,25 @@ func (_SfcContract *SfcContractTransactorSession) UpgradeStakerStorage(stakerID 
 	return _SfcContract.Contract.UpgradeStakerStorage(&_SfcContract.TransactOpts, stakerID)
 }
 
-// ClaimDelegationRewards is a paid mutator transaction binding the contract method 0x793c45ce.
+// ClaimDelegationRewards is a paid mutator transaction binding the contract method 0xf99837e6.
 //
-// Solidity: function claimDelegationRewards(uint256 maxEpochs) returns()
-func (_SfcContract *SfcContractTransactor) ClaimDelegationRewards(opts *bind.TransactOpts, maxEpochs *big.Int) (*types.Transaction, error) {
-	return _SfcContract.contract.Transact(opts, "claimDelegationRewards", maxEpochs)
+// Solidity: function claimDelegationRewards(uint256 maxEpochs, uint256 toStakerID) returns()
+func (_SfcContract *SfcContractTransactor) ClaimDelegationRewards(opts *bind.TransactOpts, maxEpochs *big.Int, toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "claimDelegationRewards", maxEpochs, toStakerID)
 }
 
-// ClaimDelegationRewards is a paid mutator transaction binding the contract method 0x793c45ce.
+// ClaimDelegationRewards is a paid mutator transaction binding the contract method 0xf99837e6.
 //
-// Solidity: function claimDelegationRewards(uint256 maxEpochs) returns()
-func (_SfcContract *SfcContractSession) ClaimDelegationRewards(maxEpochs *big.Int) (*types.Transaction, error) {
-	return _SfcContract.Contract.ClaimDelegationRewards(&_SfcContract.TransactOpts, maxEpochs)
+// Solidity: function claimDelegationRewards(uint256 maxEpochs, uint256 toStakerID) returns()
+func (_SfcContract *SfcContractSession) ClaimDelegationRewards(maxEpochs *big.Int, toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.ClaimDelegationRewards(&_SfcContract.TransactOpts, maxEpochs, toStakerID)
 }
 
-// ClaimDelegationRewards is a paid mutator transaction binding the contract method 0x793c45ce.
+// ClaimDelegationRewards is a paid mutator transaction binding the contract method 0xf99837e6.
 //
-// Solidity: function claimDelegationRewards(uint256 maxEpochs) returns()
-func (_SfcContract *SfcContractTransactorSession) ClaimDelegationRewards(maxEpochs *big.Int) (*types.Transaction, error) {
-	return _SfcContract.Contract.ClaimDelegationRewards(&_SfcContract.TransactOpts, maxEpochs)
+// Solidity: function claimDelegationRewards(uint256 maxEpochs, uint256 toStakerID) returns()
+func (_SfcContract *SfcContractTransactorSession) ClaimDelegationRewards(maxEpochs *big.Int, toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.ClaimDelegationRewards(&_SfcContract.TransactOpts, maxEpochs, toStakerID)
 }
 
 // ClaimValidatorRewards is a paid mutator transaction binding the contract method 0x295cccba.
@@ -1704,44 +1786,44 @@ func (_SfcContract *SfcContractTransactorSession) CreateStake(metadata []byte) (
 
 // CreateStakeWithAddresses is a paid mutator transaction binding the contract method 0x90475ae4.
 //
-// Solidity: function createStakeWithAddresses(address dagAdrress, address sfcAddress, bytes metadata) payable returns()
-func (_SfcContract *SfcContractTransactor) CreateStakeWithAddresses(opts *bind.TransactOpts, dagAdrress common.Address, sfcAddress common.Address, metadata []byte) (*types.Transaction, error) {
-	return _SfcContract.contract.Transact(opts, "createStakeWithAddresses", dagAdrress, sfcAddress, metadata)
+// Solidity: function createStakeWithAddresses(address dagAddress, address sfcAddress, bytes metadata) payable returns()
+func (_SfcContract *SfcContractTransactor) CreateStakeWithAddresses(opts *bind.TransactOpts, dagAddress common.Address, sfcAddress common.Address, metadata []byte) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "createStakeWithAddresses", dagAddress, sfcAddress, metadata)
 }
 
 // CreateStakeWithAddresses is a paid mutator transaction binding the contract method 0x90475ae4.
 //
-// Solidity: function createStakeWithAddresses(address dagAdrress, address sfcAddress, bytes metadata) payable returns()
-func (_SfcContract *SfcContractSession) CreateStakeWithAddresses(dagAdrress common.Address, sfcAddress common.Address, metadata []byte) (*types.Transaction, error) {
-	return _SfcContract.Contract.CreateStakeWithAddresses(&_SfcContract.TransactOpts, dagAdrress, sfcAddress, metadata)
+// Solidity: function createStakeWithAddresses(address dagAddress, address sfcAddress, bytes metadata) payable returns()
+func (_SfcContract *SfcContractSession) CreateStakeWithAddresses(dagAddress common.Address, sfcAddress common.Address, metadata []byte) (*types.Transaction, error) {
+	return _SfcContract.Contract.CreateStakeWithAddresses(&_SfcContract.TransactOpts, dagAddress, sfcAddress, metadata)
 }
 
 // CreateStakeWithAddresses is a paid mutator transaction binding the contract method 0x90475ae4.
 //
-// Solidity: function createStakeWithAddresses(address dagAdrress, address sfcAddress, bytes metadata) payable returns()
-func (_SfcContract *SfcContractTransactorSession) CreateStakeWithAddresses(dagAdrress common.Address, sfcAddress common.Address, metadata []byte) (*types.Transaction, error) {
-	return _SfcContract.Contract.CreateStakeWithAddresses(&_SfcContract.TransactOpts, dagAdrress, sfcAddress, metadata)
+// Solidity: function createStakeWithAddresses(address dagAddress, address sfcAddress, bytes metadata) payable returns()
+func (_SfcContract *SfcContractTransactorSession) CreateStakeWithAddresses(dagAddress common.Address, sfcAddress common.Address, metadata []byte) (*types.Transaction, error) {
+	return _SfcContract.Contract.CreateStakeWithAddresses(&_SfcContract.TransactOpts, dagAddress, sfcAddress, metadata)
 }
 
-// IncreaseDelegation is a paid mutator transaction binding the contract method 0x3a274ff6.
+// IncreaseDelegation is a paid mutator transaction binding the contract method 0xdbd3aa8a.
 //
-// Solidity: function increaseDelegation() payable returns()
-func (_SfcContract *SfcContractTransactor) IncreaseDelegation(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _SfcContract.contract.Transact(opts, "increaseDelegation")
+// Solidity: function increaseDelegation(uint256 to) payable returns()
+func (_SfcContract *SfcContractTransactor) IncreaseDelegation(opts *bind.TransactOpts, to *big.Int) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "increaseDelegation", to)
 }
 
-// IncreaseDelegation is a paid mutator transaction binding the contract method 0x3a274ff6.
+// IncreaseDelegation is a paid mutator transaction binding the contract method 0xdbd3aa8a.
 //
-// Solidity: function increaseDelegation() payable returns()
-func (_SfcContract *SfcContractSession) IncreaseDelegation() (*types.Transaction, error) {
-	return _SfcContract.Contract.IncreaseDelegation(&_SfcContract.TransactOpts)
+// Solidity: function increaseDelegation(uint256 to) payable returns()
+func (_SfcContract *SfcContractSession) IncreaseDelegation(to *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.IncreaseDelegation(&_SfcContract.TransactOpts, to)
 }
 
-// IncreaseDelegation is a paid mutator transaction binding the contract method 0x3a274ff6.
+// IncreaseDelegation is a paid mutator transaction binding the contract method 0xdbd3aa8a.
 //
-// Solidity: function increaseDelegation() payable returns()
-func (_SfcContract *SfcContractTransactorSession) IncreaseDelegation() (*types.Transaction, error) {
-	return _SfcContract.Contract.IncreaseDelegation(&_SfcContract.TransactOpts)
+// Solidity: function increaseDelegation(uint256 to) payable returns()
+func (_SfcContract *SfcContractTransactorSession) IncreaseDelegation(to *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.IncreaseDelegation(&_SfcContract.TransactOpts, to)
 }
 
 // IncreaseStake is a paid mutator transaction binding the contract method 0xd9e257ef.
@@ -1765,6 +1847,48 @@ func (_SfcContract *SfcContractTransactorSession) IncreaseStake() (*types.Transa
 	return _SfcContract.Contract.IncreaseStake(&_SfcContract.TransactOpts)
 }
 
+// LockUpDelegation is a paid mutator transaction binding the contract method 0xa4b89fab.
+//
+// Solidity: function lockUpDelegation(uint256 lockDuration, uint256 toStakerID) returns()
+func (_SfcContract *SfcContractTransactor) LockUpDelegation(opts *bind.TransactOpts, lockDuration *big.Int, toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "lockUpDelegation", lockDuration, toStakerID)
+}
+
+// LockUpDelegation is a paid mutator transaction binding the contract method 0xa4b89fab.
+//
+// Solidity: function lockUpDelegation(uint256 lockDuration, uint256 toStakerID) returns()
+func (_SfcContract *SfcContractSession) LockUpDelegation(lockDuration *big.Int, toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.LockUpDelegation(&_SfcContract.TransactOpts, lockDuration, toStakerID)
+}
+
+// LockUpDelegation is a paid mutator transaction binding the contract method 0xa4b89fab.
+//
+// Solidity: function lockUpDelegation(uint256 lockDuration, uint256 toStakerID) returns()
+func (_SfcContract *SfcContractTransactorSession) LockUpDelegation(lockDuration *big.Int, toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.LockUpDelegation(&_SfcContract.TransactOpts, lockDuration, toStakerID)
+}
+
+// LockUpStake is a paid mutator transaction binding the contract method 0xf3ae5b1a.
+//
+// Solidity: function lockUpStake(uint256 lockDuration) returns()
+func (_SfcContract *SfcContractTransactor) LockUpStake(opts *bind.TransactOpts, lockDuration *big.Int) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "lockUpStake", lockDuration)
+}
+
+// LockUpStake is a paid mutator transaction binding the contract method 0xf3ae5b1a.
+//
+// Solidity: function lockUpStake(uint256 lockDuration) returns()
+func (_SfcContract *SfcContractSession) LockUpStake(lockDuration *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.LockUpStake(&_SfcContract.TransactOpts, lockDuration)
+}
+
+// LockUpStake is a paid mutator transaction binding the contract method 0xf3ae5b1a.
+//
+// Solidity: function lockUpStake(uint256 lockDuration) returns()
+func (_SfcContract *SfcContractTransactorSession) LockUpStake(lockDuration *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.LockUpStake(&_SfcContract.TransactOpts, lockDuration)
+}
+
 // PartialWithdrawByRequest is a paid mutator transaction binding the contract method 0xf8b18d8a.
 //
 // Solidity: function partialWithdrawByRequest(uint256 wrID) returns()
@@ -1786,46 +1910,46 @@ func (_SfcContract *SfcContractTransactorSession) PartialWithdrawByRequest(wrID 
 	return _SfcContract.Contract.PartialWithdrawByRequest(&_SfcContract.TransactOpts, wrID)
 }
 
-// PrepareToWithdrawDelegation is a paid mutator transaction binding the contract method 0x1c333318.
+// PrepareToWithdrawDelegation is a paid mutator transaction binding the contract method 0xb1e64339.
 //
-// Solidity: function prepareToWithdrawDelegation() returns()
-func (_SfcContract *SfcContractTransactor) PrepareToWithdrawDelegation(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _SfcContract.contract.Transact(opts, "prepareToWithdrawDelegation")
+// Solidity: function prepareToWithdrawDelegation(uint256 toStakerID) returns()
+func (_SfcContract *SfcContractTransactor) PrepareToWithdrawDelegation(opts *bind.TransactOpts, toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "prepareToWithdrawDelegation", toStakerID)
 }
 
-// PrepareToWithdrawDelegation is a paid mutator transaction binding the contract method 0x1c333318.
+// PrepareToWithdrawDelegation is a paid mutator transaction binding the contract method 0xb1e64339.
 //
-// Solidity: function prepareToWithdrawDelegation() returns()
-func (_SfcContract *SfcContractSession) PrepareToWithdrawDelegation() (*types.Transaction, error) {
-	return _SfcContract.Contract.PrepareToWithdrawDelegation(&_SfcContract.TransactOpts)
+// Solidity: function prepareToWithdrawDelegation(uint256 toStakerID) returns()
+func (_SfcContract *SfcContractSession) PrepareToWithdrawDelegation(toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.PrepareToWithdrawDelegation(&_SfcContract.TransactOpts, toStakerID)
 }
 
-// PrepareToWithdrawDelegation is a paid mutator transaction binding the contract method 0x1c333318.
+// PrepareToWithdrawDelegation is a paid mutator transaction binding the contract method 0xb1e64339.
 //
-// Solidity: function prepareToWithdrawDelegation() returns()
-func (_SfcContract *SfcContractTransactorSession) PrepareToWithdrawDelegation() (*types.Transaction, error) {
-	return _SfcContract.Contract.PrepareToWithdrawDelegation(&_SfcContract.TransactOpts)
+// Solidity: function prepareToWithdrawDelegation(uint256 toStakerID) returns()
+func (_SfcContract *SfcContractTransactorSession) PrepareToWithdrawDelegation(toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.PrepareToWithdrawDelegation(&_SfcContract.TransactOpts, toStakerID)
 }
 
-// PrepareToWithdrawDelegationPartial is a paid mutator transaction binding the contract method 0xe7ff9e78.
+// PrepareToWithdrawDelegationPartial is a paid mutator transaction binding the contract method 0xbb03a4bd.
 //
-// Solidity: function prepareToWithdrawDelegationPartial(uint256 wrID, uint256 amount) returns()
-func (_SfcContract *SfcContractTransactor) PrepareToWithdrawDelegationPartial(opts *bind.TransactOpts, wrID *big.Int, amount *big.Int) (*types.Transaction, error) {
-	return _SfcContract.contract.Transact(opts, "prepareToWithdrawDelegationPartial", wrID, amount)
+// Solidity: function prepareToWithdrawDelegationPartial(uint256 wrID, uint256 toStakerID, uint256 amount) returns()
+func (_SfcContract *SfcContractTransactor) PrepareToWithdrawDelegationPartial(opts *bind.TransactOpts, wrID *big.Int, toStakerID *big.Int, amount *big.Int) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "prepareToWithdrawDelegationPartial", wrID, toStakerID, amount)
 }
 
-// PrepareToWithdrawDelegationPartial is a paid mutator transaction binding the contract method 0xe7ff9e78.
+// PrepareToWithdrawDelegationPartial is a paid mutator transaction binding the contract method 0xbb03a4bd.
 //
-// Solidity: function prepareToWithdrawDelegationPartial(uint256 wrID, uint256 amount) returns()
-func (_SfcContract *SfcContractSession) PrepareToWithdrawDelegationPartial(wrID *big.Int, amount *big.Int) (*types.Transaction, error) {
-	return _SfcContract.Contract.PrepareToWithdrawDelegationPartial(&_SfcContract.TransactOpts, wrID, amount)
+// Solidity: function prepareToWithdrawDelegationPartial(uint256 wrID, uint256 toStakerID, uint256 amount) returns()
+func (_SfcContract *SfcContractSession) PrepareToWithdrawDelegationPartial(wrID *big.Int, toStakerID *big.Int, amount *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.PrepareToWithdrawDelegationPartial(&_SfcContract.TransactOpts, wrID, toStakerID, amount)
 }
 
-// PrepareToWithdrawDelegationPartial is a paid mutator transaction binding the contract method 0xe7ff9e78.
+// PrepareToWithdrawDelegationPartial is a paid mutator transaction binding the contract method 0xbb03a4bd.
 //
-// Solidity: function prepareToWithdrawDelegationPartial(uint256 wrID, uint256 amount) returns()
-func (_SfcContract *SfcContractTransactorSession) PrepareToWithdrawDelegationPartial(wrID *big.Int, amount *big.Int) (*types.Transaction, error) {
-	return _SfcContract.Contract.PrepareToWithdrawDelegationPartial(&_SfcContract.TransactOpts, wrID, amount)
+// Solidity: function prepareToWithdrawDelegationPartial(uint256 wrID, uint256 toStakerID, uint256 amount) returns()
+func (_SfcContract *SfcContractTransactorSession) PrepareToWithdrawDelegationPartial(wrID *big.Int, toStakerID *big.Int, amount *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.PrepareToWithdrawDelegationPartial(&_SfcContract.TransactOpts, wrID, toStakerID, amount)
 }
 
 // PrepareToWithdrawStake is a paid mutator transaction binding the contract method 0xc41b6405.
@@ -1891,6 +2015,27 @@ func (_SfcContract *SfcContractTransactorSession) RenounceOwnership() (*types.Tr
 	return _SfcContract.Contract.RenounceOwnership(&_SfcContract.TransactOpts)
 }
 
+// StartLockedUp is a paid mutator transaction binding the contract method 0xc9400d4f.
+//
+// Solidity: function startLockedUp(uint256 epochNum) returns()
+func (_SfcContract *SfcContractTransactor) StartLockedUp(opts *bind.TransactOpts, epochNum *big.Int) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "startLockedUp", epochNum)
+}
+
+// StartLockedUp is a paid mutator transaction binding the contract method 0xc9400d4f.
+//
+// Solidity: function startLockedUp(uint256 epochNum) returns()
+func (_SfcContract *SfcContractSession) StartLockedUp(epochNum *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.StartLockedUp(&_SfcContract.TransactOpts, epochNum)
+}
+
+// StartLockedUp is a paid mutator transaction binding the contract method 0xc9400d4f.
+//
+// Solidity: function startLockedUp(uint256 epochNum) returns()
+func (_SfcContract *SfcContractTransactorSession) StartLockedUp(epochNum *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.StartLockedUp(&_SfcContract.TransactOpts, epochNum)
+}
+
 // TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 //
 // Solidity: function transferOwnership(address newOwner) returns()
@@ -1931,48 +2076,6 @@ func (_SfcContract *SfcContractSession) UnstashRewards() (*types.Transaction, er
 // Solidity: function unstashRewards() returns()
 func (_SfcContract *SfcContractTransactorSession) UnstashRewards() (*types.Transaction, error) {
 	return _SfcContract.Contract.UnstashRewards(&_SfcContract.TransactOpts)
-}
-
-// UpdateBaseRewardPerSec is a paid mutator transaction binding the contract method 0x1b593d8a.
-//
-// Solidity: function updateBaseRewardPerSec(uint256 value) returns()
-func (_SfcContract *SfcContractTransactor) UpdateBaseRewardPerSec(opts *bind.TransactOpts, value *big.Int) (*types.Transaction, error) {
-	return _SfcContract.contract.Transact(opts, "updateBaseRewardPerSec", value)
-}
-
-// UpdateBaseRewardPerSec is a paid mutator transaction binding the contract method 0x1b593d8a.
-//
-// Solidity: function updateBaseRewardPerSec(uint256 value) returns()
-func (_SfcContract *SfcContractSession) UpdateBaseRewardPerSec(value *big.Int) (*types.Transaction, error) {
-	return _SfcContract.Contract.UpdateBaseRewardPerSec(&_SfcContract.TransactOpts, value)
-}
-
-// UpdateBaseRewardPerSec is a paid mutator transaction binding the contract method 0x1b593d8a.
-//
-// Solidity: function updateBaseRewardPerSec(uint256 value) returns()
-func (_SfcContract *SfcContractTransactorSession) UpdateBaseRewardPerSec(value *big.Int) (*types.Transaction, error) {
-	return _SfcContract.Contract.UpdateBaseRewardPerSec(&_SfcContract.TransactOpts, value)
-}
-
-// UpdateGasPowerAllocationRate is a paid mutator transaction binding the contract method 0x119e351a.
-//
-// Solidity: function updateGasPowerAllocationRate(uint256 short, uint256 long) returns()
-func (_SfcContract *SfcContractTransactor) UpdateGasPowerAllocationRate(opts *bind.TransactOpts, short *big.Int, long *big.Int) (*types.Transaction, error) {
-	return _SfcContract.contract.Transact(opts, "updateGasPowerAllocationRate", short, long)
-}
-
-// UpdateGasPowerAllocationRate is a paid mutator transaction binding the contract method 0x119e351a.
-//
-// Solidity: function updateGasPowerAllocationRate(uint256 short, uint256 long) returns()
-func (_SfcContract *SfcContractSession) UpdateGasPowerAllocationRate(short *big.Int, long *big.Int) (*types.Transaction, error) {
-	return _SfcContract.Contract.UpdateGasPowerAllocationRate(&_SfcContract.TransactOpts, short, long)
-}
-
-// UpdateGasPowerAllocationRate is a paid mutator transaction binding the contract method 0x119e351a.
-//
-// Solidity: function updateGasPowerAllocationRate(uint256 short, uint256 long) returns()
-func (_SfcContract *SfcContractTransactorSession) UpdateGasPowerAllocationRate(short *big.Int, long *big.Int) (*types.Transaction, error) {
-	return _SfcContract.Contract.UpdateGasPowerAllocationRate(&_SfcContract.TransactOpts, short, long)
 }
 
 // UpdateStakerMetadata is a paid mutator transaction binding the contract method 0x33a14912.
@@ -2017,25 +2120,25 @@ func (_SfcContract *SfcContractTransactorSession) UpdateStakerSfcAddress(newSfcA
 	return _SfcContract.Contract.UpdateStakerSfcAddress(&_SfcContract.TransactOpts, newSfcAddress)
 }
 
-// WithdrawDelegation is a paid mutator transaction binding the contract method 0x16bfdd81.
+// WithdrawDelegation is a paid mutator transaction binding the contract method 0xdf0e307a.
 //
-// Solidity: function withdrawDelegation() returns()
-func (_SfcContract *SfcContractTransactor) WithdrawDelegation(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _SfcContract.contract.Transact(opts, "withdrawDelegation")
+// Solidity: function withdrawDelegation(uint256 toStakerID) returns()
+func (_SfcContract *SfcContractTransactor) WithdrawDelegation(opts *bind.TransactOpts, toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.contract.Transact(opts, "withdrawDelegation", toStakerID)
 }
 
-// WithdrawDelegation is a paid mutator transaction binding the contract method 0x16bfdd81.
+// WithdrawDelegation is a paid mutator transaction binding the contract method 0xdf0e307a.
 //
-// Solidity: function withdrawDelegation() returns()
-func (_SfcContract *SfcContractSession) WithdrawDelegation() (*types.Transaction, error) {
-	return _SfcContract.Contract.WithdrawDelegation(&_SfcContract.TransactOpts)
+// Solidity: function withdrawDelegation(uint256 toStakerID) returns()
+func (_SfcContract *SfcContractSession) WithdrawDelegation(toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.WithdrawDelegation(&_SfcContract.TransactOpts, toStakerID)
 }
 
-// WithdrawDelegation is a paid mutator transaction binding the contract method 0x16bfdd81.
+// WithdrawDelegation is a paid mutator transaction binding the contract method 0xdf0e307a.
 //
-// Solidity: function withdrawDelegation() returns()
-func (_SfcContract *SfcContractTransactorSession) WithdrawDelegation() (*types.Transaction, error) {
-	return _SfcContract.Contract.WithdrawDelegation(&_SfcContract.TransactOpts)
+// Solidity: function withdrawDelegation(uint256 toStakerID) returns()
+func (_SfcContract *SfcContractTransactorSession) WithdrawDelegation(toStakerID *big.Int) (*types.Transaction, error) {
+	return _SfcContract.Contract.WithdrawDelegation(&_SfcContract.TransactOpts, toStakerID)
 }
 
 // WithdrawStake is a paid mutator transaction binding the contract method 0xbed9d861.
@@ -3578,6 +3681,305 @@ func (_SfcContract *SfcContractFilterer) ParseIncreasedStake(log types.Log) (*Sf
 	return event, nil
 }
 
+// SfcContractLockingDelegationIterator is returned from FilterLockingDelegation and is used to iterate over the raw logs and unpacked data for LockingDelegation events raised by the SfcContract contract.
+type SfcContractLockingDelegationIterator struct {
+	Event *SfcContractLockingDelegation // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SfcContractLockingDelegationIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SfcContractLockingDelegation)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SfcContractLockingDelegation)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SfcContractLockingDelegationIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SfcContractLockingDelegationIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SfcContractLockingDelegation represents a LockingDelegation event raised by the SfcContract contract.
+type SfcContractLockingDelegation struct {
+	Delegator common.Address
+	StakerID  *big.Int
+	FromEpoch *big.Int
+	EndTime   *big.Int
+	Raw       types.Log // Blockchain specific contextual infos
+}
+
+// FilterLockingDelegation is a free log retrieval operation binding the contract event 0x823f252f996e1f519fd0215db7eb4d5a688d78587bf03bfb03d77bfca939806d.
+//
+// Solidity: event LockingDelegation(address indexed delegator, uint256 indexed stakerID, uint256 fromEpoch, uint256 endTime)
+func (_SfcContract *SfcContractFilterer) FilterLockingDelegation(opts *bind.FilterOpts, delegator []common.Address, stakerID []*big.Int) (*SfcContractLockingDelegationIterator, error) {
+
+	var delegatorRule []interface{}
+	for _, delegatorItem := range delegator {
+		delegatorRule = append(delegatorRule, delegatorItem)
+	}
+	var stakerIDRule []interface{}
+	for _, stakerIDItem := range stakerID {
+		stakerIDRule = append(stakerIDRule, stakerIDItem)
+	}
+
+	logs, sub, err := _SfcContract.contract.FilterLogs(opts, "LockingDelegation", delegatorRule, stakerIDRule)
+	if err != nil {
+		return nil, err
+	}
+	return &SfcContractLockingDelegationIterator{contract: _SfcContract.contract, event: "LockingDelegation", logs: logs, sub: sub}, nil
+}
+
+// WatchLockingDelegation is a free log subscription operation binding the contract event 0x823f252f996e1f519fd0215db7eb4d5a688d78587bf03bfb03d77bfca939806d.
+//
+// Solidity: event LockingDelegation(address indexed delegator, uint256 indexed stakerID, uint256 fromEpoch, uint256 endTime)
+func (_SfcContract *SfcContractFilterer) WatchLockingDelegation(opts *bind.WatchOpts, sink chan<- *SfcContractLockingDelegation, delegator []common.Address, stakerID []*big.Int) (event.Subscription, error) {
+
+	var delegatorRule []interface{}
+	for _, delegatorItem := range delegator {
+		delegatorRule = append(delegatorRule, delegatorItem)
+	}
+	var stakerIDRule []interface{}
+	for _, stakerIDItem := range stakerID {
+		stakerIDRule = append(stakerIDRule, stakerIDItem)
+	}
+
+	logs, sub, err := _SfcContract.contract.WatchLogs(opts, "LockingDelegation", delegatorRule, stakerIDRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SfcContractLockingDelegation)
+				if err := _SfcContract.contract.UnpackLog(event, "LockingDelegation", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseLockingDelegation is a log parse operation binding the contract event 0x823f252f996e1f519fd0215db7eb4d5a688d78587bf03bfb03d77bfca939806d.
+//
+// Solidity: event LockingDelegation(address indexed delegator, uint256 indexed stakerID, uint256 fromEpoch, uint256 endTime)
+func (_SfcContract *SfcContractFilterer) ParseLockingDelegation(log types.Log) (*SfcContractLockingDelegation, error) {
+	event := new(SfcContractLockingDelegation)
+	if err := _SfcContract.contract.UnpackLog(event, "LockingDelegation", log); err != nil {
+		return nil, err
+	}
+	return event, nil
+}
+
+// SfcContractLockingStakeIterator is returned from FilterLockingStake and is used to iterate over the raw logs and unpacked data for LockingStake events raised by the SfcContract contract.
+type SfcContractLockingStakeIterator struct {
+	Event *SfcContractLockingStake // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SfcContractLockingStakeIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SfcContractLockingStake)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SfcContractLockingStake)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SfcContractLockingStakeIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SfcContractLockingStakeIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SfcContractLockingStake represents a LockingStake event raised by the SfcContract contract.
+type SfcContractLockingStake struct {
+	StakerID  *big.Int
+	FromEpoch *big.Int
+	EndTime   *big.Int
+	Raw       types.Log // Blockchain specific contextual infos
+}
+
+// FilterLockingStake is a free log retrieval operation binding the contract event 0x71f8e76b11dde805fa567e857c4beba340500f4ca9da003520a25014f542162b.
+//
+// Solidity: event LockingStake(uint256 indexed stakerID, uint256 fromEpoch, uint256 endTime)
+func (_SfcContract *SfcContractFilterer) FilterLockingStake(opts *bind.FilterOpts, stakerID []*big.Int) (*SfcContractLockingStakeIterator, error) {
+
+	var stakerIDRule []interface{}
+	for _, stakerIDItem := range stakerID {
+		stakerIDRule = append(stakerIDRule, stakerIDItem)
+	}
+
+	logs, sub, err := _SfcContract.contract.FilterLogs(opts, "LockingStake", stakerIDRule)
+	if err != nil {
+		return nil, err
+	}
+	return &SfcContractLockingStakeIterator{contract: _SfcContract.contract, event: "LockingStake", logs: logs, sub: sub}, nil
+}
+
+// WatchLockingStake is a free log subscription operation binding the contract event 0x71f8e76b11dde805fa567e857c4beba340500f4ca9da003520a25014f542162b.
+//
+// Solidity: event LockingStake(uint256 indexed stakerID, uint256 fromEpoch, uint256 endTime)
+func (_SfcContract *SfcContractFilterer) WatchLockingStake(opts *bind.WatchOpts, sink chan<- *SfcContractLockingStake, stakerID []*big.Int) (event.Subscription, error) {
+
+	var stakerIDRule []interface{}
+	for _, stakerIDItem := range stakerID {
+		stakerIDRule = append(stakerIDRule, stakerIDItem)
+	}
+
+	logs, sub, err := _SfcContract.contract.WatchLogs(opts, "LockingStake", stakerIDRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SfcContractLockingStake)
+				if err := _SfcContract.contract.UnpackLog(event, "LockingStake", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseLockingStake is a log parse operation binding the contract event 0x71f8e76b11dde805fa567e857c4beba340500f4ca9da003520a25014f542162b.
+//
+// Solidity: event LockingStake(uint256 indexed stakerID, uint256 fromEpoch, uint256 endTime)
+func (_SfcContract *SfcContractFilterer) ParseLockingStake(log types.Log) (*SfcContractLockingStake, error) {
+	event := new(SfcContractLockingStake)
+	if err := _SfcContract.contract.UnpackLog(event, "LockingStake", log); err != nil {
+		return nil, err
+	}
+	return event, nil
+}
+
 // SfcContractOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the SfcContract contract.
 type SfcContractOwnershipTransferredIterator struct {
 	Event *SfcContractOwnershipTransferred // Event containing the contract specifics and raw log
@@ -4771,6 +5173,140 @@ func (_SfcContract *SfcContractFilterer) ParseUpdatedGasPowerAllocationRate(log 
 	return event, nil
 }
 
+// SfcContractUpdatedOfflinePenaltyThresholdIterator is returned from FilterUpdatedOfflinePenaltyThreshold and is used to iterate over the raw logs and unpacked data for UpdatedOfflinePenaltyThreshold events raised by the SfcContract contract.
+type SfcContractUpdatedOfflinePenaltyThresholdIterator struct {
+	Event *SfcContractUpdatedOfflinePenaltyThreshold // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SfcContractUpdatedOfflinePenaltyThresholdIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SfcContractUpdatedOfflinePenaltyThreshold)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SfcContractUpdatedOfflinePenaltyThreshold)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SfcContractUpdatedOfflinePenaltyThresholdIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SfcContractUpdatedOfflinePenaltyThresholdIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SfcContractUpdatedOfflinePenaltyThreshold represents a UpdatedOfflinePenaltyThreshold event raised by the SfcContract contract.
+type SfcContractUpdatedOfflinePenaltyThreshold struct {
+	BlocksNum *big.Int
+	Period    *big.Int
+	Raw       types.Log // Blockchain specific contextual infos
+}
+
+// FilterUpdatedOfflinePenaltyThreshold is a free log retrieval operation binding the contract event 0x702756a07c05d0bbfd06fc17b67951a5f4deb7bb6b088407e68a58969daf2a34.
+//
+// Solidity: event UpdatedOfflinePenaltyThreshold(uint256 blocksNum, uint256 period)
+func (_SfcContract *SfcContractFilterer) FilterUpdatedOfflinePenaltyThreshold(opts *bind.FilterOpts) (*SfcContractUpdatedOfflinePenaltyThresholdIterator, error) {
+
+	logs, sub, err := _SfcContract.contract.FilterLogs(opts, "UpdatedOfflinePenaltyThreshold")
+	if err != nil {
+		return nil, err
+	}
+	return &SfcContractUpdatedOfflinePenaltyThresholdIterator{contract: _SfcContract.contract, event: "UpdatedOfflinePenaltyThreshold", logs: logs, sub: sub}, nil
+}
+
+// WatchUpdatedOfflinePenaltyThreshold is a free log subscription operation binding the contract event 0x702756a07c05d0bbfd06fc17b67951a5f4deb7bb6b088407e68a58969daf2a34.
+//
+// Solidity: event UpdatedOfflinePenaltyThreshold(uint256 blocksNum, uint256 period)
+func (_SfcContract *SfcContractFilterer) WatchUpdatedOfflinePenaltyThreshold(opts *bind.WatchOpts, sink chan<- *SfcContractUpdatedOfflinePenaltyThreshold) (event.Subscription, error) {
+
+	logs, sub, err := _SfcContract.contract.WatchLogs(opts, "UpdatedOfflinePenaltyThreshold")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SfcContractUpdatedOfflinePenaltyThreshold)
+				if err := _SfcContract.contract.UnpackLog(event, "UpdatedOfflinePenaltyThreshold", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseUpdatedOfflinePenaltyThreshold is a log parse operation binding the contract event 0x702756a07c05d0bbfd06fc17b67951a5f4deb7bb6b088407e68a58969daf2a34.
+//
+// Solidity: event UpdatedOfflinePenaltyThreshold(uint256 blocksNum, uint256 period)
+func (_SfcContract *SfcContractFilterer) ParseUpdatedOfflinePenaltyThreshold(log types.Log) (*SfcContractUpdatedOfflinePenaltyThreshold, error) {
+	event := new(SfcContractUpdatedOfflinePenaltyThreshold)
+	if err := _SfcContract.contract.UnpackLog(event, "UpdatedOfflinePenaltyThreshold", log); err != nil {
+		return nil, err
+	}
+	return event, nil
+}
+
 // SfcContractUpdatedStakeIterator is returned from FilterUpdatedStake and is used to iterate over the raw logs and unpacked data for UpdatedStake events raised by the SfcContract contract.
 type SfcContractUpdatedStakeIterator struct {
 	Event *SfcContractUpdatedStake // Event containing the contract specifics and raw log
@@ -5289,27 +5825,27 @@ func (it *SfcContractWithdrawnDelegationIterator) Close() error {
 
 // SfcContractWithdrawnDelegation represents a WithdrawnDelegation event raised by the SfcContract contract.
 type SfcContractWithdrawnDelegation struct {
-	Delegator common.Address
-	StakerID  *big.Int
-	Penalty   *big.Int
-	Raw       types.Log // Blockchain specific contextual infos
+	Delegator  common.Address
+	ToStakerID *big.Int
+	Penalty    *big.Int
+	Raw        types.Log // Blockchain specific contextual infos
 }
 
 // FilterWithdrawnDelegation is a free log retrieval operation binding the contract event 0x87e86b3710b72c10173ca52c6a9f9cf2df27e77ed177741a8b4feb12bb7a606f.
 //
-// Solidity: event WithdrawnDelegation(address indexed delegator, uint256 indexed stakerID, uint256 penalty)
-func (_SfcContract *SfcContractFilterer) FilterWithdrawnDelegation(opts *bind.FilterOpts, delegator []common.Address, stakerID []*big.Int) (*SfcContractWithdrawnDelegationIterator, error) {
+// Solidity: event WithdrawnDelegation(address indexed delegator, uint256 indexed toStakerID, uint256 penalty)
+func (_SfcContract *SfcContractFilterer) FilterWithdrawnDelegation(opts *bind.FilterOpts, delegator []common.Address, toStakerID []*big.Int) (*SfcContractWithdrawnDelegationIterator, error) {
 
 	var delegatorRule []interface{}
 	for _, delegatorItem := range delegator {
 		delegatorRule = append(delegatorRule, delegatorItem)
 	}
-	var stakerIDRule []interface{}
-	for _, stakerIDItem := range stakerID {
-		stakerIDRule = append(stakerIDRule, stakerIDItem)
+	var toStakerIDRule []interface{}
+	for _, toStakerIDItem := range toStakerID {
+		toStakerIDRule = append(toStakerIDRule, toStakerIDItem)
 	}
 
-	logs, sub, err := _SfcContract.contract.FilterLogs(opts, "WithdrawnDelegation", delegatorRule, stakerIDRule)
+	logs, sub, err := _SfcContract.contract.FilterLogs(opts, "WithdrawnDelegation", delegatorRule, toStakerIDRule)
 	if err != nil {
 		return nil, err
 	}
@@ -5318,19 +5854,19 @@ func (_SfcContract *SfcContractFilterer) FilterWithdrawnDelegation(opts *bind.Fi
 
 // WatchWithdrawnDelegation is a free log subscription operation binding the contract event 0x87e86b3710b72c10173ca52c6a9f9cf2df27e77ed177741a8b4feb12bb7a606f.
 //
-// Solidity: event WithdrawnDelegation(address indexed delegator, uint256 indexed stakerID, uint256 penalty)
-func (_SfcContract *SfcContractFilterer) WatchWithdrawnDelegation(opts *bind.WatchOpts, sink chan<- *SfcContractWithdrawnDelegation, delegator []common.Address, stakerID []*big.Int) (event.Subscription, error) {
+// Solidity: event WithdrawnDelegation(address indexed delegator, uint256 indexed toStakerID, uint256 penalty)
+func (_SfcContract *SfcContractFilterer) WatchWithdrawnDelegation(opts *bind.WatchOpts, sink chan<- *SfcContractWithdrawnDelegation, delegator []common.Address, toStakerID []*big.Int) (event.Subscription, error) {
 
 	var delegatorRule []interface{}
 	for _, delegatorItem := range delegator {
 		delegatorRule = append(delegatorRule, delegatorItem)
 	}
-	var stakerIDRule []interface{}
-	for _, stakerIDItem := range stakerID {
-		stakerIDRule = append(stakerIDRule, stakerIDItem)
+	var toStakerIDRule []interface{}
+	for _, toStakerIDItem := range toStakerID {
+		toStakerIDRule = append(toStakerIDRule, toStakerIDItem)
 	}
 
-	logs, sub, err := _SfcContract.contract.WatchLogs(opts, "WithdrawnDelegation", delegatorRule, stakerIDRule)
+	logs, sub, err := _SfcContract.contract.WatchLogs(opts, "WithdrawnDelegation", delegatorRule, toStakerIDRule)
 	if err != nil {
 		return nil, err
 	}
@@ -5364,7 +5900,7 @@ func (_SfcContract *SfcContractFilterer) WatchWithdrawnDelegation(opts *bind.Wat
 
 // ParseWithdrawnDelegation is a log parse operation binding the contract event 0x87e86b3710b72c10173ca52c6a9f9cf2df27e77ed177741a8b4feb12bb7a606f.
 //
-// Solidity: event WithdrawnDelegation(address indexed delegator, uint256 indexed stakerID, uint256 penalty)
+// Solidity: event WithdrawnDelegation(address indexed delegator, uint256 indexed toStakerID, uint256 penalty)
 func (_SfcContract *SfcContractFilterer) ParseWithdrawnDelegation(log types.Log) (*SfcContractWithdrawnDelegation, error) {
 	event := new(SfcContractWithdrawnDelegation)
 	if err := _SfcContract.contract.UnpackLog(event, "WithdrawnDelegation", log); err != nil {

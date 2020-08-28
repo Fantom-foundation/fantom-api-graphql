@@ -11,9 +11,9 @@ import (
 )
 
 // Delegator represents resolvable delegator detail.
-type Delegator struct {
+type Delegation struct {
 	repo repository.Repository
-	types.Delegator
+	types.Delegation
 
 	/* extended delegated amounts pre-loaded */
 	extendedAmount           *big.Int
@@ -21,7 +21,7 @@ type Delegator struct {
 }
 
 // NewDelegator creates new instance of resolvable Delegator.
-func NewDelegator(d *types.Delegator, repo repository.Repository) *Delegator {
+func NewDelegator(d *types.Delegation, repo repository.Repository) *Delegator {
 	return &Delegator{
 		Delegator: *d,
 		repo:      repo,
