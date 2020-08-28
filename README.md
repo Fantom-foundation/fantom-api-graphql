@@ -3,6 +3,17 @@
 
 High performance API server for Fantom powered blockchain network.
 
+## Releases
+Please check the [release tags](https://github.com/Fantom-foundation/fantom-api-graphql/tags) to get more details and to download previous releases.
+
+#### Version 0.2.0, pending
+This version connects with the Lachesis v.0.7.0-rc1. The SFC contract ABI bundled with the API is version 2.0.2-rc1.
+
+The release brings new fluid delegations and rewards system. Each address is be able to delegate to multiple stakers. Delegation can be locked to certain time, at least 14 days and up to 1 year, to get higher rewards. Please check our website [Fantom.Foundation](https://fantom.foundation) and the [Special Fee Contract repository](https://github.com/Fantom-foundation/fantom-sfc) for more details.
+ 
+#### Version 0.1.0, released on 8/2020
+This is the version you want to be able to connect with Lachesis v.0.6.0-rc2. The SFC contract ABI bundled with this API release is the version 1.1.0-rc1. The release uses Lachesis API v0.6.0 which recognizes single delegation per address and no delegation locking.
+ 
 ## Building the source
 
 Building `apiserver` requires a Go (version 1.13 or later). You can install
