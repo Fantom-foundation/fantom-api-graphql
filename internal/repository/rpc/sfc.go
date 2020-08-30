@@ -291,13 +291,13 @@ func (ftm *FtmBridge) DelegationRewards(addr string, staker hexutil.Uint64) (typ
 }
 
 // DelegationsOf extract a list of delegations for a given staker.
-func (ftm *FtmBridge) DelegationsOf(staker hexutil.Uint64) ([]types.Delegator, error) {
+func (ftm *FtmBridge) DelegationsOf(staker hexutil.Uint64) ([]types.Delegation, error) {
 	// keep track of the operation
 	ftm.log.Debugf("loading delegations of staker %d", staker)
 
 	// call for data
-	dl := make([]types.Delegator, 0)
-	err := ftm.rpc.Call(&dl, "sfc_getDelegatorsOf", staker, "0x2")
+	dl := make([]types.Delegation, 0)
+	err := ftm.rpc.Call(&dl, "sfc_getDelegationsOf", staker, "0x2")
 	if err != nil {
 		ftm.log.Error("delegations list could not be extracted")
 		return nil, err
@@ -308,14 +308,33 @@ func (ftm *FtmBridge) DelegationsOf(staker hexutil.Uint64) ([]types.Delegator, e
 	return dl, nil
 }
 
-// Delegation returns a detail of delegation for the given address.
-func (ftm *FtmBridge) Delegation(addr common.Address) (*types.Delegator, error) {
+// DelegationsByAddress returns a list of all delegations
+// of a given delegator address.
+func (ftm *FtmBridge) DelegationsByAddress(addr common.Address) ([]types.Delegation, error) {
 	// keep track of the operation
-	ftm.log.Debugf("loading delegation of address %s", addr.String())
+	ftm.log.Debugf("loading delegations of account %d", addr.String())
 
 	// call for data
-	var dl types.Delegator
-	err := ftm.rpc.Call(&dl, "sfc_getDelegator", addr, "0x2")
+	dl := make([]types.Delegation, 0)
+	err := ftm.rpc.Call(&dl, "sfc_getDelegationsByAddress", addr.String(), "0x2")
+	if err != nil {
+		ftm.log.Error("delegations list could not be extracted")
+		return nil, err
+	}
+
+	// keep track of the operation
+	ftm.log.Debugf("delegations of account %d loaded", addr.String())
+	return dl, nil
+}
+
+// Delegation returns a detail of delegation for the given address.
+func (ftm *FtmBridge) Delegation(addr common.Address, staker hexutil.Uint64) (*types.Delegation, error) {
+	// keep track of the operation
+	ftm.log.Debugf("loading delegation of address %s with staked %d", addr.String(), staker)
+
+	// call for data
+	var dl types.Delegation
+	err := ftm.rpc.Call(&dl, "sfc_getDelegation", addr, staker.String(), "0x2")
 	if err != nil {
 		ftm.log.Error("delegation not found")
 		return nil, err
@@ -331,7 +350,7 @@ func (ftm *FtmBridge) Delegation(addr common.Address) (*types.Delegator, error) 
 // Partial Un-delegations are subtracted during the preparation
 // phase, but total un-delegations are subtracted only when
 // the delegation is closed.
-func (ftm *FtmBridge) DelegatedAmountExtended(dl *types.Delegator) (*big.Int, *big.Int, error) {
+func (ftm *FtmBridge) DelegatedAmountExtended(dl *types.Delegation) (*big.Int, *big.Int, error) {
 	// base delegated amount is copied here
 	amount := big.NewInt(0)
 	inWithdraw := big.NewInt(0)
@@ -401,27 +420,6 @@ func (ftm *FtmBridge) Stashed(addr common.Address, stash *big.Int) (*big.Int, er
 
 // RewardsAllowed returns if the rewards can be manipulated with.
 func (ftm *FtmBridge) RewardsAllowed() (bool, error) {
-	// keep track of the operation
-	ftm.log.Debug("loading rewards lock status")
-
-	/*
-	// instantiate the contract and display its name
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
-		return false, err
-	}
-
-	val, err := contract.RewardsAllowed(nil)
-	if err != nil {
-		ftm.log.Errorf("failed to get rewards lock status: %v", err)
-		return false, err
-	}
-
-	// return the value
-	return val, nil
-	 */
-
-	ftm.log.Debug("rewards lock status not supported")
+	ftm.log.Debug("rewards lock always open")
 	return true, nil
 }
