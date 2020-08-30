@@ -7,7 +7,7 @@ import (
 )
 
 // Delegator represents a delegator in Opera blockchain.
-type Delegator struct {
+type Delegation struct {
 	Address          common.Address  `json:"address"`
 	ToStakerId       hexutil.Uint64  `json:"toStakerID"`
 	CreatedEpoch     hexutil.Uint64  `json:"createdEpoch"`

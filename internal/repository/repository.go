@@ -115,13 +115,17 @@ type Repository interface {
 	RetrieveStakerInfo(hexutil.Uint64) *types.StakerInfo
 
 	// Delegation returns a detail of delegation for the given address.
-	Delegation(common.Address) (*types.Delegator, error)
+	Delegation(common.Address, hexutil.Uint64) (*types.Delegation, error)
+
+	// DelegationsByAddress returns a list of all delegations
+	// of a given delegator address.
+	DelegationsByAddress(common.Address) ([]types.Delegation, error)
 
 	// DelegationsOf extracts a list of delegations for a given staker.
-	DelegationsOf(hexutil.Uint64) ([]types.Delegator, error)
+	DelegationsOf(hexutil.Uint64) ([]types.Delegation, error)
 
 	// Delegation returns a detail of delegation for the given address.
-	DelegationRewards(string) (types.PendingRewards, error)
+	DelegationRewards(string, hexutil.Uint64) (types.PendingRewards, error)
 
 	// WithdrawRequests extracts a list of partial withdraw requests
 	// for the given address.
@@ -142,7 +146,7 @@ type Repository interface {
 	// Partial Un-delegations are subtracted during the preparation
 	// phase, but total un-delegations are subtracted only when
 	// the delegation is closed.
-	DelegatedAmountExtended(*types.Delegator) (*big.Int, *big.Int, error)
+	DelegatedAmountExtended(*types.Delegation) (*big.Int, *big.Int, error)
 
 	// Price returns a price information for the given target symbol.
 	Price(sym string) (types.Price, error)

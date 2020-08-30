@@ -85,7 +85,7 @@ type Staker {
     of the staker's delegations. The most recent delegations
     are provided if cursor is omitted.
     """
-    delegations(cursor: Cursor, count: Int = 25):DelegatorList!
+    delegations(cursor: Cursor, count: Int = 25):DelegationList!
 
     """
     Status is a binary encoded status of the staker.

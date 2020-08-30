@@ -195,14 +195,14 @@ func (ftm *FtmBridge) finalizedDeactivatedDelegationList(it *SfcContractWithdraw
 	// loop through the iterator
 	for it.Next() {
 		// make sure this is a valid record
-		if it.Event.StakerID == nil || it.Event.Penalty == nil {
+		if it.Event.ToStakerID == nil || it.Event.Penalty == nil {
 			ftm.log.Error("invalid finalization deactivated delegation record found")
 			continue
 		}
 
 		// populate the local struct with data we need
 		fr := finalizedDeactivatedDelegation{
-			StakerID:    it.Event.StakerID.Uint64(),
+			StakerID:    it.Event.ToStakerID.Uint64(),
 			BlockNumber: it.Event.Raw.BlockNumber,
 			Penalty:     *it.Event.Penalty,
 		}

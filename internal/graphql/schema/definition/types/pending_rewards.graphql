@@ -1,5 +1,8 @@
 # PendingRewards represents a detail of pending rewards for staking and delegations
 type PendingRewards {
+    "Staker the pending reward relates to."
+    staker: Long!
+
     "Pending rewards amount."
     amount: BigInt!
 

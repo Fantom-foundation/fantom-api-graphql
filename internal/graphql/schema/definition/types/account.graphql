@@ -38,8 +38,8 @@ type Account {
     "Details of a staker, if the account is a staker."
     staker: Staker
 
-    "Details of delegation, if the account is a delegator."
-    delegation: Delegator
+    "List of delegations of the account, if the account is a delegator."
+    delegations: DelegationList
 
     "Details about smart contract, if the account is a smart contract."
     contract: Contract

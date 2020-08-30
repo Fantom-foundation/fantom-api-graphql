@@ -46,19 +46,25 @@ func (p *proxy) StakerByAddress(addr common.Address) (*types.Staker, error) {
 }
 
 // DelegationsOf extract a list of delegations for a given staker.
-func (p *proxy) DelegationsOf(staker hexutil.Uint64) ([]types.Delegator, error) {
+func (p *proxy) DelegationsOf(staker hexutil.Uint64) ([]types.Delegation, error) {
 	return p.rpc.DelegationsOf(staker)
 }
 
-// Delegation returns a detail of delegation for the given address.
-func (p *proxy) Delegation(addr common.Address) (*types.Delegator, error) {
-	return p.rpc.Delegation(addr)
+// DelegationsByAddress returns a list of all delegations
+// of a given delegator address.
+func (p *proxy) DelegationsByAddress(addr common.Address) ([]types.Delegation, error) {
+	return p.rpc.DelegationsByAddress(addr)
 }
 
 // Delegation returns a detail of delegation for the given address.
-func (p *proxy) DelegationRewards(addr string) (types.PendingRewards, error) {
-	p.log.Debugf("processing %s", addr)
-	return p.rpc.DelegationRewards(addr)
+func (p *proxy) Delegation(addr common.Address, staker hexutil.Uint64) (*types.Delegation, error) {
+	return p.rpc.Delegation(addr, staker)
+}
+
+// Delegation returns a detail of delegation for the given address.
+func (p *proxy) DelegationRewards(addr string, staker hexutil.Uint64) (types.PendingRewards, error) {
+	p.log.Debugf("loading rewards of %s to %d", addr, staker)
+	return p.rpc.DelegationRewards(addr, staker)
 }
 
 // WithdrawRequests extracts a list of partial withdraw requests
@@ -86,7 +92,7 @@ func (p *proxy) DeactivatedDelegation(addr *common.Address) ([]*types.Deactivate
 // Partial Un-delegations are subtracted during the preparation
 // phase, but total un-delegations are subtracted only when
 // the delegation is closed.
-func (p *proxy) DelegatedAmountExtended(dl *types.Delegator) (*big.Int, *big.Int, error) {
+func (p *proxy) DelegatedAmountExtended(dl *types.Delegation) (*big.Int, *big.Int, error) {
 	// log the action
 	p.log.Debugf("loading extended delegation amounts for [%s]", dl.Address.String())
 

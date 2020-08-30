@@ -80,10 +80,13 @@ type Query {
     Cursor is used to obtain specific slice of the staker's delegations.
     The most recent delegations are provided if cursor is omitted.
     """
-    delegationsOf(staker:Long!, cursor: Cursor, count: Int = 25): DelegatorList!
+    delegationsOf(staker:Long!, cursor: Cursor, count: Int = 25): DelegationList!
 
-    "Get the details of a delegator by it's address."
-    delegation(address:Address!): Delegator
+    "Get the details of a specific delegation by it's delegator address and staker the delegation belongs to."
+    delegation(address:Address!, staker: Long!): Delegation
+
+    "Get the list of all delegations by it's delegator address."
+    delegationsByAddress(address:Address!): DelegationList!
 
     "Returns the current price per gas in WEI units."
     gasPrice: Long!

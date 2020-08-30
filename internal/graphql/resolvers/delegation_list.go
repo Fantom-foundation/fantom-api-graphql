@@ -10,23 +10,23 @@ import (
 	"sort"
 )
 
-// DelegatorList represents resolvable list of blockchain delegation edges structure.
-type DelegatorList struct {
+// DelegationList represents resolvable list of blockchain delegation edges structure.
+type DelegationList struct {
 	repo   repository.Repository
 	cursor uint64
 	count  int32
-	list   []types.Delegator
+	list   []types.Delegation
 }
 
-// DelegatorListEdge represents a single edge of a delegations list structure.
-type DelegatorListEdge struct {
-	Delegator Delegator
-	Cursor    Cursor
+// DelegationListEdge represents a single edge of a delegations list structure.
+type DelegationListEdge struct {
+	Delegation Delegation
+	Cursor     Cursor
 }
 
-// NewDelegatorList builds new resolvable list of delegations.
-func NewDelegatorList(dl []types.Delegator, cursor uint64, count int32, repo repository.Repository) *DelegatorList {
-	return &DelegatorList{
+// NewDelegationList builds new resolvable list of delegations.
+func NewDelegationList(dl []types.Delegation, cursor uint64, count int32, repo repository.Repository) *DelegationList {
+	return &DelegationList{
 		repo:   repo,
 		cursor: cursor,
 		count:  count,
@@ -35,13 +35,13 @@ func NewDelegatorList(dl []types.Delegator, cursor uint64, count int32, repo rep
 }
 
 // TotalCount resolves the total number of delegations in the list.
-func (dl *DelegatorList) TotalCount() hexutil.Big {
+func (dl *DelegationList) TotalCount() hexutil.Big {
 	val := (*hexutil.Big)(big.NewInt(int64(len(dl.list))))
 	return *val
 }
 
 // firstIndex return the index of the first item of requested slice of the delegations list.
-func (dl *DelegatorList) firstIndex() uint64 {
+func (dl *DelegationList) firstIndex() uint64 {
 	// negative count?
 	if dl.count < 0 {
 		// adjust for the list position
@@ -56,7 +56,7 @@ func (dl *DelegatorList) firstIndex() uint64 {
 }
 
 // lastIndex return the index of the last item of requested slice of the delegations list.
-func (dl *DelegatorList) lastIndex() uint64 {
+func (dl *DelegationList) lastIndex() uint64 {
 	// negative count?
 	if dl.count < 0 {
 		if dl.cursor > 0 {
@@ -75,7 +75,7 @@ func (dl *DelegatorList) lastIndex() uint64 {
 }
 
 // PageInfo resolves the current page information for the transaction list.
-func (dl *DelegatorList) PageInfo() (*ListPageInfo, error) {
+func (dl *DelegationList) PageInfo() (*ListPageInfo, error) {
 	// do we have any items?
 	if len(dl.list) == 0 {
 		return NewListPageInfo(nil, nil, false, false)
@@ -92,10 +92,10 @@ func (dl *DelegatorList) PageInfo() (*ListPageInfo, error) {
 }
 
 // Edges resolves list of block list edges for the linked block list.
-func (dl *DelegatorList) Edges() []*DelegatorListEdge {
+func (dl *DelegationList) Edges() []*DelegationListEdge {
 	// do we have any items? return empty list if not
 	if len(dl.list) == 0 {
-		return make([]*DelegatorListEdge, 0)
+		return make([]*DelegationListEdge, 0)
 	}
 
 	// get slice range
@@ -104,19 +104,19 @@ func (dl *DelegatorList) Edges() []*DelegatorListEdge {
 
 	// any range available?
 	if iLast <= iFirst {
-		return make([]*DelegatorListEdge, 0)
+		return make([]*DelegationListEdge, 0)
 	}
 
 	// make the list
-	edges := make([]*DelegatorListEdge, iLast-iFirst)
+	edges := make([]*DelegationListEdge, iLast-iFirst)
 	for i, d := range dl.list[iFirst:iLast] {
 		// make delegator
-		del := NewDelegator(&d, dl.repo)
+		del := NewDelegation(&d, dl.repo)
 
 		// make the edge
-		e := DelegatorListEdge{
-			Delegator: *del,
-			Cursor:    Cursor(hexutil.Uint64(uint64(iFirst + uint64(i))).String()),
+		e := DelegationListEdge{
+			Delegation: *del,
+			Cursor:     Cursor(hexutil.Uint64(iFirst + uint64(i)).String()),
 		}
 
 		// add to the list and advance the edge list index
@@ -127,7 +127,7 @@ func (dl *DelegatorList) Edges() []*DelegatorListEdge {
 }
 
 // parseDelegationsCursor decodes incoming cursor for the delegations list.
-func parseDelegationsCursor(c *Cursor, count int32, dl []types.Delegator) uint64 {
+func parseDelegationsCursor(c *Cursor, count int32, dl []types.Delegation) uint64 {
 	// try to parse the cursor if any
 	var cr uint64
 	if c != nil {
@@ -160,7 +160,7 @@ func (rs *rootResolver) DelegationsOf(args *struct {
 	Staker hexutil.Uint64
 	Cursor *Cursor
 	Count  int32
-}) (*DelegatorList, error) {
+}) (*DelegationList, error) {
 	// any arguments?
 	if args == nil {
 		return nil, fmt.Errorf("missing delegations input")
@@ -178,5 +178,5 @@ func (rs *rootResolver) DelegationsOf(args *struct {
 
 	// sort by the date of creation
 	sort.Sort(DelegationsByAge(dl))
-	return NewDelegatorList(dl, parseDelegationsCursor(args.Cursor, args.Count, dl), args.Count, rs.repo), nil
+	return NewDelegationList(dl, parseDelegationsCursor(args.Cursor, args.Count, dl), args.Count, rs.repo), nil
 }

@@ -1,5 +1,5 @@
-# Delegator represents a delegation on Opera blockchain.
-type Delegator {
+# Delegation represents a delegation on Opera blockchain.
+type Delegation {
     "Address of the delegator account."
     address: Address!
 

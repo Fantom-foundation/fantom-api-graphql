@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-08-21 10:47
+// Auto generated GraphQL schema bundle; created 2020-08-30 17:31
 const schema = `
 # Price represents price information of core Opera token
 type Price {
@@ -202,8 +202,81 @@ type Block {
     txList: [Transaction!]!
 }
 
+# DelegationList is a list of delegations edges provided by sequential access request.
+type DelegationList {
+    "Edges contains provided edges of the sequential list."
+    edges: [DelegationListEdge!]!
+
+    """
+    TotalCount is the maximum number of delegations
+    available for sequential access.
+    """
+    totalCount: BigInt!
+
+    "PageInfo is an information about the current page of delegation edges."
+    pageInfo: ListPageInfo!
+}
+
+# DelegationListEdge is a single edge in a sequential list of delegations.
+type DelegationListEdge {
+    "Cursor defines a scroll key to this edge."
+    cursor: Cursor!
+
+    "Delegator represents the delegator provided by this list edge."
+    delegation: Delegation!
+}
+
+# Delegation represents a delegation on Opera blockchain.
+type Delegation {
+    "Address of the delegator account."
+    address: Address!
+
+    "Identifier of the staker the delegation belongs to."
+    toStakerId: Long!
+
+    "Epoch in which the delegation was made."
+    createdEpoch: Long!
+
+    "Timestamp of the delegation creation."
+    createdTime: Long!
+
+    "Epoch in which the delegation was deactivated."
+    deactivatedEpoch: Long
+
+    "Timestamp of the deactivation of the delegation."
+    deactivatedTime: Long
+
+    "Amount delegated. It includes all the pending un-delegations."
+    amount: BigInt!
+
+    """
+    Amount delegated. The current amount still registered
+    by SFC contract as delegated amount. It does include pending
+    deactivation, but does not include partial un-delegations.
+    """
+    amountDelegated: BigInt
+
+    "Amount locked in pending un-delegations and withdrawals."
+    amountInWithdraw: BigInt!
+
+    "Amount of rewards claimed."
+    claimedReward: BigInt
+
+    "Pending rewards for the delegation."
+    pendingRewards: PendingRewards!
+
+    "List of withdraw requests of the delegation."
+    withdrawRequests: [WithdrawRequest!]!
+
+    "List of full delegation deactivation."
+    deactivation: [DeactivatedDelegation!]!
+}
+
 # PendingRewards represents a detail of pending rewards for staking and delegations
 type PendingRewards {
+    "Staker the pending reward relates to."
+    staker: Long!
+
     "Pending rewards amount."
     amount: BigInt!
 
@@ -612,7 +685,7 @@ type Staker {
     of the staker's delegations. The most recent delegations
     are provided if cursor is omitted.
     """
-    delegations(cursor: Cursor, count: Int = 25):DelegatorList!
+    delegations(cursor: Cursor, count: Int = 25):DelegationList!
 
     """
     Status is a binary encoded status of the staker.
@@ -629,52 +702,6 @@ type Staker {
     not the requests of the stake delegators.
     """
     withdrawRequests: [WithdrawRequest!]!
-}
-
-# Delegator represents a delegation on Opera blockchain.
-type Delegator {
-    "Address of the delegator account."
-    address: Address!
-
-    "Identifier of the staker the delegation belongs to."
-    toStakerId: Long!
-
-    "Epoch in which the delegation was made."
-    createdEpoch: Long!
-
-    "Timestamp of the delegation creation."
-    createdTime: Long!
-
-    "Epoch in which the delegation was deactivated."
-    deactivatedEpoch: Long
-
-    "Timestamp of the deactivation of the delegation."
-    deactivatedTime: Long
-
-    "Amount delegated. It includes all the pending un-delegations."
-    amount: BigInt!
-
-    """
-    Amount delegated. The current amount still registered
-    by SFC contract as delegated amount. It does include pending
-    deactivation, but does not include partial un-delegations.
-    """
-    amountDelegated: BigInt
-
-    "Amount locked in pending un-delegations and withdrawals."
-    amountInWithdraw: BigInt!
-
-    "Amount of rewards claimed."
-    claimedReward: BigInt
-
-    "Pending rewards for the delegation."
-    pendingRewards: PendingRewards!
-
-    "List of withdraw requests of the delegation."
-    withdrawRequests: [WithdrawRequest!]!
-
-    "List of full delegation deactivation."
-    deactivation: [DeactivatedDelegation!]!
 }
 
 # EstimatedRewards represents a calculated rewards estimation for an account or amount staked
@@ -804,30 +831,6 @@ type DeactivatedDelegation {
     withdrawPenalty: BigInt
 }
 
-# DelegatorList is a list of delegations edges provided by sequential access request.
-type DelegatorList {
-    "Edges contains provided edges of the sequential list."
-    edges: [DelegatorListEdge!]!
-
-    """
-    TotalCount is the maximum number of delegations
-    available for sequential access.
-    """
-    totalCount: BigInt!
-
-    "PageInfo is an information about the current page of delegation edges."
-    pageInfo: ListPageInfo!
-}
-
-# BlockListEdge is a single edge in a sequential list of blocks.
-type DelegatorListEdge {
-    "Cursor defines a scroll key to this edge."
-    cursor: Cursor!
-
-    "Delegator represents the delegator provided by this list edge."
-    delegator: Delegator!
-}
-
 # Account defines block-chain account information container
 type Account {
     "Address is the address of the account."
@@ -868,8 +871,8 @@ type Account {
     "Details of a staker, if the account is a staker."
     staker: Staker
 
-    "Details of delegation, if the account is a delegator."
-    delegation: Delegator
+    "List of delegations of the account, if the account is a delegator."
+    delegations: DelegationList
 
     "Details about smart contract, if the account is a smart contract."
     contract: Contract
@@ -1038,10 +1041,13 @@ type Query {
     Cursor is used to obtain specific slice of the staker's delegations.
     The most recent delegations are provided if cursor is omitted.
     """
-    delegationsOf(staker:Long!, cursor: Cursor, count: Int = 25): DelegatorList!
+    delegationsOf(staker:Long!, cursor: Cursor, count: Int = 25): DelegationList!
 
-    "Get the details of a delegator by it's address."
-    delegation(address:Address!): Delegator
+    "Get the details of a specific delegation by it's delegator address and staker the delegation belongs to."
+    delegation(address:Address!, staker: Long!): Delegation
+
+    "Get the list of all delegations by it's delegator address."
+    delegationsByAddress(address:Address!): DelegationList!
 
     "Returns the current price per gas in WEI units."
     gasPrice: Long!

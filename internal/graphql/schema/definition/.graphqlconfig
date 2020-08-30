@@ -4,7 +4,7 @@
   "extensions": {
     "endpoints": {
       "VM GraphQL Endpoint": {
-        "url": "http://crypto.vm.lan:16761/api",
+        "url": "http://192.168.3.80:16861/api",
         "headers": {
           "user-agent": "JS GraphQL"
         },
@@ -15,7 +15,7 @@
         "introspect": false
       },
       "XAPI2 Fantom.Network": {
-        "url": "https://xapi2.fantom.network/graphql",
+        "url": "https://xapi2.fantom.network/api",
         "introspect": false
       },
       "XAPI3 Fantom.Network": {
