@@ -21,32 +21,35 @@ type Delegation struct {
 }
 
 // NewDelegator creates new instance of resolvable Delegator.
-func NewDelegator(d *types.Delegation, repo repository.Repository) *Delegator {
-	return &Delegator{
-		Delegator: *d,
-		repo:      repo,
+func NewDelegation(d *types.Delegation, repo repository.Repository) *Delegation {
+	return &Delegation{
+		Delegation: *d,
+		repo:       repo,
 	}
 }
 
 // Delegation resolves details of a delegator by it's address.
-func (rs *rootResolver) Delegation(args *struct{ Address common.Address }) (*Delegator, error) {
+func (rs *rootResolver) Delegation(args *struct {
+	Address common.Address
+	Staker  hexutil.Uint64
+}) (*Delegation, error) {
 	// get the delegator detail from backend
-	d, err := rs.repo.Delegation(args.Address)
+	d, err := rs.repo.Delegation(args.Address, args.Staker)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewDelegator(d, rs.repo), nil
+	return NewDelegation(d, rs.repo), nil
 }
 
 // Amount returns total delegated amount for the delegator.
-func (del Delegator) Amount() (hexutil.Big, error) {
+func (del Delegation) Amount() (hexutil.Big, error) {
 	// lazy load data
 	if del.extendedAmount == nil {
 		var err error
 
 		// try to load the data
-		del.extendedAmount, del.extendedAmountInWithdraw, err = del.repo.DelegatedAmountExtended(&del.Delegator)
+		del.extendedAmount, del.extendedAmountInWithdraw, err = del.repo.DelegatedAmountExtended(&del.Delegation)
 		if err != nil {
 			return hexutil.Big{}, err
 		}
@@ -56,13 +59,13 @@ func (del Delegator) Amount() (hexutil.Big, error) {
 }
 
 // AmountInWithdraw returns total delegated amount in pending withdrawals for the delegator.
-func (del Delegator) AmountInWithdraw() (hexutil.Big, error) {
+func (del Delegation) AmountInWithdraw() (hexutil.Big, error) {
 	// lazy load data
 	if del.extendedAmountInWithdraw == nil {
 		var err error
 
 		// try to load the data
-		del.extendedAmount, del.extendedAmountInWithdraw, err = del.repo.DelegatedAmountExtended(&del.Delegator)
+		del.extendedAmount, del.extendedAmountInWithdraw, err = del.repo.DelegatedAmountExtended(&del.Delegation)
 		if err != nil {
 			return hexutil.Big{}, err
 		}
@@ -72,9 +75,9 @@ func (del Delegator) AmountInWithdraw() (hexutil.Big, error) {
 }
 
 // PendingRewards resolves pending rewards for the delegator account.
-func (del Delegator) PendingRewards() (types.PendingRewards, error) {
+func (del Delegation) PendingRewards() (types.PendingRewards, error) {
 	// get the rewards
-	r, err := del.repo.DelegationRewards(del.Address.String())
+	r, err := del.repo.DelegationRewards(del.Address.String(), del.ToStakerId)
 	if err != nil {
 		return types.PendingRewards{}, err
 	}
@@ -83,7 +86,7 @@ func (del Delegator) PendingRewards() (types.PendingRewards, error) {
 }
 
 // WithdrawRequests resolves partial withdraw requests of the delegator.
-func (del Delegator) WithdrawRequests() ([]WithdrawRequest, error) {
+func (del Delegation) WithdrawRequests() ([]WithdrawRequest, error) {
 	// pull the requests list from remote server
 	wr, err := del.repo.WithdrawRequests(&del.Address)
 	if err != nil {
@@ -106,7 +109,7 @@ func (del Delegator) WithdrawRequests() ([]WithdrawRequest, error) {
 }
 
 // Deactivation resolves deactivated delegation requests of the delegator.
-func (del Delegator) Deactivation() ([]DeactivatedDelegation, error) {
+func (del Delegation) Deactivation() ([]DeactivatedDelegation, error) {
 	// pull the requests list from remote server
 	wr, err := del.repo.DeactivatedDelegation(&del.Address)
 	if err != nil {
@@ -129,7 +132,7 @@ func (del Delegator) Deactivation() ([]DeactivatedDelegation, error) {
 }
 
 // DelegationsByAge represents a list of delegations sortable by their age of creation.
-type DelegationsByAge []types.Delegator
+type DelegationsByAge []types.Delegation
 
 // Len returns size of the delegation list.
 func (d DelegationsByAge) Len() int {
