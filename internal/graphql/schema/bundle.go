@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-08-29 12:08
+// Auto generated GraphQL schema bundle; created 2020-08-30 17:31
 const schema = `
 # Price represents price information of core Opera token
 type Price {
