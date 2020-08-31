@@ -122,7 +122,14 @@ type ApiResolver interface {
 		Staker hexutil.Uint64
 		Cursor *Cursor
 		Count  int32
-	}) (*DelegatorList, error)
+	}) (*DelegationList, error)
+
+	// Resolves a list of own delegations by the account address.
+	DelegationsByAddress(*struct {
+		Address common.Address
+		Cursor *Cursor
+		Count  int32
+	}) (*DelegationList, error)
 
 	// Price resolves price details of the Opera blockchain token for the given target symbols.
 	Price(*struct{ To string }) (types.Price, error)

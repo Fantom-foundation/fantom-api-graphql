@@ -39,7 +39,7 @@ type Account {
     staker: Staker
 
     "List of delegations of the account, if the account is a delegator."
-    delegations: DelegationList
+    delegations(cursor:Cursor, count:Int = 25): DelegationList!
 
     "Details about smart contract, if the account is a smart contract."
     contract: Contract

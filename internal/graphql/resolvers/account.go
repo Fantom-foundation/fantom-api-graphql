@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"sort"
 )
 
 // accMaxTransactionsPerRequest maximal number of transaction end-client can request in one query.
@@ -162,6 +163,9 @@ func (acc *Account) TotalValue() (hexutil.Big, error) {
 		}
 	*/
 
+	// add delegation amount
+	balance = acc.totalBalanceAddDelegations(&balance)
+
 	// add staking amount
 	balance = acc.totalBalanceAddStake(&balance)
 
@@ -198,6 +202,25 @@ func (acc *Account) totalBalanceAddStake(balance *hexutil.Big) hexutil.Big {
 	}
 
 	return *balance
+}
+
+// totalBalanceAddDelegations extends the total balance by adding delegated
+// amount, if any, including pending rewards.
+func (acc *Account) totalBalanceAddDelegations(balance *hexutil.Big) hexutil.Big {
+	// try to get the list of all delegations available
+	dls, err := acc.getDelegations()
+	if err != nil {
+		return *balance
+	}
+
+	// loop all loaded delegations and add their values together
+	extendBy := balance.ToInt()
+	for _, d := range dls {
+		extendBy = new(big.Int).Add(extendBy, d.AmountDelegated.ToInt())
+	}
+
+	// make the new value
+	return hexutil.Big(*extendBy)
 }
 
 // TxCount resolves the number of transaction sent by the account, also known as nonce.
@@ -246,23 +269,23 @@ func (acc *Account) Staker() (*Staker, error) {
 }
 
 // Delegation resolves the account delegator detail, if the account is a delegator.
-func (acc *Account) Delegations() ([]Delegation, error) {
-	// create a new list
-	list := make([]Delegation, 0)
+func (acc *Account) Delegations(args *struct {
+	Cursor *Cursor
+	Count  int32
+}) (*DelegationList, error) {
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// try to get the delegator info
-	dl, err := acc.delegations()
+	dl, err := acc.getDelegations()
 	if err != nil {
-		return list, err
+		return nil, err
 	}
 
-	// convert delegations into a resolvable list
-	for _, d := range dl {
-		dlg := NewDelegation(&d, acc.repo)
-		list = append(list, *dlg)
-	}
-
-	return list, nil
+	// sort delegations by age
+	sort.Sort(DelegationsByAge(dl))
+	return NewDelegationList(dl, parseDelegationsCursor(args.Cursor, args.Count, dl), args.Count, acc.repo), nil
 }
 
 // Contract resolves the account smart contract detail,
@@ -303,8 +326,8 @@ func (acc *Account) getStaker() (*types.Staker, error) {
 	return acc.rfStaker, nil
 }
 
-// getDelegation return lazy loaded delegation detail for the account.
-func (acc *Account) delegations() ([]types.Delegation, error) {
+// getDelegations return lazy loaded list of delegation details for the account.
+func (acc *Account) getDelegations() ([]types.Delegation, error) {
 	// do we need to load the list?
 	if nil == acc.rfDelegations {
 		var err error

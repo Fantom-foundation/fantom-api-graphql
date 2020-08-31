@@ -86,7 +86,7 @@ type Query {
     delegation(address:Address!, staker: Long!): Delegation
 
     "Get the list of all delegations by it's delegator address."
-    delegationsByAddress(address:Address!): DelegationList!
+    delegationsByAddress(address:Address!, cursor: Cursor, count: Int = 25): DelegationList!
 
     "Returns the current price per gas in WEI units."
     gasPrice: Long!

@@ -23,7 +23,7 @@ func NewStaker(st *types.Staker, repo repository.Repository) *Staker {
 func (st Staker) Delegations(args *struct {
 	Cursor *Cursor
 	Count  int32
-}) (*DelegatorList, error) {
+}) (*DelegationList, error) {
 	// any arguments?
 	if args == nil {
 		return nil, fmt.Errorf("missing delegations input")
@@ -41,7 +41,7 @@ func (st Staker) Delegations(args *struct {
 
 	// sort by the date of creation
 	sort.Sort(DelegationsByAge(dl))
-	return NewDelegatorList(dl, parseDelegationsCursor(args.Cursor, args.Count, dl), args.Count, st.repo), nil
+	return NewDelegationList(dl, parseDelegationsCursor(args.Cursor, args.Count, dl), args.Count, st.repo), nil
 }
 
 // StakerInfo resolves extended staker information if available.

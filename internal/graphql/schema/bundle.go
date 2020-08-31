@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-08-30 17:31
+// Auto generated GraphQL schema bundle; created 2020-08-31 17:24
 const schema = `
 # Price represents price information of core Opera token
 type Price {
@@ -872,7 +872,7 @@ type Account {
     staker: Staker
 
     "List of delegations of the account, if the account is a delegator."
-    delegations: DelegationList
+    delegations(cursor:Cursor, count:Int = 25): DelegationList!
 
     "Details about smart contract, if the account is a smart contract."
     contract: Contract
@@ -1047,7 +1047,7 @@ type Query {
     delegation(address:Address!, staker: Long!): Delegation
 
     "Get the list of all delegations by it's delegator address."
-    delegationsByAddress(address:Address!): DelegationList!
+    delegationsByAddress(address:Address!, cursor: Cursor, count: Int = 25): DelegationList!
 
     "Returns the current price per gas in WEI units."
     gasPrice: Long!
