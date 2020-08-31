@@ -5,6 +5,7 @@ import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"sort"
@@ -155,7 +156,7 @@ func parseDelegationsCursor(c *Cursor, count int32, dl []types.Delegation) uint6
 	return cr
 }
 
-// Resolves a list of delegations information of a staker.
+// DelegationsOf resolves a list of delegations information of a staker.
 func (rs *rootResolver) DelegationsOf(args *struct {
 	Staker hexutil.Uint64
 	Cursor *Cursor
@@ -177,6 +178,28 @@ func (rs *rootResolver) DelegationsOf(args *struct {
 	}
 
 	// sort by the date of creation
+	sort.Sort(DelegationsByAge(dl))
+	return NewDelegationList(dl, parseDelegationsCursor(args.Cursor, args.Count, dl), args.Count, rs.repo), nil
+}
+
+// DelegationsByAddress resolves a list of own delegations by the account address.
+func (rs *rootResolver) DelegationsByAddress(args *struct {
+	Address common.Address
+	Cursor *Cursor
+	Count  int32
+}) (*DelegationList, error) {
+	// get the list of delegations
+	dl, err := rs.repo.DelegationsByAddress(args.Address)
+	if err != nil {
+		// list could not be loaded
+		return nil,err
+	}
+
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
+
+	// sort the list
 	sort.Sort(DelegationsByAge(dl))
 	return NewDelegationList(dl, parseDelegationsCursor(args.Cursor, args.Count, dl), args.Count, rs.repo), nil
 }
