@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"sort"
+	"time"
 )
 
 // Delegator represents resolvable delegator detail.
@@ -16,6 +17,7 @@ type Delegation struct {
 	types.Delegation
 
 	/* extended delegated amounts pre-loaded */
+	lock                     *types.DelegationLock
 	extendedAmount           *big.Int
 	extendedAmountInWithdraw *big.Int
 }
@@ -129,6 +131,55 @@ func (del Delegation) Deactivation() ([]DeactivatedDelegation, error) {
 
 	// return the final resolvable list
 	return list, nil
+}
+
+// DelegationLock returns information about delegation lock
+func (del Delegation) DelegationLock() *types.DelegationLock {
+	if nil == del.lock {
+		var err error
+		del.lock, err = del.repo.DelegationLock(&del.Delegation)
+		if err != nil {
+			return nil
+		}
+	}
+
+	return del.lock
+}
+
+// IsDelegationLocked signals if the delegation is locked right now.
+func (del Delegation) IsDelegationLocked() bool {
+	// get the lock
+	lock := del.DelegationLock()
+	if lock == nil {
+		return false
+	}
+
+	// decide based on lock content
+	return lock.LockedFromEpoch > 0 && uint64(lock.LockedUntil) < uint64(time.Now().UTC().Unix())
+}
+
+// IsDelegationLocked signals if the delegation is locked right now.
+func (del Delegation) LockedUntil() hexutil.Uint64 {
+	// get the lock
+	lock := del.DelegationLock()
+	if lock == nil {
+		return hexutil.Uint64(0)
+	}
+
+	// return the lock release time stamp
+	return lock.LockedUntil
+}
+
+// IsDelegationLocked signals if the delegation is locked right now.
+func (del Delegation) LockedFromEpoch() hexutil.Uint64 {
+	// get the lock
+	lock := del.DelegationLock()
+	if lock == nil {
+		return hexutil.Uint64(0)
+	}
+
+	// return the lock creation epoch id
+	return lock.LockedFromEpoch
 }
 
 // DelegationsByAge represents a list of delegations sortable by their age of creation.
