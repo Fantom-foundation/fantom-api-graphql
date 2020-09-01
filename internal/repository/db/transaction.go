@@ -418,6 +418,23 @@ func (db *MongoDbBridge) txListLoad(col *mongo.Collection, cursor *string, count
 	return nil
 }
 
+// TransactionsCount returns the number of transactions stored in the database.
+func (db *MongoDbBridge) TransactionsCount() (uint64, error) {
+	// get the collection and context
+	col := db.client.Database(db.dbName).Collection(coTransactions)
+
+	// find how many transactions do we have in the database
+	total, err := col.CountDocuments(context.Background(), bson.D{})
+	if err != nil {
+		db.log.Errorf("can not count transactions")
+		return 0, err
+	}
+
+	// inform what we are about to do
+	db.log.Debugf("found %d transactions in off-chain database", total)
+	return uint64(total), nil
+}
+
 // Transactions pulls list of transaction hashes starting on the specified cursor.
 func (db *MongoDbBridge) Transactions(cursor *string, count int32) (*types.TransactionHashList, error) {
 	// nothing to load?
