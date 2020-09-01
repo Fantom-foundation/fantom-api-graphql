@@ -17,6 +17,7 @@ package rpc
 
 import (
 	"fantom-api-graphql/internal/types"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -105,17 +106,10 @@ func (ftm *FtmBridge) StakersNum() (hexutil.Uint64, error) {
 	return hexutil.Uint64(sn.Uint64()), nil
 }
 
-// stakerUpdateFromSfc updates staker information using SFC binding.
-func (ftm *FtmBridge) stakerUpdateFromSfc(staker *types.Staker) error {
+// stakerStatusFromSfc updates staker information using SFC binding.
+func (ftm *FtmBridge) stakerStatusFromSfc(contract *SfcContract, staker *types.Staker) error {
 	// log action
 	ftm.log.Debug("updating staker info from SFC")
-
-	// instantiate the contract and display its name
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
-		return err
-	}
 
 	// get the value from the contract
 	si, err := contract.Stakers(nil, big.NewInt(int64(staker.Id)))
@@ -151,6 +145,32 @@ func (ftm *FtmBridge) stakerUpdateFromSfc(staker *types.Staker) error {
 	return nil
 }
 
+// stakerLockFromSfc updates staker lock details using SFC binding.
+func (ftm *FtmBridge) stakerLockFromSfc(contract *SfcContract, staker *types.Staker) error {
+	// log action
+	ftm.log.Debug("updating staker locking details from SFC")
+
+	// get staker locking detail
+	lock, err := contract.LockedStakes(nil, big.NewInt(int64(staker.Id)))
+	if err != nil {
+		ftm.log.Errorf("stake lock query failed; %v", err)
+		return nil
+	}
+
+	// are lock timers available?
+	if lock.FromEpoch == nil || lock.EndTime == nil {
+		ftm.log.Errorf("stake lock details not available")
+		return nil
+	}
+
+	// apply the lock values
+	staker.LockedFromEpoch = hexutil.Uint64(lock.FromEpoch.Uint64())
+	staker.LockedUntil = hexutil.Uint64(lock.EndTime.Uint64())
+
+	// get the value
+	return nil
+}
+
 // maxDelegatedLimit calculate maximum amount of tokens allowed to be delegated to a staker.
 func (ftm *FtmBridge) maxDelegatedLimit(staked *hexutil.Big, contract *SfcContract) hexutil.Big {
 	// if we don't know the staked amount, return zero
@@ -177,6 +197,30 @@ func (ftm *FtmBridge) maxDelegatedLimit(staked *hexutil.Big, contract *SfcContra
 	return (hexutil.Big)(*value)
 }
 
+// extendStaker extends staker information using SFC contract binding.
+func (ftm *FtmBridge) extendStaker(staker *types.Staker) (*types.Staker, error) {
+	// instantiate the contract and display its name
+	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		return nil, err
+	}
+
+	// update status detail
+	err = ftm.stakerStatusFromSfc(contract, staker)
+	if err != nil {
+		ftm.log.Critical("staker status could not be updated from SFC")
+	}
+
+	// update locking detail
+	err = ftm.stakerLockFromSfc(contract, staker)
+	if err != nil {
+		ftm.log.Critical("staker locking could not be updated from SFC")
+	}
+
+	return staker, nil
+}
+
 // Staker extract a staker information by numeric id.
 func (ftm *FtmBridge) Staker(id hexutil.Uint64) (*types.Staker, error) {
 	// keep track of the operation
@@ -190,15 +234,9 @@ func (ftm *FtmBridge) Staker(id hexutil.Uint64) (*types.Staker, error) {
 		return nil, err
 	}
 
-	// update detail
-	err = ftm.stakerUpdateFromSfc(&st)
-	if err != nil {
-		ftm.log.Critical("staker information could not be updated from SFC")
-	}
-
 	// keep track of the operation
 	ftm.log.Debugf("staker #%d loaded", id)
-	return &st, nil
+	return ftm.extendStaker(&st)
 }
 
 // StakerByAddress extracts a staker information by address.
@@ -214,15 +252,9 @@ func (ftm *FtmBridge) StakerByAddress(addr common.Address) (*types.Staker, error
 		return nil, err
 	}
 
-	// update detail
-	err = ftm.stakerUpdateFromSfc(&st)
-	if err != nil {
-		ftm.log.Critical("staker information could not be updated from SFC")
-	}
-
 	// keep track of the operation
 	ftm.log.Debugf("staker %s loaded", addr.String())
-	return &st, nil
+	return ftm.extendStaker(&st)
 }
 
 // Epoch extract information about an epoch from SFC smart contract.
@@ -345,6 +377,38 @@ func (ftm *FtmBridge) Delegation(addr common.Address, staker hexutil.Uint64) (*t
 	return &dl, nil
 }
 
+// DelegationLock returns delegation lock information using SFC contract binding.
+func (ftm *FtmBridge) DelegationLock(delegation *types.Delegation) (*types.DelegationLock, error) {
+	// instantiate the contract
+	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		return nil, err
+	}
+
+	// get staker locking detail
+	lock, err := contract.LockedDelegations(nil, delegation.Address, big.NewInt(int64(delegation.ToStakerId)))
+	if err != nil {
+		ftm.log.Errorf("delegation lock query failed; %v", err)
+		return nil, err
+	}
+
+	// are lock timers available?
+	if lock.FromEpoch == nil || lock.EndTime == nil {
+		ftm.log.Errorf("delegation lock details not available")
+		return nil, fmt.Errorf("delegation lock missing")
+	}
+
+	// make a new delegation lock
+	dl := new(types.DelegationLock)
+
+	// apply the lock values
+	dl.LockedFromEpoch = hexutil.Uint64(lock.FromEpoch.Uint64())
+	dl.LockedUntil = hexutil.Uint64(lock.EndTime.Uint64())
+
+	return dl, nil
+}
+
 // delegatedAmount calculates total amount currently delegated
 // and amount locked in pending un-delegation.
 // Partial Un-delegations are subtracted during the preparation
@@ -422,4 +486,30 @@ func (ftm *FtmBridge) Stashed(addr common.Address, stash *big.Int) (*big.Int, er
 func (ftm *FtmBridge) RewardsAllowed() (bool, error) {
 	ftm.log.Debug("rewards lock always open")
 	return true, nil
+}
+
+// LockingAllowed indicates if the stake locking has been enabled in SFC.
+func (ftm *FtmBridge) LockingAllowed() (bool, error) {
+	// instantiate the contract and display its name
+	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		return false, err
+	}
+
+	// get the current value of the first lock
+	firstLock, err := contract.FirstLockedUpEpoch(nil)
+	if err != nil {
+		ftm.log.Errorf("failed to get the first epoch with enabled locking: %v", err)
+		return false, err
+	}
+
+	// get the current sealed epoch value from the contract
+	epoch, err := contract.CurrentSealedEpoch(nil)
+	if err != nil {
+		ftm.log.Errorf("failed to get the current sealed epoch: %v", err)
+		return false, err
+	}
+
+	return firstLock.Uint64() > 0 && epoch.Uint64() >= firstLock.Uint64(), nil
 }

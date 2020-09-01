@@ -61,6 +61,11 @@ func (p *proxy) Delegation(addr common.Address, staker hexutil.Uint64) (*types.D
 	return p.rpc.Delegation(addr, staker)
 }
 
+// DelegationLock returns delegation lock information using SFC contract binding.
+func (p *proxy) DelegationLock(delegation *types.Delegation) (*types.DelegationLock, error) {
+	return p.rpc.DelegationLock(delegation)
+}
+
 // Delegation returns a detail of delegation for the given address.
 func (p *proxy) DelegationRewards(addr string, staker hexutil.Uint64) (types.PendingRewards, error) {
 	p.log.Debugf("loading rewards of %s to %d", addr, staker)
@@ -189,6 +194,11 @@ func (p *proxy) CurrentSealedEpoch() (*types.Epoch, error) {
 // RewardsAllowed returns the reward lock status from SFC.
 func (p *proxy) RewardsAllowed() (bool, error) {
 	return p.rpc.RewardsAllowed()
+}
+
+// LockingAllowed indicates if the stake locking has been enabled in SFC.
+func (p *proxy) LockingAllowed() (bool, error) {
+	return p.rpc.LockingAllowed()
 }
 
 // RewardsStash returns the amount of WEI stashed for the given address.
