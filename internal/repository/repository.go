@@ -83,6 +83,9 @@ type Repository interface {
 	// Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
 	Transaction(*types.Hash) (*types.Transaction, error)
 
+	// TransactionsCount returns total number of transactions in the block chain.
+	TransactionsCount() (hexutil.Uint64, error)
+
 	// Transactions returns list of transaction hashes at Opera blockchain.
 	Transactions(*string, int32) (*types.TransactionHashList, error)
 
@@ -124,6 +127,9 @@ type Repository interface {
 	// DelegationsOf extracts a list of delegations for a given staker.
 	DelegationsOf(hexutil.Uint64) ([]types.Delegation, error)
 
+	// DelegationLock returns delegation lock information using SFC contract binding.
+	DelegationLock(*types.Delegation) (*types.DelegationLock, error)
+
 	// Delegation returns a detail of delegation for the given address.
 	DelegationRewards(string, hexutil.Uint64) (types.PendingRewards, error)
 
@@ -134,6 +140,9 @@ type Repository interface {
 	// DeactivatedDelegation extracts a list of deactivated delegation requests
 	// for the given address.
 	DeactivatedDelegation(*common.Address) ([]*types.DeactivatedDelegation, error)
+
+	// LockingAllowed indicates if the stake locking has been enabled in SFC.
+	LockingAllowed() (bool, error)
 
 	// RewardsAllowed returns the reward lock status from SFC.
 	RewardsAllowed() (bool, error)

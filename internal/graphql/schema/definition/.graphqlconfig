@@ -42,7 +42,7 @@
         "introspect": false
       },
       "XAPI5 TestNet.Fantom.Network": {
-        "url": "https://xapi5.testnet.fantom.network/graphql",
+        "url": "https://xapi.testnet.fantom.network/graphql",
         "introspect": false
       }
     }

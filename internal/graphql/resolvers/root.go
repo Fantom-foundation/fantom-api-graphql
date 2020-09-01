@@ -25,6 +25,9 @@ const (
 
 // ApiResolver represents the API interface expected to handle API access points
 type ApiResolver interface {
+	// State resolves current state of the blockchain.
+	State() (CurrentState, error)
+
 	// Account resolves blockchain account by address.
 	Account(struct{ Address common.Address }) (*Account, error)
 

@@ -42,4 +42,13 @@ type Delegation {
 
     "List of full delegation deactivation."
     deactivation: [DeactivatedDelegation!]!
+
+    "isDelegationLocked indicates if the delegation is locked."
+    isDelegationLocked: Boolean!
+
+    "lockedFromEpoch represents the id of epoch the lock has been created."
+    lockedFromEpoch: Long!
+
+    "lockedUntil represents the timestamp up to which the delegation is locked, zero if not locked."
+    lockedUntil: Long!
 }

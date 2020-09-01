@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-08-31 17:24
+// Auto generated GraphQL schema bundle; created 2020-09-01 16:38
 const schema = `
 # Price represents price information of core Opera token
 type Price {
@@ -270,6 +270,15 @@ type Delegation {
 
     "List of full delegation deactivation."
     deactivation: [DeactivatedDelegation!]!
+
+    "isDelegationLocked indicates if the delegation is locked."
+    isDelegationLocked: Boolean!
+
+    "lockedFromEpoch represents the id of epoch the lock has been created."
+    lockedFromEpoch: Long!
+
+    "lockedUntil represents the timestamp up to which the delegation is locked, zero if not locked."
+    lockedUntil: Long!
 }
 
 # PendingRewards represents a detail of pending rewards for staking and delegations
@@ -598,6 +607,27 @@ scalar Bytes
 # Cursor is a string representing position in a sequential list of edges.
 scalar Cursor
 
+# CurrentState represents the current active state
+# of the chain information condensed on one place.
+type CurrentState {
+    # epoch is the last sealed Epoch structure
+    sealedEpoch: Epoch!
+
+    # blocks represents number of blocks in the chain.
+    blocks: Long!
+
+    # transactions represents number of transactions in the chain.
+    transactions: Long!
+
+    # validators represents number of validators in the network.
+    validators: Long!
+
+    # accounts represents number of accounts participating on transactions.
+    accounts: Long!
+
+    # sfcLockingEnabled indicates if the SFC locking feature is enabled.
+    sfcLockingEnabled: Boolean!
+}
 # Represents staker information.
 type Staker {
     "Id number the staker."
@@ -641,11 +671,20 @@ type Staker {
     "Is the staker offline."
     isOffline: Boolean!
 
+    "isStakeLocked singnals if the staker locked the stake."
+    isStakeLocked: Boolean!
+
     "Epoch in which the staker was created."
     createdEpoch: Long!
 
     "Timestamp of the staker creation."
     createdTime: Long!
+
+    "lockedFromEpoch is the identifier of the epoch the stake lock was created."
+    lockedFromEpoch: Long!
+
+    "lockedUntil is the timestamp up to which the stake is locked, zero if not locked."
+    lockedUntil: Long!
 
     "Epoch in which the staker was deactivated."
     deactivatedEpoch: Long!
@@ -968,6 +1007,9 @@ schema {
 
 # Entry points for querying the API
 type Query {
+    "State represents the current state of the blockchain and network."
+    state: CurrentState!
+
     "Total number of accounts active on the Opera blockchain."
     accountsActive:Long!
 
