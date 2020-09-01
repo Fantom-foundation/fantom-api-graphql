@@ -1,5 +1,5 @@
 # --------------------------------------------------------------------------
-# Makefile for the Fantom API GaphQL Server
+# Makefile for the Fantom API GraphQL Server
 #
 # v0.1 (2020/03/09)  - Initial version, base API server build.
 # (c) Fantom Foundation, 2020
@@ -12,7 +12,7 @@ PROJECT := $(shell basename "$(PWD)")
 GOBASE := $(shell pwd)
 GOBIN=$(CURDIR)/build
 
-## server: Make the API server as bin/frd
+## server: Make the API server as build/apiserver
 server:
 	go build -o $(GOBIN)/apiserver ./cmd/apiserver
 

@@ -1,0 +1,21 @@
+# CurrentState represents the current active state
+# of the chain information condensed on one place.
+type CurrentState {
+    # epoch is the last sealed Epoch structure
+    sealedEpoch: Epoch!
+
+    # blocks represents number of blocks in the chain.
+    blocks: Long!
+
+    # transactions represents number of transactions in the chain.
+    transactions: Long!
+
+    # validators represents number of validators in the network.
+    validators: Long!
+
+    # accounts represents number of accounts participating on transactions.
+    accounts: Long!
+
+    # sfcLockingEnabled indicates if the SFC locking feature is enabled.
+    sfcLockingEnabled: Boolean!
+}

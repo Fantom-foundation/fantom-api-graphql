@@ -7,6 +7,9 @@ schema {
 
 # Entry points for querying the API
 type Query {
+    "State represents the current state of the blockchain and network."
+    state: CurrentState!
+
     "Total number of accounts active on the Opera blockchain."
     accountsActive:Long!
 
