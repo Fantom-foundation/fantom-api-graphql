@@ -20,6 +20,8 @@ type Staker struct {
 	IsOffline                bool           `json:"isOffline"`
 	CreatedEpoch             hexutil.Uint64 `json:"createdEpoch"`
 	CreatedTime              hexutil.Uint64 `json:"createdTime"`
+	LockedFromEpoch          hexutil.Uint64 `json:"lockedFrom"`
+	LockedUntil              hexutil.Uint64 `json:"lockedUntil"`
 	DeactivatedEpoch         hexutil.Uint64 `json:"deactivatedEpoch"`
 	DeactivatedTime          hexutil.Uint64 `json:"deactivatedTime"`
 	MissedBlocks             hexutil.Uint64 `json:"missedBlocks"`

@@ -6,6 +6,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"sort"
+	"time"
 )
 
 // Staker represents resolvable staker record.
@@ -47,6 +48,11 @@ func (st Staker) Delegations(args *struct {
 // StakerInfo resolves extended staker information if available.
 func (st Staker) StakerInfo() *types.StakerInfo {
 	return st.repo.RetrieveStakerInfo(st.Id)
+}
+
+// IsStakeLocked signals if the stake is locked right now.
+func (st Staker) IsStakeLocked() bool {
+	return st.Staker.LockedFromEpoch > 0 && uint64(st.Staker.LockedUntil) < uint64(time.Now().UTC().Unix())
 }
 
 // WithdrawRequests resolves partial withdraw requests of the staker.
