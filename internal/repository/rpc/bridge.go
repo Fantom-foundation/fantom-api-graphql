@@ -27,11 +27,8 @@ type FtmBridge struct {
 	eth *eth.Client
 	log logger.Logger
 
-	// defiRfAggregatorAddress is the address of the DeFi Reference Aggregator contract
-	defiRfAggregatorAddress common.Address
-
-	// defiLiquidityPoolAddress is the address of the DeFi Liquidity Pool contract
-	defiLiquidityPoolAddress common.Address
+	// fMintCfg represents the configuration of the fMint protocol
+	fMintCfg fMintConfig
 }
 
 // New creates new Lachesis RPC connection bridge.
@@ -57,15 +54,20 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 	log.Notice("smart contact connection established")
 
 	// return the Bridge
-	return &FtmBridge{
+	br := &FtmBridge{
 		rpc: client,
 		eth: con,
 		log: log,
 
 		// special configuration options below this line
-		defiRfAggregatorAddress:  common.HexToAddress(cfg.DefiOracleReferenceAggregatorContract),
-		defiLiquidityPoolAddress: common.HexToAddress(cfg.DefiLiquidityPoolContract),
-	}, nil
+		fMintCfg: fMintConfig{
+			addressProvider: common.HexToAddress(cfg.DefiFMintAddressProvider),
+		},
+	}
+
+	// add the bridge ref to the fMintCfg and return the instance
+	br.fMintCfg.bridge = br
+	return br, nil
 }
 
 // Close will finish all pending operations and terminate the Lachesis RPC connection
