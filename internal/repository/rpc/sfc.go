@@ -13,7 +13,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
-//go:generate abigen --abi ./contracts/sfc-2.0.2-rc1.abi --pkg rpc --type SfcContract --out ./sfc_bind.go
+//go:generate abigen --abi ./contracts/sfc-2.0.2-rc1.abi --pkg rpc --type SfcContract --out ./smc_sfc.go
 
 import (
 	"fantom-api-graphql/internal/types"
@@ -25,6 +25,26 @@ import (
 
 // sfcContractAddress represents the address on which the Sfc contract is deployed.
 var sfcContractAddress = common.HexToAddress("0xfc00face00000000000000000000000000000000")
+
+// SfcVersion returns current version of the SFC contract as a single number.
+func (ftm *FtmBridge) SfcVersion() (hexutil.Uint64, error) {
+	// instantiate the contract and display its name
+	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		return 0, err
+	}
+
+	// get the version information from the contract
+	var ver [3]byte
+	ver, err = contract.Version(nil)
+	if err != nil {
+		ftm.log.Criticalf("failed to get the SFC version; %v", err)
+		return 0, err
+	}
+
+	return hexutil.Uint64((uint64(ver[0]) << 16) | (uint64(ver[1]) << 8) | uint64(ver[2])), nil
+}
 
 // CurrentEpoch extract the current epoch id from SFC smart contract.
 func (ftm *FtmBridge) CurrentEpoch() (hexutil.Uint64, error) {

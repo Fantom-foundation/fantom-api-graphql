@@ -15,6 +15,11 @@ import (
 	"math/big"
 )
 
+// SfcVersion returns current version of the SFC contract.
+func (p *proxy) SfcVersion() (hexutil.Uint64, error) {
+	return p.rpc.SfcVersion()
+}
+
 // CurrentEpoch returns the id of the current epoch.
 func (p *proxy) CurrentEpoch() (hexutil.Uint64, error) {
 	return p.rpc.CurrentEpoch()
