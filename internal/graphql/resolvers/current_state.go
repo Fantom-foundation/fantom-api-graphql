@@ -66,3 +66,8 @@ func (cst CurrentState) Transactions() (hexutil.Uint64, error) {
 func (cst CurrentState) SfcLockingEnabled() (bool, error) {
 	return cst.repo.LockingAllowed()
 }
+
+// SfcVersion resolves the current version of the SFC contract on the connected node.
+func (cst CurrentState) SfcVersion() (hexutil.Uint64, error) {
+	return cst.repo.SfcVersion()
+}
