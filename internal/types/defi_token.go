@@ -11,6 +11,10 @@ type DefiToken struct {
 	// Address of the token is used as the token's unique identifier.
 	Address common.Address `json:"address"`
 
+	// Index represents the index of the token in the registry
+	// starting from 1.
+	Index hexutil.Uint64 `json:"index"`
+
 	// Name represents an extended name of the token.
 	Name string `json:"name"`
 
@@ -36,6 +40,9 @@ type DefiToken struct {
 	// CanDeposit signals if the token can be used in deposit as a collateral asset.
 	CanDeposit bool `json:"canDeposit"`
 
+	// CanMint signals if the token can be used in fMint as a target asset.
+	CanMint bool `json:"canMint"`
+
 	// canBorrow signals if the token is available for FLend borrow operations.
 	CanBorrow bool `json:"canBorrow"`
 
@@ -45,3 +52,12 @@ type DefiToken struct {
 	// VolatilityIndex represents an index of volatility of the token used internally.
 	VolatilityIndex hexutil.Big `json:"volatilityIndex"`
 }
+
+// DefiTokenType represents the type of a token analyzed.
+type DefiTokenType string
+
+// types of token recognized by the DeFi protocol
+const (
+	DefiTokenTypeCollateral DefiTokenType = "COLLATERAL"
+	DefiTokenTypeDebt                     = "DEBT"
+)
