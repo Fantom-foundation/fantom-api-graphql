@@ -24,6 +24,9 @@ import (
 
 // Repository interface defines functions the underlying implementation provides to API resolvers.
 type Repository interface {
+	// FtmConnection returns open connection to Opera/Lachesis full node.
+	FtmConnection() *ftm.Client
+
 	// Account returns account at Opera blockchain for an address, nil if not found.
 	Account(*common.Address) (*types.Account, error)
 
@@ -141,6 +144,9 @@ type Repository interface {
 	// for the given address.
 	DeactivatedDelegation(*common.Address) ([]*types.DeactivatedDelegation, error)
 
+	// SfcVersion returns current version of the SFC contract.
+	SfcVersion() (hexutil.Uint64, error)
+
 	// LockingAllowed indicates if the stake locking has been enabled in SFC.
 	LockingAllowed() (bool, error)
 
@@ -165,9 +171,6 @@ type Repository interface {
 
 	// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
 	SendTransaction(hexutil.Bytes) (*types.Transaction, error)
-
-	// FtmConnection returns open connection to Opera/Lachesis full node.
-	FtmConnection() *ftm.Client
 
 	// SetBlockChannel registers a channel for notifying new block events.
 	SetBlockChannel(chan *types.Block)
@@ -209,6 +212,9 @@ type Repository interface {
 	// Votes returns a list of votes for the given votes and list of ballots.
 	Votes(common.Address, []common.Address) ([]types.Vote, error)
 
+	// DefiConfiguration loads the current DeFi contract settings.
+	DefiConfiguration() (*types.DefiSettings, error)
+
 	// DefiTokens resolves list of DeFi tokens available for the DeFi functions.
 	DefiTokens() ([]types.DefiToken, error)
 
@@ -219,17 +225,14 @@ type Repository interface {
 	// from on-chain price oracle.
 	DefiTokenPrice(*common.Address) (hexutil.Big, error)
 
-	// DefiTokenBalance loads balance of a single DeFi token by it's address.
-	DefiTokenBalance(*common.Address, *common.Address, string) (hexutil.Big, error)
+	// FMintAccount loads details of a DeFi/fMint account identified by the owner address.
+	FMintAccount(common.Address) (*types.FMintAccount, error)
 
-	// DefiTokenValue loads value of a single DeFi token by it's address in fUSD.
-	DefiTokenValue(*common.Address, *common.Address, string) (hexutil.Big, error)
+	// FMintTokenBalance loads balance of a single DeFi token by it's address.
+	FMintTokenBalance(*common.Address, *common.Address, types.DefiTokenType) (hexutil.Big, error)
 
-	// DefiConfiguration loads the current DeFi contract settings.
-	DefiConfiguration() (*types.DefiSettings, error)
-
-	// DefiAccount loads details of a DeFi account identified by the owner address.
-	DefiAccount(common.Address) (*types.DefiAccount, error)
+	// FMintTokenValue loads value of a single DeFi token by it's address in fUSD.
+	FMintTokenValue(*common.Address, *common.Address, types.DefiTokenType) (hexutil.Big, error)
 
 	// Erc20Balance load the current available balance of and ERC20 token identified by the token
 	// contract address for an identified owner address.
