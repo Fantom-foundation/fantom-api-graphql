@@ -1,7 +1,74 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-09-01 16:38
+// Auto generated GraphQL schema bundle; created 2020-09-09 20:09
 const schema = `
+# DefiToken represents a token available for DeFi operations.
+type DefiToken {
+    # address of the token is used as the token's unique identifier.
+    address: Address!
+
+    # name of the token.
+    name: String!
+
+    # symbol used as an abbreviation for the token.
+    symbol: String!
+
+    # logoUrl is the URL of the token logo image.
+    logoUrl: String!
+
+    # decimals is the number of decimals the token supports.
+    # The most common value is 18 to mimic the ETH to WEI relationship.
+    decimals: Int!
+
+    # isActive signals if the token can be used
+    # in the DeFi functions at all.
+    isActive: Boolean!
+
+    # canDeposit signals if the token can be used
+    # in deposit as a collateral asset.
+    canDeposit: Boolean!
+
+    # canMint signals if the token can be used
+    # in fMint protocol as the target token.
+    canMint: Boolean!
+
+    # canBorrow signals if the token is available
+    # for FLend borrow operations.
+    canBorrow: Boolean!
+
+    # canTrade signals if the token is available
+    # for FTrade direct trading operations.
+    canTrade: Boolean!
+
+    # price represents the value of the token in ref. denomination.
+    # We use fUSD tokens as the synth reference value.
+    price: BigInt!
+
+    # priceDecimals is the number of decimals used on the price
+    # field to properly handle value calculations without loosing precision.
+    priceDecimals: Int!
+
+    # availableBalance represents the total available balance of the token
+    # on the account regardless of the DeFi usage of the token.
+    # It's effectively the amount available held by the ERC20 token
+    # on the account behalf.
+    availableBalance(owner: Address!): BigInt!
+
+    # defiAllowance represents the amount of ERC20 tokens unlocked
+    # by the owner / token holder to be accessible for DeFi operations.
+    # If an operation requires access to certain ERC20 token, the DeFi
+    # contract must be allowed to make a transfer of required amount
+    # of tokens from the owner to the DeFi Liquidity Poll.
+    # If it's not given, the operation will fail.
+    allowance(owner: Address!): BigInt!
+}
+
+# DefiTokenBalanceType represents the type of DeFi token balance record.
+enum DefiTokenBalanceType {
+    COLLATERAL
+    DEBT
+}
+
 # Price represents price information of core Opera token
 type Price {
     "Source unit symbol."
@@ -426,167 +493,6 @@ type ContractListEdge {
     contract: Contract!
 }
 
-# DefiToken represents a token available for DeFi operations.
-type DefiToken {
-    # address of the token is used as the token's unique identifier.
-    address: Address!
-
-    # name of the token.
-    name: String!
-
-    # symbol used as an abbreviation for the token.
-    symbol: String!
-
-    # logoUrl is the URL of the token logo image.
-    logoUrl: String!
-
-    # decimals is the number of decimals the token supports.
-    # The most common value is 18 to mimic the ETH to WEI relationship.
-    decimals: Int!
-
-    # isActive signals if the token can be used
-    # in the DeFi functions at all.
-    isActive: Boolean!
-
-    # canDeposit signals if the token can be used
-    # in deposit as a collateral asset.
-    canDeposit: Boolean!
-
-    # canBorrow signals if the token is available
-    # for FLend borrow operations.
-    canBorrow: Boolean!
-
-    # canTrade signals if the token is available
-    # for FTrade direct trading operations.
-    canTrade: Boolean!
-
-    # volatilityIndex is an index of volatility of the token.
-    volatilityIndex: BigInt!
-
-    # price represents the value of the token in ref. denomination.
-    # We use fUSD tokens as the synth reference value.
-    price: BigInt!
-
-    # priceDecimals is the number of decimals used on the price
-    # field to properly handle value calculations without loosing precision.
-    priceDecimals: Int!
-
-    # availableBalance represents the total available balance of the token
-    # on the account regardless of the DeFi usage of the token.
-    # It's effectively the amount available held by the ERC20 token
-    # on the account behalf.
-    availableBalance(owner: Address!): BigInt!
-
-    # defiAllowance represents the amount of ERC20 tokens unlocked
-    # by the owner / token holder to be accessible for DeFi operations.
-    # If an operation requires access to certain ERC20 token, the DeFi
-    # contract must be allowed to make a transfer of required amount
-    # of tokens from the owner to the DeFi Liquidity Poll.
-    # If it's not given, the operation will fail.
-    allowance(owner: Address!): BigInt!
-}
-
-# DefiTokenBalanceType represents the type of DeFi token balance record.
-enum DefiTokenBalanceType {
-    COLLATERAL
-    DEBT
-}
-
-# DefiTokenBalance represents a balance of a specific DeFi token on an account.
-# The balance is used for both collateral deposits and FLend debt.
-type DefiTokenBalance {
-    # type represents the type of the balance record.
-    type: DefiTokenBalanceType!
-
-    # tokenAddress represents unique identifier of the token.
-    tokenAddress: Address!
-
-    # token represents the detail of the token
-    token: DefiToken!
-
-    # current balance of the token on the account.
-    balance: BigInt!
-
-    # value of the current balance of the token on the account
-    # in ref. denomination (fUSD).
-    value: BigInt!
-}
-
-# DefiAccount represents an informastion about account details
-# in DeFi module.
-type DefiAccount {
-    # address of the DeFi account.
-    address: Address!
-
-    # collateralList represents a list of all collateral tokens
-    # linked with the account.
-    collateralList: [Address!]!
-
-    # collaterals represents a list of all collateral assets.
-    collateral: [DefiTokenBalance!]!
-
-    # collateralValue represents the current collateral value
-    # in ref. denomination (fUSD).
-    collateralValue: BigInt!
-
-    # accumulated rewards of the DeFi account for the excessive
-    # collateral value.
-    totalCollateralRewardsAmount: BigInt!
-
-    # debtList represents a list of all debt tokens linked with the account.
-    debtList: [Address!]!
-
-    # debts represents the list of all the current borrowed tokens.
-    debt: [DefiTokenBalance!]!
-
-    # debtValue represents the current debt value
-    # in ref. denomination (fUSD).
-    debtValue: BigInt!
-}
-
-# DefiSettings represents the set of current settings and limits
-# applied to DeFi operations.
-type DefiSettings {
-    # tradeFee4 is the current fee applied to all direct trading operations.
-    # Value is represented in 4 digits, e.g. value 25 = 0.0025 => 0.25% fee.
-    tradeFee4: BigInt!
-
-    # loanFee4 is the current entry fee applied to all lending operations.
-    # Value is represented in 4 digits, e.g. value 25 = 0.0025 => 0.25% fee.
-    loanFee4: BigInt!
-
-    # minCollateralRatio4 is the minimal allowed ratio between
-    # collateral and debt values in ref. denomination (fUSD)
-    # on which the borrow trade is allowed.
-    # Value is represented in 4 digits,
-    # e.g. value 25000 = 3.0x => (debt x 3.0 <= collateral)
-    minCollateralRatio4: BigInt!
-
-    # minCollateralRatio4 is the minimal allowed ratio between
-    # collateral and debt values in ref. denomination (fUSD)
-    # on which the borrow trade is allowed.
-    # Value is represented in 4 digits,
-    # e.g. value 25000 = 2.5x => (debt x 2.25 <= collateral)
-    warningCollateralRatio4: BigInt!
-
-    # liqCollateralRatio4 is the liquidation ratio between
-    # collateral and debt values in ref. denomination (fUSD).
-    # If the current ratio drops below this value, the position
-    # is liquidated.
-    # Value is represented in 4 digits,
-    # e.g. value 15000 = 1.5x => (debt x 1.5 <= collateral)
-    liqCollateralRatio4: BigInt!
-
-    # decimals represents the decimals / digits correction
-    # applied to the fees and ratios internally to correctly represent
-    # fraction numbers. E.g. correction value 4 => ratio/fee x 10000.
-    decimals: Int!
-
-    # priceOracleAggregate is the address of the current price oracle
-    # aggregate used by the DeFe to obtain USD price of tokens managed.
-    priceOracleAggregate: Address!
-}
-
 # Hash is a 32 byte binary string, represented by 0x prefixed hexadecimal.
 scalar Hash
 
@@ -627,6 +533,12 @@ type CurrentState {
 
     # sfcLockingEnabled indicates if the SFC locking feature is enabled.
     sfcLockingEnabled: Boolean!
+
+    # sfcVersion indicates the current version of the SFC contract.
+    # The version is encoded into 3 bytes representing ASCII version numbers
+    # with the most significant byte first [<8bit major><8bit minor><8bit revision>].
+    # I.e. Version 1.0.2 = "102" = 0x313032
+    sfcVersion: Long!
 }
 # Represents staker information.
 type Staker {
@@ -671,7 +583,7 @@ type Staker {
     "Is the staker offline."
     isOffline: Boolean!
 
-    "isStakeLocked singnals if the staker locked the stake."
+    "isStakeLocked signals if the staker locked the stake."
     isStakeLocked: Boolean!
 
     "Epoch in which the staker was created."
@@ -741,6 +653,103 @@ type Staker {
     not the requests of the stake delegators.
     """
     withdrawRequests: [WithdrawRequest!]!
+}
+
+# FMintAccount represents an informastion about account details
+# in DeFi/fMint protocol.
+type FMintAccount {
+    # address of the DeFi account.
+    address: Address!
+
+    # collateralList represents a list of all collateral tokens
+    # linked with the account.
+    collateralList: [Address!]!
+
+    # collaterals represents a list of all collateral assets.
+    collateral: [FMintTokenBalance!]!
+
+    # collateralValue represents the current collateral value
+    # in ref. denomination (fUSD).
+    collateralValue: BigInt!
+
+    # accumulated rewards of the DeFi account for the excessive
+    # collateral value.
+    totalCollateralRewardsAmount: BigInt!
+
+    # debtList represents a list of all debt tokens linked with the account.
+    debtList: [Address!]!
+
+    # debts represents the list of all the current borrowed tokens.
+    debt: [FMintTokenBalance!]!
+
+    # debtValue represents the current debt value
+    # in ref. denomination (fUSD).
+    debtValue: BigInt!
+}
+
+# FMintTokenBalance represents a balance of a specific DeFi token
+# on an fMint protocol account.
+# The balance is used for both collateral deposits and minting debt.
+type FMintTokenBalance {
+    # type represents the type of the balance record.
+    type: DefiTokenBalanceType!
+
+    # tokenAddress represents unique identifier of the token.
+    tokenAddress: Address!
+
+    # token represents the detail of the token
+    token: DefiToken!
+
+    # current balance of the token on the account.
+    balance: BigInt!
+
+    # value of the current balance of the token on the account
+    # in ref. denomination (fUSD).
+    value: BigInt!
+}
+
+# DefiSettings represents the set of current settings and limits
+# applied to DeFi operations.
+type DefiSettings {
+    # mintFee4 is the current fee applied to all minting operations on fMint protocol.
+    # Value is represented in 4 digits, e.g. value 25 = 0.0025 => 0.25% fee.
+    mintFee4: BigInt!
+
+    # minCollateralRatio4 is the minimal allowed ratio between
+    # collateral and debt values in ref. denomination (fUSD)
+    # on which the borrow trade is allowed.
+    # Value is represented in 4 digits,
+    # e.g. value 25000 = 3.0x => (debt x 3.0 <= collateral)
+    minCollateralRatio4: BigInt!
+
+    # rewardCollateralRatio4 is the minimal ratio between
+    # collateral and debt values in ref. denomination (fUSD)
+    # on which the account is eligible for rewards distribution.
+    # Collateral below this ratio means all the pending rewards
+    # will be burnt and lost.
+    rewardCollateralRatio4: BigInt!
+
+    # decimals represents the decimals / digits correction
+    # applied to the fees and ratios internally to correctly represent
+    # fraction numbers. E.g. correction value 4 => ratio/fee x 10000.
+    decimals: Int!
+
+    # priceOracleAggregate is the address of the current price oracle
+    # aggregate used by the DeFi to obtain USD price of tokens managed.
+    priceOracleAggregate: Address!
+
+    # fMintAddress is the address of the fMint contract.
+    fMintContract: Address!
+
+	# fMintAddressProvider represents the address of the fMint address provider.
+	fMintAddressProvider: Address!
+
+    # tokenRegistryContract is the address of the DeFi token registry.
+    fMintTokenRegistry: Address!
+
+    # fMintRewardDistribution is the address of the DeFi fMint
+    # reward distribution contract.
+    fMintRewardDistribution: Address!
 }
 
 # EstimatedRewards represents a calculated rewards estimation for an account or amount staked
@@ -1141,14 +1150,14 @@ type Query {
     "defiConfiguration exposes the current DeFi contract setup."
     defiConfiguration:DefiSettings!
 
-    "defiAccount provides DeFi information about an account."
-    defiAccount(owner: Address!):DefiAccount!
+    "fMintAccount provides DeFi/fMint information about an account on fMint protocol."
+    fMintAccount(owner: Address!):FMintAccount!
 
     """
-    defiTokenAllowance resolves the amount of ERC20 tokens unlocked
-    by the token owner for DeFi operations.
+    fMintTokenAllowance resolves the amount of ERC20 tokens unlocked
+    by the token owner for DeFi/fMint operations.
     """
-    defiTokenAllowance(owner: Address!, token: Address!):BigInt!
+    fMintTokenAllowance(owner: Address!, token: Address!):BigInt!
 
     """
     ercTokenBalance provides the current available balance of a specified ERC20 token

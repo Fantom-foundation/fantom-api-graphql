@@ -1,0 +1,52 @@
+# FMintAccount represents an informastion about account details
+# in DeFi/fMint protocol.
+type FMintAccount {
+    # address of the DeFi account.
+    address: Address!
+
+    # collateralList represents a list of all collateral tokens
+    # linked with the account.
+    collateralList: [Address!]!
+
+    # collaterals represents a list of all collateral assets.
+    collateral: [FMintTokenBalance!]!
+
+    # collateralValue represents the current collateral value
+    # in ref. denomination (fUSD).
+    collateralValue: BigInt!
+
+    # accumulated rewards of the DeFi account for the excessive
+    # collateral value.
+    totalCollateralRewardsAmount: BigInt!
+
+    # debtList represents a list of all debt tokens linked with the account.
+    debtList: [Address!]!
+
+    # debts represents the list of all the current borrowed tokens.
+    debt: [FMintTokenBalance!]!
+
+    # debtValue represents the current debt value
+    # in ref. denomination (fUSD).
+    debtValue: BigInt!
+}
+
+# FMintTokenBalance represents a balance of a specific DeFi token
+# on an fMint protocol account.
+# The balance is used for both collateral deposits and minting debt.
+type FMintTokenBalance {
+    # type represents the type of the balance record.
+    type: DefiTokenBalanceType!
+
+    # tokenAddress represents unique identifier of the token.
+    tokenAddress: Address!
+
+    # token represents the detail of the token
+    token: DefiToken!
+
+    # current balance of the token on the account.
+    balance: BigInt!
+
+    # value of the current balance of the token on the account
+    # in ref. denomination (fUSD).
+    value: BigInt!
+}
