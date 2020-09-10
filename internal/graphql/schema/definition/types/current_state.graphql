@@ -18,4 +18,10 @@ type CurrentState {
 
     # sfcLockingEnabled indicates if the SFC locking feature is enabled.
     sfcLockingEnabled: Boolean!
+
+    # sfcVersion indicates the current version of the SFC contract.
+    # The version is encoded into 3 bytes representing ASCII version numbers
+    # with the most significant byte first [<8bit major><8bit minor><8bit revision>].
+    # I.e. Version 1.0.2 = "102" = 0x313032
+    sfcVersion: Long!
 }

@@ -17,33 +17,37 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 )
 
-//go:generate abigen --abi ./contracts/defi_liquidity_pool.abi --pkg rpc --type DefiLiquidityPool --out ./defi_liquidity_pool.go --alias _collateralValue=StoredCollateralValue,_debtValue=StoredDebtValue
+//go:generate abigen --abi ./contracts/defi-fmint-address-provider.abi --pkg rpc --type DefiFMintAddressProvider --out ./smc_fmint_addresses.go
 
 // tConfigItemsLoaders defines a map between DeFi config elements and their respective loaders.
 type tConfigItemsLoaders map[*hexutil.Big]func(*bind.CallOpts) (*big.Int, error)
 
 // DefiConfiguration resolves the current DeFi contract settings.
 func (ftm *FtmBridge) DefiConfiguration() (*types.DefiSettings, error) {
-	// connect the contract
-	contract, err := NewDefiLiquidityPool(ftm.defiLiquidityPoolAddress, ftm.eth)
+	// access the contract
+	contract, err := ftm.fMintCfg.fMintMinterContract()
 	if err != nil {
-		ftm.log.Errorf("can not open liquidity pool contract connection; %s", err.Error())
 		return nil, err
 	}
 
 	// create the container
-	ds := types.DefiSettings{}
+	ds := types.DefiSettings{
+		FMintContract:           ftm.fMintCfg.mustContractAddress(fMintAddressMinter),
+		FMintAddressProvider:    ftm.fMintCfg.addressProvider,
+		FMintTokenRegistry:      ftm.fMintCfg.mustContractAddress(fMintAddressTokenRegistry),
+		FMintRewardDistribution: ftm.fMintCfg.mustContractAddress(fMintAddressRewardDistribution),
+		PriceOracleAggregate:    ftm.fMintCfg.mustContractAddress(fMintAddressPriceOracleProxy),
+	}
+
+	// prep to load certain values
 	loaders := tConfigItemsLoaders{
-		&ds.TradeFee4:               contract.TradeFee4dec,
-		&ds.LoanFee4:                contract.LoanEntryFee4dec,
-		&ds.MinCollateralRatio4:     contract.ColLowestRatio4dec,
-		&ds.WarningCollateralRatio4: contract.ColWarningRatio4dec,
-		&ds.LiqCollateralRatio4:     contract.ColLiquidationRatio4dec,
+		&ds.MintFee4:               contract.FMintFee,
+		&ds.MinCollateralRatio4:    contract.CollateralLowestDebtRatio4dec,
+		&ds.RewardCollateralRatio4: contract.RewardEligibilityRatio4dec,
 	}
 
 	// load all the configured values
@@ -58,21 +62,15 @@ func (ftm *FtmBridge) DefiConfiguration() (*types.DefiSettings, error) {
 		return nil, err
 	}
 
-	// load the decimals correction
-	if ds.PriceOracleAggregate, err = ftm.pullDefiPriceAggregatorAddress(contract); err != nil {
-		ftm.log.Errorf("can not pull defi price oracle aggregate address; %s", err.Error())
-		return nil, err
-	}
-
-	// number of decimals
+	// return the config
 	return &ds, nil
 }
 
 // pullSetOfDefiConfigValues pulls set of DeFi configuration values for the given
 // config loaders map.
-func (ftm *FtmBridge) pullDefiDecimalCorrection(con *DefiLiquidityPool) (int32, error) {
+func (ftm *FtmBridge) pullDefiDecimalCorrection(con *DefiFMintMinter) (int32, error) {
 	// load the decimals correction
-	val, err := ftm.pullDefiConfigValue(con.RatioDecimalsCorrection)
+	val, err := ftm.pullDefiConfigValue(con.FMintFeeDigitsCorrection)
 	if err != nil {
 		ftm.log.Errorf("can not pull decimals correction; %s", err.Error())
 		return 0, err
@@ -88,19 +86,6 @@ func (ftm *FtmBridge) pullDefiDecimalCorrection(con *DefiLiquidityPool) (int32, 
 
 	// convert and return
 	return dec, nil
-}
-
-// pullDefiPriceAggregatorAddress pulls address of the price oracle aggregator contract used by DeFi.
-func (ftm *FtmBridge) pullDefiPriceAggregatorAddress(con *DefiLiquidityPool) (common.Address, error) {
-	// load the decimals correction
-	addr, err := con.PriceOracle(nil)
-	if err != nil {
-		ftm.log.Errorf("can not pull price oracle aggregator address; %s", err.Error())
-		return common.Address{}, err
-	}
-
-	// convert and return
-	return addr, nil
 }
 
 // pullSetOfDefiConfigValues pulls set of DeFi configuration values for the given

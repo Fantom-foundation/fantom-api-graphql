@@ -13,213 +13,162 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
-//go:generate abigen --abi ./contracts/defi_oracle_aggregator.abi --pkg rpc --type DefiOracleReferenceAggregator --out ./defi_oracle_aggregator.go
+//go:generate abigen --abi ./contracts/defi-tokens-registry.abi --pkg rpc --type DefiFMintTokenRegistry --out ./smc_fmint_tokens.go
 
 import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 )
 
-// DefiToken loads details of a single DeFi token by it's address.
-func (ftm *FtmBridge) DefiToken(token *common.Address) (*types.DefiToken, error) {
-	// connect the contract
-	contract, err := NewDefiOracleReferenceAggregator(ftm.defiRfAggregatorAddress, ftm.eth)
-	if err != nil {
-		ftm.log.Errorf("can not open reference aggregator contract connection; %s", err.Error())
-		return nil, err
-	}
-
-	// get the token index
-	ix, err := contract.FindTokenIndex(nil, *token)
-	if err != nil {
-		ftm.log.Errorf("can not get token index by address; %s", err.Error())
-		return nil, err
-	}
-
-	// if the index valid?
-	if 0 > ix.Int64() {
-		ftm.log.Debugf("token %s not found", token.String())
-		return nil, nil
-	}
-
-	// get the token details
-	tk, err := contract.Tokens(nil, ix)
-	if err != nil {
-		ftm.log.Errorf("can not get token %s details for index %d; %s", token.String(), ix.Int64(), err.Error())
-		return nil, err
-	}
-
-	// decode token details
-	dt, err := decodeToken(tk)
-	if err != nil {
-		ftm.log.Errorf("can not decode token %s details for index %d; %s", token.String(), ix.Int64(), err.Error())
-		return nil, err
-	}
-
-	return &dt, nil
-}
-
 // DefiTokens resolves list of DeFi tokens available for the DeFi functions.
 func (ftm *FtmBridge) DefiTokens() ([]types.DefiToken, error) {
 	// connect the contract
-	contract, err := NewDefiOracleReferenceAggregator(ftm.defiRfAggregatorAddress, ftm.eth)
+	contract, err := ftm.fMintCfg.tokenRegistryContract()
 	if err != nil {
-		ftm.log.Errorf("can not open reference aggregator contract connection; %s", err.Error())
 		return nil, err
 	}
 
 	return ftm.defiTokensList(contract)
 }
 
-// decodeToken decodes the contract internal token representation
-// into the API structure.
-func decodeToken(tk struct {
-	Token         common.Address
-	Name          string
-	Symbol        string
-	Logo          string
-	Decimals      uint8
-	PriceDecimals uint8
-	IsActive      bool
-	CanDeposit    bool
-	CanBorrow     bool
-	CanTrade      bool
-	Volatility    *big.Int
-}) (types.DefiToken, error) {
-	// make sure the volatility is available
-	if tk.Volatility == nil {
-		return types.DefiToken{}, fmt.Errorf("volatility index not available")
+// defiTokenList creates a list of addresses / identifiers of all the ERC20 tokens
+// involved with the fMint protocol.
+func (ftm *FtmBridge) DefiTokenList() ([]common.Address, error) {
+	// connect the contract
+	contract, err := ftm.fMintCfg.tokenRegistryContract()
+	if err != nil {
+		return nil, err
 	}
 
-	// decode and return
-	return types.DefiToken{
-		Address:         tk.Token,
-		Name:            tk.Name,
-		Symbol:          tk.Symbol,
-		LogoUrl:         tk.Logo,
-		Decimals:        int32(tk.Decimals),
-		PriceDecimals:   int32(tk.PriceDecimals),
-		IsActive:        tk.IsActive,
-		CanDeposit:      tk.CanDeposit,
-		CanBorrow:       tk.CanBorrow,
-		CanTrade:        tk.CanTrade,
-		VolatilityIndex: hexutil.Big(*tk.Volatility),
-	}, nil
+	return ftm.defiTokenAddressList(contract.TokensCount, contract.TokensList)
 }
 
-// defiTokensList load list of DeFi tokens from the smart contract.
-func (ftm *FtmBridge) defiTokensList(contract *DefiOracleReferenceAggregator) ([]types.DefiToken, error) {
-	// get the number of tokens in the reference aggregator
-	count, err := contract.TokensCount(nil)
+// DefiToken loads details of a single DeFi token by it's address.
+func (ftm *FtmBridge) DefiToken(token *common.Address) (*types.DefiToken, error) {
+	// connect the contract
+	contract, err := ftm.fMintCfg.tokenRegistryContract()
 	if err != nil {
-		ftm.log.Errorf("can not read aggregator tokens range; %s", err.Error())
+		return nil, err
+	}
+
+	return ftm.defiTokenDetail(contract, token)
+}
+
+// defiTokenAddressList load list of addresses of tokens using given
+// count function and item access function to do the loading.
+func (ftm *FtmBridge) defiTokenAddressList(
+	fCount func(*bind.CallOpts) (*big.Int, error),
+	fItem func(*bind.CallOpts, *big.Int) (common.Address, error),
+) ([]common.Address, error) {
+	// get the number of tokens in the reference aggregator
+	count, err := fCount(nil)
+	if err != nil {
+		ftm.log.Errorf("can not get tokens range; %s", err.Error())
 		return nil, err
 	}
 
 	// make a container for tokens
-	list := make([]types.DefiToken, 0)
+	list := make([]common.Address, count.Uint64())
 	index := new(big.Int)
 
 	// load all the tokens in the contract
 	for i := uint64(0); i < count.Uint64(); i++ {
 		// read the indexed token from contract
-		prop, err := contract.Tokens(nil, index.SetUint64(i))
+		list[i], err = fItem(nil, index.SetUint64(i))
 		if err != nil {
-			ftm.log.Errorf("can not read token %d details from the contract; %s", i, err.Error())
+			ftm.log.Errorf("token %d address not found; %s", i, err.Error())
 			return nil, err
 		}
-
-		// decode the token
-		tk, err := decodeToken(prop)
-		if err != nil {
-			ftm.log.Errorf("invalid token information received from aggregate for #%d; %s", i, err.Error())
-			continue
-		}
-
-		// add the token
-		list = append(list, tk)
 	}
 
 	return list, nil
 }
 
-// DefiTokenBalance loads balance of a single DeFi token by it's address.
-func (ftm *FtmBridge) DefiTokenBalance(owner *common.Address, token *common.Address, tt string) (hexutil.Big, error) {
-	// connect the contract
-	contract, err := NewDefiLiquidityPool(ftm.defiLiquidityPoolAddress, ftm.eth)
+// defiTokenDetail loads details of a token specified by the token address.
+func (ftm *FtmBridge) defiTokenDetail(contract *DefiFMintTokenRegistry, token *common.Address) (*types.DefiToken, error) {
+	// get the token details
+	tk, err := contract.Tokens(nil, *token)
 	if err != nil {
-		ftm.log.Errorf("can not open liquidity pool contract connection; %s", err.Error())
-		return hexutil.Big{}, err
+		ftm.log.Errorf("token %s not found; %s", token.String(), err.Error())
+		return nil, err
 	}
 
-	// get the collateral token balance
-	var val *big.Int
-
-	// pull the right value based to token type
-	if tt == "COLLATERAL" {
-		val, err = contract.CollateralTokens(nil, *owner, *token)
-	} else {
-		val, err = contract.DebtTokens(nil, *owner, *token)
+	// decode token details
+	dt, err := decodeToken(token, tk)
+	if err != nil {
+		ftm.log.Errorf("can not decode token %s; %s", token.String(), err.Error())
+		return nil, err
 	}
 
-	// do we have the value?
-	if val == nil {
-		ftm.log.Debugf("token %s balance not available for owner %s", token.String(), owner.String())
-		return hexutil.Big{}, err
-	}
-
-	return hexutil.Big(*val), err
+	return &dt, nil
 }
 
-// DefiTokenValue loads value of a single DeFi token by it's address in fUSD.
-func (ftm *FtmBridge) DefiTokenValue(owner *common.Address, token *common.Address, tt string) (hexutil.Big, error) {
-	// get the balance
-	balance, err := ftm.DefiTokenBalance(owner, token, tt)
+// defiTokensList loads list of DeFi tokens from the smart contract.
+func (ftm *FtmBridge) defiTokensList(contract *DefiFMintTokenRegistry) ([]types.DefiToken, error) {
+	// get tge list of addresses
+	al, err := ftm.defiTokenAddressList(contract.TokensCount, contract.TokensList)
 	if err != nil {
-		ftm.log.Errorf("can not get token balance; %s", err.Error())
-		return hexutil.Big{}, err
+		ftm.log.Errorf("tokens list not available; %s", err.Error())
+		return nil, err
 	}
 
-	// get the price for the given token from oracle
-	val, err := ftm.DefiTokenPrice(token)
-	if err != nil {
-		ftm.log.Errorf("price not available for token %s; %s", token.String(), err.Error())
-		return hexutil.Big{}, err
+	// make a container for tokens
+	list := make([]types.DefiToken, len(al))
+
+	// load all the tokens in the contract
+	for i, addr := range al {
+		// decode the token
+		tk, err := ftm.defiTokenDetail(contract, &addr)
+		if err != nil {
+			ftm.log.Errorf("invalid token #%d; %s", i, err.Error())
+			return nil, err
+		}
+
+		// add the token
+		list[i] = *tk
 	}
 
-	// calculate the target value
-	value := new(big.Int).Mul(val.ToInt(), balance.ToInt())
-	return hexutil.Big(*value), nil
+	return list, nil
 }
 
-// DefiTokenPrice loads the current price of the given token
-// from on-chain price oracle.
-func (ftm *FtmBridge) DefiTokenPrice(token *common.Address) (hexutil.Big, error) {
-	// log actions
-	ftm.log.Debugf("connecting price oracle %s", ftm.defiRfAggregatorAddress.String())
-
-	// get the price oracle address
-	priceOracle, err := NewDefiOracleReferenceAggregator(ftm.defiRfAggregatorAddress, ftm.eth)
-	if err != nil {
-		ftm.log.Errorf("can not open price oracle contract connection; %s", err.Error())
-		return hexutil.Big{}, err
+// decodeToken decodes the contract internal token representation
+// into the API structure.
+func decodeToken(addr *common.Address, tk struct {
+	Id            *big.Int
+	Name          string
+	Symbol        string
+	Decimals      uint8
+	Logo          string
+	Oracle        common.Address
+	PriceDecimals uint8
+	IsActive      bool
+	CanDeposit    bool
+	CanMint       bool
+	CanBorrow     bool
+	CanTrade      bool
+}) (types.DefiToken, error) {
+	// do we have a valid token? fail if not
+	if tk.Id == nil || 0 == tk.Id.Uint64() {
+		return types.DefiToken{}, fmt.Errorf("token undefined")
 	}
 
-	// get the price for the given token from oracle
-	val, err := priceOracle.GetPrice(nil, *token)
-	if err != nil {
-		ftm.log.Errorf("price not available for token %s; %s", token.String(), err.Error())
-		return hexutil.Big{}, err
-	}
-
-	// do we have the value?
-	if val == nil {
-		ftm.log.Debugf("token %s has not value", token.String())
-		return hexutil.Big{}, nil
-	}
-
-	return hexutil.Big(*val), nil
+	// decode and return
+	return types.DefiToken{
+		Address:       *addr,
+		Index:         hexutil.Uint64(tk.Id.Uint64()),
+		Name:          tk.Name,
+		Symbol:        tk.Symbol,
+		LogoUrl:       tk.Logo,
+		Decimals:      int32(tk.Decimals),
+		PriceDecimals: int32(tk.PriceDecimals),
+		IsActive:      tk.IsActive,
+		CanDeposit:    tk.CanDeposit,
+		CanMint:       tk.CanMint,
+		CanBorrow:     tk.CanBorrow,
+		CanTrade:      tk.CanTrade,
+	}, nil
 }

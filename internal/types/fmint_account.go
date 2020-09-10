@@ -6,9 +6,9 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-// DefiAccount represents information about specific DeFi account
+// FMintAccount represents information about specific DeFi/fMint account
 // identified by the owner's address.
-type DefiAccount struct {
+type FMintAccount struct {
 	// address of the DeFi account.
 	Address common.Address
 

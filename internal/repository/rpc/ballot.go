@@ -22,7 +22,7 @@ import (
 	"strings"
 )
 
-//go:generate abigen --abi ./contracts/ballot.abi --pkg rpc --type BallotContract --out ./ballot_bind.go
+//go:generate abigen --abi ./contracts/ballot.abi --pkg rpc --type BallotContract --out ./smc_ballot.go
 
 // ballotDetails is the structure describing basic ballot details stored in the contract
 type ballotDetails struct {

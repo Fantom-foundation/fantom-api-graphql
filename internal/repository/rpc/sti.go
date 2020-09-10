@@ -13,7 +13,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
-//go:generate abigen --abi ./contracts/st_info.abi --pkg rpc --type StakerInfoContract --out ./sti_bind.go
+//go:generate abigen --abi ./contracts/st_info.abi --pkg rpc --type StakerInfoContract --out ./smc_staker_info.go
 
 import (
 	"encoding/json"

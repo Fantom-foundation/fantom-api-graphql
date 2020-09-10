@@ -36,8 +36,7 @@ const (
 	keyVotingSources     = "voting.sources"
 
 	// defi related configs
-	keyDefiRefAggregatorContract = "defi.ref-aggregator"
-	keyDefiLiquidityPoolContract = "defi.liquidity-pool"
+	keyDefiFMintAddressProvider = "defi.address-provider"
 )
 
 // Config defines configuration options structure for Fantom API server.
@@ -84,11 +83,8 @@ type Config struct {
 	// ApiStateOrigin represents request origin used on state syncing events.
 	ApiStateOrigin string
 
-	// DefiOracleReferenceAggregatorContract is the address of the DeFi Reference Aggregator contract.
-	DefiOracleReferenceAggregatorContract string
-
-	// DefiLiquidityPoolContract is the address of the DeFi Liquidity Pool control contract.
-	DefiLiquidityPoolContract string
+	// DefiFMintAddressProvider is the address of the fMint address provider.
+	DefiFMintAddressProvider string
 }
 
 // Load provides a loaded configuration for Fantom API server.
@@ -129,8 +125,7 @@ func Load() (*Config, error) {
 		VotingSources:     cfg.GetStringSlice(keyVotingSources),
 
 		// DeFi below this line
-		DefiOracleReferenceAggregatorContract: cfg.GetString(keyDefiRefAggregatorContract),
-		DefiLiquidityPoolContract:             cfg.GetString(keyDefiLiquidityPoolContract),
+		DefiFMintAddressProvider: cfg.GetString(keyDefiFMintAddressProvider),
 	}, nil
 }
 

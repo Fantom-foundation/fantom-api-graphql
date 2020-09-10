@@ -39,11 +39,8 @@ const (
 	// defApiStateOrigin represents the default origin used for API state syncing
 	defApiStateOrigin = "https://localhost"
 
-	// defDefiRefAggregatorContract represents the address of the DeFi Reference Aggregator
-	defDefiRefAggregatorContract = "0x0000000000000000000000000000000000000000"
-
-	// defLiquidityPoolContract represents the address of the DeFi Liquidity Pool Contract
-	defDefiLiquidityPoolContract = "0x0000000000000000000000000000000000000000"
+	// defDefiFMintAddressProvider represents the address of the fMintAddressProvider
+	defDefiFMintAddressProvider = "0x730e27f6c52d07b1a6ab39b639b617dc566c91af"
 )
 
 // default list of API peers
@@ -77,6 +74,5 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyCorsAllowOrigins, defCorsAllowOrigins)
 
 	// DeFi configuration
-	cfg.SetDefault(keyDefiRefAggregatorContract, defDefiRefAggregatorContract)
-	cfg.SetDefault(keyDefiLiquidityPoolContract, defDefiLiquidityPoolContract)
+	cfg.SetDefault(keyDefiFMintAddressProvider, defDefiFMintAddressProvider)
 }

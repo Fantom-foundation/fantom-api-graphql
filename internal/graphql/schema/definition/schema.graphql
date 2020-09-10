@@ -141,14 +141,14 @@ type Query {
     "defiConfiguration exposes the current DeFi contract setup."
     defiConfiguration:DefiSettings!
 
-    "defiAccount provides DeFi information about an account."
-    defiAccount(owner: Address!):DefiAccount!
+    "fMintAccount provides DeFi/fMint information about an account on fMint protocol."
+    fMintAccount(owner: Address!):FMintAccount!
 
     """
-    defiTokenAllowance resolves the amount of ERC20 tokens unlocked
-    by the token owner for DeFi operations.
+    fMintTokenAllowance resolves the amount of ERC20 tokens unlocked
+    by the token owner for DeFi/fMint operations.
     """
-    defiTokenAllowance(owner: Address!, token: Address!):BigInt!
+    fMintTokenAllowance(owner: Address!, token: Address!):BigInt!
 
     """
     ercTokenBalance provides the current available balance of a specified ERC20 token

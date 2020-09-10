@@ -41,7 +41,7 @@ type Staker {
     "Is the staker offline."
     isOffline: Boolean!
 
-    "isStakeLocked singnals if the staker locked the stake."
+    "isStakeLocked signals if the staker locked the stake."
     isStakeLocked: Boolean!
 
     "Epoch in which the staker was created."
