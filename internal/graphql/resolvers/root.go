@@ -161,9 +161,9 @@ type ApiResolver interface {
 	// FMintAccount resolves details of a specified DeFi account.
 	FMintAccount(*struct{ Owner common.Address }) (*FMintAccount, error)
 
-	// DefiTokenAllowance resolves the amount of ERC20 tokens unlocked
-	// by the token owner for DeFi operations.
-	DefiTokenAllowance(args *struct {
+	// FMintTokenAllowance resolves the amount of ERC20 tokens unlocked
+	// by the token owner for DeFi/fMint protocol operations.
+	FMintTokenAllowance(args *struct {
 		Owner common.Address
 		Token common.Address
 	}) (hexutil.Big, error)

@@ -72,9 +72,9 @@ func (rs *rootResolver) ErcTokenBalance(args *struct {
 	return rs.repo.Erc20Balance(&args.Owner, &args.Token)
 }
 
-// defiTokenAllowance resolves the amount of ERC20 tokens unlocked
+// FMintTokenAllowance resolves the amount of ERC20 tokens unlocked
 // by the token owner for DeFi operations.
-func (rs *rootResolver) DefiTokenAllowance(args *struct {
+func (rs *rootResolver) FMintTokenAllowance(args *struct {
 	Owner common.Address
 	Token common.Address
 }) (hexutil.Big, error) {
