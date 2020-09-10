@@ -48,6 +48,9 @@ const (
 
 	// fiScCreationTx is the hash of the transaction which created the contract.
 	fiScCreationTx = "sc"
+
+	// sfcContractAddress represents the address of the SFC contract
+	sfcContractAddress = "0xFC00FACE00000000000000000000000000000000"
 )
 
 // how many WEIs are in out account balance units (FTM*100)
@@ -111,8 +114,14 @@ func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 // AddAccountTransaction add a given transaction to the given account address.
 func (db *MongoDbBridge) AddAccountTransaction(acc *types.Account, block *types.Block, trx *types.Transaction) error {
 	// do we have all needed data?
-	if block == nil || trx == nil {
+	if acc == nil || block == nil || trx == nil {
 		return fmt.Errorf("can not add empty transaction")
+	}
+
+	// we skip SFC calls on the receiving side
+	if acc.Address.String() == sfcContractAddress {
+		db.log.Debugf("transaction to SFC skipped %s", trx.Hash.String())
+		return nil
 	}
 
 	// make sure the account exists
