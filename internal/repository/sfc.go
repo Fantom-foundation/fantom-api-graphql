@@ -210,3 +210,13 @@ func (p *proxy) LockingAllowed() (bool, error) {
 func (p *proxy) RewardsStash(addr *common.Address) (*big.Int, error) {
 	return p.rpc.Stashed(*addr, big.NewInt(0))
 }
+
+// DelegationFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
+func (p *proxy) DelegationFluidStakingActive(dl *types.Delegation) (bool, error) {
+	return p.rpc.DelegationFluidStakingActive(dl)
+}
+
+// DelegationPaidUntilEpoch resolves the id of the last epoch rewards has been paid to."
+func (p *proxy) DelegationPaidUntilEpoch(dl *types.Delegation) (hexutil.Uint64, error) {
+	return p.rpc.DelegationPaidUntilEpoch(dl)
+}

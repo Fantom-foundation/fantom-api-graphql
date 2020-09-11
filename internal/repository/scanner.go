@@ -81,7 +81,7 @@ func (sys *scanner) scan(lnb uint64) {
 		// do we need a new block?
 		if block == nil || block.Txs == nil || len(block.Txs) <= index {
 			// log action
-			sys.log.Debugf("scanner reached block #%d", uint64(current))
+			sys.log.Infof("scanner reached block #%d", uint64(current))
 
 			// try to get the next block
 			block, err = sys.repo.BlockByNumber(&current)

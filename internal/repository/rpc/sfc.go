@@ -533,3 +533,40 @@ func (ftm *FtmBridge) LockingAllowed() (bool, error) {
 
 	return firstLock.Uint64() > 0 && epoch.Uint64() >= firstLock.Uint64(), nil
 }
+
+// DelegationFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
+func (ftm *FtmBridge) DelegationFluidStakingActive(dl *types.Delegation) (bool, error) {
+	// try to get paid info
+	paid, err := ftm.DelegationPaidUntilEpoch(dl)
+	if err != nil {
+		ftm.log.Errorf("delegation information missing; %s", err.Error())
+		return false, err
+	}
+
+	return paid > 0, nil
+}
+
+// DelegationPaidUntilEpoch resolves the id of the last epoch rewards has been paid to."
+func (ftm *FtmBridge) DelegationPaidUntilEpoch(dl *types.Delegation) (hexutil.Uint64, error) {
+	// instantiate the contract and display its name
+	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		return 0, err
+	}
+
+	// get delegation info
+	dd, err := contract.Delegations(nil, dl.Address, big.NewInt(int64(dl.ToStakerId)))
+	if err != nil {
+		ftm.log.Errorf("can not pull delegation information for %s / %d; %s", dl.Address.String(), dl.ToStakerId, err.Error())
+		return 0, err
+	}
+
+	// any data about paid epoch?
+	if dd.PaidUntilEpoch == nil {
+		ftm.log.Errorf("no paid epoch information for delegation %s / %d", dl.Address.String(), dl.ToStakerId)
+		return 0, nil
+	}
+
+	return hexutil.Uint64(dd.PaidUntilEpoch.Uint64()), nil
+}

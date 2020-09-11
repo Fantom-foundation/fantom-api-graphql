@@ -163,6 +163,12 @@ type Repository interface {
 	// the delegation is closed.
 	DelegatedAmountExtended(*types.Delegation) (*big.Int, *big.Int, error)
 
+	// DelegationFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
+	DelegationFluidStakingActive(*types.Delegation) (bool, error)
+
+	// DelegationPaidUntilEpoch resolves the id of the last epoch rewards has been paid to."
+	DelegationPaidUntilEpoch(*types.Delegation) (hexutil.Uint64, error)
+
 	// Price returns a price information for the given target symbol.
 	Price(sym string) (types.Price, error)
 
