@@ -37,11 +37,17 @@ type Delegation {
     "Pending rewards for the delegation."
     pendingRewards: PendingRewards!
 
+    "The id of the last epoch rewards has been paid to."
+    paidUntilEpoch: Long!
+
     "List of withdraw requests of the delegation."
     withdrawRequests: [WithdrawRequest!]!
 
     "List of full delegation deactivation."
     deactivation: [DeactivatedDelegation!]!
+
+    "isFluidStakingActive indicates if the delegation is upgraded to fluid staking."
+    isFluidStakingActive: Boolean!
 
     "isDelegationLocked indicates if the delegation is locked."
     isDelegationLocked: Boolean!

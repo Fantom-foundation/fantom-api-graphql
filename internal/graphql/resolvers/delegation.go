@@ -158,7 +158,29 @@ func (del Delegation) IsDelegationLocked() bool {
 	return lock.LockedFromEpoch > 0 && uint64(lock.LockedUntil) < uint64(time.Now().UTC().Unix())
 }
 
-// IsDelegationLocked signals if the delegation is locked right now.
+// IsFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
+func (del Delegation) IsFluidStakingActive() bool {
+	// get the delegation fluid upgrade data
+	fluid, err := del.repo.DelegationFluidStakingActive(&del.Delegation)
+	if err != nil {
+		return false
+	}
+
+	return fluid
+}
+
+// PaidUntilEpoch resolves the id of the last epoch rewards has been paid to."
+func (del Delegation) PaidUntilEpoch() hexutil.Uint64 {
+	// get the delegation fluid upgrade data
+	paid, err := del.repo.DelegationPaidUntilEpoch(&del.Delegation)
+	if err != nil {
+		return 0
+	}
+
+	return paid
+}
+
+// LockedUntil resolves the end time of delegation.
 func (del Delegation) LockedUntil() hexutil.Uint64 {
 	// get the lock
 	lock := del.DelegationLock()
@@ -170,7 +192,7 @@ func (del Delegation) LockedUntil() hexutil.Uint64 {
 	return lock.LockedUntil
 }
 
-// IsDelegationLocked signals if the delegation is locked right now.
+// LockedFromEpoch resolves the epoch om which the lock has been created.
 func (del Delegation) LockedFromEpoch() hexutil.Uint64 {
 	// get the lock
 	lock := del.DelegationLock()

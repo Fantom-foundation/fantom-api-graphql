@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-09-09 20:09
+// Auto generated GraphQL schema bundle; created 2020-09-11 10:34
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -332,11 +332,17 @@ type Delegation {
     "Pending rewards for the delegation."
     pendingRewards: PendingRewards!
 
+    "The id of the last epoch rewards has been paid to."
+    paidUntilEpoch: Long!
+
     "List of withdraw requests of the delegation."
     withdrawRequests: [WithdrawRequest!]!
 
     "List of full delegation deactivation."
     deactivation: [DeactivatedDelegation!]!
+
+    "isFluidStakingActive indicates if the delegation is upgraded to fluid staking."
+    isFluidStakingActive: Boolean!
 
     "isDelegationLocked indicates if the delegation is locked."
     isDelegationLocked: Boolean!
