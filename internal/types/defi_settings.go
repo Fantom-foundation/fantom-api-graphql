@@ -46,6 +46,14 @@ type DefiSettings struct {
 	// reward distribution contract.
 	FMintRewardDistribution common.Address
 
+	// FMintCollateralPool represents the address of the DeFi fMint
+	// collateral pool contract.
+	FMintCollateralPool common.Address
+
+	// FMintDebtPool represents the address of the DeFi fMint
+	// debt pool contract.
+	FMintDebtPool common.Address
+
 	// PriceOracleAggregate is the address of the current price oracle
 	// aggregate used by the DeFe to obtain USD price of tokens managed.
 	PriceOracleAggregate common.Address
