@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-09-15 09:49
+// Auto generated GraphQL schema bundle; created 2020-09-15 11:25
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -23,6 +23,10 @@ type DefiToken {
     # isActive signals if the token can be used
     # in the DeFi functions at all.
     isActive: Boolean!
+
+    # canWrapFTM signals if the token can be used
+    # to wrap native FTM tokens for DeFi trading.
+    canWrapFTM: Boolean!
 
     # canDeposit signals if the token can be used
     # in deposit as a collateral asset.
