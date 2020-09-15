@@ -77,10 +77,23 @@ func (fac *FMintAccount) Debt() []*FMintTokenBalance {
 	return list
 }
 
-// TotalCollateralRewardsAmount resolves the total amount of rewards
+// RewardsEarned resolves the total amount of rewards
 // accumulated on the account for the excessive collateral deposits.
-func (fac *FMintAccount) TotalCollateralRewardsAmount() hexutil.Big {
-	return hexutil.Big{}
+func (fac *FMintAccount) RewardsEarned() (hexutil.Big, error) {
+	return fac.repo.FMintRewardsEarned(&fac.Address)
+}
+
+// CanClaimRewards resolves the fMint account flag for being allowed
+// to claim earned rewards.
+func (fac *FMintAccount) CanClaimRewards() (bool, error) {
+	return fac.repo.FMintCanClaimRewards(&fac.Address)
+}
+
+// CanReceiveRewards resolves the fMint account flag for being eligible
+// to receive earned rewards. If the collateral to debt ration drop below
+// certain value, earned rewards are burned.
+func (fac *FMintAccount) CanReceiveRewards() (bool, error) {
+	return fac.repo.FMintCanReceiveRewards(&fac.Address)
 }
 
 // Token resolves the token information from the related token address.

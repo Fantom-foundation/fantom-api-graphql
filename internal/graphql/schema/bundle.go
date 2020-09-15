@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-09-15 11:25
+// Auto generated GraphQL schema bundle; created 2020-09-15 22:26
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -682,10 +682,6 @@ type FMintAccount {
     # in ref. denomination (fUSD).
     collateralValue: BigInt!
 
-    # accumulated rewards of the DeFi account for the excessive
-    # collateral value.
-    totalCollateralRewardsAmount: BigInt!
-
     # debtList represents a list of all debt tokens linked with the account.
     debtList: [Address!]!
 
@@ -695,6 +691,21 @@ type FMintAccount {
     # debtValue represents the current debt value
     # in ref. denomination (fUSD).
     debtValue: BigInt!
+
+    # rewardsEarned represents accumulated rewards
+    # earned on the DeFi / fMint account for the excessive
+    # collateral value. Please note that the rewards could still
+    # be burned, if the account is not eligible to claim the reward.
+    rewardsEarned: BigInt!
+
+    # canClaimRewards informs if the fMint account collateral
+    # to debt is high enough to allow earned rewards claiming.
+    canClaimRewards: Boolean!
+
+    # canReceiveRewards informs if the fMint account collateral
+    # to debt is high enough to receive earned rewards. If the ratio
+    # is below configured one, earned rewards are burned.
+    canReceiveRewards: Boolean!
 }
 
 # FMintTokenBalance represents a balance of a specific DeFi token
