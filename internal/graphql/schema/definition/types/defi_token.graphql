@@ -20,6 +20,10 @@ type DefiToken {
     # in the DeFi functions at all.
     isActive: Boolean!
 
+    # canWrapFTM signals if the token can be used
+    # to wrap native FTM tokens for DeFi trading.
+    canWrapFTM: Boolean!
+
     # canDeposit signals if the token can be used
     # in deposit as a collateral asset.
     canDeposit: Boolean!

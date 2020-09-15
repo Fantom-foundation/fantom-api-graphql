@@ -8,6 +8,9 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
+// defiWFTMSymbol is the symbol used for wrapped FTM tokens.
+const defiWFTMSymbol = "WFTM"
+
 // DefiToken represents a resolvable DeFi token instance.
 type DefiToken struct {
 	repo repository.Repository
@@ -55,6 +58,12 @@ func (dt *DefiToken) AvailableBalance(args *struct{ Owner common.Address }) (hex
 // by the token holder for DeFi operations.
 func (dt *DefiToken) Allowance(args *struct{ Owner common.Address }) (hexutil.Big, error) {
 	return dt.repo.Erc20Allowance(&args.Owner, &dt.Address)
+}
+
+// CanWrapFTM signals if the token can be used to wrap native FTM
+// to get some amount of it.
+func (dt *DefiToken) CanWrapFTM() bool {
+	return dt.Symbol == defiWFTMSymbol
 }
 
 // DefiConfiguration resolves the current DeFi contract settings.
