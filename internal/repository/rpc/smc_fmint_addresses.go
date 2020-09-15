@@ -27,7 +27,7 @@ var (
 )
 
 // DefiFMintAddressProviderABI is the input ABI used to generate the binding from.
-const DefiFMintAddressProviderABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"FeeTokenChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"PriceOracleChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"RewardDistributionChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"TokenRegistryChanged\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_id\",\"type\":\"bytes32\"}],\"name\":\"getAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getPriceOracleProxy\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setPriceOracleProxy\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTokenRegistry\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setTokenRegistry\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getFeeToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setFeeToken\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardDistribution\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setRewardDistribution\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setRewardPool\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getFantomMint\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setFantomMint\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const DefiFMintAddressProviderABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"CollateralPoolChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"DebtPoolChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"FeeTokenChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"MinterChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"PriceOracleChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"RewardDistributionChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"RewardTokenChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"TokenRegistryChanged\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_id\",\"type\":\"bytes32\"}],\"name\":\"getAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getPriceOracleProxy\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setPriceOracleProxy\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTokenRegistry\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setTokenRegistry\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getFeeToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setFeeToken\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardDistribution\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setRewardDistribution\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setRewardToken\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getFantomMint\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setFantomMint\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCollateralPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setCollateralPool\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getDebtPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setDebtPool\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // DefiFMintAddressProvider is an auto generated Go binding around an Ethereum contract.
 type DefiFMintAddressProvider struct {
@@ -197,6 +197,58 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetAddre
 	return _DefiFMintAddressProvider.Contract.GetAddress(&_DefiFMintAddressProvider.CallOpts, _id)
 }
 
+// GetCollateralPool is a free data retrieval call binding the contract method 0x73c9641d.
+//
+// Solidity: function getCollateralPool() view returns(address)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) GetCollateralPool(opts *bind.CallOpts) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _DefiFMintAddressProvider.contract.Call(opts, out, "getCollateralPool")
+	return *ret0, err
+}
+
+// GetCollateralPool is a free data retrieval call binding the contract method 0x73c9641d.
+//
+// Solidity: function getCollateralPool() view returns(address)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderSession) GetCollateralPool() (common.Address, error) {
+	return _DefiFMintAddressProvider.Contract.GetCollateralPool(&_DefiFMintAddressProvider.CallOpts)
+}
+
+// GetCollateralPool is a free data retrieval call binding the contract method 0x73c9641d.
+//
+// Solidity: function getCollateralPool() view returns(address)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetCollateralPool() (common.Address, error) {
+	return _DefiFMintAddressProvider.Contract.GetCollateralPool(&_DefiFMintAddressProvider.CallOpts)
+}
+
+// GetDebtPool is a free data retrieval call binding the contract method 0x03ec357f.
+//
+// Solidity: function getDebtPool() view returns(address)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) GetDebtPool(opts *bind.CallOpts) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _DefiFMintAddressProvider.contract.Call(opts, out, "getDebtPool")
+	return *ret0, err
+}
+
+// GetDebtPool is a free data retrieval call binding the contract method 0x03ec357f.
+//
+// Solidity: function getDebtPool() view returns(address)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderSession) GetDebtPool() (common.Address, error) {
+	return _DefiFMintAddressProvider.Contract.GetDebtPool(&_DefiFMintAddressProvider.CallOpts)
+}
+
+// GetDebtPool is a free data retrieval call binding the contract method 0x03ec357f.
+//
+// Solidity: function getDebtPool() view returns(address)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetDebtPool() (common.Address, error) {
+	return _DefiFMintAddressProvider.Contract.GetDebtPool(&_DefiFMintAddressProvider.CallOpts)
+}
+
 // GetFantomMint is a free data retrieval call binding the contract method 0x44969711.
 //
 // Solidity: function getFantomMint() view returns(address)
@@ -301,30 +353,30 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetRewar
 	return _DefiFMintAddressProvider.Contract.GetRewardDistribution(&_DefiFMintAddressProvider.CallOpts)
 }
 
-// GetRewardPool is a free data retrieval call binding the contract method 0x1b8b13a7.
+// GetRewardToken is a free data retrieval call binding the contract method 0x69940d79.
 //
-// Solidity: function getRewardPool() view returns(address)
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) GetRewardPool(opts *bind.CallOpts) (common.Address, error) {
+// Solidity: function getRewardToken() view returns(address)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) GetRewardToken(opts *bind.CallOpts) (common.Address, error) {
 	var (
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _DefiFMintAddressProvider.contract.Call(opts, out, "getRewardPool")
+	err := _DefiFMintAddressProvider.contract.Call(opts, out, "getRewardToken")
 	return *ret0, err
 }
 
-// GetRewardPool is a free data retrieval call binding the contract method 0x1b8b13a7.
+// GetRewardToken is a free data retrieval call binding the contract method 0x69940d79.
 //
-// Solidity: function getRewardPool() view returns(address)
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderSession) GetRewardPool() (common.Address, error) {
-	return _DefiFMintAddressProvider.Contract.GetRewardPool(&_DefiFMintAddressProvider.CallOpts)
+// Solidity: function getRewardToken() view returns(address)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderSession) GetRewardToken() (common.Address, error) {
+	return _DefiFMintAddressProvider.Contract.GetRewardToken(&_DefiFMintAddressProvider.CallOpts)
 }
 
-// GetRewardPool is a free data retrieval call binding the contract method 0x1b8b13a7.
+// GetRewardToken is a free data retrieval call binding the contract method 0x69940d79.
 //
-// Solidity: function getRewardPool() view returns(address)
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetRewardPool() (common.Address, error) {
-	return _DefiFMintAddressProvider.Contract.GetRewardPool(&_DefiFMintAddressProvider.CallOpts)
+// Solidity: function getRewardToken() view returns(address)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetRewardToken() (common.Address, error) {
+	return _DefiFMintAddressProvider.Contract.GetRewardToken(&_DefiFMintAddressProvider.CallOpts)
 }
 
 // GetTokenRegistry is a free data retrieval call binding the contract method 0x057838bd.
@@ -426,6 +478,48 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactorSession) Reno
 	return _DefiFMintAddressProvider.Contract.RenounceOwnership(&_DefiFMintAddressProvider.TransactOpts)
 }
 
+// SetCollateralPool is a paid mutator transaction binding the contract method 0x1ba28878.
+//
+// Solidity: function setCollateralPool(address _addr) returns()
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactor) SetCollateralPool(opts *bind.TransactOpts, _addr common.Address) (*types.Transaction, error) {
+	return _DefiFMintAddressProvider.contract.Transact(opts, "setCollateralPool", _addr)
+}
+
+// SetCollateralPool is a paid mutator transaction binding the contract method 0x1ba28878.
+//
+// Solidity: function setCollateralPool(address _addr) returns()
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderSession) SetCollateralPool(_addr common.Address) (*types.Transaction, error) {
+	return _DefiFMintAddressProvider.Contract.SetCollateralPool(&_DefiFMintAddressProvider.TransactOpts, _addr)
+}
+
+// SetCollateralPool is a paid mutator transaction binding the contract method 0x1ba28878.
+//
+// Solidity: function setCollateralPool(address _addr) returns()
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactorSession) SetCollateralPool(_addr common.Address) (*types.Transaction, error) {
+	return _DefiFMintAddressProvider.Contract.SetCollateralPool(&_DefiFMintAddressProvider.TransactOpts, _addr)
+}
+
+// SetDebtPool is a paid mutator transaction binding the contract method 0x42ae8684.
+//
+// Solidity: function setDebtPool(address _addr) returns()
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactor) SetDebtPool(opts *bind.TransactOpts, _addr common.Address) (*types.Transaction, error) {
+	return _DefiFMintAddressProvider.contract.Transact(opts, "setDebtPool", _addr)
+}
+
+// SetDebtPool is a paid mutator transaction binding the contract method 0x42ae8684.
+//
+// Solidity: function setDebtPool(address _addr) returns()
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderSession) SetDebtPool(_addr common.Address) (*types.Transaction, error) {
+	return _DefiFMintAddressProvider.Contract.SetDebtPool(&_DefiFMintAddressProvider.TransactOpts, _addr)
+}
+
+// SetDebtPool is a paid mutator transaction binding the contract method 0x42ae8684.
+//
+// Solidity: function setDebtPool(address _addr) returns()
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactorSession) SetDebtPool(_addr common.Address) (*types.Transaction, error) {
+	return _DefiFMintAddressProvider.Contract.SetDebtPool(&_DefiFMintAddressProvider.TransactOpts, _addr)
+}
+
 // SetFantomMint is a paid mutator transaction binding the contract method 0xfcc3c074.
 //
 // Solidity: function setFantomMint(address _addr) returns()
@@ -510,25 +604,25 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactorSession) SetR
 	return _DefiFMintAddressProvider.Contract.SetRewardDistribution(&_DefiFMintAddressProvider.TransactOpts, _addr)
 }
 
-// SetRewardPool is a paid mutator transaction binding the contract method 0x78238c37.
+// SetRewardToken is a paid mutator transaction binding the contract method 0x8aee8127.
 //
-// Solidity: function setRewardPool(address _addr) returns()
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactor) SetRewardPool(opts *bind.TransactOpts, _addr common.Address) (*types.Transaction, error) {
-	return _DefiFMintAddressProvider.contract.Transact(opts, "setRewardPool", _addr)
+// Solidity: function setRewardToken(address _addr) returns()
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactor) SetRewardToken(opts *bind.TransactOpts, _addr common.Address) (*types.Transaction, error) {
+	return _DefiFMintAddressProvider.contract.Transact(opts, "setRewardToken", _addr)
 }
 
-// SetRewardPool is a paid mutator transaction binding the contract method 0x78238c37.
+// SetRewardToken is a paid mutator transaction binding the contract method 0x8aee8127.
 //
-// Solidity: function setRewardPool(address _addr) returns()
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderSession) SetRewardPool(_addr common.Address) (*types.Transaction, error) {
-	return _DefiFMintAddressProvider.Contract.SetRewardPool(&_DefiFMintAddressProvider.TransactOpts, _addr)
+// Solidity: function setRewardToken(address _addr) returns()
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderSession) SetRewardToken(_addr common.Address) (*types.Transaction, error) {
+	return _DefiFMintAddressProvider.Contract.SetRewardToken(&_DefiFMintAddressProvider.TransactOpts, _addr)
 }
 
-// SetRewardPool is a paid mutator transaction binding the contract method 0x78238c37.
+// SetRewardToken is a paid mutator transaction binding the contract method 0x8aee8127.
 //
-// Solidity: function setRewardPool(address _addr) returns()
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactorSession) SetRewardPool(_addr common.Address) (*types.Transaction, error) {
-	return _DefiFMintAddressProvider.Contract.SetRewardPool(&_DefiFMintAddressProvider.TransactOpts, _addr)
+// Solidity: function setRewardToken(address _addr) returns()
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactorSession) SetRewardToken(_addr common.Address) (*types.Transaction, error) {
+	return _DefiFMintAddressProvider.Contract.SetRewardToken(&_DefiFMintAddressProvider.TransactOpts, _addr)
 }
 
 // SetTokenRegistry is a paid mutator transaction binding the contract method 0x35a5af92.
@@ -571,6 +665,272 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderSession) TransferOwners
 // Solidity: function transferOwnership(address newOwner) returns()
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
 	return _DefiFMintAddressProvider.Contract.TransferOwnership(&_DefiFMintAddressProvider.TransactOpts, newOwner)
+}
+
+// DefiFMintAddressProviderCollateralPoolChangedIterator is returned from FilterCollateralPoolChanged and is used to iterate over the raw logs and unpacked data for CollateralPoolChanged events raised by the DefiFMintAddressProvider contract.
+type DefiFMintAddressProviderCollateralPoolChangedIterator struct {
+	Event *DefiFMintAddressProviderCollateralPoolChanged // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *DefiFMintAddressProviderCollateralPoolChangedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(DefiFMintAddressProviderCollateralPoolChanged)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(DefiFMintAddressProviderCollateralPoolChanged)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *DefiFMintAddressProviderCollateralPoolChangedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *DefiFMintAddressProviderCollateralPoolChangedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// DefiFMintAddressProviderCollateralPoolChanged represents a CollateralPoolChanged event raised by the DefiFMintAddressProvider contract.
+type DefiFMintAddressProviderCollateralPoolChanged struct {
+	NewAddress common.Address
+	Raw        types.Log // Blockchain specific contextual infos
+}
+
+// FilterCollateralPoolChanged is a free log retrieval operation binding the contract event 0x9ee268d502b2200c71bbd3cba8222b4f501a7b505c684bd40423fd446bb29fad.
+//
+// Solidity: event CollateralPoolChanged(address newAddress)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) FilterCollateralPoolChanged(opts *bind.FilterOpts) (*DefiFMintAddressProviderCollateralPoolChangedIterator, error) {
+
+	logs, sub, err := _DefiFMintAddressProvider.contract.FilterLogs(opts, "CollateralPoolChanged")
+	if err != nil {
+		return nil, err
+	}
+	return &DefiFMintAddressProviderCollateralPoolChangedIterator{contract: _DefiFMintAddressProvider.contract, event: "CollateralPoolChanged", logs: logs, sub: sub}, nil
+}
+
+// WatchCollateralPoolChanged is a free log subscription operation binding the contract event 0x9ee268d502b2200c71bbd3cba8222b4f501a7b505c684bd40423fd446bb29fad.
+//
+// Solidity: event CollateralPoolChanged(address newAddress)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) WatchCollateralPoolChanged(opts *bind.WatchOpts, sink chan<- *DefiFMintAddressProviderCollateralPoolChanged) (event.Subscription, error) {
+
+	logs, sub, err := _DefiFMintAddressProvider.contract.WatchLogs(opts, "CollateralPoolChanged")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(DefiFMintAddressProviderCollateralPoolChanged)
+				if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "CollateralPoolChanged", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseCollateralPoolChanged is a log parse operation binding the contract event 0x9ee268d502b2200c71bbd3cba8222b4f501a7b505c684bd40423fd446bb29fad.
+//
+// Solidity: event CollateralPoolChanged(address newAddress)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseCollateralPoolChanged(log types.Log) (*DefiFMintAddressProviderCollateralPoolChanged, error) {
+	event := new(DefiFMintAddressProviderCollateralPoolChanged)
+	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "CollateralPoolChanged", log); err != nil {
+		return nil, err
+	}
+	return event, nil
+}
+
+// DefiFMintAddressProviderDebtPoolChangedIterator is returned from FilterDebtPoolChanged and is used to iterate over the raw logs and unpacked data for DebtPoolChanged events raised by the DefiFMintAddressProvider contract.
+type DefiFMintAddressProviderDebtPoolChangedIterator struct {
+	Event *DefiFMintAddressProviderDebtPoolChanged // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *DefiFMintAddressProviderDebtPoolChangedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(DefiFMintAddressProviderDebtPoolChanged)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(DefiFMintAddressProviderDebtPoolChanged)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *DefiFMintAddressProviderDebtPoolChangedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *DefiFMintAddressProviderDebtPoolChangedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// DefiFMintAddressProviderDebtPoolChanged represents a DebtPoolChanged event raised by the DefiFMintAddressProvider contract.
+type DefiFMintAddressProviderDebtPoolChanged struct {
+	NewAddress common.Address
+	Raw        types.Log // Blockchain specific contextual infos
+}
+
+// FilterDebtPoolChanged is a free log retrieval operation binding the contract event 0xf10b554a663200a2ae53269b5aeb591082984e03e47f76ec558f283c01b116d4.
+//
+// Solidity: event DebtPoolChanged(address newAddress)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) FilterDebtPoolChanged(opts *bind.FilterOpts) (*DefiFMintAddressProviderDebtPoolChangedIterator, error) {
+
+	logs, sub, err := _DefiFMintAddressProvider.contract.FilterLogs(opts, "DebtPoolChanged")
+	if err != nil {
+		return nil, err
+	}
+	return &DefiFMintAddressProviderDebtPoolChangedIterator{contract: _DefiFMintAddressProvider.contract, event: "DebtPoolChanged", logs: logs, sub: sub}, nil
+}
+
+// WatchDebtPoolChanged is a free log subscription operation binding the contract event 0xf10b554a663200a2ae53269b5aeb591082984e03e47f76ec558f283c01b116d4.
+//
+// Solidity: event DebtPoolChanged(address newAddress)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) WatchDebtPoolChanged(opts *bind.WatchOpts, sink chan<- *DefiFMintAddressProviderDebtPoolChanged) (event.Subscription, error) {
+
+	logs, sub, err := _DefiFMintAddressProvider.contract.WatchLogs(opts, "DebtPoolChanged")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(DefiFMintAddressProviderDebtPoolChanged)
+				if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "DebtPoolChanged", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseDebtPoolChanged is a log parse operation binding the contract event 0xf10b554a663200a2ae53269b5aeb591082984e03e47f76ec558f283c01b116d4.
+//
+// Solidity: event DebtPoolChanged(address newAddress)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseDebtPoolChanged(log types.Log) (*DefiFMintAddressProviderDebtPoolChanged, error) {
+	event := new(DefiFMintAddressProviderDebtPoolChanged)
+	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "DebtPoolChanged", log); err != nil {
+		return nil, err
+	}
+	return event, nil
 }
 
 // DefiFMintAddressProviderFeeTokenChangedIterator is returned from FilterFeeTokenChanged and is used to iterate over the raw logs and unpacked data for FeeTokenChanged events raised by the DefiFMintAddressProvider contract.
@@ -701,6 +1061,139 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) WatchFeeToken
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseFeeTokenChanged(log types.Log) (*DefiFMintAddressProviderFeeTokenChanged, error) {
 	event := new(DefiFMintAddressProviderFeeTokenChanged)
 	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "FeeTokenChanged", log); err != nil {
+		return nil, err
+	}
+	return event, nil
+}
+
+// DefiFMintAddressProviderMinterChangedIterator is returned from FilterMinterChanged and is used to iterate over the raw logs and unpacked data for MinterChanged events raised by the DefiFMintAddressProvider contract.
+type DefiFMintAddressProviderMinterChangedIterator struct {
+	Event *DefiFMintAddressProviderMinterChanged // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *DefiFMintAddressProviderMinterChangedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(DefiFMintAddressProviderMinterChanged)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(DefiFMintAddressProviderMinterChanged)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *DefiFMintAddressProviderMinterChangedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *DefiFMintAddressProviderMinterChangedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// DefiFMintAddressProviderMinterChanged represents a MinterChanged event raised by the DefiFMintAddressProvider contract.
+type DefiFMintAddressProviderMinterChanged struct {
+	NewAddress common.Address
+	Raw        types.Log // Blockchain specific contextual infos
+}
+
+// FilterMinterChanged is a free log retrieval operation binding the contract event 0xb6b8f1859c5c352e5ffad07d0f77e384ac725512c015bd3a3ffc885831c8a425.
+//
+// Solidity: event MinterChanged(address newAddress)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) FilterMinterChanged(opts *bind.FilterOpts) (*DefiFMintAddressProviderMinterChangedIterator, error) {
+
+	logs, sub, err := _DefiFMintAddressProvider.contract.FilterLogs(opts, "MinterChanged")
+	if err != nil {
+		return nil, err
+	}
+	return &DefiFMintAddressProviderMinterChangedIterator{contract: _DefiFMintAddressProvider.contract, event: "MinterChanged", logs: logs, sub: sub}, nil
+}
+
+// WatchMinterChanged is a free log subscription operation binding the contract event 0xb6b8f1859c5c352e5ffad07d0f77e384ac725512c015bd3a3ffc885831c8a425.
+//
+// Solidity: event MinterChanged(address newAddress)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) WatchMinterChanged(opts *bind.WatchOpts, sink chan<- *DefiFMintAddressProviderMinterChanged) (event.Subscription, error) {
+
+	logs, sub, err := _DefiFMintAddressProvider.contract.WatchLogs(opts, "MinterChanged")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(DefiFMintAddressProviderMinterChanged)
+				if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "MinterChanged", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseMinterChanged is a log parse operation binding the contract event 0xb6b8f1859c5c352e5ffad07d0f77e384ac725512c015bd3a3ffc885831c8a425.
+//
+// Solidity: event MinterChanged(address newAddress)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseMinterChanged(log types.Log) (*DefiFMintAddressProviderMinterChanged, error) {
+	event := new(DefiFMintAddressProviderMinterChanged)
+	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "MinterChanged", log); err != nil {
 		return nil, err
 	}
 	return event, nil
@@ -1119,6 +1612,139 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) WatchRewardDi
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseRewardDistributionChanged(log types.Log) (*DefiFMintAddressProviderRewardDistributionChanged, error) {
 	event := new(DefiFMintAddressProviderRewardDistributionChanged)
 	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "RewardDistributionChanged", log); err != nil {
+		return nil, err
+	}
+	return event, nil
+}
+
+// DefiFMintAddressProviderRewardTokenChangedIterator is returned from FilterRewardTokenChanged and is used to iterate over the raw logs and unpacked data for RewardTokenChanged events raised by the DefiFMintAddressProvider contract.
+type DefiFMintAddressProviderRewardTokenChangedIterator struct {
+	Event *DefiFMintAddressProviderRewardTokenChanged // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *DefiFMintAddressProviderRewardTokenChangedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(DefiFMintAddressProviderRewardTokenChanged)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(DefiFMintAddressProviderRewardTokenChanged)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *DefiFMintAddressProviderRewardTokenChangedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *DefiFMintAddressProviderRewardTokenChangedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// DefiFMintAddressProviderRewardTokenChanged represents a RewardTokenChanged event raised by the DefiFMintAddressProvider contract.
+type DefiFMintAddressProviderRewardTokenChanged struct {
+	NewAddress common.Address
+	Raw        types.Log // Blockchain specific contextual infos
+}
+
+// FilterRewardTokenChanged is a free log retrieval operation binding the contract event 0xb74d956cf6ec7842d08ebf0ab19ec03a88c1efd4a50ea4349d30f9c4ce512e98.
+//
+// Solidity: event RewardTokenChanged(address newAddress)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) FilterRewardTokenChanged(opts *bind.FilterOpts) (*DefiFMintAddressProviderRewardTokenChangedIterator, error) {
+
+	logs, sub, err := _DefiFMintAddressProvider.contract.FilterLogs(opts, "RewardTokenChanged")
+	if err != nil {
+		return nil, err
+	}
+	return &DefiFMintAddressProviderRewardTokenChangedIterator{contract: _DefiFMintAddressProvider.contract, event: "RewardTokenChanged", logs: logs, sub: sub}, nil
+}
+
+// WatchRewardTokenChanged is a free log subscription operation binding the contract event 0xb74d956cf6ec7842d08ebf0ab19ec03a88c1efd4a50ea4349d30f9c4ce512e98.
+//
+// Solidity: event RewardTokenChanged(address newAddress)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) WatchRewardTokenChanged(opts *bind.WatchOpts, sink chan<- *DefiFMintAddressProviderRewardTokenChanged) (event.Subscription, error) {
+
+	logs, sub, err := _DefiFMintAddressProvider.contract.WatchLogs(opts, "RewardTokenChanged")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(DefiFMintAddressProviderRewardTokenChanged)
+				if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "RewardTokenChanged", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseRewardTokenChanged is a log parse operation binding the contract event 0xb74d956cf6ec7842d08ebf0ab19ec03a88c1efd4a50ea4349d30f9c4ce512e98.
+//
+// Solidity: event RewardTokenChanged(address newAddress)
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseRewardTokenChanged(log types.Log) (*DefiFMintAddressProviderRewardTokenChanged, error) {
+	event := new(DefiFMintAddressProviderRewardTokenChanged)
+	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "RewardTokenChanged", log); err != nil {
 		return nil, err
 	}
 	return event, nil

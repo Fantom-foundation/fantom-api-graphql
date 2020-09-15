@@ -14,6 +14,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 //go:generate abigen --abi ./contracts/price-oracle-proxy-interface.abi --pkg rpc --type PriceOracleProxyInterface --out ./smc_oracle_proxy.go
+//go:generate abigen --abi ./contracts/defi-token-storage.abi --pkg rpc --type DeFiTokenStorage --out ./smc_token_storage.go
 
 import (
 	"fantom-api-graphql/internal/types"
@@ -49,32 +50,50 @@ func (ftm *FtmBridge) FMintAccount(owner *common.Address) (*types.FMintAccount, 
 	return &da, nil
 }
 
-// FMintTokenBalance loads balance of a single DeFi token in fMint contract by it's address.
-func (ftm *FtmBridge) FMintTokenBalance(owner *common.Address, token *common.Address, tp types.DefiTokenType) (hexutil.Big, error) {
-	// connect the contract
-	contract, err := ftm.fMintCfg.fMintMinterContract()
+// FMintPoolBalance loads balance of an fMint token from the given pool contract.
+func (ftm *FtmBridge) FMintPoolBalance(pool *DeFiTokenStorage, owner *common.Address, token *common.Address) (hexutil.Big, error) {
+	// get the collateral token balance
+	val, err := pool.BalanceOf(nil, *owner, *token)
 	if err != nil {
+		ftm.log.Debugf("pool balance failed on token %s, account %s; %s", token.String(), owner.String(), err.Error())
 		return hexutil.Big{}, err
 	}
 
-	// get the collateral token balance
-	var val *big.Int
+	// do we have a value?
+	if val == nil {
+		ftm.log.Debugf("token %s balance not available for owner %s", token.String(), owner.String())
+		return hexutil.Big{}, nil
+	}
+
+	return hexutil.Big(*val), nil
+}
+
+// FMintTokenBalance loads balance of a single DeFi token in fMint contract by it's address.
+func (ftm *FtmBridge) FMintTokenBalance(owner *common.Address, token *common.Address, tp types.DefiTokenType) (hexutil.Big, error) {
+	var err error
+	var pool *DeFiTokenStorage
 
 	// pull the right value based to token type
 	switch tp {
 	case types.DefiTokenTypeCollateral:
-		val, err = contract.CollateralBalance(nil, *owner, *token)
+		pool, err = ftm.fMintCfg.fMintCollateralPool()
 	case types.DefiTokenTypeDebt:
-		val, err = contract.DebtBalance(nil, *owner, *token)
+		pool, err = ftm.fMintCfg.fMintDebtPool()
 	}
 
-	// do we have the value?
-	if val == nil {
-		ftm.log.Debugf("token %s balance not available for owner %s", token.String(), owner.String())
+	// error in pool loading?
+	if err != nil {
+		ftm.log.Debugf("token storage pool failed to load; %s", err.Error())
 		return hexutil.Big{}, err
 	}
 
-	return hexutil.Big(*val), err
+	// do we have the pool?
+	if pool == nil {
+		ftm.log.Debugf("token storage pool not available")
+		return hexutil.Big{}, nil
+	}
+
+	return ftm.FMintPoolBalance(pool, owner, token)
 }
 
 // FMintTokenValue loads value of a single DeFi token by it's address in fUSD.

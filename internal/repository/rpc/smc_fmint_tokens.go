@@ -27,7 +27,7 @@ var (
 )
 
 // DefiFMintTokenRegistryABI is the input ABI used to generate the binding from.
-const DefiFMintTokenRegistryABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"TokenAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"TokenUpdated\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"tokens\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"decimals\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"logo\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"oracle\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"priceDecimals\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"isActive\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"canDeposit\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"canMint\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"canBorrow\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"canTrade\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"tokensList\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"tokensCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"tokenPriceDecimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"isActive\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"canDeposit\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"canMint\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"canBorrow\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"canTrade\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"_logo\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"_priceDecimals\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"_isActive\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"_canDeposit\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"_canMint\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"_canBorrow\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"_canTrade\",\"type\":\"bool\"}],\"name\":\"addToken\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"_logo\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"_priceDecimals\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"_isActive\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"_canDeposit\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"_canMint\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"_canBorrow\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"_canTrade\",\"type\":\"bool\"}],\"name\":\"updateToken\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const DefiFMintTokenRegistryABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"TokenAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"TokenUpdated\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"tokens\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"decimals\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"logo\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"oracle\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"priceDecimals\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"isActive\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"canDeposit\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"canMint\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"tokensList\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"tokensCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"priceDecimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"isActive\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"canDeposit\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"canMint\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"_logo\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"_priceDecimals\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"_isActive\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"_canDeposit\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"_canMint\",\"type\":\"bool\"}],\"name\":\"addToken\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"_logo\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"_priceDecimals\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"_isActive\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"_canDeposit\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"_canMint\",\"type\":\"bool\"}],\"name\":\"updateToken\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // DefiFMintTokenRegistry is an auto generated Go binding around an Ethereum contract.
 type DefiFMintTokenRegistry struct {
@@ -171,32 +171,6 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryTransactorRaw) Transact(opt
 	return _DefiFMintTokenRegistry.Contract.contract.Transact(opts, method, params...)
 }
 
-// CanBorrow is a free data retrieval call binding the contract method 0x0e7fc864.
-//
-// Solidity: function canBorrow(address _token) view returns(bool)
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) CanBorrow(opts *bind.CallOpts, _token common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "canBorrow", _token)
-	return *ret0, err
-}
-
-// CanBorrow is a free data retrieval call binding the contract method 0x0e7fc864.
-//
-// Solidity: function canBorrow(address _token) view returns(bool)
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistrySession) CanBorrow(_token common.Address) (bool, error) {
-	return _DefiFMintTokenRegistry.Contract.CanBorrow(&_DefiFMintTokenRegistry.CallOpts, _token)
-}
-
-// CanBorrow is a free data retrieval call binding the contract method 0x0e7fc864.
-//
-// Solidity: function canBorrow(address _token) view returns(bool)
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) CanBorrow(_token common.Address) (bool, error) {
-	return _DefiFMintTokenRegistry.Contract.CanBorrow(&_DefiFMintTokenRegistry.CallOpts, _token)
-}
-
 // CanDeposit is a free data retrieval call binding the contract method 0x4bf0d331.
 //
 // Solidity: function canDeposit(address _token) view returns(bool)
@@ -247,32 +221,6 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistrySession) CanMint(_token com
 // Solidity: function canMint(address _token) view returns(bool)
 func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) CanMint(_token common.Address) (bool, error) {
 	return _DefiFMintTokenRegistry.Contract.CanMint(&_DefiFMintTokenRegistry.CallOpts, _token)
-}
-
-// CanTrade is a free data retrieval call binding the contract method 0x559f05dc.
-//
-// Solidity: function canTrade(address _token) view returns(bool)
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) CanTrade(opts *bind.CallOpts, _token common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "canTrade", _token)
-	return *ret0, err
-}
-
-// CanTrade is a free data retrieval call binding the contract method 0x559f05dc.
-//
-// Solidity: function canTrade(address _token) view returns(bool)
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistrySession) CanTrade(_token common.Address) (bool, error) {
-	return _DefiFMintTokenRegistry.Contract.CanTrade(&_DefiFMintTokenRegistry.CallOpts, _token)
-}
-
-// CanTrade is a free data retrieval call binding the contract method 0x559f05dc.
-//
-// Solidity: function canTrade(address _token) view returns(bool)
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) CanTrade(_token common.Address) (bool, error) {
-	return _DefiFMintTokenRegistry.Contract.CanTrade(&_DefiFMintTokenRegistry.CallOpts, _token)
 }
 
 // IsActive is a free data retrieval call binding the contract method 0x9f8a13d7.
@@ -353,35 +301,35 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) Owner() (com
 	return _DefiFMintTokenRegistry.Contract.Owner(&_DefiFMintTokenRegistry.CallOpts)
 }
 
-// TokenPriceDecimals is a free data retrieval call binding the contract method 0xf7135354.
+// PriceDecimals is a free data retrieval call binding the contract method 0xcefe0f21.
 //
-// Solidity: function tokenPriceDecimals(address _token) view returns(uint8)
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) TokenPriceDecimals(opts *bind.CallOpts, _token common.Address) (uint8, error) {
+// Solidity: function priceDecimals(address _token) view returns(uint8)
+func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) PriceDecimals(opts *bind.CallOpts, _token common.Address) (uint8, error) {
 	var (
 		ret0 = new(uint8)
 	)
 	out := ret0
-	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "tokenPriceDecimals", _token)
+	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "priceDecimals", _token)
 	return *ret0, err
 }
 
-// TokenPriceDecimals is a free data retrieval call binding the contract method 0xf7135354.
+// PriceDecimals is a free data retrieval call binding the contract method 0xcefe0f21.
 //
-// Solidity: function tokenPriceDecimals(address _token) view returns(uint8)
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistrySession) TokenPriceDecimals(_token common.Address) (uint8, error) {
-	return _DefiFMintTokenRegistry.Contract.TokenPriceDecimals(&_DefiFMintTokenRegistry.CallOpts, _token)
+// Solidity: function priceDecimals(address _token) view returns(uint8)
+func (_DefiFMintTokenRegistry *DefiFMintTokenRegistrySession) PriceDecimals(_token common.Address) (uint8, error) {
+	return _DefiFMintTokenRegistry.Contract.PriceDecimals(&_DefiFMintTokenRegistry.CallOpts, _token)
 }
 
-// TokenPriceDecimals is a free data retrieval call binding the contract method 0xf7135354.
+// PriceDecimals is a free data retrieval call binding the contract method 0xcefe0f21.
 //
-// Solidity: function tokenPriceDecimals(address _token) view returns(uint8)
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) TokenPriceDecimals(_token common.Address) (uint8, error) {
-	return _DefiFMintTokenRegistry.Contract.TokenPriceDecimals(&_DefiFMintTokenRegistry.CallOpts, _token)
+// Solidity: function priceDecimals(address _token) view returns(uint8)
+func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) PriceDecimals(_token common.Address) (uint8, error) {
+	return _DefiFMintTokenRegistry.Contract.PriceDecimals(&_DefiFMintTokenRegistry.CallOpts, _token)
 }
 
 // Tokens is a free data retrieval call binding the contract method 0xe4860339.
 //
-// Solidity: function tokens(address ) view returns(uint256 id, string name, string symbol, uint8 decimals, string logo, address oracle, uint8 priceDecimals, bool isActive, bool canDeposit, bool canMint, bool canBorrow, bool canTrade)
+// Solidity: function tokens(address ) view returns(uint256 id, string name, string symbol, uint8 decimals, string logo, address oracle, uint8 priceDecimals, bool isActive, bool canDeposit, bool canMint)
 func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) Tokens(opts *bind.CallOpts, arg0 common.Address) (struct {
 	Id            *big.Int
 	Name          string
@@ -393,8 +341,6 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) Tokens(opts *bind.C
 	IsActive      bool
 	CanDeposit    bool
 	CanMint       bool
-	CanBorrow     bool
-	CanTrade      bool
 }, error) {
 	ret := new(struct {
 		Id            *big.Int
@@ -407,8 +353,6 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) Tokens(opts *bind.C
 		IsActive      bool
 		CanDeposit    bool
 		CanMint       bool
-		CanBorrow     bool
-		CanTrade      bool
 	})
 	out := ret
 	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "tokens", arg0)
@@ -417,7 +361,7 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) Tokens(opts *bind.C
 
 // Tokens is a free data retrieval call binding the contract method 0xe4860339.
 //
-// Solidity: function tokens(address ) view returns(uint256 id, string name, string symbol, uint8 decimals, string logo, address oracle, uint8 priceDecimals, bool isActive, bool canDeposit, bool canMint, bool canBorrow, bool canTrade)
+// Solidity: function tokens(address ) view returns(uint256 id, string name, string symbol, uint8 decimals, string logo, address oracle, uint8 priceDecimals, bool isActive, bool canDeposit, bool canMint)
 func (_DefiFMintTokenRegistry *DefiFMintTokenRegistrySession) Tokens(arg0 common.Address) (struct {
 	Id            *big.Int
 	Name          string
@@ -429,15 +373,13 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistrySession) Tokens(arg0 common
 	IsActive      bool
 	CanDeposit    bool
 	CanMint       bool
-	CanBorrow     bool
-	CanTrade      bool
 }, error) {
 	return _DefiFMintTokenRegistry.Contract.Tokens(&_DefiFMintTokenRegistry.CallOpts, arg0)
 }
 
 // Tokens is a free data retrieval call binding the contract method 0xe4860339.
 //
-// Solidity: function tokens(address ) view returns(uint256 id, string name, string symbol, uint8 decimals, string logo, address oracle, uint8 priceDecimals, bool isActive, bool canDeposit, bool canMint, bool canBorrow, bool canTrade)
+// Solidity: function tokens(address ) view returns(uint256 id, string name, string symbol, uint8 decimals, string logo, address oracle, uint8 priceDecimals, bool isActive, bool canDeposit, bool canMint)
 func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) Tokens(arg0 common.Address) (struct {
 	Id            *big.Int
 	Name          string
@@ -449,8 +391,6 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) Tokens(arg0 
 	IsActive      bool
 	CanDeposit    bool
 	CanMint       bool
-	CanBorrow     bool
-	CanTrade      bool
 }, error) {
 	return _DefiFMintTokenRegistry.Contract.Tokens(&_DefiFMintTokenRegistry.CallOpts, arg0)
 }
@@ -507,25 +447,25 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) TokensList(a
 	return _DefiFMintTokenRegistry.Contract.TokensList(&_DefiFMintTokenRegistry.CallOpts, arg0)
 }
 
-// AddToken is a paid mutator transaction binding the contract method 0x8241e156.
+// AddToken is a paid mutator transaction binding the contract method 0x6a77a214.
 //
-// Solidity: function addToken(address _token, string _logo, address _oracle, uint8 _priceDecimals, bool _isActive, bool _canDeposit, bool _canMint, bool _canBorrow, bool _canTrade) returns()
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryTransactor) AddToken(opts *bind.TransactOpts, _token common.Address, _logo string, _oracle common.Address, _priceDecimals uint8, _isActive bool, _canDeposit bool, _canMint bool, _canBorrow bool, _canTrade bool) (*types.Transaction, error) {
-	return _DefiFMintTokenRegistry.contract.Transact(opts, "addToken", _token, _logo, _oracle, _priceDecimals, _isActive, _canDeposit, _canMint, _canBorrow, _canTrade)
+// Solidity: function addToken(address _token, string _logo, address _oracle, uint8 _priceDecimals, bool _isActive, bool _canDeposit, bool _canMint) returns()
+func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryTransactor) AddToken(opts *bind.TransactOpts, _token common.Address, _logo string, _oracle common.Address, _priceDecimals uint8, _isActive bool, _canDeposit bool, _canMint bool) (*types.Transaction, error) {
+	return _DefiFMintTokenRegistry.contract.Transact(opts, "addToken", _token, _logo, _oracle, _priceDecimals, _isActive, _canDeposit, _canMint)
 }
 
-// AddToken is a paid mutator transaction binding the contract method 0x8241e156.
+// AddToken is a paid mutator transaction binding the contract method 0x6a77a214.
 //
-// Solidity: function addToken(address _token, string _logo, address _oracle, uint8 _priceDecimals, bool _isActive, bool _canDeposit, bool _canMint, bool _canBorrow, bool _canTrade) returns()
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistrySession) AddToken(_token common.Address, _logo string, _oracle common.Address, _priceDecimals uint8, _isActive bool, _canDeposit bool, _canMint bool, _canBorrow bool, _canTrade bool) (*types.Transaction, error) {
-	return _DefiFMintTokenRegistry.Contract.AddToken(&_DefiFMintTokenRegistry.TransactOpts, _token, _logo, _oracle, _priceDecimals, _isActive, _canDeposit, _canMint, _canBorrow, _canTrade)
+// Solidity: function addToken(address _token, string _logo, address _oracle, uint8 _priceDecimals, bool _isActive, bool _canDeposit, bool _canMint) returns()
+func (_DefiFMintTokenRegistry *DefiFMintTokenRegistrySession) AddToken(_token common.Address, _logo string, _oracle common.Address, _priceDecimals uint8, _isActive bool, _canDeposit bool, _canMint bool) (*types.Transaction, error) {
+	return _DefiFMintTokenRegistry.Contract.AddToken(&_DefiFMintTokenRegistry.TransactOpts, _token, _logo, _oracle, _priceDecimals, _isActive, _canDeposit, _canMint)
 }
 
-// AddToken is a paid mutator transaction binding the contract method 0x8241e156.
+// AddToken is a paid mutator transaction binding the contract method 0x6a77a214.
 //
-// Solidity: function addToken(address _token, string _logo, address _oracle, uint8 _priceDecimals, bool _isActive, bool _canDeposit, bool _canMint, bool _canBorrow, bool _canTrade) returns()
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryTransactorSession) AddToken(_token common.Address, _logo string, _oracle common.Address, _priceDecimals uint8, _isActive bool, _canDeposit bool, _canMint bool, _canBorrow bool, _canTrade bool) (*types.Transaction, error) {
-	return _DefiFMintTokenRegistry.Contract.AddToken(&_DefiFMintTokenRegistry.TransactOpts, _token, _logo, _oracle, _priceDecimals, _isActive, _canDeposit, _canMint, _canBorrow, _canTrade)
+// Solidity: function addToken(address _token, string _logo, address _oracle, uint8 _priceDecimals, bool _isActive, bool _canDeposit, bool _canMint) returns()
+func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryTransactorSession) AddToken(_token common.Address, _logo string, _oracle common.Address, _priceDecimals uint8, _isActive bool, _canDeposit bool, _canMint bool) (*types.Transaction, error) {
+	return _DefiFMintTokenRegistry.Contract.AddToken(&_DefiFMintTokenRegistry.TransactOpts, _token, _logo, _oracle, _priceDecimals, _isActive, _canDeposit, _canMint)
 }
 
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
@@ -570,25 +510,25 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryTransactorSession) Transfer
 	return _DefiFMintTokenRegistry.Contract.TransferOwnership(&_DefiFMintTokenRegistry.TransactOpts, newOwner)
 }
 
-// UpdateToken is a paid mutator transaction binding the contract method 0xba7b4369.
+// UpdateToken is a paid mutator transaction binding the contract method 0xd75c1c4c.
 //
-// Solidity: function updateToken(address _token, string _logo, address _oracle, uint8 _priceDecimals, bool _isActive, bool _canDeposit, bool _canMint, bool _canBorrow, bool _canTrade) returns()
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryTransactor) UpdateToken(opts *bind.TransactOpts, _token common.Address, _logo string, _oracle common.Address, _priceDecimals uint8, _isActive bool, _canDeposit bool, _canMint bool, _canBorrow bool, _canTrade bool) (*types.Transaction, error) {
-	return _DefiFMintTokenRegistry.contract.Transact(opts, "updateToken", _token, _logo, _oracle, _priceDecimals, _isActive, _canDeposit, _canMint, _canBorrow, _canTrade)
+// Solidity: function updateToken(address _token, string _logo, address _oracle, uint8 _priceDecimals, bool _isActive, bool _canDeposit, bool _canMint) returns()
+func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryTransactor) UpdateToken(opts *bind.TransactOpts, _token common.Address, _logo string, _oracle common.Address, _priceDecimals uint8, _isActive bool, _canDeposit bool, _canMint bool) (*types.Transaction, error) {
+	return _DefiFMintTokenRegistry.contract.Transact(opts, "updateToken", _token, _logo, _oracle, _priceDecimals, _isActive, _canDeposit, _canMint)
 }
 
-// UpdateToken is a paid mutator transaction binding the contract method 0xba7b4369.
+// UpdateToken is a paid mutator transaction binding the contract method 0xd75c1c4c.
 //
-// Solidity: function updateToken(address _token, string _logo, address _oracle, uint8 _priceDecimals, bool _isActive, bool _canDeposit, bool _canMint, bool _canBorrow, bool _canTrade) returns()
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistrySession) UpdateToken(_token common.Address, _logo string, _oracle common.Address, _priceDecimals uint8, _isActive bool, _canDeposit bool, _canMint bool, _canBorrow bool, _canTrade bool) (*types.Transaction, error) {
-	return _DefiFMintTokenRegistry.Contract.UpdateToken(&_DefiFMintTokenRegistry.TransactOpts, _token, _logo, _oracle, _priceDecimals, _isActive, _canDeposit, _canMint, _canBorrow, _canTrade)
+// Solidity: function updateToken(address _token, string _logo, address _oracle, uint8 _priceDecimals, bool _isActive, bool _canDeposit, bool _canMint) returns()
+func (_DefiFMintTokenRegistry *DefiFMintTokenRegistrySession) UpdateToken(_token common.Address, _logo string, _oracle common.Address, _priceDecimals uint8, _isActive bool, _canDeposit bool, _canMint bool) (*types.Transaction, error) {
+	return _DefiFMintTokenRegistry.Contract.UpdateToken(&_DefiFMintTokenRegistry.TransactOpts, _token, _logo, _oracle, _priceDecimals, _isActive, _canDeposit, _canMint)
 }
 
-// UpdateToken is a paid mutator transaction binding the contract method 0xba7b4369.
+// UpdateToken is a paid mutator transaction binding the contract method 0xd75c1c4c.
 //
-// Solidity: function updateToken(address _token, string _logo, address _oracle, uint8 _priceDecimals, bool _isActive, bool _canDeposit, bool _canMint, bool _canBorrow, bool _canTrade) returns()
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryTransactorSession) UpdateToken(_token common.Address, _logo string, _oracle common.Address, _priceDecimals uint8, _isActive bool, _canDeposit bool, _canMint bool, _canBorrow bool, _canTrade bool) (*types.Transaction, error) {
-	return _DefiFMintTokenRegistry.Contract.UpdateToken(&_DefiFMintTokenRegistry.TransactOpts, _token, _logo, _oracle, _priceDecimals, _isActive, _canDeposit, _canMint, _canBorrow, _canTrade)
+// Solidity: function updateToken(address _token, string _logo, address _oracle, uint8 _priceDecimals, bool _isActive, bool _canDeposit, bool _canMint) returns()
+func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryTransactorSession) UpdateToken(_token common.Address, _logo string, _oracle common.Address, _priceDecimals uint8, _isActive bool, _canDeposit bool, _canMint bool) (*types.Transaction, error) {
+	return _DefiFMintTokenRegistry.Contract.UpdateToken(&_DefiFMintTokenRegistry.TransactOpts, _token, _logo, _oracle, _priceDecimals, _isActive, _canDeposit, _canMint)
 }
 
 // DefiFMintTokenRegistryOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the DefiFMintTokenRegistry contract.

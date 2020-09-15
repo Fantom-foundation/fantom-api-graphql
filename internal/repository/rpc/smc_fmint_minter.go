@@ -27,7 +27,7 @@ var (
 )
 
 // DefiFMintMinterABI is the input ABI used to generate the binding from.
-const DefiFMintMinterABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addressProvider\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Deposited\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Minted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Repaid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reward\",\"type\":\"uint256\"}],\"name\":\"RewardAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reward\",\"type\":\"uint256\"}],\"name\":\"RewardPaid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Withdrawn\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_DEBT_EXCEEDED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_ALLOWANCE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_BALANCE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_COLLATERAL_RATIO\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_MINTING_PROHIBITED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NOT_AUTHORIZED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_COLLATERAL\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_ERROR\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_REWARD\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_VALUE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARDS_DEPLETED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARDS_EARLY\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARDS_NONE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARD_CLAIM_REJECTED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_ZERO_AMOUNT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"addressProvider\",\"outputs\":[{\"internalType\":\"contractIFantomMintAddressProvider\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"collateralBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"collateralCanDecrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"collateralLowestDebtRatio4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"collateralRatioDecimalsCorrection\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"collateralTokens\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"collateralTokensCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"collateralTotal\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"collateralTotalBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"collateralValueOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"debtBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"debtCanIncrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"debtTokens\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"debtTokensCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"debtTotal\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"debtTotalBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"debtValueOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"deposit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"fMintFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"fMintFeeDigitsCorrection\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"fMintPriceDigitsCorrection\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"feePool\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"principalBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"principalBalanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardApplicableUntil\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"rewardCanClaim\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"rewardClaim\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"rewardEarned\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardEligibilityRatio4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardEpochEnds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardEpochLength\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardLastPerToken\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"reward\",\"type\":\"uint256\"}],\"name\":\"rewardNotifyAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardPerToken\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardPerTokenDecimalsCorrection\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"rewardPerTokenPaid\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardRate\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"rewardStash\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardUpdated\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"tokenValue\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardPoolAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardDistributionAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"tokenRegistryAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"feeTokenAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getPriceDigitsCorrection\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"repay\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const DefiFMintMinterABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addressProvider\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Deposited\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Minted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Repaid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Withdrawn\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_DEBT_EXCEEDED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_DEPOSIT_PROHIBITED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_ALLOWANCE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_AMOUNT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_BALANCE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_COLLATERAL_RATIO\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_MINTING_PROHIBITED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NOT_AUTHORIZED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_COLLATERAL\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_ERROR\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_REWARD\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_VALUE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARDS_DEPLETED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARDS_EARLY\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARDS_NONE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARD_CLAIM_REJECTED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_ZERO_AMOUNT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"addressProvider\",\"outputs\":[{\"internalType\":\"contractIFantomMintAddressProvider\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"collateralCanDecrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"collateralLowestDebtRatio4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"collateralRatioDecimalsCorrection\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"debtCanIncrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"deposit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"fMintFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"fMintFeeDigitsCorrection\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"feePool\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mustDeposit\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mustMint\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mustRepay\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mustWithdraw\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"repay\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"rewardCanClaim\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardEligibilityRatio4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"rewardIsEligible\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"debtValueOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"collateralValueOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCollateralPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getDebtPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getFeeToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"canDeposit\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"canMint\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"checkCollateralCanDecrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"checkDebtCanIncrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"rewardUpdate\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getPriceDigitsCorrection\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"tokenValue\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // DefiFMintMinter is an auto generated Go binding around an Ethereum contract.
 type DefiFMintMinter struct {
@@ -197,6 +197,32 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRDEBTEXCEEDED() (*big.In
 	return _DefiFMintMinter.Contract.ERRDEBTEXCEEDED(&_DefiFMintMinter.CallOpts)
 }
 
+// ERRDEPOSITPROHIBITED is a free data retrieval call binding the contract method 0x2bfcc373.
+//
+// Solidity: function ERR_DEPOSIT_PROHIBITED() view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCaller) ERRDEPOSITPROHIBITED(opts *bind.CallOpts) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_DEPOSIT_PROHIBITED")
+	return *ret0, err
+}
+
+// ERRDEPOSITPROHIBITED is a free data retrieval call binding the contract method 0x2bfcc373.
+//
+// Solidity: function ERR_DEPOSIT_PROHIBITED() view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterSession) ERRDEPOSITPROHIBITED() (*big.Int, error) {
+	return _DefiFMintMinter.Contract.ERRDEPOSITPROHIBITED(&_DefiFMintMinter.CallOpts)
+}
+
+// ERRDEPOSITPROHIBITED is a free data retrieval call binding the contract method 0x2bfcc373.
+//
+// Solidity: function ERR_DEPOSIT_PROHIBITED() view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRDEPOSITPROHIBITED() (*big.Int, error) {
+	return _DefiFMintMinter.Contract.ERRDEPOSITPROHIBITED(&_DefiFMintMinter.CallOpts)
+}
+
 // ERRLOWALLOWANCE is a free data retrieval call binding the contract method 0x911fc3f1.
 //
 // Solidity: function ERR_LOW_ALLOWANCE() view returns(uint256)
@@ -221,6 +247,32 @@ func (_DefiFMintMinter *DefiFMintMinterSession) ERRLOWALLOWANCE() (*big.Int, err
 // Solidity: function ERR_LOW_ALLOWANCE() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRLOWALLOWANCE() (*big.Int, error) {
 	return _DefiFMintMinter.Contract.ERRLOWALLOWANCE(&_DefiFMintMinter.CallOpts)
+}
+
+// ERRLOWAMOUNT is a free data retrieval call binding the contract method 0xc7ea4889.
+//
+// Solidity: function ERR_LOW_AMOUNT() view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCaller) ERRLOWAMOUNT(opts *bind.CallOpts) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_LOW_AMOUNT")
+	return *ret0, err
+}
+
+// ERRLOWAMOUNT is a free data retrieval call binding the contract method 0xc7ea4889.
+//
+// Solidity: function ERR_LOW_AMOUNT() view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterSession) ERRLOWAMOUNT() (*big.Int, error) {
+	return _DefiFMintMinter.Contract.ERRLOWAMOUNT(&_DefiFMintMinter.CallOpts)
+}
+
+// ERRLOWAMOUNT is a free data retrieval call binding the contract method 0xc7ea4889.
+//
+// Solidity: function ERR_LOW_AMOUNT() view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRLOWAMOUNT() (*big.Int, error) {
+	return _DefiFMintMinter.Contract.ERRLOWAMOUNT(&_DefiFMintMinter.CallOpts)
 }
 
 // ERRLOWBALANCE is a free data retrieval call binding the contract method 0x1ac919b0.
@@ -587,30 +639,108 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) AddressProvider() (common.
 	return _DefiFMintMinter.Contract.AddressProvider(&_DefiFMintMinter.CallOpts)
 }
 
-// CollateralBalance is a free data retrieval call binding the contract method 0xe7602b9d.
+// CanDeposit is a free data retrieval call binding the contract method 0x4bf0d331.
 //
-// Solidity: function collateralBalance(address , address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) CollateralBalance(opts *bind.CallOpts, arg0 common.Address, arg1 common.Address) (*big.Int, error) {
+// Solidity: function canDeposit(address _token) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterCaller) CanDeposit(opts *bind.CallOpts, _token common.Address) (bool, error) {
 	var (
-		ret0 = new(*big.Int)
+		ret0 = new(bool)
 	)
 	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "collateralBalance", arg0, arg1)
+	err := _DefiFMintMinter.contract.Call(opts, out, "canDeposit", _token)
 	return *ret0, err
 }
 
-// CollateralBalance is a free data retrieval call binding the contract method 0xe7602b9d.
+// CanDeposit is a free data retrieval call binding the contract method 0x4bf0d331.
 //
-// Solidity: function collateralBalance(address , address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) CollateralBalance(arg0 common.Address, arg1 common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.CollateralBalance(&_DefiFMintMinter.CallOpts, arg0, arg1)
+// Solidity: function canDeposit(address _token) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterSession) CanDeposit(_token common.Address) (bool, error) {
+	return _DefiFMintMinter.Contract.CanDeposit(&_DefiFMintMinter.CallOpts, _token)
 }
 
-// CollateralBalance is a free data retrieval call binding the contract method 0xe7602b9d.
+// CanDeposit is a free data retrieval call binding the contract method 0x4bf0d331.
 //
-// Solidity: function collateralBalance(address , address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) CollateralBalance(arg0 common.Address, arg1 common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.CollateralBalance(&_DefiFMintMinter.CallOpts, arg0, arg1)
+// Solidity: function canDeposit(address _token) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) CanDeposit(_token common.Address) (bool, error) {
+	return _DefiFMintMinter.Contract.CanDeposit(&_DefiFMintMinter.CallOpts, _token)
+}
+
+// CanMint is a free data retrieval call binding the contract method 0xc2ba4744.
+//
+// Solidity: function canMint(address _token) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterCaller) CanMint(opts *bind.CallOpts, _token common.Address) (bool, error) {
+	var (
+		ret0 = new(bool)
+	)
+	out := ret0
+	err := _DefiFMintMinter.contract.Call(opts, out, "canMint", _token)
+	return *ret0, err
+}
+
+// CanMint is a free data retrieval call binding the contract method 0xc2ba4744.
+//
+// Solidity: function canMint(address _token) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterSession) CanMint(_token common.Address) (bool, error) {
+	return _DefiFMintMinter.Contract.CanMint(&_DefiFMintMinter.CallOpts, _token)
+}
+
+// CanMint is a free data retrieval call binding the contract method 0xc2ba4744.
+//
+// Solidity: function canMint(address _token) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) CanMint(_token common.Address) (bool, error) {
+	return _DefiFMintMinter.Contract.CanMint(&_DefiFMintMinter.CallOpts, _token)
+}
+
+// CheckCollateralCanDecrease is a free data retrieval call binding the contract method 0xa03a2689.
+//
+// Solidity: function checkCollateralCanDecrease(address _account, address _token, uint256 _amount) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterCaller) CheckCollateralCanDecrease(opts *bind.CallOpts, _account common.Address, _token common.Address, _amount *big.Int) (bool, error) {
+	var (
+		ret0 = new(bool)
+	)
+	out := ret0
+	err := _DefiFMintMinter.contract.Call(opts, out, "checkCollateralCanDecrease", _account, _token, _amount)
+	return *ret0, err
+}
+
+// CheckCollateralCanDecrease is a free data retrieval call binding the contract method 0xa03a2689.
+//
+// Solidity: function checkCollateralCanDecrease(address _account, address _token, uint256 _amount) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterSession) CheckCollateralCanDecrease(_account common.Address, _token common.Address, _amount *big.Int) (bool, error) {
+	return _DefiFMintMinter.Contract.CheckCollateralCanDecrease(&_DefiFMintMinter.CallOpts, _account, _token, _amount)
+}
+
+// CheckCollateralCanDecrease is a free data retrieval call binding the contract method 0xa03a2689.
+//
+// Solidity: function checkCollateralCanDecrease(address _account, address _token, uint256 _amount) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) CheckCollateralCanDecrease(_account common.Address, _token common.Address, _amount *big.Int) (bool, error) {
+	return _DefiFMintMinter.Contract.CheckCollateralCanDecrease(&_DefiFMintMinter.CallOpts, _account, _token, _amount)
+}
+
+// CheckDebtCanIncrease is a free data retrieval call binding the contract method 0x4764efb0.
+//
+// Solidity: function checkDebtCanIncrease(address _account, address _token, uint256 _amount) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterCaller) CheckDebtCanIncrease(opts *bind.CallOpts, _account common.Address, _token common.Address, _amount *big.Int) (bool, error) {
+	var (
+		ret0 = new(bool)
+	)
+	out := ret0
+	err := _DefiFMintMinter.contract.Call(opts, out, "checkDebtCanIncrease", _account, _token, _amount)
+	return *ret0, err
+}
+
+// CheckDebtCanIncrease is a free data retrieval call binding the contract method 0x4764efb0.
+//
+// Solidity: function checkDebtCanIncrease(address _account, address _token, uint256 _amount) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterSession) CheckDebtCanIncrease(_account common.Address, _token common.Address, _amount *big.Int) (bool, error) {
+	return _DefiFMintMinter.Contract.CheckDebtCanIncrease(&_DefiFMintMinter.CallOpts, _account, _token, _amount)
+}
+
+// CheckDebtCanIncrease is a free data retrieval call binding the contract method 0x4764efb0.
+//
+// Solidity: function checkDebtCanIncrease(address _account, address _token, uint256 _amount) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) CheckDebtCanIncrease(_account common.Address, _token common.Address, _amount *big.Int) (bool, error) {
+	return _DefiFMintMinter.Contract.CheckDebtCanIncrease(&_DefiFMintMinter.CallOpts, _account, _token, _amount)
 }
 
 // CollateralCanDecrease is a free data retrieval call binding the contract method 0xf4305a99.
@@ -691,113 +821,9 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) CollateralRatioDecimalsCor
 	return _DefiFMintMinter.Contract.CollateralRatioDecimalsCorrection(&_DefiFMintMinter.CallOpts)
 }
 
-// CollateralTokens is a free data retrieval call binding the contract method 0x172c48c7.
-//
-// Solidity: function collateralTokens(uint256 ) view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCaller) CollateralTokens(opts *bind.CallOpts, arg0 *big.Int) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "collateralTokens", arg0)
-	return *ret0, err
-}
-
-// CollateralTokens is a free data retrieval call binding the contract method 0x172c48c7.
-//
-// Solidity: function collateralTokens(uint256 ) view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterSession) CollateralTokens(arg0 *big.Int) (common.Address, error) {
-	return _DefiFMintMinter.Contract.CollateralTokens(&_DefiFMintMinter.CallOpts, arg0)
-}
-
-// CollateralTokens is a free data retrieval call binding the contract method 0x172c48c7.
-//
-// Solidity: function collateralTokens(uint256 ) view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) CollateralTokens(arg0 *big.Int) (common.Address, error) {
-	return _DefiFMintMinter.Contract.CollateralTokens(&_DefiFMintMinter.CallOpts, arg0)
-}
-
-// CollateralTokensCount is a free data retrieval call binding the contract method 0x458936f5.
-//
-// Solidity: function collateralTokensCount() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) CollateralTokensCount(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "collateralTokensCount")
-	return *ret0, err
-}
-
-// CollateralTokensCount is a free data retrieval call binding the contract method 0x458936f5.
-//
-// Solidity: function collateralTokensCount() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) CollateralTokensCount() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.CollateralTokensCount(&_DefiFMintMinter.CallOpts)
-}
-
-// CollateralTokensCount is a free data retrieval call binding the contract method 0x458936f5.
-//
-// Solidity: function collateralTokensCount() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) CollateralTokensCount() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.CollateralTokensCount(&_DefiFMintMinter.CallOpts)
-}
-
-// CollateralTotal is a free data retrieval call binding the contract method 0x96427a2b.
-//
-// Solidity: function collateralTotal() view returns(uint256 value)
-func (_DefiFMintMinter *DefiFMintMinterCaller) CollateralTotal(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "collateralTotal")
-	return *ret0, err
-}
-
-// CollateralTotal is a free data retrieval call binding the contract method 0x96427a2b.
-//
-// Solidity: function collateralTotal() view returns(uint256 value)
-func (_DefiFMintMinter *DefiFMintMinterSession) CollateralTotal() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.CollateralTotal(&_DefiFMintMinter.CallOpts)
-}
-
-// CollateralTotal is a free data retrieval call binding the contract method 0x96427a2b.
-//
-// Solidity: function collateralTotal() view returns(uint256 value)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) CollateralTotal() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.CollateralTotal(&_DefiFMintMinter.CallOpts)
-}
-
-// CollateralTotalBalance is a free data retrieval call binding the contract method 0x1d842131.
-//
-// Solidity: function collateralTotalBalance(address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) CollateralTotalBalance(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "collateralTotalBalance", arg0)
-	return *ret0, err
-}
-
-// CollateralTotalBalance is a free data retrieval call binding the contract method 0x1d842131.
-//
-// Solidity: function collateralTotalBalance(address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) CollateralTotalBalance(arg0 common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.CollateralTotalBalance(&_DefiFMintMinter.CallOpts, arg0)
-}
-
-// CollateralTotalBalance is a free data retrieval call binding the contract method 0x1d842131.
-//
-// Solidity: function collateralTotalBalance(address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) CollateralTotalBalance(arg0 common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.CollateralTotalBalance(&_DefiFMintMinter.CallOpts, arg0)
-}
-
 // CollateralValueOf is a free data retrieval call binding the contract method 0x3a65a350.
 //
-// Solidity: function collateralValueOf(address _account) view returns(uint256 value)
+// Solidity: function collateralValueOf(address _account) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) CollateralValueOf(opts *bind.CallOpts, _account common.Address) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
@@ -809,42 +835,16 @@ func (_DefiFMintMinter *DefiFMintMinterCaller) CollateralValueOf(opts *bind.Call
 
 // CollateralValueOf is a free data retrieval call binding the contract method 0x3a65a350.
 //
-// Solidity: function collateralValueOf(address _account) view returns(uint256 value)
+// Solidity: function collateralValueOf(address _account) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterSession) CollateralValueOf(_account common.Address) (*big.Int, error) {
 	return _DefiFMintMinter.Contract.CollateralValueOf(&_DefiFMintMinter.CallOpts, _account)
 }
 
 // CollateralValueOf is a free data retrieval call binding the contract method 0x3a65a350.
 //
-// Solidity: function collateralValueOf(address _account) view returns(uint256 value)
+// Solidity: function collateralValueOf(address _account) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCallerSession) CollateralValueOf(_account common.Address) (*big.Int, error) {
 	return _DefiFMintMinter.Contract.CollateralValueOf(&_DefiFMintMinter.CallOpts, _account)
-}
-
-// DebtBalance is a free data retrieval call binding the contract method 0xad8f240e.
-//
-// Solidity: function debtBalance(address , address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) DebtBalance(opts *bind.CallOpts, arg0 common.Address, arg1 common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "debtBalance", arg0, arg1)
-	return *ret0, err
-}
-
-// DebtBalance is a free data retrieval call binding the contract method 0xad8f240e.
-//
-// Solidity: function debtBalance(address , address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) DebtBalance(arg0 common.Address, arg1 common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.DebtBalance(&_DefiFMintMinter.CallOpts, arg0, arg1)
-}
-
-// DebtBalance is a free data retrieval call binding the contract method 0xad8f240e.
-//
-// Solidity: function debtBalance(address , address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) DebtBalance(arg0 common.Address, arg1 common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.DebtBalance(&_DefiFMintMinter.CallOpts, arg0, arg1)
 }
 
 // DebtCanIncrease is a free data retrieval call binding the contract method 0x905ca247.
@@ -873,113 +873,9 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) DebtCanIncrease(_account c
 	return _DefiFMintMinter.Contract.DebtCanIncrease(&_DefiFMintMinter.CallOpts, _account, _token, _amount)
 }
 
-// DebtTokens is a free data retrieval call binding the contract method 0xf48f3b40.
-//
-// Solidity: function debtTokens(uint256 ) view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCaller) DebtTokens(opts *bind.CallOpts, arg0 *big.Int) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "debtTokens", arg0)
-	return *ret0, err
-}
-
-// DebtTokens is a free data retrieval call binding the contract method 0xf48f3b40.
-//
-// Solidity: function debtTokens(uint256 ) view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterSession) DebtTokens(arg0 *big.Int) (common.Address, error) {
-	return _DefiFMintMinter.Contract.DebtTokens(&_DefiFMintMinter.CallOpts, arg0)
-}
-
-// DebtTokens is a free data retrieval call binding the contract method 0xf48f3b40.
-//
-// Solidity: function debtTokens(uint256 ) view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) DebtTokens(arg0 *big.Int) (common.Address, error) {
-	return _DefiFMintMinter.Contract.DebtTokens(&_DefiFMintMinter.CallOpts, arg0)
-}
-
-// DebtTokensCount is a free data retrieval call binding the contract method 0x9ee4736d.
-//
-// Solidity: function debtTokensCount() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) DebtTokensCount(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "debtTokensCount")
-	return *ret0, err
-}
-
-// DebtTokensCount is a free data retrieval call binding the contract method 0x9ee4736d.
-//
-// Solidity: function debtTokensCount() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) DebtTokensCount() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.DebtTokensCount(&_DefiFMintMinter.CallOpts)
-}
-
-// DebtTokensCount is a free data retrieval call binding the contract method 0x9ee4736d.
-//
-// Solidity: function debtTokensCount() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) DebtTokensCount() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.DebtTokensCount(&_DefiFMintMinter.CallOpts)
-}
-
-// DebtTotal is a free data retrieval call binding the contract method 0xe7e7e387.
-//
-// Solidity: function debtTotal() view returns(uint256 value)
-func (_DefiFMintMinter *DefiFMintMinterCaller) DebtTotal(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "debtTotal")
-	return *ret0, err
-}
-
-// DebtTotal is a free data retrieval call binding the contract method 0xe7e7e387.
-//
-// Solidity: function debtTotal() view returns(uint256 value)
-func (_DefiFMintMinter *DefiFMintMinterSession) DebtTotal() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.DebtTotal(&_DefiFMintMinter.CallOpts)
-}
-
-// DebtTotal is a free data retrieval call binding the contract method 0xe7e7e387.
-//
-// Solidity: function debtTotal() view returns(uint256 value)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) DebtTotal() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.DebtTotal(&_DefiFMintMinter.CallOpts)
-}
-
-// DebtTotalBalance is a free data retrieval call binding the contract method 0xf2423ea1.
-//
-// Solidity: function debtTotalBalance(address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) DebtTotalBalance(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "debtTotalBalance", arg0)
-	return *ret0, err
-}
-
-// DebtTotalBalance is a free data retrieval call binding the contract method 0xf2423ea1.
-//
-// Solidity: function debtTotalBalance(address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) DebtTotalBalance(arg0 common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.DebtTotalBalance(&_DefiFMintMinter.CallOpts, arg0)
-}
-
-// DebtTotalBalance is a free data retrieval call binding the contract method 0xf2423ea1.
-//
-// Solidity: function debtTotalBalance(address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) DebtTotalBalance(arg0 common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.DebtTotalBalance(&_DefiFMintMinter.CallOpts, arg0)
-}
-
 // DebtValueOf is a free data retrieval call binding the contract method 0x2f573910.
 //
-// Solidity: function debtValueOf(address _account) view returns(uint256 value)
+// Solidity: function debtValueOf(address _account) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) DebtValueOf(opts *bind.CallOpts, _account common.Address) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
@@ -991,14 +887,14 @@ func (_DefiFMintMinter *DefiFMintMinterCaller) DebtValueOf(opts *bind.CallOpts, 
 
 // DebtValueOf is a free data retrieval call binding the contract method 0x2f573910.
 //
-// Solidity: function debtValueOf(address _account) view returns(uint256 value)
+// Solidity: function debtValueOf(address _account) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterSession) DebtValueOf(_account common.Address) (*big.Int, error) {
 	return _DefiFMintMinter.Contract.DebtValueOf(&_DefiFMintMinter.CallOpts, _account)
 }
 
 // DebtValueOf is a free data retrieval call binding the contract method 0x2f573910.
 //
-// Solidity: function debtValueOf(address _account) view returns(uint256 value)
+// Solidity: function debtValueOf(address _account) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCallerSession) DebtValueOf(_account common.Address) (*big.Int, error) {
 	return _DefiFMintMinter.Contract.DebtValueOf(&_DefiFMintMinter.CallOpts, _account)
 }
@@ -1055,32 +951,6 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) FMintFeeDigitsCorrection()
 	return _DefiFMintMinter.Contract.FMintFeeDigitsCorrection(&_DefiFMintMinter.CallOpts)
 }
 
-// FMintPriceDigitsCorrection is a free data retrieval call binding the contract method 0x65b61259.
-//
-// Solidity: function fMintPriceDigitsCorrection() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) FMintPriceDigitsCorrection(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "fMintPriceDigitsCorrection")
-	return *ret0, err
-}
-
-// FMintPriceDigitsCorrection is a free data retrieval call binding the contract method 0x65b61259.
-//
-// Solidity: function fMintPriceDigitsCorrection() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) FMintPriceDigitsCorrection() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.FMintPriceDigitsCorrection(&_DefiFMintMinter.CallOpts)
-}
-
-// FMintPriceDigitsCorrection is a free data retrieval call binding the contract method 0x65b61259.
-//
-// Solidity: function fMintPriceDigitsCorrection() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) FMintPriceDigitsCorrection() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.FMintPriceDigitsCorrection(&_DefiFMintMinter.CallOpts)
-}
-
 // FeePool is a free data retrieval call binding the contract method 0xae2e933b.
 //
 // Solidity: function feePool() view returns(uint256)
@@ -1107,30 +977,82 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) FeePool() (*big.Int, error
 	return _DefiFMintMinter.Contract.FeePool(&_DefiFMintMinter.CallOpts)
 }
 
-// FeeTokenAddress is a free data retrieval call binding the contract method 0xb8df0dea.
+// GetCollateralPool is a free data retrieval call binding the contract method 0x73c9641d.
 //
-// Solidity: function feeTokenAddress() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCaller) FeeTokenAddress(opts *bind.CallOpts) (common.Address, error) {
+// Solidity: function getCollateralPool() view returns(address)
+func (_DefiFMintMinter *DefiFMintMinterCaller) GetCollateralPool(opts *bind.CallOpts) (common.Address, error) {
 	var (
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "feeTokenAddress")
+	err := _DefiFMintMinter.contract.Call(opts, out, "getCollateralPool")
 	return *ret0, err
 }
 
-// FeeTokenAddress is a free data retrieval call binding the contract method 0xb8df0dea.
+// GetCollateralPool is a free data retrieval call binding the contract method 0x73c9641d.
 //
-// Solidity: function feeTokenAddress() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterSession) FeeTokenAddress() (common.Address, error) {
-	return _DefiFMintMinter.Contract.FeeTokenAddress(&_DefiFMintMinter.CallOpts)
+// Solidity: function getCollateralPool() view returns(address)
+func (_DefiFMintMinter *DefiFMintMinterSession) GetCollateralPool() (common.Address, error) {
+	return _DefiFMintMinter.Contract.GetCollateralPool(&_DefiFMintMinter.CallOpts)
 }
 
-// FeeTokenAddress is a free data retrieval call binding the contract method 0xb8df0dea.
+// GetCollateralPool is a free data retrieval call binding the contract method 0x73c9641d.
 //
-// Solidity: function feeTokenAddress() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) FeeTokenAddress() (common.Address, error) {
-	return _DefiFMintMinter.Contract.FeeTokenAddress(&_DefiFMintMinter.CallOpts)
+// Solidity: function getCollateralPool() view returns(address)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetCollateralPool() (common.Address, error) {
+	return _DefiFMintMinter.Contract.GetCollateralPool(&_DefiFMintMinter.CallOpts)
+}
+
+// GetDebtPool is a free data retrieval call binding the contract method 0x03ec357f.
+//
+// Solidity: function getDebtPool() view returns(address)
+func (_DefiFMintMinter *DefiFMintMinterCaller) GetDebtPool(opts *bind.CallOpts) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _DefiFMintMinter.contract.Call(opts, out, "getDebtPool")
+	return *ret0, err
+}
+
+// GetDebtPool is a free data retrieval call binding the contract method 0x03ec357f.
+//
+// Solidity: function getDebtPool() view returns(address)
+func (_DefiFMintMinter *DefiFMintMinterSession) GetDebtPool() (common.Address, error) {
+	return _DefiFMintMinter.Contract.GetDebtPool(&_DefiFMintMinter.CallOpts)
+}
+
+// GetDebtPool is a free data retrieval call binding the contract method 0x03ec357f.
+//
+// Solidity: function getDebtPool() view returns(address)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetDebtPool() (common.Address, error) {
+	return _DefiFMintMinter.Contract.GetDebtPool(&_DefiFMintMinter.CallOpts)
+}
+
+// GetFeeToken is a free data retrieval call binding the contract method 0xca709a25.
+//
+// Solidity: function getFeeToken() view returns(address)
+func (_DefiFMintMinter *DefiFMintMinterCaller) GetFeeToken(opts *bind.CallOpts) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _DefiFMintMinter.contract.Call(opts, out, "getFeeToken")
+	return *ret0, err
+}
+
+// GetFeeToken is a free data retrieval call binding the contract method 0xca709a25.
+//
+// Solidity: function getFeeToken() view returns(address)
+func (_DefiFMintMinter *DefiFMintMinterSession) GetFeeToken() (common.Address, error) {
+	return _DefiFMintMinter.Contract.GetFeeToken(&_DefiFMintMinter.CallOpts)
+}
+
+// GetFeeToken is a free data retrieval call binding the contract method 0xca709a25.
+//
+// Solidity: function getFeeToken() view returns(address)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetFeeToken() (common.Address, error) {
+	return _DefiFMintMinter.Contract.GetFeeToken(&_DefiFMintMinter.CallOpts)
 }
 
 // GetPrice is a free data retrieval call binding the contract method 0x41976e09.
@@ -1159,160 +1081,30 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetPrice(_token common.Add
 	return _DefiFMintMinter.Contract.GetPrice(&_DefiFMintMinter.CallOpts, _token)
 }
 
-// GetPriceDigitsCorrection is a free data retrieval call binding the contract method 0xfadeada2.
+// GetPriceDigitsCorrection is a free data retrieval call binding the contract method 0x173a58fe.
 //
-// Solidity: function getPriceDigitsCorrection() pure returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) GetPriceDigitsCorrection(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function getPriceDigitsCorrection(address _token) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCaller) GetPriceDigitsCorrection(opts *bind.CallOpts, _token common.Address) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "getPriceDigitsCorrection")
+	err := _DefiFMintMinter.contract.Call(opts, out, "getPriceDigitsCorrection", _token)
 	return *ret0, err
 }
 
-// GetPriceDigitsCorrection is a free data retrieval call binding the contract method 0xfadeada2.
+// GetPriceDigitsCorrection is a free data retrieval call binding the contract method 0x173a58fe.
 //
-// Solidity: function getPriceDigitsCorrection() pure returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) GetPriceDigitsCorrection() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.GetPriceDigitsCorrection(&_DefiFMintMinter.CallOpts)
+// Solidity: function getPriceDigitsCorrection(address _token) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterSession) GetPriceDigitsCorrection(_token common.Address) (*big.Int, error) {
+	return _DefiFMintMinter.Contract.GetPriceDigitsCorrection(&_DefiFMintMinter.CallOpts, _token)
 }
 
-// GetPriceDigitsCorrection is a free data retrieval call binding the contract method 0xfadeada2.
+// GetPriceDigitsCorrection is a free data retrieval call binding the contract method 0x173a58fe.
 //
-// Solidity: function getPriceDigitsCorrection() pure returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetPriceDigitsCorrection() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.GetPriceDigitsCorrection(&_DefiFMintMinter.CallOpts)
-}
-
-// IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
-//
-// Solidity: function isOwner() view returns(bool)
-func (_DefiFMintMinter *DefiFMintMinterCaller) IsOwner(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "isOwner")
-	return *ret0, err
-}
-
-// IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
-//
-// Solidity: function isOwner() view returns(bool)
-func (_DefiFMintMinter *DefiFMintMinterSession) IsOwner() (bool, error) {
-	return _DefiFMintMinter.Contract.IsOwner(&_DefiFMintMinter.CallOpts)
-}
-
-// IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
-//
-// Solidity: function isOwner() view returns(bool)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) IsOwner() (bool, error) {
-	return _DefiFMintMinter.Contract.IsOwner(&_DefiFMintMinter.CallOpts)
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "owner")
-	return *ret0, err
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterSession) Owner() (common.Address, error) {
-	return _DefiFMintMinter.Contract.Owner(&_DefiFMintMinter.CallOpts)
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) Owner() (common.Address, error) {
-	return _DefiFMintMinter.Contract.Owner(&_DefiFMintMinter.CallOpts)
-}
-
-// PrincipalBalance is a free data retrieval call binding the contract method 0xa83e53ac.
-//
-// Solidity: function principalBalance() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) PrincipalBalance(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "principalBalance")
-	return *ret0, err
-}
-
-// PrincipalBalance is a free data retrieval call binding the contract method 0xa83e53ac.
-//
-// Solidity: function principalBalance() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) PrincipalBalance() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.PrincipalBalance(&_DefiFMintMinter.CallOpts)
-}
-
-// PrincipalBalance is a free data retrieval call binding the contract method 0xa83e53ac.
-//
-// Solidity: function principalBalance() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) PrincipalBalance() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.PrincipalBalance(&_DefiFMintMinter.CallOpts)
-}
-
-// PrincipalBalanceOf is a free data retrieval call binding the contract method 0xc634dfaa.
-//
-// Solidity: function principalBalanceOf(address _account) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) PrincipalBalanceOf(opts *bind.CallOpts, _account common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "principalBalanceOf", _account)
-	return *ret0, err
-}
-
-// PrincipalBalanceOf is a free data retrieval call binding the contract method 0xc634dfaa.
-//
-// Solidity: function principalBalanceOf(address _account) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) PrincipalBalanceOf(_account common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.PrincipalBalanceOf(&_DefiFMintMinter.CallOpts, _account)
-}
-
-// PrincipalBalanceOf is a free data retrieval call binding the contract method 0xc634dfaa.
-//
-// Solidity: function principalBalanceOf(address _account) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) PrincipalBalanceOf(_account common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.PrincipalBalanceOf(&_DefiFMintMinter.CallOpts, _account)
-}
-
-// RewardApplicableUntil is a free data retrieval call binding the contract method 0xdb16e0b5.
-//
-// Solidity: function rewardApplicableUntil() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) RewardApplicableUntil(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardApplicableUntil")
-	return *ret0, err
-}
-
-// RewardApplicableUntil is a free data retrieval call binding the contract method 0xdb16e0b5.
-//
-// Solidity: function rewardApplicableUntil() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardApplicableUntil() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardApplicableUntil(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardApplicableUntil is a free data retrieval call binding the contract method 0xdb16e0b5.
-//
-// Solidity: function rewardApplicableUntil() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardApplicableUntil() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardApplicableUntil(&_DefiFMintMinter.CallOpts)
+// Solidity: function getPriceDigitsCorrection(address _token) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetPriceDigitsCorrection(_token common.Address) (*big.Int, error) {
+	return _DefiFMintMinter.Contract.GetPriceDigitsCorrection(&_DefiFMintMinter.CallOpts, _token)
 }
 
 // RewardCanClaim is a free data retrieval call binding the contract method 0xda0a0432.
@@ -1341,58 +1133,6 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardCanClaim(_account co
 	return _DefiFMintMinter.Contract.RewardCanClaim(&_DefiFMintMinter.CallOpts, _account)
 }
 
-// RewardDistributionAddress is a free data retrieval call binding the contract method 0x72e13848.
-//
-// Solidity: function rewardDistributionAddress() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCaller) RewardDistributionAddress(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardDistributionAddress")
-	return *ret0, err
-}
-
-// RewardDistributionAddress is a free data retrieval call binding the contract method 0x72e13848.
-//
-// Solidity: function rewardDistributionAddress() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardDistributionAddress() (common.Address, error) {
-	return _DefiFMintMinter.Contract.RewardDistributionAddress(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardDistributionAddress is a free data retrieval call binding the contract method 0x72e13848.
-//
-// Solidity: function rewardDistributionAddress() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardDistributionAddress() (common.Address, error) {
-	return _DefiFMintMinter.Contract.RewardDistributionAddress(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardEarned is a free data retrieval call binding the contract method 0x16ba6bf3.
-//
-// Solidity: function rewardEarned(address _account) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) RewardEarned(opts *bind.CallOpts, _account common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardEarned", _account)
-	return *ret0, err
-}
-
-// RewardEarned is a free data retrieval call binding the contract method 0x16ba6bf3.
-//
-// Solidity: function rewardEarned(address _account) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardEarned(_account common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardEarned(&_DefiFMintMinter.CallOpts, _account)
-}
-
-// RewardEarned is a free data retrieval call binding the contract method 0x16ba6bf3.
-//
-// Solidity: function rewardEarned(address _account) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardEarned(_account common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardEarned(&_DefiFMintMinter.CallOpts, _account)
-}
-
 // RewardEligibilityRatio4dec is a free data retrieval call binding the contract method 0x50fca4bd.
 //
 // Solidity: function rewardEligibilityRatio4dec() view returns(uint256)
@@ -1419,290 +1159,30 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardEligibilityRatio4dec
 	return _DefiFMintMinter.Contract.RewardEligibilityRatio4dec(&_DefiFMintMinter.CallOpts)
 }
 
-// RewardEpochEnds is a free data retrieval call binding the contract method 0x3ce9b316.
+// RewardIsEligible is a free data retrieval call binding the contract method 0x6aee9c13.
 //
-// Solidity: function rewardEpochEnds() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) RewardEpochEnds(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function rewardIsEligible(address _account) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterCaller) RewardIsEligible(opts *bind.CallOpts, _account common.Address) (bool, error) {
 	var (
-		ret0 = new(*big.Int)
+		ret0 = new(bool)
 	)
 	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardEpochEnds")
+	err := _DefiFMintMinter.contract.Call(opts, out, "rewardIsEligible", _account)
 	return *ret0, err
 }
 
-// RewardEpochEnds is a free data retrieval call binding the contract method 0x3ce9b316.
+// RewardIsEligible is a free data retrieval call binding the contract method 0x6aee9c13.
 //
-// Solidity: function rewardEpochEnds() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardEpochEnds() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardEpochEnds(&_DefiFMintMinter.CallOpts)
+// Solidity: function rewardIsEligible(address _account) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterSession) RewardIsEligible(_account common.Address) (bool, error) {
+	return _DefiFMintMinter.Contract.RewardIsEligible(&_DefiFMintMinter.CallOpts, _account)
 }
 
-// RewardEpochEnds is a free data retrieval call binding the contract method 0x3ce9b316.
+// RewardIsEligible is a free data retrieval call binding the contract method 0x6aee9c13.
 //
-// Solidity: function rewardEpochEnds() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardEpochEnds() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardEpochEnds(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardEpochLength is a free data retrieval call binding the contract method 0x20a0a0e9.
-//
-// Solidity: function rewardEpochLength() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) RewardEpochLength(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardEpochLength")
-	return *ret0, err
-}
-
-// RewardEpochLength is a free data retrieval call binding the contract method 0x20a0a0e9.
-//
-// Solidity: function rewardEpochLength() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardEpochLength() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardEpochLength(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardEpochLength is a free data retrieval call binding the contract method 0x20a0a0e9.
-//
-// Solidity: function rewardEpochLength() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardEpochLength() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardEpochLength(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardLastPerToken is a free data retrieval call binding the contract method 0x544bb473.
-//
-// Solidity: function rewardLastPerToken() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) RewardLastPerToken(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardLastPerToken")
-	return *ret0, err
-}
-
-// RewardLastPerToken is a free data retrieval call binding the contract method 0x544bb473.
-//
-// Solidity: function rewardLastPerToken() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardLastPerToken() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardLastPerToken(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardLastPerToken is a free data retrieval call binding the contract method 0x544bb473.
-//
-// Solidity: function rewardLastPerToken() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardLastPerToken() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardLastPerToken(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardPerToken is a free data retrieval call binding the contract method 0xcd3daf9d.
-//
-// Solidity: function rewardPerToken() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) RewardPerToken(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardPerToken")
-	return *ret0, err
-}
-
-// RewardPerToken is a free data retrieval call binding the contract method 0xcd3daf9d.
-//
-// Solidity: function rewardPerToken() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardPerToken() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardPerToken(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardPerToken is a free data retrieval call binding the contract method 0xcd3daf9d.
-//
-// Solidity: function rewardPerToken() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardPerToken() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardPerToken(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardPerTokenDecimalsCorrection is a free data retrieval call binding the contract method 0x64631d9b.
-//
-// Solidity: function rewardPerTokenDecimalsCorrection() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) RewardPerTokenDecimalsCorrection(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardPerTokenDecimalsCorrection")
-	return *ret0, err
-}
-
-// RewardPerTokenDecimalsCorrection is a free data retrieval call binding the contract method 0x64631d9b.
-//
-// Solidity: function rewardPerTokenDecimalsCorrection() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardPerTokenDecimalsCorrection() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardPerTokenDecimalsCorrection(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardPerTokenDecimalsCorrection is a free data retrieval call binding the contract method 0x64631d9b.
-//
-// Solidity: function rewardPerTokenDecimalsCorrection() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardPerTokenDecimalsCorrection() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardPerTokenDecimalsCorrection(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardPerTokenPaid is a free data retrieval call binding the contract method 0x653a8da1.
-//
-// Solidity: function rewardPerTokenPaid(address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) RewardPerTokenPaid(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardPerTokenPaid", arg0)
-	return *ret0, err
-}
-
-// RewardPerTokenPaid is a free data retrieval call binding the contract method 0x653a8da1.
-//
-// Solidity: function rewardPerTokenPaid(address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardPerTokenPaid(arg0 common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardPerTokenPaid(&_DefiFMintMinter.CallOpts, arg0)
-}
-
-// RewardPerTokenPaid is a free data retrieval call binding the contract method 0x653a8da1.
-//
-// Solidity: function rewardPerTokenPaid(address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardPerTokenPaid(arg0 common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardPerTokenPaid(&_DefiFMintMinter.CallOpts, arg0)
-}
-
-// RewardPoolAddress is a free data retrieval call binding the contract method 0x845a51ec.
-//
-// Solidity: function rewardPoolAddress() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCaller) RewardPoolAddress(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardPoolAddress")
-	return *ret0, err
-}
-
-// RewardPoolAddress is a free data retrieval call binding the contract method 0x845a51ec.
-//
-// Solidity: function rewardPoolAddress() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardPoolAddress() (common.Address, error) {
-	return _DefiFMintMinter.Contract.RewardPoolAddress(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardPoolAddress is a free data retrieval call binding the contract method 0x845a51ec.
-//
-// Solidity: function rewardPoolAddress() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardPoolAddress() (common.Address, error) {
-	return _DefiFMintMinter.Contract.RewardPoolAddress(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardRate is a free data retrieval call binding the contract method 0x7b0a47ee.
-//
-// Solidity: function rewardRate() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) RewardRate(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardRate")
-	return *ret0, err
-}
-
-// RewardRate is a free data retrieval call binding the contract method 0x7b0a47ee.
-//
-// Solidity: function rewardRate() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardRate() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardRate(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardRate is a free data retrieval call binding the contract method 0x7b0a47ee.
-//
-// Solidity: function rewardRate() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardRate() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardRate(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardStash is a free data retrieval call binding the contract method 0xf2392c8d.
-//
-// Solidity: function rewardStash(address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) RewardStash(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardStash", arg0)
-	return *ret0, err
-}
-
-// RewardStash is a free data retrieval call binding the contract method 0xf2392c8d.
-//
-// Solidity: function rewardStash(address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardStash(arg0 common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardStash(&_DefiFMintMinter.CallOpts, arg0)
-}
-
-// RewardStash is a free data retrieval call binding the contract method 0xf2392c8d.
-//
-// Solidity: function rewardStash(address ) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardStash(arg0 common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardStash(&_DefiFMintMinter.CallOpts, arg0)
-}
-
-// RewardUpdated is a free data retrieval call binding the contract method 0x6e718e04.
-//
-// Solidity: function rewardUpdated() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) RewardUpdated(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardUpdated")
-	return *ret0, err
-}
-
-// RewardUpdated is a free data retrieval call binding the contract method 0x6e718e04.
-//
-// Solidity: function rewardUpdated() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardUpdated() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardUpdated(&_DefiFMintMinter.CallOpts)
-}
-
-// RewardUpdated is a free data retrieval call binding the contract method 0x6e718e04.
-//
-// Solidity: function rewardUpdated() view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardUpdated() (*big.Int, error) {
-	return _DefiFMintMinter.Contract.RewardUpdated(&_DefiFMintMinter.CallOpts)
-}
-
-// TokenRegistryAddress is a free data retrieval call binding the contract method 0x5be2aca0.
-//
-// Solidity: function tokenRegistryAddress() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCaller) TokenRegistryAddress(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "tokenRegistryAddress")
-	return *ret0, err
-}
-
-// TokenRegistryAddress is a free data retrieval call binding the contract method 0x5be2aca0.
-//
-// Solidity: function tokenRegistryAddress() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterSession) TokenRegistryAddress() (common.Address, error) {
-	return _DefiFMintMinter.Contract.TokenRegistryAddress(&_DefiFMintMinter.CallOpts)
-}
-
-// TokenRegistryAddress is a free data retrieval call binding the contract method 0x5be2aca0.
-//
-// Solidity: function tokenRegistryAddress() view returns(address)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) TokenRegistryAddress() (common.Address, error) {
-	return _DefiFMintMinter.Contract.TokenRegistryAddress(&_DefiFMintMinter.CallOpts)
+// Solidity: function rewardIsEligible(address _account) view returns(bool)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardIsEligible(_account common.Address) (bool, error) {
+	return _DefiFMintMinter.Contract.RewardIsEligible(&_DefiFMintMinter.CallOpts, _account)
 }
 
 // TokenValue is a free data retrieval call binding the contract method 0xf1821783.
@@ -1773,25 +1253,88 @@ func (_DefiFMintMinter *DefiFMintMinterTransactorSession) Mint(_token common.Add
 	return _DefiFMintMinter.Contract.Mint(&_DefiFMintMinter.TransactOpts, _token, _amount)
 }
 
-// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
+// MustDeposit is a paid mutator transaction binding the contract method 0xa02bda7a.
 //
-// Solidity: function renounceOwnership() returns()
-func (_DefiFMintMinter *DefiFMintMinterTransactor) RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _DefiFMintMinter.contract.Transact(opts, "renounceOwnership")
+// Solidity: function mustDeposit(address _token, uint256 _amount) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactor) MustDeposit(opts *bind.TransactOpts, _token common.Address, _amount *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.contract.Transact(opts, "mustDeposit", _token, _amount)
 }
 
-// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
+// MustDeposit is a paid mutator transaction binding the contract method 0xa02bda7a.
 //
-// Solidity: function renounceOwnership() returns()
-func (_DefiFMintMinter *DefiFMintMinterSession) RenounceOwnership() (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.RenounceOwnership(&_DefiFMintMinter.TransactOpts)
+// Solidity: function mustDeposit(address _token, uint256 _amount) returns()
+func (_DefiFMintMinter *DefiFMintMinterSession) MustDeposit(_token common.Address, _amount *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MustDeposit(&_DefiFMintMinter.TransactOpts, _token, _amount)
 }
 
-// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
+// MustDeposit is a paid mutator transaction binding the contract method 0xa02bda7a.
 //
-// Solidity: function renounceOwnership() returns()
-func (_DefiFMintMinter *DefiFMintMinterTransactorSession) RenounceOwnership() (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.RenounceOwnership(&_DefiFMintMinter.TransactOpts)
+// Solidity: function mustDeposit(address _token, uint256 _amount) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactorSession) MustDeposit(_token common.Address, _amount *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MustDeposit(&_DefiFMintMinter.TransactOpts, _token, _amount)
+}
+
+// MustMint is a paid mutator transaction binding the contract method 0x893ebfd5.
+//
+// Solidity: function mustMint(address _token, uint256 _amount) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactor) MustMint(opts *bind.TransactOpts, _token common.Address, _amount *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.contract.Transact(opts, "mustMint", _token, _amount)
+}
+
+// MustMint is a paid mutator transaction binding the contract method 0x893ebfd5.
+//
+// Solidity: function mustMint(address _token, uint256 _amount) returns()
+func (_DefiFMintMinter *DefiFMintMinterSession) MustMint(_token common.Address, _amount *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MustMint(&_DefiFMintMinter.TransactOpts, _token, _amount)
+}
+
+// MustMint is a paid mutator transaction binding the contract method 0x893ebfd5.
+//
+// Solidity: function mustMint(address _token, uint256 _amount) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactorSession) MustMint(_token common.Address, _amount *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MustMint(&_DefiFMintMinter.TransactOpts, _token, _amount)
+}
+
+// MustRepay is a paid mutator transaction binding the contract method 0x557c138b.
+//
+// Solidity: function mustRepay(address _token, uint256 _amount) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactor) MustRepay(opts *bind.TransactOpts, _token common.Address, _amount *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.contract.Transact(opts, "mustRepay", _token, _amount)
+}
+
+// MustRepay is a paid mutator transaction binding the contract method 0x557c138b.
+//
+// Solidity: function mustRepay(address _token, uint256 _amount) returns()
+func (_DefiFMintMinter *DefiFMintMinterSession) MustRepay(_token common.Address, _amount *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MustRepay(&_DefiFMintMinter.TransactOpts, _token, _amount)
+}
+
+// MustRepay is a paid mutator transaction binding the contract method 0x557c138b.
+//
+// Solidity: function mustRepay(address _token, uint256 _amount) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactorSession) MustRepay(_token common.Address, _amount *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MustRepay(&_DefiFMintMinter.TransactOpts, _token, _amount)
+}
+
+// MustWithdraw is a paid mutator transaction binding the contract method 0x0feea739.
+//
+// Solidity: function mustWithdraw(address _token, uint256 _amount) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactor) MustWithdraw(opts *bind.TransactOpts, _token common.Address, _amount *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.contract.Transact(opts, "mustWithdraw", _token, _amount)
+}
+
+// MustWithdraw is a paid mutator transaction binding the contract method 0x0feea739.
+//
+// Solidity: function mustWithdraw(address _token, uint256 _amount) returns()
+func (_DefiFMintMinter *DefiFMintMinterSession) MustWithdraw(_token common.Address, _amount *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MustWithdraw(&_DefiFMintMinter.TransactOpts, _token, _amount)
+}
+
+// MustWithdraw is a paid mutator transaction binding the contract method 0x0feea739.
+//
+// Solidity: function mustWithdraw(address _token, uint256 _amount) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactorSession) MustWithdraw(_token common.Address, _amount *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MustWithdraw(&_DefiFMintMinter.TransactOpts, _token, _amount)
 }
 
 // Repay is a paid mutator transaction binding the contract method 0x22867d78.
@@ -1815,67 +1358,25 @@ func (_DefiFMintMinter *DefiFMintMinterTransactorSession) Repay(_token common.Ad
 	return _DefiFMintMinter.Contract.Repay(&_DefiFMintMinter.TransactOpts, _token, _amount)
 }
 
-// RewardClaim is a paid mutator transaction binding the contract method 0x6409f921.
+// RewardUpdate is a paid mutator transaction binding the contract method 0x48ebb08d.
 //
-// Solidity: function rewardClaim() returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterTransactor) RewardClaim(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _DefiFMintMinter.contract.Transact(opts, "rewardClaim")
+// Solidity: function rewardUpdate(address _account) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactor) RewardUpdate(opts *bind.TransactOpts, _account common.Address) (*types.Transaction, error) {
+	return _DefiFMintMinter.contract.Transact(opts, "rewardUpdate", _account)
 }
 
-// RewardClaim is a paid mutator transaction binding the contract method 0x6409f921.
+// RewardUpdate is a paid mutator transaction binding the contract method 0x48ebb08d.
 //
-// Solidity: function rewardClaim() returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardClaim() (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.RewardClaim(&_DefiFMintMinter.TransactOpts)
+// Solidity: function rewardUpdate(address _account) returns()
+func (_DefiFMintMinter *DefiFMintMinterSession) RewardUpdate(_account common.Address) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.RewardUpdate(&_DefiFMintMinter.TransactOpts, _account)
 }
 
-// RewardClaim is a paid mutator transaction binding the contract method 0x6409f921.
+// RewardUpdate is a paid mutator transaction binding the contract method 0x48ebb08d.
 //
-// Solidity: function rewardClaim() returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterTransactorSession) RewardClaim() (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.RewardClaim(&_DefiFMintMinter.TransactOpts)
-}
-
-// RewardNotifyAmount is a paid mutator transaction binding the contract method 0x2eac3b87.
-//
-// Solidity: function rewardNotifyAmount(uint256 reward) returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterTransactor) RewardNotifyAmount(opts *bind.TransactOpts, reward *big.Int) (*types.Transaction, error) {
-	return _DefiFMintMinter.contract.Transact(opts, "rewardNotifyAmount", reward)
-}
-
-// RewardNotifyAmount is a paid mutator transaction binding the contract method 0x2eac3b87.
-//
-// Solidity: function rewardNotifyAmount(uint256 reward) returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) RewardNotifyAmount(reward *big.Int) (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.RewardNotifyAmount(&_DefiFMintMinter.TransactOpts, reward)
-}
-
-// RewardNotifyAmount is a paid mutator transaction binding the contract method 0x2eac3b87.
-//
-// Solidity: function rewardNotifyAmount(uint256 reward) returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterTransactorSession) RewardNotifyAmount(reward *big.Int) (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.RewardNotifyAmount(&_DefiFMintMinter.TransactOpts, reward)
-}
-
-// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
-//
-// Solidity: function transferOwnership(address newOwner) returns()
-func (_DefiFMintMinter *DefiFMintMinterTransactor) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.contract.Transact(opts, "transferOwnership", newOwner)
-}
-
-// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
-//
-// Solidity: function transferOwnership(address newOwner) returns()
-func (_DefiFMintMinter *DefiFMintMinterSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.TransferOwnership(&_DefiFMintMinter.TransactOpts, newOwner)
-}
-
-// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
-//
-// Solidity: function transferOwnership(address newOwner) returns()
-func (_DefiFMintMinter *DefiFMintMinterTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.TransferOwnership(&_DefiFMintMinter.TransactOpts, newOwner)
+// Solidity: function rewardUpdate(address _account) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactorSession) RewardUpdate(_account common.Address) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.RewardUpdate(&_DefiFMintMinter.TransactOpts, _account)
 }
 
 // Withdraw is a paid mutator transaction binding the contract method 0xf3fef3a3.
@@ -2205,158 +1706,6 @@ func (_DefiFMintMinter *DefiFMintMinterFilterer) ParseMinted(log types.Log) (*De
 	return event, nil
 }
 
-// DefiFMintMinterOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the DefiFMintMinter contract.
-type DefiFMintMinterOwnershipTransferredIterator struct {
-	Event *DefiFMintMinterOwnershipTransferred // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *DefiFMintMinterOwnershipTransferredIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(DefiFMintMinterOwnershipTransferred)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(DefiFMintMinterOwnershipTransferred)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *DefiFMintMinterOwnershipTransferredIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *DefiFMintMinterOwnershipTransferredIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// DefiFMintMinterOwnershipTransferred represents a OwnershipTransferred event raised by the DefiFMintMinter contract.
-type DefiFMintMinterOwnershipTransferred struct {
-	PreviousOwner common.Address
-	NewOwner      common.Address
-	Raw           types.Log // Blockchain specific contextual infos
-}
-
-// FilterOwnershipTransferred is a free log retrieval operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
-//
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_DefiFMintMinter *DefiFMintMinterFilterer) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*DefiFMintMinterOwnershipTransferredIterator, error) {
-
-	var previousOwnerRule []interface{}
-	for _, previousOwnerItem := range previousOwner {
-		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
-	}
-	var newOwnerRule []interface{}
-	for _, newOwnerItem := range newOwner {
-		newOwnerRule = append(newOwnerRule, newOwnerItem)
-	}
-
-	logs, sub, err := _DefiFMintMinter.contract.FilterLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
-	if err != nil {
-		return nil, err
-	}
-	return &DefiFMintMinterOwnershipTransferredIterator{contract: _DefiFMintMinter.contract, event: "OwnershipTransferred", logs: logs, sub: sub}, nil
-}
-
-// WatchOwnershipTransferred is a free log subscription operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
-//
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_DefiFMintMinter *DefiFMintMinterFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *DefiFMintMinterOwnershipTransferred, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
-
-	var previousOwnerRule []interface{}
-	for _, previousOwnerItem := range previousOwner {
-		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
-	}
-	var newOwnerRule []interface{}
-	for _, newOwnerItem := range newOwner {
-		newOwnerRule = append(newOwnerRule, newOwnerItem)
-	}
-
-	logs, sub, err := _DefiFMintMinter.contract.WatchLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(DefiFMintMinterOwnershipTransferred)
-				if err := _DefiFMintMinter.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseOwnershipTransferred is a log parse operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
-//
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_DefiFMintMinter *DefiFMintMinterFilterer) ParseOwnershipTransferred(log types.Log) (*DefiFMintMinterOwnershipTransferred, error) {
-	event := new(DefiFMintMinterOwnershipTransferred)
-	if err := _DefiFMintMinter.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
-		return nil, err
-	}
-	return event, nil
-}
-
 // DefiFMintMinterRepaidIterator is returned from FilterRepaid and is used to iterate over the raw logs and unpacked data for Repaid events raised by the DefiFMintMinter contract.
 type DefiFMintMinterRepaidIterator struct {
 	Event *DefiFMintMinterRepaid // Event containing the contract specifics and raw log
@@ -2505,283 +1854,6 @@ func (_DefiFMintMinter *DefiFMintMinterFilterer) WatchRepaid(opts *bind.WatchOpt
 func (_DefiFMintMinter *DefiFMintMinterFilterer) ParseRepaid(log types.Log) (*DefiFMintMinterRepaid, error) {
 	event := new(DefiFMintMinterRepaid)
 	if err := _DefiFMintMinter.contract.UnpackLog(event, "Repaid", log); err != nil {
-		return nil, err
-	}
-	return event, nil
-}
-
-// DefiFMintMinterRewardAddedIterator is returned from FilterRewardAdded and is used to iterate over the raw logs and unpacked data for RewardAdded events raised by the DefiFMintMinter contract.
-type DefiFMintMinterRewardAddedIterator struct {
-	Event *DefiFMintMinterRewardAdded // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *DefiFMintMinterRewardAddedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(DefiFMintMinterRewardAdded)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(DefiFMintMinterRewardAdded)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *DefiFMintMinterRewardAddedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *DefiFMintMinterRewardAddedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// DefiFMintMinterRewardAdded represents a RewardAdded event raised by the DefiFMintMinter contract.
-type DefiFMintMinterRewardAdded struct {
-	Reward *big.Int
-	Raw    types.Log // Blockchain specific contextual infos
-}
-
-// FilterRewardAdded is a free log retrieval operation binding the contract event 0xde88a922e0d3b88b24e9623efeb464919c6bf9f66857a65e2bfcf2ce87a9433d.
-//
-// Solidity: event RewardAdded(uint256 reward)
-func (_DefiFMintMinter *DefiFMintMinterFilterer) FilterRewardAdded(opts *bind.FilterOpts) (*DefiFMintMinterRewardAddedIterator, error) {
-
-	logs, sub, err := _DefiFMintMinter.contract.FilterLogs(opts, "RewardAdded")
-	if err != nil {
-		return nil, err
-	}
-	return &DefiFMintMinterRewardAddedIterator{contract: _DefiFMintMinter.contract, event: "RewardAdded", logs: logs, sub: sub}, nil
-}
-
-// WatchRewardAdded is a free log subscription operation binding the contract event 0xde88a922e0d3b88b24e9623efeb464919c6bf9f66857a65e2bfcf2ce87a9433d.
-//
-// Solidity: event RewardAdded(uint256 reward)
-func (_DefiFMintMinter *DefiFMintMinterFilterer) WatchRewardAdded(opts *bind.WatchOpts, sink chan<- *DefiFMintMinterRewardAdded) (event.Subscription, error) {
-
-	logs, sub, err := _DefiFMintMinter.contract.WatchLogs(opts, "RewardAdded")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(DefiFMintMinterRewardAdded)
-				if err := _DefiFMintMinter.contract.UnpackLog(event, "RewardAdded", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseRewardAdded is a log parse operation binding the contract event 0xde88a922e0d3b88b24e9623efeb464919c6bf9f66857a65e2bfcf2ce87a9433d.
-//
-// Solidity: event RewardAdded(uint256 reward)
-func (_DefiFMintMinter *DefiFMintMinterFilterer) ParseRewardAdded(log types.Log) (*DefiFMintMinterRewardAdded, error) {
-	event := new(DefiFMintMinterRewardAdded)
-	if err := _DefiFMintMinter.contract.UnpackLog(event, "RewardAdded", log); err != nil {
-		return nil, err
-	}
-	return event, nil
-}
-
-// DefiFMintMinterRewardPaidIterator is returned from FilterRewardPaid and is used to iterate over the raw logs and unpacked data for RewardPaid events raised by the DefiFMintMinter contract.
-type DefiFMintMinterRewardPaidIterator struct {
-	Event *DefiFMintMinterRewardPaid // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *DefiFMintMinterRewardPaidIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(DefiFMintMinterRewardPaid)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(DefiFMintMinterRewardPaid)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *DefiFMintMinterRewardPaidIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *DefiFMintMinterRewardPaidIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// DefiFMintMinterRewardPaid represents a RewardPaid event raised by the DefiFMintMinter contract.
-type DefiFMintMinterRewardPaid struct {
-	User   common.Address
-	Reward *big.Int
-	Raw    types.Log // Blockchain specific contextual infos
-}
-
-// FilterRewardPaid is a free log retrieval operation binding the contract event 0xe2403640ba68fed3a2f88b7557551d1993f84b99bb10ff833f0cf8db0c5e0486.
-//
-// Solidity: event RewardPaid(address indexed user, uint256 reward)
-func (_DefiFMintMinter *DefiFMintMinterFilterer) FilterRewardPaid(opts *bind.FilterOpts, user []common.Address) (*DefiFMintMinterRewardPaidIterator, error) {
-
-	var userRule []interface{}
-	for _, userItem := range user {
-		userRule = append(userRule, userItem)
-	}
-
-	logs, sub, err := _DefiFMintMinter.contract.FilterLogs(opts, "RewardPaid", userRule)
-	if err != nil {
-		return nil, err
-	}
-	return &DefiFMintMinterRewardPaidIterator{contract: _DefiFMintMinter.contract, event: "RewardPaid", logs: logs, sub: sub}, nil
-}
-
-// WatchRewardPaid is a free log subscription operation binding the contract event 0xe2403640ba68fed3a2f88b7557551d1993f84b99bb10ff833f0cf8db0c5e0486.
-//
-// Solidity: event RewardPaid(address indexed user, uint256 reward)
-func (_DefiFMintMinter *DefiFMintMinterFilterer) WatchRewardPaid(opts *bind.WatchOpts, sink chan<- *DefiFMintMinterRewardPaid, user []common.Address) (event.Subscription, error) {
-
-	var userRule []interface{}
-	for _, userItem := range user {
-		userRule = append(userRule, userItem)
-	}
-
-	logs, sub, err := _DefiFMintMinter.contract.WatchLogs(opts, "RewardPaid", userRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(DefiFMintMinterRewardPaid)
-				if err := _DefiFMintMinter.contract.UnpackLog(event, "RewardPaid", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseRewardPaid is a log parse operation binding the contract event 0xe2403640ba68fed3a2f88b7557551d1993f84b99bb10ff833f0cf8db0c5e0486.
-//
-// Solidity: event RewardPaid(address indexed user, uint256 reward)
-func (_DefiFMintMinter *DefiFMintMinterFilterer) ParseRewardPaid(log types.Log) (*DefiFMintMinterRewardPaid, error) {
-	event := new(DefiFMintMinterRewardPaid)
-	if err := _DefiFMintMinter.contract.UnpackLog(event, "RewardPaid", log); err != nil {
 		return nil, err
 	}
 	return event, nil

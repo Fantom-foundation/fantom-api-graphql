@@ -148,8 +148,6 @@ func decodeToken(addr *common.Address, tk struct {
 	IsActive      bool
 	CanDeposit    bool
 	CanMint       bool
-	CanBorrow     bool
-	CanTrade      bool
 }) (types.DefiToken, error) {
 	// do we have a valid token? fail if not
 	if tk.Id == nil || 0 == tk.Id.Uint64() {
@@ -168,7 +166,7 @@ func decodeToken(addr *common.Address, tk struct {
 		IsActive:      tk.IsActive,
 		CanDeposit:    tk.CanDeposit,
 		CanMint:       tk.CanMint,
-		CanBorrow:     tk.CanBorrow,
-		CanTrade:      tk.CanTrade,
+		CanBorrow:     false,
+		CanTrade:      false,
 	}, nil
 }

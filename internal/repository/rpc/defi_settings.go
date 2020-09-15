@@ -40,6 +40,8 @@ func (ftm *FtmBridge) DefiConfiguration() (*types.DefiSettings, error) {
 		FMintAddressProvider:    ftm.fMintCfg.addressProvider,
 		FMintTokenRegistry:      ftm.fMintCfg.mustContractAddress(fMintAddressTokenRegistry),
 		FMintRewardDistribution: ftm.fMintCfg.mustContractAddress(fMintAddressRewardDistribution),
+		FMintCollateralPool:     ftm.fMintCfg.mustContractAddress(fMintCollateralPool),
+		FMintDebtPool:           ftm.fMintCfg.mustContractAddress(fMintDebtPool),
 		PriceOracleAggregate:    ftm.fMintCfg.mustContractAddress(fMintAddressPriceOracleProxy),
 	}
 

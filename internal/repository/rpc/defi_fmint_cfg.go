@@ -25,6 +25,8 @@ const (
 	fMintAddressPriceOracleProxy   = "getPriceOracleProxy"
 	fMintAddressRewardDistribution = "getRewardDistribution"
 	fMintAddressTokenRegistry      = "getTokenRegistry"
+	fMintCollateralPool            = "getCollateralPool"
+	fMintDebtPool                  = "getDebtPool"
 )
 
 // fMintConfig represents the configuration for DeFi fMint module.
@@ -75,6 +77,40 @@ func (fmc *fMintConfig) fMintMinterContract() (*DefiFMintMinter, error) {
 	}
 
 	return contract, nil
+}
+
+// fMintCollateralPool returns an instance of the fMint collateral pool contract.
+func (fmc *fMintConfig) fMintTokenStorage(addr common.Address) (*DeFiTokenStorage, error) {
+	// connect the contract
+	contract, err := NewDeFiTokenStorage(addr, fmc.bridge.eth)
+	if err != nil {
+		fmc.bridge.log.Errorf("can not access fMint token pool %s; %s", addr.String(), err.Error())
+		return nil, err
+	}
+
+	return contract, nil
+}
+
+// fMintCollateralPool returns an instance of the fMint collateral pool contract.
+func (fmc *fMintConfig) fMintCollateralPool() (*DeFiTokenStorage, error) {
+	// get address
+	addr, err := fmc.contractAddress(fMintCollateralPool)
+	if err != nil {
+		return nil, err
+	}
+
+	return fmc.fMintTokenStorage(addr)
+}
+
+// fMintDebtPool returns an instance of the fMint debt pool contract.
+func (fmc *fMintConfig) fMintDebtPool() (*DeFiTokenStorage, error) {
+	// get address
+	addr, err := fmc.contractAddress(fMintDebtPool)
+	if err != nil {
+		return nil, err
+	}
+
+	return fmc.fMintTokenStorage(addr)
 }
 
 // priceOracleProxyContract returns an instance of the DeFi price oracle proxy
