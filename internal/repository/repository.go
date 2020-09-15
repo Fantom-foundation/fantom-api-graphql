@@ -240,6 +240,19 @@ type Repository interface {
 	// FMintTokenValue loads value of a single DeFi token by it's address in fUSD.
 	FMintTokenValue(*common.Address, *common.Address, types.DefiTokenType) (hexutil.Big, error)
 
+	// RewardsEarned resolves the total amount of rewards
+	// accumulated on the account for the excessive collateral deposits.
+	FMintRewardsEarned(*common.Address) (hexutil.Big, error)
+
+	// CanClaimRewards resolves the fMint account flag for being allowed
+	// to claim earned rewards.
+	FMintCanClaimRewards(*common.Address) (bool, error)
+
+	// CanReceiveRewards resolves the fMint account flag for being eligible
+	// to receive earned rewards. If the collateral to debt ration drop below
+	// certain value, earned rewards are burned.
+	FMintCanReceiveRewards(*common.Address) (bool, error)
+
 	// Erc20Balance load the current available balance of and ERC20 token identified by the token
 	// contract address for an identified owner address.
 	Erc20Balance(*common.Address, *common.Address) (hexutil.Big, error)

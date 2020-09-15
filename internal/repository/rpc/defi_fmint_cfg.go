@@ -79,6 +79,24 @@ func (fmc *fMintConfig) fMintMinterContract() (*DefiFMintMinter, error) {
 	return contract, nil
 }
 
+// fMintRewardsDistribution returns an instance of the fMint Reward Distribution smart contract.
+func (fmc *fMintConfig) fMintRewardsDistribution() (*FMintRewardsDistribution, error) {
+	// get address
+	addr, err := fmc.contractAddress(fMintAddressRewardDistribution)
+	if err != nil {
+		return nil, err
+	}
+
+	// connect the contract
+	contract, err := NewFMintRewardsDistribution(addr, fmc.bridge.eth)
+	if err != nil {
+		fmc.bridge.log.Errorf("can not access fMint Rewards Distribution contract; %s", err.Error())
+		return nil, err
+	}
+
+	return contract, nil
+}
+
 // fMintCollateralPool returns an instance of the fMint collateral pool contract.
 func (fmc *fMintConfig) fMintTokenStorage(addr common.Address) (*DeFiTokenStorage, error) {
 	// connect the contract

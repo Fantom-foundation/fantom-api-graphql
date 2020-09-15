@@ -15,6 +15,7 @@ package rpc
 
 //go:generate abigen --abi ./contracts/price-oracle-proxy-interface.abi --pkg rpc --type PriceOracleProxyInterface --out ./smc_oracle_proxy.go
 //go:generate abigen --abi ./contracts/defi-token-storage.abi --pkg rpc --type DeFiTokenStorage --out ./smc_token_storage.go
+//go:generate abigen --abi ./contracts/defi-fmint-reward-distribution.abi --pkg rpc --type FMintRewardsDistribution --out ./smc_fmint_rewards.go
 
 import (
 	"fantom-api-graphql/internal/types"
@@ -165,4 +166,64 @@ func (ftm *FtmBridge) fMintAccountValue(owner common.Address) (hexutil.Big, hexu
 
 	// return the value we got
 	return hexutil.Big(*cValue), hexutil.Big(*dValue), nil
+}
+
+// RewardsEarned resolves the total amount of rewards
+// accumulated on the account for the excessive collateral deposits.
+func (ftm *FtmBridge) FMintRewardsEarned(addr *common.Address) (hexutil.Big, error) {
+	// connect the contract
+	contract, err := ftm.fMintCfg.fMintRewardsDistribution()
+	if err != nil {
+		return hexutil.Big{}, err
+	}
+
+	// get the rewards
+	rw, err := contract.RewardEarned(nil, *addr)
+	if err != nil {
+		ftm.log.Errorf("can not calculate earned rewards; %s", err.Error())
+		return hexutil.Big{}, err
+	}
+
+	return hexutil.Big(*rw), nil
+}
+
+// CanClaimRewards resolves the fMint account flag for being allowed
+// to claim earned rewards.
+func (ftm *FtmBridge) FMintCanClaimRewards(addr *common.Address) (bool, error) {
+	// connect the contract
+	contract, err := ftm.fMintCfg.fMintMinterContract()
+	if err != nil {
+		ftm.log.Errorf("rewards claim check failed; %s", err.Error())
+		return false, err
+	}
+
+	// ask if the claim is possible
+	flag, err := contract.RewardCanClaim(nil, *addr)
+	if err != nil {
+		ftm.log.Errorf("can not check rewards claim flag; %s", err.Error())
+		return false, err
+	}
+
+	return flag, nil
+}
+
+// CanReceiveRewards resolves the fMint account flag for being eligible
+// to receive earned rewards. If the collateral to debt ration drop below
+// certain value, earned rewards are burned.
+func (ftm *FtmBridge) FMintCanReceiveRewards(addr *common.Address) (bool, error) {
+	// connect the contract
+	contract, err := ftm.fMintCfg.fMintMinterContract()
+	if err != nil {
+		ftm.log.Errorf("rewards eligibility check failed; %s", err.Error())
+		return false, err
+	}
+
+	// ask if the claim is possible
+	flag, err := contract.RewardIsEligible(nil, *addr)
+	if err != nil {
+		ftm.log.Errorf("can not check rewards eligibility flag; %s", err.Error())
+		return false, err
+	}
+
+	return flag, nil
 }
