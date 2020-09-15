@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-09-11 10:34
+// Auto generated GraphQL schema bundle; created 2020-09-15 09:49
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -750,12 +750,18 @@ type DefiSettings {
 	# fMintAddressProvider represents the address of the fMint address provider.
 	fMintAddressProvider: Address!
 
-    # tokenRegistryContract is the address of the DeFi token registry.
+    # tokenRegistryContract is the address of the fMint token registry.
     fMintTokenRegistry: Address!
 
     # fMintRewardDistribution is the address of the DeFi fMint
     # reward distribution contract.
     fMintRewardDistribution: Address!
+
+    # fMintCollateralPool is the address of the fMint collateral pool.
+    fMintCollateralPool: Address!
+
+    # fMintDebtPool is the address of the fMint debt pool.
+    fMintDebtPool: Address!
 }
 
 # EstimatedRewards represents a calculated rewards estimation for an account or amount staked
