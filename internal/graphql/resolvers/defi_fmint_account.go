@@ -83,6 +83,12 @@ func (fac *FMintAccount) RewardsEarned() (hexutil.Big, error) {
 	return fac.repo.FMintRewardsEarned(&fac.Address)
 }
 
+// RewardsStashed resolves the total amount of rewards
+// accumulated on the account in the stash.
+func (fac *FMintAccount) RewardsStashed() (hexutil.Big, error) {
+	return fac.repo.FMintRewardsStashed(&fac.Address)
+}
+
 // CanClaimRewards resolves the fMint account flag for being allowed
 // to claim earned rewards.
 func (fac *FMintAccount) CanClaimRewards() (bool, error) {

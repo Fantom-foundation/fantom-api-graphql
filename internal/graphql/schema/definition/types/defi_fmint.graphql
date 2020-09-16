@@ -31,6 +31,12 @@ type FMintAccount {
     # be burned, if the account is not eligible to claim the reward.
     rewardsEarned: BigInt!
 
+    # rewardsStashed represents accumulated rewards
+    # earned on the DeFi / fMint account for the excessive
+    # collateral value and stored into the stash for future
+    # claim.
+    rewardsStashed: BigInt!
+
     # canClaimRewards informs if the fMint account collateral
     # to debt is high enough to allow earned rewards claiming.
     canClaimRewards: Boolean!

@@ -54,19 +54,25 @@ func (p *proxy) Erc20Allowance(owner *common.Address, token *common.Address) (he
 	return p.rpc.Erc20Allowance(owner, token)
 }
 
-// RewardsEarned resolves the total amount of rewards
+// FMintRewardsEarned represents the total amount of rewards
 // accumulated on the account for the excessive collateral deposits.
 func (p *proxy) FMintRewardsEarned(addr *common.Address) (hexutil.Big, error) {
 	return p.rpc.FMintRewardsEarned(addr)
 }
 
-// CanClaimRewards resolves the fMint account flag for being allowed
+// FMintRewardsStashed represents the total amount of rewards
+// accumulated on the account in stash.
+func (p *proxy) FMintRewardsStashed(addr *common.Address) (hexutil.Big, error) {
+	return p.rpc.FMintRewardsStashed(addr)
+}
+
+// FMintCanClaimRewards resolves the fMint account flag for being allowed
 // to claim earned rewards.
 func (p *proxy) FMintCanClaimRewards(addr *common.Address) (bool, error) {
 	return p.rpc.FMintCanClaimRewards(addr)
 }
 
-// CanReceiveRewards resolves the fMint account flag for being eligible
+// FMintCanReceiveRewards resolves the fMint account flag for being eligible
 // to receive earned rewards. If the collateral to debt ration drop below
 // certain value, earned rewards are burned.
 func (p *proxy) FMintCanReceiveRewards(addr *common.Address) (bool, error) {

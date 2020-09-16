@@ -18,7 +18,9 @@ package rpc
 //go:generate abigen --abi ./contracts/defi-fmint-reward-distribution.abi --pkg rpc --type FMintRewardsDistribution --out ./smc_fmint_rewards.go
 
 import (
+	"context"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -168,7 +170,7 @@ func (ftm *FtmBridge) fMintAccountValue(owner common.Address) (hexutil.Big, hexu
 	return hexutil.Big(*cValue), hexutil.Big(*dValue), nil
 }
 
-// RewardsEarned resolves the total amount of rewards
+// FMintRewardsEarned resolves the total amount of rewards
 // accumulated on the account for the excessive collateral deposits.
 func (ftm *FtmBridge) FMintRewardsEarned(addr *common.Address) (hexutil.Big, error) {
 	// connect the contract
@@ -177,8 +179,23 @@ func (ftm *FtmBridge) FMintRewardsEarned(addr *common.Address) (hexutil.Big, err
 		return hexutil.Big{}, err
 	}
 
+	// get the block height
+	bl, err := ftm.BlockHeight()
+	if err != nil {
+		return hexutil.Big{}, err
+	}
+
+	// make new call opts so we force the block
+	// we want to be used for the calculation
+	co := bind.CallOpts{
+		Pending:     false,
+		From:        *addr,
+		BlockNumber: bl.ToInt(),
+		Context:     context.Background(),
+	}
+
 	// get the rewards
-	rw, err := contract.RewardEarned(nil, *addr)
+	rw, err := contract.RewardEarned(&co, *addr)
 	if err != nil {
 		ftm.log.Errorf("can not calculate earned rewards; %s", err.Error())
 		return hexutil.Big{}, err
@@ -187,7 +204,26 @@ func (ftm *FtmBridge) FMintRewardsEarned(addr *common.Address) (hexutil.Big, err
 	return hexutil.Big(*rw), nil
 }
 
-// CanClaimRewards resolves the fMint account flag for being allowed
+// FMintRewardsStashed resolves the total amount of rewards
+// accumulated on the account for the excessive collateral deposits.
+func (ftm *FtmBridge) FMintRewardsStashed(addr *common.Address) (hexutil.Big, error) {
+	// connect the contract
+	contract, err := ftm.fMintCfg.fMintRewardsDistribution()
+	if err != nil {
+		return hexutil.Big{}, err
+	}
+
+	// get the rewards
+	rw, err := contract.RewardStash(nil, *addr)
+	if err != nil {
+		ftm.log.Errorf("can not calculate stashed rewards; %s", err.Error())
+		return hexutil.Big{}, err
+	}
+
+	return hexutil.Big(*rw), nil
+}
+
+// FMintCanClaimRewards resolves the fMint account flag for being allowed
 // to claim earned rewards.
 func (ftm *FtmBridge) FMintCanClaimRewards(addr *common.Address) (bool, error) {
 	// connect the contract
@@ -207,7 +243,7 @@ func (ftm *FtmBridge) FMintCanClaimRewards(addr *common.Address) (bool, error) {
 	return flag, nil
 }
 
-// CanReceiveRewards resolves the fMint account flag for being eligible
+// FMintCanReceiveRewards resolves the fMint account flag for being eligible
 // to receive earned rewards. If the collateral to debt ration drop below
 // certain value, earned rewards are burned.
 func (ftm *FtmBridge) FMintCanReceiveRewards(addr *common.Address) (bool, error) {

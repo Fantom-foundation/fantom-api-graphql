@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-09-15 22:26
+// Auto generated GraphQL schema bundle; created 2020-09-16 20:32
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -697,6 +697,12 @@ type FMintAccount {
     # collateral value. Please note that the rewards could still
     # be burned, if the account is not eligible to claim the reward.
     rewardsEarned: BigInt!
+
+    # rewardsStashed represents accumulated rewards
+    # earned on the DeFi / fMint account for the excessive
+    # collateral value and stored into the stash for future
+    # claim.
+    rewardsStashed: BigInt!
 
     # canClaimRewards informs if the fMint account collateral
     # to debt is high enough to allow earned rewards claiming.
