@@ -47,9 +47,9 @@ func (ftm *FtmBridge) DefiConfiguration() (*types.DefiSettings, error) {
 
 	// prep to load certain values
 	loaders := tConfigItemsLoaders{
-		&ds.MintFee4:               contract.FMintFee,
-		&ds.MinCollateralRatio4:    contract.CollateralLowestDebtRatio4dec,
-		&ds.RewardCollateralRatio4: contract.RewardEligibilityRatio4dec,
+		&ds.MintFee4:               contract.GetFMintFee4dec,
+		&ds.MinCollateralRatio4:    contract.GetCollateralLowestDebtRatio4dec,
+		&ds.RewardCollateralRatio4: contract.GetRewardEligibilityRatio4dec,
 	}
 
 	// load all the configured values

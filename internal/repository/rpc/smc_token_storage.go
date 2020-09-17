@@ -27,7 +27,7 @@ var (
 )
 
 // DeFiTokenStorageABI is the input ABI used to generate the binding from.
-const DeFiTokenStorageABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addressProvider\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"_dustAdt\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"constant\":true,\"inputs\":[],\"name\":\"addressProvider\",\"outputs\":[{\"internalType\":\"contractIFantomMintAddressProvider\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"balance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"tokens\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"totalBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"valueDustAdjustment\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"isMinter\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"tokenValue\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"total\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"valueOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"add\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"sub\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"tokensCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const DeFiTokenStorageABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addressProvider\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"_dustAdt\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"constant\":true,\"inputs\":[],\"name\":\"addressProvider\",\"outputs\":[{\"internalType\":\"contractIFantomMintAddressProvider\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"balance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"tokens\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"totalBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"valueDustAdjustment\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"tokenValue\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"total\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"totalOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"totalOfInc\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"totalOfDec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"add\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"sub\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"tokensCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // DeFiTokenStorage is an auto generated Go binding around an Ethereum contract.
 type DeFiTokenStorage struct {
@@ -249,32 +249,6 @@ func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) BalanceOf(_account commo
 	return _DeFiTokenStorage.Contract.BalanceOf(&_DeFiTokenStorage.CallOpts, _account, _token)
 }
 
-// IsMinter is a free data retrieval call binding the contract method 0xaa271e1a.
-//
-// Solidity: function isMinter(address _account) view returns(bool)
-func (_DeFiTokenStorage *DeFiTokenStorageCaller) IsMinter(opts *bind.CallOpts, _account common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "isMinter", _account)
-	return *ret0, err
-}
-
-// IsMinter is a free data retrieval call binding the contract method 0xaa271e1a.
-//
-// Solidity: function isMinter(address _account) view returns(bool)
-func (_DeFiTokenStorage *DeFiTokenStorageSession) IsMinter(_account common.Address) (bool, error) {
-	return _DeFiTokenStorage.Contract.IsMinter(&_DeFiTokenStorage.CallOpts, _account)
-}
-
-// IsMinter is a free data retrieval call binding the contract method 0xaa271e1a.
-//
-// Solidity: function isMinter(address _account) view returns(bool)
-func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) IsMinter(_account common.Address) (bool, error) {
-	return _DeFiTokenStorage.Contract.IsMinter(&_DeFiTokenStorage.CallOpts, _account)
-}
-
 // TokenValue is a free data retrieval call binding the contract method 0xf1821783.
 //
 // Solidity: function tokenValue(address _token, uint256 _amount) view returns(uint256 value)
@@ -405,6 +379,84 @@ func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) TotalBalance(arg0 common
 	return _DeFiTokenStorage.Contract.TotalBalance(&_DeFiTokenStorage.CallOpts, arg0)
 }
 
+// TotalOf is a free data retrieval call binding the contract method 0x912c2673.
+//
+// Solidity: function totalOf(address _account) view returns(uint256)
+func (_DeFiTokenStorage *DeFiTokenStorageCaller) TotalOf(opts *bind.CallOpts, _account common.Address) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _DeFiTokenStorage.contract.Call(opts, out, "totalOf", _account)
+	return *ret0, err
+}
+
+// TotalOf is a free data retrieval call binding the contract method 0x912c2673.
+//
+// Solidity: function totalOf(address _account) view returns(uint256)
+func (_DeFiTokenStorage *DeFiTokenStorageSession) TotalOf(_account common.Address) (*big.Int, error) {
+	return _DeFiTokenStorage.Contract.TotalOf(&_DeFiTokenStorage.CallOpts, _account)
+}
+
+// TotalOf is a free data retrieval call binding the contract method 0x912c2673.
+//
+// Solidity: function totalOf(address _account) view returns(uint256)
+func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) TotalOf(_account common.Address) (*big.Int, error) {
+	return _DeFiTokenStorage.Contract.TotalOf(&_DeFiTokenStorage.CallOpts, _account)
+}
+
+// TotalOfDec is a free data retrieval call binding the contract method 0x65be454d.
+//
+// Solidity: function totalOfDec(address _account, address _token, uint256 _amount) view returns(uint256 value)
+func (_DeFiTokenStorage *DeFiTokenStorageCaller) TotalOfDec(opts *bind.CallOpts, _account common.Address, _token common.Address, _amount *big.Int) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _DeFiTokenStorage.contract.Call(opts, out, "totalOfDec", _account, _token, _amount)
+	return *ret0, err
+}
+
+// TotalOfDec is a free data retrieval call binding the contract method 0x65be454d.
+//
+// Solidity: function totalOfDec(address _account, address _token, uint256 _amount) view returns(uint256 value)
+func (_DeFiTokenStorage *DeFiTokenStorageSession) TotalOfDec(_account common.Address, _token common.Address, _amount *big.Int) (*big.Int, error) {
+	return _DeFiTokenStorage.Contract.TotalOfDec(&_DeFiTokenStorage.CallOpts, _account, _token, _amount)
+}
+
+// TotalOfDec is a free data retrieval call binding the contract method 0x65be454d.
+//
+// Solidity: function totalOfDec(address _account, address _token, uint256 _amount) view returns(uint256 value)
+func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) TotalOfDec(_account common.Address, _token common.Address, _amount *big.Int) (*big.Int, error) {
+	return _DeFiTokenStorage.Contract.TotalOfDec(&_DeFiTokenStorage.CallOpts, _account, _token, _amount)
+}
+
+// TotalOfInc is a free data retrieval call binding the contract method 0x660eab83.
+//
+// Solidity: function totalOfInc(address _account, address _token, uint256 _amount) view returns(uint256 value)
+func (_DeFiTokenStorage *DeFiTokenStorageCaller) TotalOfInc(opts *bind.CallOpts, _account common.Address, _token common.Address, _amount *big.Int) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _DeFiTokenStorage.contract.Call(opts, out, "totalOfInc", _account, _token, _amount)
+	return *ret0, err
+}
+
+// TotalOfInc is a free data retrieval call binding the contract method 0x660eab83.
+//
+// Solidity: function totalOfInc(address _account, address _token, uint256 _amount) view returns(uint256 value)
+func (_DeFiTokenStorage *DeFiTokenStorageSession) TotalOfInc(_account common.Address, _token common.Address, _amount *big.Int) (*big.Int, error) {
+	return _DeFiTokenStorage.Contract.TotalOfInc(&_DeFiTokenStorage.CallOpts, _account, _token, _amount)
+}
+
+// TotalOfInc is a free data retrieval call binding the contract method 0x660eab83.
+//
+// Solidity: function totalOfInc(address _account, address _token, uint256 _amount) view returns(uint256 value)
+func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) TotalOfInc(_account common.Address, _token common.Address, _amount *big.Int) (*big.Int, error) {
+	return _DeFiTokenStorage.Contract.TotalOfInc(&_DeFiTokenStorage.CallOpts, _account, _token, _amount)
+}
+
 // ValueDustAdjustment is a free data retrieval call binding the contract method 0x496a1140.
 //
 // Solidity: function valueDustAdjustment() view returns(bool)
@@ -429,32 +481,6 @@ func (_DeFiTokenStorage *DeFiTokenStorageSession) ValueDustAdjustment() (bool, e
 // Solidity: function valueDustAdjustment() view returns(bool)
 func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) ValueDustAdjustment() (bool, error) {
 	return _DeFiTokenStorage.Contract.ValueDustAdjustment(&_DeFiTokenStorage.CallOpts)
-}
-
-// ValueOf is a free data retrieval call binding the contract method 0xa48028aa.
-//
-// Solidity: function valueOf(address _account) view returns(uint256 value)
-func (_DeFiTokenStorage *DeFiTokenStorageCaller) ValueOf(opts *bind.CallOpts, _account common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "valueOf", _account)
-	return *ret0, err
-}
-
-// ValueOf is a free data retrieval call binding the contract method 0xa48028aa.
-//
-// Solidity: function valueOf(address _account) view returns(uint256 value)
-func (_DeFiTokenStorage *DeFiTokenStorageSession) ValueOf(_account common.Address) (*big.Int, error) {
-	return _DeFiTokenStorage.Contract.ValueOf(&_DeFiTokenStorage.CallOpts, _account)
-}
-
-// ValueOf is a free data retrieval call binding the contract method 0xa48028aa.
-//
-// Solidity: function valueOf(address _account) view returns(uint256 value)
-func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) ValueOf(_account common.Address) (*big.Int, error) {
-	return _DeFiTokenStorage.Contract.ValueOf(&_DeFiTokenStorage.CallOpts, _account)
 }
 
 // Add is a paid mutator transaction binding the contract method 0x551f8e2a.

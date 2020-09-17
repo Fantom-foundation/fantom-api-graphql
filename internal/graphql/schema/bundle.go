@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-09-16 20:32
+// Auto generated GraphQL schema bundle; created 2020-09-17 10:16
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {

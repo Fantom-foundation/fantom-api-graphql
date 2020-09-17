@@ -153,14 +153,14 @@ func (ftm *FtmBridge) fMintAccountValue(owner common.Address) (hexutil.Big, hexu
 	}
 
 	// get joined collateral value
-	cValue, err := contract.CollateralValueOf(nil, owner)
+	cValue, err := contract.CollateralValueOf(nil, owner, common.Address{}, new(big.Int))
 	if err != nil {
 		ftm.log.Errorf("joined collateral value loader failed")
 		return hexutil.Big{}, hexutil.Big{}, err
 	}
 
 	// get joined debt value
-	dValue, err := contract.DebtValueOf(nil, owner)
+	dValue, err := contract.DebtValueOf(nil, owner, common.Address{}, new(big.Int))
 	if err != nil {
 		ftm.log.Errorf("joined debt value loader failed")
 		return hexutil.Big{}, hexutil.Big{}, err
