@@ -45,6 +45,11 @@ type FMintAccount {
     # to debt is high enough to receive earned rewards. If the ratio
     # is below configured one, earned rewards are burned.
     canReceiveRewards: Boolean!
+
+    # canPushNewRewards indicates if new rewards are unlocked
+    # inside the reward distribution and can be pushed into
+    # the system to distribute them among eligible accounts.
+    canPushNewRewards: Boolean!
 }
 
 # FMintTokenBalance represents a balance of a specific DeFi token

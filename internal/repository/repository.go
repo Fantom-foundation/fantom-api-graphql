@@ -257,6 +257,10 @@ type Repository interface {
 	// certain value, earned rewards are burned.
 	FMintCanReceiveRewards(*common.Address) (bool, error)
 
+	// FMintCanPushRewards signals if there are any rewards unlocked
+	// on the rewards distribution contract and can be pushed to accounts.
+	FMintCanPushRewards() (bool, error)
+
 	// Erc20Balance load the current available balance of and ERC20 token identified by the token
 	// contract address for an identified owner address.
 	Erc20Balance(*common.Address, *common.Address) (hexutil.Big, error)

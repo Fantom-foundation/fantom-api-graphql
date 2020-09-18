@@ -102,6 +102,12 @@ func (fac *FMintAccount) CanReceiveRewards() (bool, error) {
 	return fac.repo.FMintCanReceiveRewards(&fac.Address)
 }
 
+// CanPushNewRewards resolves the flag about the new rewards unlocked
+// and ready for push.
+func (fac *FMintAccount) CanPushNewRewards() (bool, error) {
+	return fac.repo.FMintCanPushRewards()
+}
+
 // Token resolves the token information from the related token address.
 func (mintBalance *FMintTokenBalance) Token() (*DefiToken, error) {
 	// get the token backend

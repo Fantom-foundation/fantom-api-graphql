@@ -24,7 +24,12 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"time"
 )
+
+// fMintRewardsPushTimeBarrier represents the minimal time before a new reward push can be made.
+// We use this barrier to subtract from current time, hence the negative value.
+const fMintRewardsPushTimeBarrier = time.Duration(-70) * time.Minute
 
 // FMintAccount loads details of a DeFi/fMint protocol account identified by the owner address.
 func (ftm *FtmBridge) FMintAccount(owner *common.Address) (*types.FMintAccount, error) {
@@ -262,4 +267,30 @@ func (ftm *FtmBridge) FMintCanReceiveRewards(addr *common.Address) (bool, error)
 	}
 
 	return flag, nil
+}
+
+// FMintCanPushRewards signals if there are any rewards unlocked
+// on the rewards distribution contract and can be pushed to accounts.
+func (ftm *FtmBridge) FMintCanPushRewards() (bool, error) {
+	// connect the contract
+	contract, err := ftm.fMintCfg.fMintRewardsDistribution()
+	if err != nil {
+		return false, err
+	}
+
+	// get the last time rewards were pushed
+	lastPush, err := contract.LastRewardPush(nil)
+	if err != nil {
+		ftm.log.Errorf("can not check rewards last push; %s", err.Error())
+		return false, err
+	}
+
+	// are we safely within the time barrier?
+	// if not simply return false
+	if time.Now().Add(fMintRewardsPushTimeBarrier).UTC().Unix() < int64(lastPush.Uint64()) {
+		return false, nil
+	}
+
+	// @todo Check the amount of rewards available so we know that it will push.
+	return true, nil
 }

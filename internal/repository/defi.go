@@ -78,3 +78,9 @@ func (p *proxy) FMintCanClaimRewards(addr *common.Address) (bool, error) {
 func (p *proxy) FMintCanReceiveRewards(addr *common.Address) (bool, error) {
 	return p.rpc.FMintCanReceiveRewards(addr)
 }
+
+// FMintCanPushRewards signals if there are any rewards unlocked
+// on the rewards distribution contract and can be pushed to accounts.
+func (p *proxy) FMintCanPushRewards() (bool, error) {
+	return p.rpc.FMintCanPushRewards()
+}

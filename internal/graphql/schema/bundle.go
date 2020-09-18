@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-09-18 09:24
+// Auto generated GraphQL schema bundle; created 2020-09-18 12:55
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -712,6 +712,11 @@ type FMintAccount {
     # to debt is high enough to receive earned rewards. If the ratio
     # is below configured one, earned rewards are burned.
     canReceiveRewards: Boolean!
+
+    # canPushNewRewards indicates if new rewards are unlocked
+    # inside the reward distribution and can be pushed into
+    # the system to distribute them among eligible accounts.
+    canPushNewRewards: Boolean!
 }
 
 # FMintTokenBalance represents a balance of a specific DeFi token
