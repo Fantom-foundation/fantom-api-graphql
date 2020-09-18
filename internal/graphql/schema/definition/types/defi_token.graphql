@@ -61,6 +61,9 @@ type DefiToken {
     # of tokens from the owner to the DeFi Liquidity Poll.
     # If it's not given, the operation will fail.
     allowance(owner: Address!): BigInt!
+
+    # totalSupply represents total amount of tokens across all accounts
+    totalSupply: BigInt!
 }
 
 # DefiTokenBalanceType represents the type of DeFi token balance record.

@@ -66,6 +66,11 @@ func (dt *DefiToken) CanWrapFTM() bool {
 	return dt.Symbol == defiWFTMSymbol
 }
 
+// TotalSupply represents the total amount of tokens on supply.
+func (dt *DefiToken) TotalSupply() (hexutil.Big, error) {
+	return dt.repo.Erc20TotalSupply(&dt.Address)
+}
+
 // DefiConfiguration resolves the current DeFi contract settings.
 func (rs *rootResolver) DefiConfiguration() (*types.DefiSettings, error) {
 	// pass the call to repository

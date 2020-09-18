@@ -42,6 +42,7 @@ func (ftm *FtmBridge) Erc20Balance(owner *common.Address, token *common.Address)
 	// this should always be the case since the contract should
 	// return zero even for unknown owners, but let's be sure here
 	if val == nil {
+		ftm.log.Errorf("no balance available for ERC20 %s, owner %s", token.String(), owner.String())
 		val = new(big.Int)
 	}
 
@@ -66,10 +67,37 @@ func (ftm *FtmBridge) Erc20Allowance(owner *common.Address, token *common.Addres
 		return hexutil.Big{}, err
 	}
 
-	// make sur we always have a value; at least zero
+	// make sure we always have a value; at least zero
 	// this should always be the case since the contract should
 	// return zero even for unknown owners, but let's be sure here
 	if val == nil {
+		ftm.log.Errorf("no allowance available for ERC20 %s, owner %s", token.String(), owner.String())
+		val = new(big.Int)
+	}
+
+	// return the account balance
+	return hexutil.Big(*val), nil
+}
+
+// Erc20TotalSupply provides information about all available tokens
+func (ftm *FtmBridge) Erc20TotalSupply(token *common.Address) (hexutil.Big, error) {
+	// connect the contract
+	contract, err := NewERCTwenty(*token, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("can not contact ERC20 contract; %s", err.Error())
+		return hexutil.Big{}, err
+	}
+
+	// get the amount of tokens allowed for DeFi
+	val, err := contract.TotalSupply(nil)
+	if err != nil {
+		ftm.log.Errorf("can not get defi ERC20 %s total supply; %s", token.String(), err.Error())
+		return hexutil.Big{}, err
+	}
+
+	// make sure we always have a value; at least zero
+	if val == nil {
+		ftm.log.Errorf("no supply available for ERC20 %s", token.String())
 		val = new(big.Int)
 	}
 

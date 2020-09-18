@@ -54,6 +54,11 @@ func (p *proxy) Erc20Allowance(owner *common.Address, token *common.Address) (he
 	return p.rpc.Erc20Allowance(owner, token)
 }
 
+// Erc20TotalSupply provides information about all available tokens
+func (p *proxy) Erc20TotalSupply(token *common.Address) (hexutil.Big, error) {
+	return p.rpc.Erc20TotalSupply(token)
+}
+
 // FMintRewardsEarned represents the total amount of rewards
 // accumulated on the account for the excessive collateral deposits.
 func (p *proxy) FMintRewardsEarned(addr *common.Address) (hexutil.Big, error) {

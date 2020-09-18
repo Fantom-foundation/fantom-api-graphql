@@ -269,6 +269,9 @@ type Repository interface {
 	// contract by the token owner.
 	Erc20Allowance(*common.Address, *common.Address) (hexutil.Big, error)
 
+	// Erc20TotalSupply provides information about all available tokens
+	Erc20TotalSupply(*common.Address) (hexutil.Big, error)
+
 	// Close and cleanup the repository.
 	Close()
 }
