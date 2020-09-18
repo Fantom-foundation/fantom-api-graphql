@@ -35,19 +35,6 @@
           "type": "address"
         }
       ],
-      "name": "FeeTokenChanged",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "newAddress",
-          "type": "address"
-        }
-      ],
       "name": "MinterChanged",
       "type": "event"
     },
@@ -177,6 +164,21 @@
       "type": "function"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [
         {
@@ -203,7 +205,7 @@
       "name": "getPriceOracleProxy",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "contract IPriceOracleProxy",
           "name": "",
           "type": "address"
         }
@@ -233,7 +235,7 @@
       "name": "getTokenRegistry",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "contract IFantomMintTokenRegistry",
           "name": "",
           "type": "address"
         }
@@ -260,40 +262,10 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "getFeeToken",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_addr",
-          "type": "address"
-        }
-      ],
-      "name": "setFeeToken",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
       "name": "getRewardDistribution",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "contract IFantomMintRewardManager",
           "name": "",
           "type": "address"
         }
@@ -323,7 +295,7 @@
       "name": "getRewardToken",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "contract ERC20",
           "name": "",
           "type": "address"
         }
@@ -353,7 +325,7 @@
       "name": "getFantomMint",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "contract IFantomMintBalanceGuard",
           "name": "",
           "type": "address"
         }
@@ -383,7 +355,7 @@
       "name": "getCollateralPool",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "contract IFantomDeFiTokenStorage",
           "name": "",
           "type": "address"
         }
@@ -413,7 +385,7 @@
       "name": "getDebtPool",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "contract IFantomDeFiTokenStorage",
           "name": "",
           "type": "address"
         }

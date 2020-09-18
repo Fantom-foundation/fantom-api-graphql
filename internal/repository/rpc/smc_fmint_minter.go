@@ -27,7 +27,7 @@ var (
 )
 
 // DefiFMintMinterABI is the input ABI used to generate the binding from.
-const DefiFMintMinterABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addressProvider\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"ratio4dec\",\"type\":\"uint256\"}],\"name\":\"CollateralLowestDebtRatioChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Deposited\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee4dec\",\"type\":\"uint256\"}],\"name\":\"MintFeeChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"Minted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Repaid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"ratio4dec\",\"type\":\"uint256\"}],\"name\":\"RewardEligibilityRatioChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Withdrawn\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_DEBT_EXCEEDED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_DEPOSIT_PROHIBITED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_ALLOWANCE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_AMOUNT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_BALANCE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_COLLATERAL_RATIO\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_MINTING_PROHIBITED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NOT_AUTHORIZED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_COLLATERAL\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_ERROR\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_REWARD\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_VALUE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARDS_DEPLETED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARDS_EARLY\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARDS_NONE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARD_CLAIM_REJECTED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_ZERO_AMOUNT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"addressProvider\",\"outputs\":[{\"internalType\":\"contractIFantomMintAddressProvider\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_ratio4dec\",\"type\":\"uint256\"}],\"name\":\"cfgSetLowestCollateralRatio\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_fee4dec\",\"type\":\"uint256\"}],\"name\":\"cfgSetMintFee\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_ratio4dec\",\"type\":\"uint256\"}],\"name\":\"cfgSetRewardEligibilityRatio\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"collateralCanDecrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"collateralLowestDebtRatio4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"collateralRatioDecimalsCorrection\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"debtCanIncrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"deposit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"fMintFee4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"fMintFeeDigitsCorrection\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"feePool\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"maxDebtAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"minCollateralAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"mintMax\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mustDeposit\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mustMint\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"mustMintMax\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mustRepay\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"mustRepayMax\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mustWithdraw\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"mustWithdrawMax\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"repay\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"repayMax\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"rewardCanClaim\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardEligibilityRatio4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"rewardIsEligible\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"withdrawMax\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCollateralLowestDebtRatio4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardEligibilityRatio4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getFMintFee4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCollateralPool\",\"outputs\":[{\"internalType\":\"contractIFantomDeFiTokenStorage\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getDebtPool\",\"outputs\":[{\"internalType\":\"contractIFantomDeFiTokenStorage\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"canDeposit\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"canMint\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"checkCollateralCanDecrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"checkDebtCanIncrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_add\",\"type\":\"uint256\"}],\"name\":\"debtValueOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_sub\",\"type\":\"uint256\"}],\"name\":\"collateralValueOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getMinCollateralAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getMaxDebtAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"rewardUpdate\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getExtendedPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"_price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_digits\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const DefiFMintMinterABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"ratio4dec\",\"type\":\"uint256\"}],\"name\":\"CollateralLowestDebtRatioChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Deposited\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee4dec\",\"type\":\"uint256\"}],\"name\":\"MintFeeChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"Minted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Repaid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"ratio4dec\",\"type\":\"uint256\"}],\"name\":\"RewardEligibilityRatioChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Withdrawn\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_DEBT_EXCEEDED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_DEPOSIT_PROHIBITED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_ALLOWANCE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_AMOUNT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_BALANCE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_LOW_COLLATERAL_RATIO\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_MINTING_PROHIBITED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NOT_AUTHORIZED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_COLLATERAL\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_ERROR\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_REWARD\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_NO_VALUE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARDS_DEPLETED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARDS_EARLY\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARDS_NONE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_REWARD_CLAIM_REJECTED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"ERR_ZERO_AMOUNT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"addressProvider\",\"outputs\":[{\"internalType\":\"contractIFantomMintAddressProvider\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_ratio4dec\",\"type\":\"uint256\"}],\"name\":\"cfgSetLowestCollateralRatio\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_fee4dec\",\"type\":\"uint256\"}],\"name\":\"cfgSetMintFee\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_ratio4dec\",\"type\":\"uint256\"}],\"name\":\"cfgSetRewardEligibilityRatio\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"collateralCanDecrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"collateralLowestDebtRatio4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"collateralRatioDecimalsCorrection\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"debtCanIncrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"deposit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"fMintFee4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"fMintFeeDigitsCorrection\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"feePool\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_ratio\",\"type\":\"uint256\"}],\"name\":\"maxToMint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_ratio\",\"type\":\"uint256\"}],\"name\":\"maxToWithdraw\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_ratio\",\"type\":\"uint256\"}],\"name\":\"minToDeposit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_ratio\",\"type\":\"uint256\"}],\"name\":\"mintMax\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mustDeposit\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mustMint\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_ratio\",\"type\":\"uint256\"}],\"name\":\"mustMintMax\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mustRepay\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"mustRepayMax\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mustWithdraw\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_ratio\",\"type\":\"uint256\"}],\"name\":\"mustWithdrawMax\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"repay\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"repayMax\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"rewardCanClaim\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rewardEligibilityRatio4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"rewardIsEligible\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_ratio\",\"type\":\"uint256\"}],\"name\":\"withdrawMax\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_addressProvider\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCollateralLowestDebtRatio4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardEligibilityRatio4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getFMintFee4dec\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCollateralPool\",\"outputs\":[{\"internalType\":\"contractIFantomDeFiTokenStorage\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getDebtPool\",\"outputs\":[{\"internalType\":\"contractIFantomDeFiTokenStorage\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"canDeposit\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"canMint\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"checkCollateralCanDecrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"checkDebtCanIncrease\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_add\",\"type\":\"uint256\"}],\"name\":\"debtValueOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_sub\",\"type\":\"uint256\"}],\"name\":\"collateralValueOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_ratio\",\"type\":\"uint256\"}],\"name\":\"getMaxToWithdraw\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_ratio\",\"type\":\"uint256\"}],\"name\":\"getMaxToMint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"rewardUpdate\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getExtendedPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"_price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_digits\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // DefiFMintMinter is an auto generated Go binding around an Ethereum contract.
 type DefiFMintMinter struct {
@@ -1117,56 +1117,56 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetFMintFee4dec() (*big.In
 	return _DefiFMintMinter.Contract.GetFMintFee4dec(&_DefiFMintMinter.CallOpts)
 }
 
-// GetMaxDebtAmount is a free data retrieval call binding the contract method 0xb9f5a9ec.
+// GetMaxToMint is a free data retrieval call binding the contract method 0x54a36bcf.
 //
-// Solidity: function getMaxDebtAmount(address _account, address _token) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) GetMaxDebtAmount(opts *bind.CallOpts, _account common.Address, _token common.Address) (*big.Int, error) {
+// Solidity: function getMaxToMint(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCaller) GetMaxToMint(opts *bind.CallOpts, _account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "getMaxDebtAmount", _account, _token)
+	err := _DefiFMintMinter.contract.Call(opts, out, "getMaxToMint", _account, _token, _ratio)
 	return *ret0, err
 }
 
-// GetMaxDebtAmount is a free data retrieval call binding the contract method 0xb9f5a9ec.
+// GetMaxToMint is a free data retrieval call binding the contract method 0x54a36bcf.
 //
-// Solidity: function getMaxDebtAmount(address _account, address _token) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) GetMaxDebtAmount(_account common.Address, _token common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.GetMaxDebtAmount(&_DefiFMintMinter.CallOpts, _account, _token)
+// Solidity: function getMaxToMint(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterSession) GetMaxToMint(_account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
+	return _DefiFMintMinter.Contract.GetMaxToMint(&_DefiFMintMinter.CallOpts, _account, _token, _ratio)
 }
 
-// GetMaxDebtAmount is a free data retrieval call binding the contract method 0xb9f5a9ec.
+// GetMaxToMint is a free data retrieval call binding the contract method 0x54a36bcf.
 //
-// Solidity: function getMaxDebtAmount(address _account, address _token) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetMaxDebtAmount(_account common.Address, _token common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.GetMaxDebtAmount(&_DefiFMintMinter.CallOpts, _account, _token)
+// Solidity: function getMaxToMint(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetMaxToMint(_account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
+	return _DefiFMintMinter.Contract.GetMaxToMint(&_DefiFMintMinter.CallOpts, _account, _token, _ratio)
 }
 
-// GetMinCollateralAmount is a free data retrieval call binding the contract method 0xd9b0b5e4.
+// GetMaxToWithdraw is a free data retrieval call binding the contract method 0x850e102f.
 //
-// Solidity: function getMinCollateralAmount(address _account, address _token) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) GetMinCollateralAmount(opts *bind.CallOpts, _account common.Address, _token common.Address) (*big.Int, error) {
+// Solidity: function getMaxToWithdraw(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCaller) GetMaxToWithdraw(opts *bind.CallOpts, _account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "getMinCollateralAmount", _account, _token)
+	err := _DefiFMintMinter.contract.Call(opts, out, "getMaxToWithdraw", _account, _token, _ratio)
 	return *ret0, err
 }
 
-// GetMinCollateralAmount is a free data retrieval call binding the contract method 0xd9b0b5e4.
+// GetMaxToWithdraw is a free data retrieval call binding the contract method 0x850e102f.
 //
-// Solidity: function getMinCollateralAmount(address _account, address _token) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) GetMinCollateralAmount(_account common.Address, _token common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.GetMinCollateralAmount(&_DefiFMintMinter.CallOpts, _account, _token)
+// Solidity: function getMaxToWithdraw(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterSession) GetMaxToWithdraw(_account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
+	return _DefiFMintMinter.Contract.GetMaxToWithdraw(&_DefiFMintMinter.CallOpts, _account, _token, _ratio)
 }
 
-// GetMinCollateralAmount is a free data retrieval call binding the contract method 0xd9b0b5e4.
+// GetMaxToWithdraw is a free data retrieval call binding the contract method 0x850e102f.
 //
-// Solidity: function getMinCollateralAmount(address _account, address _token) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetMinCollateralAmount(_account common.Address, _token common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.GetMinCollateralAmount(&_DefiFMintMinter.CallOpts, _account, _token)
+// Solidity: function getMaxToWithdraw(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetMaxToWithdraw(_account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
+	return _DefiFMintMinter.Contract.GetMaxToWithdraw(&_DefiFMintMinter.CallOpts, _account, _token, _ratio)
 }
 
 // GetPrice is a free data retrieval call binding the contract method 0x41976e09.
@@ -1247,56 +1247,82 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) IsOwner() (bool, error) {
 	return _DefiFMintMinter.Contract.IsOwner(&_DefiFMintMinter.CallOpts)
 }
 
-// MaxDebtAmount is a free data retrieval call binding the contract method 0x3fc082c1.
+// MaxToMint is a free data retrieval call binding the contract method 0xd4ca4d74.
 //
-// Solidity: function maxDebtAmount(address _account, address _token) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) MaxDebtAmount(opts *bind.CallOpts, _account common.Address, _token common.Address) (*big.Int, error) {
+// Solidity: function maxToMint(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCaller) MaxToMint(opts *bind.CallOpts, _account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "maxDebtAmount", _account, _token)
+	err := _DefiFMintMinter.contract.Call(opts, out, "maxToMint", _account, _token, _ratio)
 	return *ret0, err
 }
 
-// MaxDebtAmount is a free data retrieval call binding the contract method 0x3fc082c1.
+// MaxToMint is a free data retrieval call binding the contract method 0xd4ca4d74.
 //
-// Solidity: function maxDebtAmount(address _account, address _token) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) MaxDebtAmount(_account common.Address, _token common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.MaxDebtAmount(&_DefiFMintMinter.CallOpts, _account, _token)
+// Solidity: function maxToMint(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterSession) MaxToMint(_account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
+	return _DefiFMintMinter.Contract.MaxToMint(&_DefiFMintMinter.CallOpts, _account, _token, _ratio)
 }
 
-// MaxDebtAmount is a free data retrieval call binding the contract method 0x3fc082c1.
+// MaxToMint is a free data retrieval call binding the contract method 0xd4ca4d74.
 //
-// Solidity: function maxDebtAmount(address _account, address _token) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) MaxDebtAmount(_account common.Address, _token common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.MaxDebtAmount(&_DefiFMintMinter.CallOpts, _account, _token)
+// Solidity: function maxToMint(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) MaxToMint(_account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
+	return _DefiFMintMinter.Contract.MaxToMint(&_DefiFMintMinter.CallOpts, _account, _token, _ratio)
 }
 
-// MinCollateralAmount is a free data retrieval call binding the contract method 0xdddfe758.
+// MaxToWithdraw is a free data retrieval call binding the contract method 0xdc2b18cc.
 //
-// Solidity: function minCollateralAmount(address _account, address _token) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCaller) MinCollateralAmount(opts *bind.CallOpts, _account common.Address, _token common.Address) (*big.Int, error) {
+// Solidity: function maxToWithdraw(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCaller) MaxToWithdraw(opts *bind.CallOpts, _account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "minCollateralAmount", _account, _token)
+	err := _DefiFMintMinter.contract.Call(opts, out, "maxToWithdraw", _account, _token, _ratio)
 	return *ret0, err
 }
 
-// MinCollateralAmount is a free data retrieval call binding the contract method 0xdddfe758.
+// MaxToWithdraw is a free data retrieval call binding the contract method 0xdc2b18cc.
 //
-// Solidity: function minCollateralAmount(address _account, address _token) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) MinCollateralAmount(_account common.Address, _token common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.MinCollateralAmount(&_DefiFMintMinter.CallOpts, _account, _token)
+// Solidity: function maxToWithdraw(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterSession) MaxToWithdraw(_account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
+	return _DefiFMintMinter.Contract.MaxToWithdraw(&_DefiFMintMinter.CallOpts, _account, _token, _ratio)
 }
 
-// MinCollateralAmount is a free data retrieval call binding the contract method 0xdddfe758.
+// MaxToWithdraw is a free data retrieval call binding the contract method 0xdc2b18cc.
 //
-// Solidity: function minCollateralAmount(address _account, address _token) view returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterCallerSession) MinCollateralAmount(_account common.Address, _token common.Address) (*big.Int, error) {
-	return _DefiFMintMinter.Contract.MinCollateralAmount(&_DefiFMintMinter.CallOpts, _account, _token)
+// Solidity: function maxToWithdraw(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) MaxToWithdraw(_account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
+	return _DefiFMintMinter.Contract.MaxToWithdraw(&_DefiFMintMinter.CallOpts, _account, _token, _ratio)
+}
+
+// MinToDeposit is a free data retrieval call binding the contract method 0x90c36959.
+//
+// Solidity: function minToDeposit(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCaller) MinToDeposit(opts *bind.CallOpts, _account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _DefiFMintMinter.contract.Call(opts, out, "minToDeposit", _account, _token, _ratio)
+	return *ret0, err
+}
+
+// MinToDeposit is a free data retrieval call binding the contract method 0x90c36959.
+//
+// Solidity: function minToDeposit(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterSession) MinToDeposit(_account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
+	return _DefiFMintMinter.Contract.MinToDeposit(&_DefiFMintMinter.CallOpts, _account, _token, _ratio)
+}
+
+// MinToDeposit is a free data retrieval call binding the contract method 0x90c36959.
+//
+// Solidity: function minToDeposit(address _account, address _token, uint256 _ratio) view returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterCallerSession) MinToDeposit(_account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
+	return _DefiFMintMinter.Contract.MinToDeposit(&_DefiFMintMinter.CallOpts, _account, _token, _ratio)
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
@@ -1487,6 +1513,69 @@ func (_DefiFMintMinter *DefiFMintMinterTransactorSession) Deposit(_token common.
 	return _DefiFMintMinter.Contract.Deposit(&_DefiFMintMinter.TransactOpts, _token, _amount)
 }
 
+// Initialize is a paid mutator transaction binding the contract method 0x485cc955.
+//
+// Solidity: function initialize(address owner, address _addressProvider) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactor) Initialize(opts *bind.TransactOpts, owner common.Address, _addressProvider common.Address) (*types.Transaction, error) {
+	return _DefiFMintMinter.contract.Transact(opts, "initialize", owner, _addressProvider)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0x485cc955.
+//
+// Solidity: function initialize(address owner, address _addressProvider) returns()
+func (_DefiFMintMinter *DefiFMintMinterSession) Initialize(owner common.Address, _addressProvider common.Address) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.Initialize(&_DefiFMintMinter.TransactOpts, owner, _addressProvider)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0x485cc955.
+//
+// Solidity: function initialize(address owner, address _addressProvider) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactorSession) Initialize(owner common.Address, _addressProvider common.Address) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.Initialize(&_DefiFMintMinter.TransactOpts, owner, _addressProvider)
+}
+
+// Initialize0 is a paid mutator transaction binding the contract method 0x8129fc1c.
+//
+// Solidity: function initialize() returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactor) Initialize0(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _DefiFMintMinter.contract.Transact(opts, "initialize0")
+}
+
+// Initialize0 is a paid mutator transaction binding the contract method 0x8129fc1c.
+//
+// Solidity: function initialize() returns()
+func (_DefiFMintMinter *DefiFMintMinterSession) Initialize0() (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.Initialize0(&_DefiFMintMinter.TransactOpts)
+}
+
+// Initialize0 is a paid mutator transaction binding the contract method 0x8129fc1c.
+//
+// Solidity: function initialize() returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactorSession) Initialize0() (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.Initialize0(&_DefiFMintMinter.TransactOpts)
+}
+
+// Initialize1 is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address owner) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactor) Initialize1(opts *bind.TransactOpts, owner common.Address) (*types.Transaction, error) {
+	return _DefiFMintMinter.contract.Transact(opts, "initialize1", owner)
+}
+
+// Initialize1 is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address owner) returns()
+func (_DefiFMintMinter *DefiFMintMinterSession) Initialize1(owner common.Address) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.Initialize1(&_DefiFMintMinter.TransactOpts, owner)
+}
+
+// Initialize1 is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address owner) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactorSession) Initialize1(owner common.Address) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.Initialize1(&_DefiFMintMinter.TransactOpts, owner)
+}
+
 // Mint is a paid mutator transaction binding the contract method 0x40c10f19.
 //
 // Solidity: function mint(address _token, uint256 _amount) returns(uint256)
@@ -1508,25 +1597,25 @@ func (_DefiFMintMinter *DefiFMintMinterTransactorSession) Mint(_token common.Add
 	return _DefiFMintMinter.Contract.Mint(&_DefiFMintMinter.TransactOpts, _token, _amount)
 }
 
-// MintMax is a paid mutator transaction binding the contract method 0x0fb5d8ab.
+// MintMax is a paid mutator transaction binding the contract method 0x50fd96a8.
 //
-// Solidity: function mintMax(address _token) returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterTransactor) MintMax(opts *bind.TransactOpts, _token common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.contract.Transact(opts, "mintMax", _token)
+// Solidity: function mintMax(address _token, uint256 _ratio) returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterTransactor) MintMax(opts *bind.TransactOpts, _token common.Address, _ratio *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.contract.Transact(opts, "mintMax", _token, _ratio)
 }
 
-// MintMax is a paid mutator transaction binding the contract method 0x0fb5d8ab.
+// MintMax is a paid mutator transaction binding the contract method 0x50fd96a8.
 //
-// Solidity: function mintMax(address _token) returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) MintMax(_token common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.MintMax(&_DefiFMintMinter.TransactOpts, _token)
+// Solidity: function mintMax(address _token, uint256 _ratio) returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterSession) MintMax(_token common.Address, _ratio *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MintMax(&_DefiFMintMinter.TransactOpts, _token, _ratio)
 }
 
-// MintMax is a paid mutator transaction binding the contract method 0x0fb5d8ab.
+// MintMax is a paid mutator transaction binding the contract method 0x50fd96a8.
 //
-// Solidity: function mintMax(address _token) returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterTransactorSession) MintMax(_token common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.MintMax(&_DefiFMintMinter.TransactOpts, _token)
+// Solidity: function mintMax(address _token, uint256 _ratio) returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterTransactorSession) MintMax(_token common.Address, _ratio *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MintMax(&_DefiFMintMinter.TransactOpts, _token, _ratio)
 }
 
 // MustDeposit is a paid mutator transaction binding the contract method 0xa02bda7a.
@@ -1571,25 +1660,25 @@ func (_DefiFMintMinter *DefiFMintMinterTransactorSession) MustMint(_token common
 	return _DefiFMintMinter.Contract.MustMint(&_DefiFMintMinter.TransactOpts, _token, _amount)
 }
 
-// MustMintMax is a paid mutator transaction binding the contract method 0x33f1a548.
+// MustMintMax is a paid mutator transaction binding the contract method 0x572f9225.
 //
-// Solidity: function mustMintMax(address _token) returns()
-func (_DefiFMintMinter *DefiFMintMinterTransactor) MustMintMax(opts *bind.TransactOpts, _token common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.contract.Transact(opts, "mustMintMax", _token)
+// Solidity: function mustMintMax(address _token, uint256 _ratio) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactor) MustMintMax(opts *bind.TransactOpts, _token common.Address, _ratio *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.contract.Transact(opts, "mustMintMax", _token, _ratio)
 }
 
-// MustMintMax is a paid mutator transaction binding the contract method 0x33f1a548.
+// MustMintMax is a paid mutator transaction binding the contract method 0x572f9225.
 //
-// Solidity: function mustMintMax(address _token) returns()
-func (_DefiFMintMinter *DefiFMintMinterSession) MustMintMax(_token common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.MustMintMax(&_DefiFMintMinter.TransactOpts, _token)
+// Solidity: function mustMintMax(address _token, uint256 _ratio) returns()
+func (_DefiFMintMinter *DefiFMintMinterSession) MustMintMax(_token common.Address, _ratio *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MustMintMax(&_DefiFMintMinter.TransactOpts, _token, _ratio)
 }
 
-// MustMintMax is a paid mutator transaction binding the contract method 0x33f1a548.
+// MustMintMax is a paid mutator transaction binding the contract method 0x572f9225.
 //
-// Solidity: function mustMintMax(address _token) returns()
-func (_DefiFMintMinter *DefiFMintMinterTransactorSession) MustMintMax(_token common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.MustMintMax(&_DefiFMintMinter.TransactOpts, _token)
+// Solidity: function mustMintMax(address _token, uint256 _ratio) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactorSession) MustMintMax(_token common.Address, _ratio *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MustMintMax(&_DefiFMintMinter.TransactOpts, _token, _ratio)
 }
 
 // MustRepay is a paid mutator transaction binding the contract method 0x557c138b.
@@ -1655,25 +1744,25 @@ func (_DefiFMintMinter *DefiFMintMinterTransactorSession) MustWithdraw(_token co
 	return _DefiFMintMinter.Contract.MustWithdraw(&_DefiFMintMinter.TransactOpts, _token, _amount)
 }
 
-// MustWithdrawMax is a paid mutator transaction binding the contract method 0x0414b35b.
+// MustWithdrawMax is a paid mutator transaction binding the contract method 0x1e3eb86a.
 //
-// Solidity: function mustWithdrawMax(address _token) returns()
-func (_DefiFMintMinter *DefiFMintMinterTransactor) MustWithdrawMax(opts *bind.TransactOpts, _token common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.contract.Transact(opts, "mustWithdrawMax", _token)
+// Solidity: function mustWithdrawMax(address _token, uint256 _ratio) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactor) MustWithdrawMax(opts *bind.TransactOpts, _token common.Address, _ratio *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.contract.Transact(opts, "mustWithdrawMax", _token, _ratio)
 }
 
-// MustWithdrawMax is a paid mutator transaction binding the contract method 0x0414b35b.
+// MustWithdrawMax is a paid mutator transaction binding the contract method 0x1e3eb86a.
 //
-// Solidity: function mustWithdrawMax(address _token) returns()
-func (_DefiFMintMinter *DefiFMintMinterSession) MustWithdrawMax(_token common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.MustWithdrawMax(&_DefiFMintMinter.TransactOpts, _token)
+// Solidity: function mustWithdrawMax(address _token, uint256 _ratio) returns()
+func (_DefiFMintMinter *DefiFMintMinterSession) MustWithdrawMax(_token common.Address, _ratio *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MustWithdrawMax(&_DefiFMintMinter.TransactOpts, _token, _ratio)
 }
 
-// MustWithdrawMax is a paid mutator transaction binding the contract method 0x0414b35b.
+// MustWithdrawMax is a paid mutator transaction binding the contract method 0x1e3eb86a.
 //
-// Solidity: function mustWithdrawMax(address _token) returns()
-func (_DefiFMintMinter *DefiFMintMinterTransactorSession) MustWithdrawMax(_token common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.MustWithdrawMax(&_DefiFMintMinter.TransactOpts, _token)
+// Solidity: function mustWithdrawMax(address _token, uint256 _ratio) returns()
+func (_DefiFMintMinter *DefiFMintMinterTransactorSession) MustWithdrawMax(_token common.Address, _ratio *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.MustWithdrawMax(&_DefiFMintMinter.TransactOpts, _token, _ratio)
 }
 
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
@@ -1802,25 +1891,25 @@ func (_DefiFMintMinter *DefiFMintMinterTransactorSession) Withdraw(_token common
 	return _DefiFMintMinter.Contract.Withdraw(&_DefiFMintMinter.TransactOpts, _token, _amount)
 }
 
-// WithdrawMax is a paid mutator transaction binding the contract method 0x98c791f9.
+// WithdrawMax is a paid mutator transaction binding the contract method 0xdb3243f2.
 //
-// Solidity: function withdrawMax(address _token) returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterTransactor) WithdrawMax(opts *bind.TransactOpts, _token common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.contract.Transact(opts, "withdrawMax", _token)
+// Solidity: function withdrawMax(address _token, uint256 _ratio) returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterTransactor) WithdrawMax(opts *bind.TransactOpts, _token common.Address, _ratio *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.contract.Transact(opts, "withdrawMax", _token, _ratio)
 }
 
-// WithdrawMax is a paid mutator transaction binding the contract method 0x98c791f9.
+// WithdrawMax is a paid mutator transaction binding the contract method 0xdb3243f2.
 //
-// Solidity: function withdrawMax(address _token) returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterSession) WithdrawMax(_token common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.WithdrawMax(&_DefiFMintMinter.TransactOpts, _token)
+// Solidity: function withdrawMax(address _token, uint256 _ratio) returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterSession) WithdrawMax(_token common.Address, _ratio *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.WithdrawMax(&_DefiFMintMinter.TransactOpts, _token, _ratio)
 }
 
-// WithdrawMax is a paid mutator transaction binding the contract method 0x98c791f9.
+// WithdrawMax is a paid mutator transaction binding the contract method 0xdb3243f2.
 //
-// Solidity: function withdrawMax(address _token) returns(uint256)
-func (_DefiFMintMinter *DefiFMintMinterTransactorSession) WithdrawMax(_token common.Address) (*types.Transaction, error) {
-	return _DefiFMintMinter.Contract.WithdrawMax(&_DefiFMintMinter.TransactOpts, _token)
+// Solidity: function withdrawMax(address _token, uint256 _ratio) returns(uint256)
+func (_DefiFMintMinter *DefiFMintMinterTransactorSession) WithdrawMax(_token common.Address, _ratio *big.Int) (*types.Transaction, error) {
+	return _DefiFMintMinter.Contract.WithdrawMax(&_DefiFMintMinter.TransactOpts, _token, _ratio)
 }
 
 // DefiFMintMinterCollateralLowestDebtRatioChangedIterator is returned from FilterCollateralLowestDebtRatioChanged and is used to iterate over the raw logs and unpacked data for CollateralLowestDebtRatioChanged events raised by the DefiFMintMinter contract.

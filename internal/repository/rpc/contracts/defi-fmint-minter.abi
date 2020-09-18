@@ -1,17 +1,5 @@
 [
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_addressProvider",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
       "anonymous": false,
       "inputs": [
         {
@@ -686,9 +674,14 @@
           "internalType": "address",
           "name": "_token",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_ratio",
+          "type": "uint256"
         }
       ],
-      "name": "maxDebtAmount",
+      "name": "maxToMint",
       "outputs": [
         {
           "internalType": "uint256",
@@ -712,9 +705,45 @@
           "internalType": "address",
           "name": "_token",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_ratio",
+          "type": "uint256"
         }
       ],
-      "name": "minCollateralAmount",
+      "name": "maxToWithdraw",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_account",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_ratio",
+          "type": "uint256"
+        }
+      ],
+      "name": "minToDeposit",
       "outputs": [
         {
           "internalType": "uint256",
@@ -759,6 +788,11 @@
           "internalType": "address",
           "name": "_token",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_ratio",
+          "type": "uint256"
         }
       ],
       "name": "mintMax",
@@ -820,6 +854,11 @@
           "internalType": "address",
           "name": "_token",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_ratio",
+          "type": "uint256"
         }
       ],
       "name": "mustMintMax",
@@ -890,6 +929,11 @@
           "internalType": "address",
           "name": "_token",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_ratio",
+          "type": "uint256"
         }
       ],
       "name": "mustWithdrawMax",
@@ -1074,6 +1118,11 @@
           "internalType": "address",
           "name": "_token",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_ratio",
+          "type": "uint256"
         }
       ],
       "name": "withdrawMax",
@@ -1084,6 +1133,50 @@
           "type": "uint256"
         }
       ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_addressProvider",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1341,9 +1434,14 @@
           "internalType": "address",
           "name": "_token",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_ratio",
+          "type": "uint256"
         }
       ],
-      "name": "getMinCollateralAmount",
+      "name": "getMaxToWithdraw",
       "outputs": [
         {
           "internalType": "uint256",
@@ -1367,9 +1465,14 @@
           "internalType": "address",
           "name": "_token",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_ratio",
+          "type": "uint256"
         }
       ],
-      "name": "getMaxDebtAmount",
+      "name": "getMaxToMint",
       "outputs": [
         {
           "internalType": "uint256",

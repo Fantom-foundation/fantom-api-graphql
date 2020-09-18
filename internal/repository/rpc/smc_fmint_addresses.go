@@ -27,7 +27,7 @@ var (
 )
 
 // DefiFMintAddressProviderABI is the input ABI used to generate the binding from.
-const DefiFMintAddressProviderABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"CollateralPoolChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"DebtPoolChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"FeeTokenChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"MinterChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"PriceOracleChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"RewardDistributionChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"RewardTokenChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"TokenRegistryChanged\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_id\",\"type\":\"bytes32\"}],\"name\":\"getAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getPriceOracleProxy\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setPriceOracleProxy\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTokenRegistry\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setTokenRegistry\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getFeeToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setFeeToken\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardDistribution\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setRewardDistribution\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setRewardToken\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getFantomMint\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setFantomMint\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCollateralPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setCollateralPool\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getDebtPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setDebtPool\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const DefiFMintAddressProviderABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"CollateralPoolChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"DebtPoolChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"MinterChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"PriceOracleChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"RewardDistributionChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"RewardTokenChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"TokenRegistryChanged\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_id\",\"type\":\"bytes32\"}],\"name\":\"getAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getPriceOracleProxy\",\"outputs\":[{\"internalType\":\"contractIPriceOracleProxy\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setPriceOracleProxy\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTokenRegistry\",\"outputs\":[{\"internalType\":\"contractIFantomMintTokenRegistry\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setTokenRegistry\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardDistribution\",\"outputs\":[{\"internalType\":\"contractIFantomMintRewardManager\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setRewardDistribution\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardToken\",\"outputs\":[{\"internalType\":\"contractERC20\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setRewardToken\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getFantomMint\",\"outputs\":[{\"internalType\":\"contractIFantomMintBalanceGuard\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setFantomMint\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCollateralPool\",\"outputs\":[{\"internalType\":\"contractIFantomDeFiTokenStorage\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setCollateralPool\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getDebtPool\",\"outputs\":[{\"internalType\":\"contractIFantomDeFiTokenStorage\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"setDebtPool\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // DefiFMintAddressProvider is an auto generated Go binding around an Ethereum contract.
 type DefiFMintAddressProvider struct {
@@ -275,32 +275,6 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetFanto
 	return _DefiFMintAddressProvider.Contract.GetFantomMint(&_DefiFMintAddressProvider.CallOpts)
 }
 
-// GetFeeToken is a free data retrieval call binding the contract method 0xca709a25.
-//
-// Solidity: function getFeeToken() view returns(address)
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) GetFeeToken(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintAddressProvider.contract.Call(opts, out, "getFeeToken")
-	return *ret0, err
-}
-
-// GetFeeToken is a free data retrieval call binding the contract method 0xca709a25.
-//
-// Solidity: function getFeeToken() view returns(address)
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderSession) GetFeeToken() (common.Address, error) {
-	return _DefiFMintAddressProvider.Contract.GetFeeToken(&_DefiFMintAddressProvider.CallOpts)
-}
-
-// GetFeeToken is a free data retrieval call binding the contract method 0xca709a25.
-//
-// Solidity: function getFeeToken() view returns(address)
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetFeeToken() (common.Address, error) {
-	return _DefiFMintAddressProvider.Contract.GetFeeToken(&_DefiFMintAddressProvider.CallOpts)
-}
-
 // GetPriceOracleProxy is a free data retrieval call binding the contract method 0x045bb7f8.
 //
 // Solidity: function getPriceOracleProxy() view returns(address)
@@ -457,6 +431,27 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) Owner() 
 	return _DefiFMintAddressProvider.Contract.Owner(&_DefiFMintAddressProvider.CallOpts)
 }
 
+// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address owner) returns()
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactor) Initialize(opts *bind.TransactOpts, owner common.Address) (*types.Transaction, error) {
+	return _DefiFMintAddressProvider.contract.Transact(opts, "initialize", owner)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address owner) returns()
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderSession) Initialize(owner common.Address) (*types.Transaction, error) {
+	return _DefiFMintAddressProvider.Contract.Initialize(&_DefiFMintAddressProvider.TransactOpts, owner)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address owner) returns()
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactorSession) Initialize(owner common.Address) (*types.Transaction, error) {
+	return _DefiFMintAddressProvider.Contract.Initialize(&_DefiFMintAddressProvider.TransactOpts, owner)
+}
+
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 //
 // Solidity: function renounceOwnership() returns()
@@ -539,27 +534,6 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderSession) SetFantomMint(
 // Solidity: function setFantomMint(address _addr) returns()
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactorSession) SetFantomMint(_addr common.Address) (*types.Transaction, error) {
 	return _DefiFMintAddressProvider.Contract.SetFantomMint(&_DefiFMintAddressProvider.TransactOpts, _addr)
-}
-
-// SetFeeToken is a paid mutator transaction binding the contract method 0x15cce224.
-//
-// Solidity: function setFeeToken(address _addr) returns()
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactor) SetFeeToken(opts *bind.TransactOpts, _addr common.Address) (*types.Transaction, error) {
-	return _DefiFMintAddressProvider.contract.Transact(opts, "setFeeToken", _addr)
-}
-
-// SetFeeToken is a paid mutator transaction binding the contract method 0x15cce224.
-//
-// Solidity: function setFeeToken(address _addr) returns()
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderSession) SetFeeToken(_addr common.Address) (*types.Transaction, error) {
-	return _DefiFMintAddressProvider.Contract.SetFeeToken(&_DefiFMintAddressProvider.TransactOpts, _addr)
-}
-
-// SetFeeToken is a paid mutator transaction binding the contract method 0x15cce224.
-//
-// Solidity: function setFeeToken(address _addr) returns()
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactorSession) SetFeeToken(_addr common.Address) (*types.Transaction, error) {
-	return _DefiFMintAddressProvider.Contract.SetFeeToken(&_DefiFMintAddressProvider.TransactOpts, _addr)
 }
 
 // SetPriceOracleProxy is a paid mutator transaction binding the contract method 0xcc653b9a.
@@ -928,139 +902,6 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) WatchDebtPool
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseDebtPoolChanged(log types.Log) (*DefiFMintAddressProviderDebtPoolChanged, error) {
 	event := new(DefiFMintAddressProviderDebtPoolChanged)
 	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "DebtPoolChanged", log); err != nil {
-		return nil, err
-	}
-	return event, nil
-}
-
-// DefiFMintAddressProviderFeeTokenChangedIterator is returned from FilterFeeTokenChanged and is used to iterate over the raw logs and unpacked data for FeeTokenChanged events raised by the DefiFMintAddressProvider contract.
-type DefiFMintAddressProviderFeeTokenChangedIterator struct {
-	Event *DefiFMintAddressProviderFeeTokenChanged // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *DefiFMintAddressProviderFeeTokenChangedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(DefiFMintAddressProviderFeeTokenChanged)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(DefiFMintAddressProviderFeeTokenChanged)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *DefiFMintAddressProviderFeeTokenChangedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *DefiFMintAddressProviderFeeTokenChangedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// DefiFMintAddressProviderFeeTokenChanged represents a FeeTokenChanged event raised by the DefiFMintAddressProvider contract.
-type DefiFMintAddressProviderFeeTokenChanged struct {
-	NewAddress common.Address
-	Raw        types.Log // Blockchain specific contextual infos
-}
-
-// FilterFeeTokenChanged is a free log retrieval operation binding the contract event 0xcb8c2156aad54c05780be84f46fd46c30c34524ac9501a0824d09f51a48c4530.
-//
-// Solidity: event FeeTokenChanged(address newAddress)
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) FilterFeeTokenChanged(opts *bind.FilterOpts) (*DefiFMintAddressProviderFeeTokenChangedIterator, error) {
-
-	logs, sub, err := _DefiFMintAddressProvider.contract.FilterLogs(opts, "FeeTokenChanged")
-	if err != nil {
-		return nil, err
-	}
-	return &DefiFMintAddressProviderFeeTokenChangedIterator{contract: _DefiFMintAddressProvider.contract, event: "FeeTokenChanged", logs: logs, sub: sub}, nil
-}
-
-// WatchFeeTokenChanged is a free log subscription operation binding the contract event 0xcb8c2156aad54c05780be84f46fd46c30c34524ac9501a0824d09f51a48c4530.
-//
-// Solidity: event FeeTokenChanged(address newAddress)
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) WatchFeeTokenChanged(opts *bind.WatchOpts, sink chan<- *DefiFMintAddressProviderFeeTokenChanged) (event.Subscription, error) {
-
-	logs, sub, err := _DefiFMintAddressProvider.contract.WatchLogs(opts, "FeeTokenChanged")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(DefiFMintAddressProviderFeeTokenChanged)
-				if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "FeeTokenChanged", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseFeeTokenChanged is a log parse operation binding the contract event 0xcb8c2156aad54c05780be84f46fd46c30c34524ac9501a0824d09f51a48c4530.
-//
-// Solidity: event FeeTokenChanged(address newAddress)
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseFeeTokenChanged(log types.Log) (*DefiFMintAddressProviderFeeTokenChanged, error) {
-	event := new(DefiFMintAddressProviderFeeTokenChanged)
-	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "FeeTokenChanged", log); err != nil {
 		return nil, err
 	}
 	return event, nil

@@ -1,22 +1,5 @@
 [
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_addressProvider",
-          "type": "address"
-        },
-        {
-          "internalType": "bool",
-          "name": "_dustAdt",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
       "constant": true,
       "inputs": [],
       "name": "addressProvider",
@@ -112,6 +95,26 @@
       ],
       "payable": false,
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_addressProvider",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "_dustAdt",
+          "type": "bool"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
