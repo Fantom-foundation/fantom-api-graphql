@@ -13,7 +13,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
-//go:generate abigen --abi ./contracts/sfc-2.0.2-rc1.abi --pkg rpc --type SfcContract --out ./smc_sfc.go
+//go:generate abigen --abi ./contracts/sfc-2.0.2-rc2.abi --pkg rpc --type SfcContract --out ./smc_sfc.go
 
 import (
 	"fantom-api-graphql/internal/types"
@@ -315,21 +315,27 @@ func (ftm *FtmBridge) DelegationRewards(addr string, staker hexutil.Uint64) (typ
 	// instantiate the contract and display its name
 	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
 	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
 		return types.PendingRewards{}, err
 	}
 
 	// get the value from the contract
 	epoch, err := contract.CurrentSealedEpoch(nil)
 	if err != nil {
-		ftm.log.Errorf("failed to get the current sealed epoch: %v", err)
+		ftm.log.Errorf("failed to get the current sealed epoch: %s", err.Error())
 		return types.PendingRewards{}, err
+	}
+
+	// do we have the sealed epoch?
+	if epoch == nil {
+		ftm.log.Errorf("no epoch information available")
+		return types.PendingRewards{}, nil
 	}
 
 	// get the rewards amount
 	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(nil, common.HexToAddress(addr), big.NewInt(int64(staker)), big.NewInt(0), epoch)
 	if err != nil {
-		ftm.log.Errorf("failed to get the delegation rewards: %v", err)
+		ftm.log.Errorf("failed to get the delegation rewards: %s", err.Error())
 		return types.PendingRewards{}, nil
 	}
 
