@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-09-18 13:40
+// Auto generated GraphQL schema bundle; created 2020-09-18 14:25
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -65,6 +65,9 @@ type DefiToken {
     # of tokens from the owner to the DeFi Liquidity Poll.
     # If it's not given, the operation will fail.
     allowance(owner: Address!): BigInt!
+
+    # totalSupply represents total amount of tokens across all accounts
+    totalSupply: BigInt!
 }
 
 # DefiTokenBalanceType represents the type of DeFi token balance record.
