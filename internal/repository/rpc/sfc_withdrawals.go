@@ -34,8 +34,8 @@ type withdrawnRequest struct {
 
 // WithdrawRequests extracts a list of partial withdraw requests
 // for the given address.
-func (ftm *FtmBridge) WithdrawRequests(addr *common.Address) ([]*types.WithdrawRequest, error) {
-	return ftm.withdrawRequestsList(addr, nil)
+func (ftm *FtmBridge) WithdrawRequests(addr *common.Address, stakerId hexutil.Uint64) ([]*types.WithdrawRequest, error) {
+	return ftm.withdrawRequestsList(addr, new(big.Int).SetUint64(uint64(stakerId)))
 }
 
 // withdrawRequestsList creates a list of withdraw request for the given address and staker.
@@ -54,7 +54,7 @@ func (ftm *FtmBridge) withdrawRequestsList(addr *common.Address, staker *big.Int
 	}
 
 	// get a list of finalized requests
-	fin, err := ftm.withdrawnByRequest(contract, *addr, nil)
+	fin, err := ftm.withdrawnByRequest(contract, *addr, staker)
 	if err != nil {
 		ftm.log.Error("can not pull finalized withdraw requests; %s", err.Error())
 		return nil, err

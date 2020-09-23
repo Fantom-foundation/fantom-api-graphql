@@ -138,11 +138,11 @@ type Repository interface {
 
 	// WithdrawRequests extracts a list of partial withdraw requests
 	// for the given address.
-	WithdrawRequests(*common.Address) ([]*types.WithdrawRequest, error)
+	WithdrawRequests(*common.Address, hexutil.Uint64) ([]*types.WithdrawRequest, error)
 
 	// DeactivatedDelegation extracts a list of deactivated delegation requests
 	// for the given address.
-	DeactivatedDelegation(*common.Address) ([]*types.DeactivatedDelegation, error)
+	DeactivatedDelegation(*common.Address, hexutil.Uint64) ([]*types.DeactivatedDelegation, error)
 
 	// SfcVersion returns current version of the SFC contract.
 	SfcVersion() (hexutil.Uint64, error)

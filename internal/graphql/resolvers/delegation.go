@@ -90,7 +90,7 @@ func (del Delegation) PendingRewards() (types.PendingRewards, error) {
 // WithdrawRequests resolves partial withdraw requests of the delegator.
 func (del Delegation) WithdrawRequests() ([]WithdrawRequest, error) {
 	// pull the requests list from remote server
-	wr, err := del.repo.WithdrawRequests(&del.Address)
+	wr, err := del.repo.WithdrawRequests(&del.Address, del.ToStakerId)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (del Delegation) WithdrawRequests() ([]WithdrawRequest, error) {
 // Deactivation resolves deactivated delegation requests of the delegator.
 func (del Delegation) Deactivation() ([]DeactivatedDelegation, error) {
 	// pull the requests list from remote server
-	wr, err := del.repo.DeactivatedDelegation(&del.Address)
+	wr, err := del.repo.DeactivatedDelegation(&del.Address, del.ToStakerId)
 	if err != nil {
 		return nil, err
 	}
