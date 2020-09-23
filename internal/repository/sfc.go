@@ -79,22 +79,32 @@ func (p *proxy) DelegationRewards(addr string, staker hexutil.Uint64) (types.Pen
 
 // WithdrawRequests extracts a list of partial withdraw requests
 // for the given address.
-func (p *proxy) WithdrawRequests(addr *common.Address, stakerId hexutil.Uint64) ([]*types.WithdrawRequest, error) {
+func (p *proxy) WithdrawRequests(addr *common.Address, stakerId *hexutil.Uint64) ([]*types.WithdrawRequest, error) {
 	// log the action
 	p.log.Debugf("loading withdraw requests for [%s], staker %d", addr.String(), stakerId)
 
-	// proxy the request directly to RPC/SFC
-	return p.rpc.WithdrawRequests(addr, stakerId)
+	// proxy the request directly to RPC/SFC with no staker filter
+	if stakerId == nil {
+		return p.rpc.WithdrawRequests(addr, nil)
+	}
+
+	// proxy the request directly to RPC/SFC, filter specific staker
+	return p.rpc.WithdrawRequests(addr, new(big.Int).SetUint64(uint64(*stakerId)))
 }
 
 // DeactivatedDelegation extracts a list of deactivated delegation requests
 // for the given address.
-func (p *proxy) DeactivatedDelegation(addr *common.Address, stakerId hexutil.Uint64) ([]*types.DeactivatedDelegation, error) {
+func (p *proxy) DeactivatedDelegation(addr *common.Address, stakerId *hexutil.Uint64) ([]*types.DeactivatedDelegation, error) {
 	// log the action
 	p.log.Debugf("loading deactivated delegation requests for [%s], staker %d", addr.String(), stakerId)
 
-	// proxy the request directly to RPC/SFC
-	return p.rpc.DeactivatedDelegation(addr, stakerId)
+	// proxy the request directly to RPC/SFC, no staker
+	if stakerId == nil {
+		return p.rpc.DeactivatedDelegation(addr, nil)
+	}
+
+	// proxy the request directly to RPC/SFC, filter specific staker only
+	return p.rpc.DeactivatedDelegation(addr, new(big.Int).SetUint64(uint64(*stakerId)))
 }
 
 // delegatedAmount calculates total amount currently delegated

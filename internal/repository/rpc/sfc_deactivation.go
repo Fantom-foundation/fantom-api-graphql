@@ -31,9 +31,9 @@ type finalizedDeactivatedDelegation struct {
 
 // DeactivatedDelegation extracts a list of deactivated delegation requests
 // for the given address.
-func (ftm *FtmBridge) DeactivatedDelegation(addr *common.Address, stakerId hexutil.Uint64) ([]*types.DeactivatedDelegation, error) {
+func (ftm *FtmBridge) DeactivatedDelegation(addr *common.Address, stakerId *big.Int) ([]*types.DeactivatedDelegation, error) {
 	// get a list of deactivation
-	return ftm.deactivatedDelegationList(addr, new(big.Int).SetUint64(uint64(stakerId)))
+	return ftm.deactivatedDelegationList(addr, stakerId)
 }
 
 // PendingDeactivation finds pending full withdraw request for the given address and staker id.

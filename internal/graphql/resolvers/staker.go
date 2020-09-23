@@ -59,7 +59,7 @@ func (st Staker) IsStakeLocked() bool {
 // We load withdraw requests of the stake only, not the stake delegators.
 func (st Staker) WithdrawRequests() ([]WithdrawRequest, error) {
 	// pull the requests list from remote server
-	wr, err := st.repo.WithdrawRequests(&st.StakerAddress)
+	wr, err := st.repo.WithdrawRequests(&st.StakerAddress, nil)
 	if err != nil {
 		return nil, err
 	}
