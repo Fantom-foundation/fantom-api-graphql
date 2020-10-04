@@ -7,6 +7,9 @@ import (
 
 // Default values of configuration options
 const (
+	// this defines empty address
+	defNoAddress = "0x0000000000000000000000000000000000000000"
+
 	// defServerBind holds default API server binding address
 	defServerBind = "localhost:16761"
 
@@ -41,6 +44,12 @@ const (
 
 	// defDefiFMintAddressProvider represents the address of the fMintAddressProvider
 	defDefiFMintAddressProvider = "0x730e27f6c52d07b1a6ab39b639b617dc566c91af"
+
+	// defDefiFMintAddressProvider represents the address of the fMintAddressProvider
+	defDefiUniswapCore = defNoAddress
+
+	// defDefiFMintAddressProvider represents the address of the fMintAddressProvider
+	defDefiUniswapRouter = defNoAddress
 )
 
 // default list of API peers
@@ -75,4 +84,6 @@ func applyDefaults(cfg *viper.Viper) {
 
 	// DeFi configuration
 	cfg.SetDefault(keyDefiFMintAddressProvider, defDefiFMintAddressProvider)
+	cfg.SetDefault(keyDefiUniswapCore, defDefiUniswapCore)
+	cfg.SetDefault(keyDefiUniswapRouter, defDefiUniswapRouter)
 }
