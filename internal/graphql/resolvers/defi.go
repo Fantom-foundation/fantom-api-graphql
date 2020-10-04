@@ -71,12 +71,6 @@ func (dt *DefiToken) TotalSupply() (hexutil.Big, error) {
 	return dt.repo.Erc20TotalSupply(&dt.Address)
 }
 
-// DefiConfiguration resolves the current DeFi contract settings.
-func (rs *rootResolver) DefiConfiguration() (*types.DefiSettings, error) {
-	// pass the call to repository
-	return rs.repo.DefiConfiguration()
-}
-
 // ErcTokenBalance resolves the current available balance of the specified token
 // for the specified owner.
 func (rs *rootResolver) ErcTokenBalance(args *struct {

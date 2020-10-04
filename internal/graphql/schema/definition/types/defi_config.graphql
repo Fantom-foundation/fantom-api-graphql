@@ -46,4 +46,10 @@ type DefiSettings {
 
     # fMintDebtPool is the address of the fMint debt pool.
     fMintDebtPool: Address!
+
+    # uniswapCoreFactory is the address of the Uniswap Core Factory contract.
+    uniswapCoreFactory: Address!
+
+    # uniswapRouter is the address of the Uniswap Router contract.
+    uniswapRouter: Address!
 }

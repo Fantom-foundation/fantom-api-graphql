@@ -25,6 +25,9 @@ const (
 
 // ApiResolver represents the API interface expected to handle API access points
 type ApiResolver interface {
+	// Config returns the app configuration.
+	Config() *config.Config
+
 	// State resolves current state of the blockchain.
 	State() (CurrentState, error)
 
@@ -153,7 +156,7 @@ type ApiResolver interface {
 	SendTransaction(*struct{ Tx hexutil.Bytes }) (*Transaction, error)
 
 	// DefiConfiguration resolves the current DeFi contract settings.
-	DefiConfiguration() (*types.DefiSettings, error)
+	DefiConfiguration() (*DefiConfiguration, error)
 
 	// DefiTokens resolves list of DeFi tokens available for the DeFi functions.
 	DefiTokens() ([]*DefiToken, error)
@@ -312,4 +315,9 @@ func listLimitCount(count int32, limit uint32) int32 {
 	}
 
 	return int32(limit)
+}
+
+// Config returns the application configuration.
+func (rs *rootResolver) Config() *config.Config {
+	return rs.cfg
 }

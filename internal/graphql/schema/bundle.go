@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-09-22 09:25
+// Auto generated GraphQL schema bundle; created 2020-10-04 20:12
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -791,6 +791,12 @@ type DefiSettings {
 
     # fMintDebtPool is the address of the fMint debt pool.
     fMintDebtPool: Address!
+
+    # uniswapCoreFactory is the address of the Uniswap Core Factory contract.
+    uniswapCoreFactory: Address!
+
+    # uniswapRouter is the address of the Uniswap Router contract.
+    uniswapRouter: Address!
 }
 
 # EstimatedRewards represents a calculated rewards estimation for an account or amount staked
