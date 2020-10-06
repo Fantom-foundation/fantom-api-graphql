@@ -12,7 +12,7 @@ import (
 type DefiConfiguration struct {
 	repo repository.Repository
 	cfg  *config.Config
-	*types.DefiSettings
+	types.DefiSettings
 }
 
 // NewDefiConfiguration creates a new instance of resolvable DeFi token.
@@ -20,7 +20,7 @@ func NewDefiConfiguration(cf *types.DefiSettings, cfg *config.Config, repo repos
 	return &DefiConfiguration{
 		repo:         repo,
 		cfg:          cfg,
-		DefiSettings: cf,
+		DefiSettings: *cf,
 	}
 }
 
