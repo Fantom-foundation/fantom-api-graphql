@@ -135,11 +135,18 @@ type Query {
     """
     votes(voter:Address!, ballots:[Address!]!):[Vote!]!
 
+    "defiConfiguration exposes the current DeFi contract setup."
+    defiConfiguration:DefiSettings!
+
     "defiTokens represents a list of all available DeFi tokens."
     defiTokens:[DefiToken!]!
 
-    "defiConfiguration exposes the current DeFi contract setup."
-    defiConfiguration:DefiSettings!
+    """
+    defiNativeToken represents the information about the native token
+    wrapper ERC20 contract. Returns NULL if the native token wraper
+    is not available.
+    """
+    defiNativeToken: ERC20Token
 
     "fMintAccount provides DeFi/fMint information about an account on fMint protocol."
     fMintAccount(owner: Address!):FMintAccount!
@@ -151,10 +158,52 @@ type Query {
     fMintTokenAllowance(owner: Address!, token: Address!):BigInt!
 
     """
+    defiUniswapPairs represents a list of all pairs managed
+    by the Uniswap Core contract on Opera blockchain.
+    """
+    defiUniswapPairs: [UniswapPair!]!
+
+    """
+    defiUniswapAmountsOut calculates the expected output amounts
+    required to finalize a swap operation specified by a list of
+    tokens involved in the swap steps and the input amount.
+    At least two addresses of tokens must be given
+    for the calculation to succeed.
+    """
+    defiUniswapAmountsOut(amountIn: BigInt!, tokens:[Address!]!): [BigInt!]!
+
+    """
+    defiUniswapAmountsIn calculates the expected input amounts
+    required to finalize a swap operation specified by a list of
+    tokens involved in the swap steps and the output amount.
+    At least two addresses of tokens must be given
+    for the calculation to succeed.
+    """
+    defiUniswapAmountsIn(amountOut: BigInt!, tokens:[Address!]!): [BigInt!]!
+
+    """
+    erc20Token provides the information about an ERC20 token specified by it's
+    address, if available. The resolver returns NULL if the token does not exist.
+    """
+    erc20Token(token: Address!):ERC20Token
+
+    """
+    ercTotalSupply provides the current total supply amount of a specified ERC20 token
+    identified by it's ERC20 contract address.
+    """
+    ercTotalSupply(token: Address!):BigInt!
+
+    """
     ercTokenBalance provides the current available balance of a specified ERC20 token
     identified by it's ERC20 contract address.
     """
     ercTokenBalance(owner: Address!, token: Address!):BigInt!
+
+    """
+    ercTokenAllowance provides the current amount of ERC20 tokens unlocked
+    by the token owner for the spender to be manipulated with.
+    """
+    ercTokenAllowance(token: Address!, owner: Address!, spender: Address!):BigInt!
 }
 
 # Mutation endpoints for modifying the data

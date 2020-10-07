@@ -20,10 +20,68 @@ import (
 )
 
 //go:generate abigen --abi ./contracts/erc20.abi --pkg rpc --type ERCTwenty --out ./smc_erc20_token.go
+//go:generate abigen --abi ./contracts/erc20detailed.abi --pkg rpc --type ERCTwentyDetailed --out ./smc_erc20detailed_token.go
 
-// Erc20Balance loads the current available balance of and ERC20 token identified by the token
+// Erc20Name provides information about the name of the ERC20 token.
+func (ftm *FtmBridge) Erc20Name(token *common.Address) (string, error) {
+	// connect the contract
+	contract, err := NewERCTwentyDetailed(*token, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("can not contact ERC20Detailed contract; %s", err.Error())
+		return "", err
+	}
+
+	// get the token name
+	name, err := contract.Name(nil)
+	if err != nil {
+		ftm.log.Errorf("ERC20 token %s name not available; %s", token.String(), err.Error())
+		return "", err
+	}
+
+	return name, nil
+}
+
+// Erc20Symbol provides information about the symbol of the ERC20 token.
+func (ftm *FtmBridge) Erc20Symbol(token *common.Address) (string, error) {
+	// connect the contract
+	contract, err := NewERCTwentyDetailed(*token, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("can not contact ERC20Detailed contract; %s", err.Error())
+		return "", err
+	}
+
+	// get the token name
+	symbol, err := contract.Symbol(nil)
+	if err != nil {
+		ftm.log.Errorf("ERC20 token %s symbol not available; %s", token.String(), err.Error())
+		return "", err
+	}
+
+	return symbol, nil
+}
+
+// Erc20Decimals provides information about the decimals of the ERC20 token.
+func (ftm *FtmBridge) Erc20Decimals(token *common.Address) (int32, error) {
+	// connect the contract
+	contract, err := NewERCTwentyDetailed(*token, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("can not contact ERC20Detailed contract; %s", err.Error())
+		return 0, err
+	}
+
+	// get the token name
+	deci, err := contract.Decimals(nil)
+	if err != nil {
+		ftm.log.Errorf("ERC20 token %s symbol not available; %s", token.String(), err.Error())
+		return 0, err
+	}
+
+	return int32(deci), nil
+}
+
+// Erc20BalanceOf loads the current available balance of and ERC20 token identified by the token
 // contract address for an identified owner address.
-func (ftm *FtmBridge) Erc20Balance(owner *common.Address, token *common.Address) (hexutil.Big, error) {
+func (ftm *FtmBridge) Erc20BalanceOf(token *common.Address, owner *common.Address) (hexutil.Big, error) {
 	// connect the contract
 	contract, err := NewERCTwenty(*token, ftm.eth)
 	if err != nil {
@@ -52,7 +110,7 @@ func (ftm *FtmBridge) Erc20Balance(owner *common.Address, token *common.Address)
 
 // Erc20Allowance loads the current amount of ERC20 tokens unlocked for DeFi
 // contract by the token owner.
-func (ftm *FtmBridge) Erc20Allowance(owner *common.Address, token *common.Address) (hexutil.Big, error) {
+func (ftm *FtmBridge) Erc20Allowance(token *common.Address, owner *common.Address, spender *common.Address) (hexutil.Big, error) {
 	// connect the contract
 	contract, err := NewERCTwenty(*token, ftm.eth)
 	if err != nil {
@@ -60,8 +118,14 @@ func (ftm *FtmBridge) Erc20Allowance(owner *common.Address, token *common.Addres
 		return hexutil.Big{}, err
 	}
 
+	// no spender? use fMint address by default
+	if nil == spender {
+		addr := ftm.fMintCfg.mustContractAddress(fMintAddressMinter)
+		spender = &addr
+	}
+
 	// get the amount of tokens allowed for DeFi
-	val, err := contract.Allowance(nil, *owner, ftm.fMintCfg.mustContractAddress(fMintAddressMinter))
+	val, err := contract.Allowance(nil, *owner, *spender)
 	if err != nil {
 		ftm.log.Errorf("can not get defi ERC20 %s allowance for %s; %s", token.String(), owner.String(), err.Error())
 		return hexutil.Big{}, err

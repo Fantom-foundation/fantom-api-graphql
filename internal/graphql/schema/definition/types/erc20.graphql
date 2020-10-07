@@ -1,0 +1,28 @@
+# ERC20Token represents a generic ERC20 token.
+type ERC20Token {
+    # address of the token is used as the token's unique identifier.
+    address: Address!
+
+    # name of the token.
+    name: String!
+
+    # symbol used as an abbreviation for the token.
+    symbol: String!
+
+    # decimals is the number of decimals the token supports.
+    # The most common value is 18 to mimic the ETH to WEI relationship.
+    decimals: Int!
+
+    # totalSupply represents total amount of tokens across all accounts
+    totalSupply: BigInt!
+
+    # balanceOf represents the total available balance of the token
+    # on the account regardless of the DeFi usage of the token.
+    # It's effectively the amount available held by the ERC20 token
+    # on the account behalf.
+    balanceOf(owner: Address!): BigInt!
+
+    # allowance represents the amount of ERC20 tokens unlocked
+    # by the owner / token holder to be accessible for the given spender.
+    allowance(owner: Address!, spender: Address!): BigInt!
+}

@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-10-04 20:12
+// Auto generated GraphQL schema bundle; created 2020-10-07 21:11
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -274,6 +274,35 @@ type Block {
 
     # txList is a list of transactions assigned to the block.
     txList: [Transaction!]!
+}
+
+# ERC20Token represents a generic ERC20 token.
+type ERC20Token {
+    # address of the token is used as the token's unique identifier.
+    address: Address!
+
+    # name of the token.
+    name: String!
+
+    # symbol used as an abbreviation for the token.
+    symbol: String!
+
+    # decimals is the number of decimals the token supports.
+    # The most common value is 18 to mimic the ETH to WEI relationship.
+    decimals: Int!
+
+    # totalSupply represents total amount of tokens across all accounts
+    totalSupply: BigInt!
+
+    # balanceOf represents the total available balance of the token
+    # on the account regardless of the DeFi usage of the token.
+    # It's effectively the amount available held by the ERC20 token
+    # on the account behalf.
+    balanceOf(owner: Address!): BigInt!
+
+    # allowance represents the amount of ERC20 tokens unlocked
+    # by the owner / token holder to be accessible for the given spender.
+    allowance(owner: Address!, spender: Address!): BigInt!
 }
 
 # DelegationList is a list of delegations edges provided by sequential access request.
@@ -926,6 +955,46 @@ type DeactivatedDelegation {
     withdrawPenalty: BigInt
 }
 
+# UniswapPair represents the information about single
+# Uniswap pair managed by the Uniswap Core.
+type UniswapPair {
+    # pairAddress represents the Address of the Pair
+    # and also the address of the ERC20 token
+    # managing the share of each liquidity participant.
+    pairAddress: Address!
+
+    # tokens represent the list of tokens in the pair.
+    # The array always contain two tokens, their order
+    # is irrelevant from the Uniswap perspective, but
+    # we always return them in the same order.
+    tokens: [ERC20Token!]!
+
+    # reserves of the tokens of the pair.
+    # The reserve index inside the array corresponds
+    # with the token position.
+    reserves: [BigInt!]!
+
+    # The timestamp of the block
+    # in which this reserves state was reached.
+    reservesTimeStamp: Long!
+
+    # cumulative prices of the tokens of the pair.
+    # The price index inside the array corresponds
+    # with the token position.
+    cumulativePrices: [BigInt!]!
+
+    # totalSupply represents the total amount
+    # of the pair tokens in circulation and represents
+    # the total share pool of all the participants.
+    totalSupply: BigInt!
+
+    # share represents the share of the given user/participant on the pair.
+    # To get the share percentage, divide this value by the total supply
+    # of the pair.
+    shareOf(user: Address!): BigInt!
+}
+
+
 # Account defines block-chain account information container
 type Account {
     "Address is the address of the account."
@@ -1191,11 +1260,18 @@ type Query {
     """
     votes(voter:Address!, ballots:[Address!]!):[Vote!]!
 
+    "defiConfiguration exposes the current DeFi contract setup."
+    defiConfiguration:DefiSettings!
+
     "defiTokens represents a list of all available DeFi tokens."
     defiTokens:[DefiToken!]!
 
-    "defiConfiguration exposes the current DeFi contract setup."
-    defiConfiguration:DefiSettings!
+    """
+    defiNativeToken represents the information about the native token
+    wrapper ERC20 contract. Returns NULL if the native token wraper
+    is not available.
+    """
+    defiNativeToken: ERC20Token
 
     "fMintAccount provides DeFi/fMint information about an account on fMint protocol."
     fMintAccount(owner: Address!):FMintAccount!
@@ -1207,10 +1283,52 @@ type Query {
     fMintTokenAllowance(owner: Address!, token: Address!):BigInt!
 
     """
+    defiUniswapPairs represents a list of all pairs managed
+    by the Uniswap Core contract on Opera blockchain.
+    """
+    defiUniswapPairs: [UniswapPair!]!
+
+    """
+    defiUniswapAmountsOut calculates the expected output amounts
+    required to finalize a swap operation specified by a list of
+    tokens involved in the swap steps and the input amount.
+    At least two addresses of tokens must be given
+    for the calculation to succeed.
+    """
+    defiUniswapAmountsOut(amountIn: BigInt!, tokens:[Address!]!): [BigInt!]!
+
+    """
+    defiUniswapAmountsIn calculates the expected input amounts
+    required to finalize a swap operation specified by a list of
+    tokens involved in the swap steps and the output amount.
+    At least two addresses of tokens must be given
+    for the calculation to succeed.
+    """
+    defiUniswapAmountsIn(amountOut: BigInt!, tokens:[Address!]!): [BigInt!]!
+
+    """
+    erc20Token provides the information about an ERC20 token specified by it's
+    address, if available. The resolver returns NULL if the token does not exist.
+    """
+    erc20Token(token: Address!):ERC20Token
+
+    """
+    ercTotalSupply provides the current total supply amount of a specified ERC20 token
+    identified by it's ERC20 contract address.
+    """
+    ercTotalSupply(token: Address!):BigInt!
+
+    """
     ercTokenBalance provides the current available balance of a specified ERC20 token
     identified by it's ERC20 contract address.
     """
     ercTokenBalance(owner: Address!, token: Address!):BigInt!
+
+    """
+    ercTokenAllowance provides the current amount of ERC20 tokens unlocked
+    by the token owner for the spender to be manipulated with.
+    """
+    ercTokenAllowance(token: Address!, owner: Address!, spender: Address!):BigInt!
 }
 
 # Mutation endpoints for modifying the data
