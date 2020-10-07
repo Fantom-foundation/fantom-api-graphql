@@ -42,23 +42,6 @@ func (p *proxy) FMintTokenValue(owner *common.Address, token *common.Address, tp
 	return p.rpc.FMintTokenValue(owner, token, tp)
 }
 
-// Erc20Balance load the current available balance of and ERC20 token identified by the token
-// contract address for an identified owner address.
-func (p *proxy) Erc20Balance(owner *common.Address, token *common.Address) (hexutil.Big, error) {
-	return p.rpc.Erc20Balance(owner, token)
-}
-
-// Erc20Allowance loads the current amount of ERC20 tokens unlocked for DeFi
-// contract by the token owner.
-func (p *proxy) Erc20Allowance(owner *common.Address, token *common.Address) (hexutil.Big, error) {
-	return p.rpc.Erc20Allowance(owner, token)
-}
-
-// Erc20TotalSupply provides information about all available tokens
-func (p *proxy) Erc20TotalSupply(token *common.Address) (hexutil.Big, error) {
-	return p.rpc.Erc20TotalSupply(token)
-}
-
 // FMintRewardsEarned represents the total amount of rewards
 // accumulated on the account for the excessive collateral deposits.
 func (p *proxy) FMintRewardsEarned(addr *common.Address) (hexutil.Big, error) {

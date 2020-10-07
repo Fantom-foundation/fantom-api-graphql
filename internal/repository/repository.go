@@ -261,16 +261,51 @@ type Repository interface {
 	// on the rewards distribution contract and can be pushed to accounts.
 	FMintCanPushRewards() (bool, error)
 
-	// Erc20Balance load the current available balance of and ERC20 token identified by the token
+	// UniswapPairs returns list of all token pairs managed by Uniswap core.
+	UniswapPairs() ([]common.Address, error)
+
+	// UniswapAmountsOut resolves a list of output amounts for the given
+	// input amount and a list of tokens to be used to make the swap operation.
+	UniswapAmountsOut(amountIn hexutil.Big, tokens []common.Address) ([]hexutil.Big, error)
+
+	// UniswapAmountsIn resolves a list of input amounts for the given
+	// output amount and a list of tokens to be used to make the swap operation.
+	UniswapAmountsIn(amountOut hexutil.Big, tokens []common.Address) ([]hexutil.Big, error)
+
+	// UniswapTokens returns list of addresses of tokens involved in a Uniswap pair.
+	UniswapTokens(*common.Address) ([]common.Address, error)
+
+	// UniswapReserves returns list of token reserve amounts in a Uniswap pair.
+	UniswapReserves(*common.Address) ([]hexutil.Big, error)
+
+	// UniswapReservesTimeStamp returns the timestamp of the reserves of a Uniswap pair.
+	UniswapReservesTimeStamp(*common.Address) (hexutil.Uint64, error)
+
+	// UniswapCumulativePrices returns list of token cumulative prices of a Uniswap pair.
+	UniswapCumulativePrices(*common.Address) ([]hexutil.Big, error)
+
+	// NativeTokenAddress returns address of the native token wrapper, if available.
+	NativeTokenAddress() (*common.Address, error)
+
+	// Erc20BalanceOf load the current available balance of and ERC20 token identified by the token
 	// contract address for an identified owner address.
-	Erc20Balance(*common.Address, *common.Address) (hexutil.Big, error)
+	Erc20BalanceOf(*common.Address, *common.Address) (hexutil.Big, error)
 
 	// Erc20Allowance loads the current amount of ERC20 tokens unlocked for DeFi
 	// contract by the token owner.
-	Erc20Allowance(*common.Address, *common.Address) (hexutil.Big, error)
+	Erc20Allowance(*common.Address, *common.Address, *common.Address) (hexutil.Big, error)
 
 	// Erc20TotalSupply provides information about all available tokens
 	Erc20TotalSupply(*common.Address) (hexutil.Big, error)
+
+	// Erc20Name provides information about the name of the ERC20 token.
+	Erc20Name(*common.Address) (string, error)
+
+	// Erc20Symbol provides information about the symbol of the ERC20 token.
+	Erc20Symbol(*common.Address) (string, error)
+
+	// Erc20Decimals provides information about the decimals of the ERC20 token.
+	Erc20Decimals(*common.Address) (int32, error)
 
 	// Close and cleanup the repository.
 	Close()

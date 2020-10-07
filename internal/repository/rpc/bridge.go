@@ -29,6 +29,10 @@ type FtmBridge struct {
 
 	// fMintCfg represents the configuration of the fMint protocol
 	fMintCfg fMintConfig
+
+	// uniswap configuration elements used by the bridge
+	uniswapCore   common.Address
+	uniswapRouter common.Address
 }
 
 // New creates new Lachesis RPC connection bridge.
@@ -63,6 +67,10 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 		fMintCfg: fMintConfig{
 			addressProvider: common.HexToAddress(cfg.DefiFMintAddressProvider),
 		},
+
+		// uniswap config
+		uniswapCore:   common.HexToAddress(cfg.DefiUniswapCore),
+		uniswapRouter: common.HexToAddress(cfg.DefiUniswapRouter),
 	}
 
 	// add the bridge ref to the fMintCfg and return the instance
