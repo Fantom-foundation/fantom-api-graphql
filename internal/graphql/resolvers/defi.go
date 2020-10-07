@@ -42,6 +42,18 @@ func (rs *rootResolver) DefiTokens() ([]*DefiToken, error) {
 	return list, nil
 }
 
+// DefiNativeToken resolves the native FTM wrapper token.
+func (rs *rootResolver) DefiNativeToken() *ERC20Token {
+	// get the token address
+	adr, err := rs.repo.NativeTokenAddress()
+	if err != nil {
+		return nil
+	}
+
+	// resolve the token
+	return NewErc20Token(adr, rs.repo)
+}
+
 // Price resolves the value of the token in ref. denomination
 // using on-chain price oracle.
 func (dt *DefiToken) Price() (hexutil.Big, error) {
@@ -51,13 +63,13 @@ func (dt *DefiToken) Price() (hexutil.Big, error) {
 // AvailableBalance resolves the total amount of ERC20 tokens
 // available to the specified token holder.
 func (dt *DefiToken) AvailableBalance(args *struct{ Owner common.Address }) (hexutil.Big, error) {
-	return dt.repo.Erc20Balance(&args.Owner, &dt.Address)
+	return dt.repo.Erc20BalanceOf(&dt.Address, &args.Owner)
 }
 
 // Allowance resolves the total amount of ERC20 tokens unlocked
 // by the token holder for DeFi operations.
 func (dt *DefiToken) Allowance(args *struct{ Owner common.Address }) (hexutil.Big, error) {
-	return dt.repo.Erc20Allowance(&args.Owner, &dt.Address)
+	return dt.repo.Erc20Allowance(&dt.Address, &args.Owner, nil)
 }
 
 // CanWrapFTM signals if the token can be used to wrap native FTM
@@ -69,22 +81,4 @@ func (dt *DefiToken) CanWrapFTM() bool {
 // TotalSupply represents the total amount of tokens on supply.
 func (dt *DefiToken) TotalSupply() (hexutil.Big, error) {
 	return dt.repo.Erc20TotalSupply(&dt.Address)
-}
-
-// ErcTokenBalance resolves the current available balance of the specified token
-// for the specified owner.
-func (rs *rootResolver) ErcTokenBalance(args *struct {
-	Owner common.Address
-	Token common.Address
-}) (hexutil.Big, error) {
-	return rs.repo.Erc20Balance(&args.Owner, &args.Token)
-}
-
-// FMintTokenAllowance resolves the amount of ERC20 tokens unlocked
-// by the token owner for DeFi operations.
-func (rs *rootResolver) FMintTokenAllowance(args *struct {
-	Owner common.Address
-	Token common.Address
-}) (hexutil.Big, error) {
-	return rs.repo.Erc20Allowance(&args.Owner, &args.Token)
 }

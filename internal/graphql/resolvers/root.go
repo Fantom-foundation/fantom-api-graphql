@@ -161,6 +161,23 @@ type ApiResolver interface {
 	// DefiTokens resolves list of DeFi tokens available for the DeFi functions.
 	DefiTokens() ([]*DefiToken, error)
 
+	// DefiUniswapPairs resolves a list of all pairs managed by the Uniswap core.
+	DefiUniswapPairs() []*UniswapPair
+
+	// DefiUniswapAmountsOut resolves a list of output amounts for the given
+	// input amount and a list of tokens to be used to make the swap operation.
+	DefiUniswapAmountsOut(*struct {
+		AmountIn hexutil.Big
+		Tokens   []common.Address
+	}) ([]hexutil.Big, error)
+
+	// DefiUniswapAmountsOut resolves a list of input amounts for the given
+	// output amount and a list of tokens to be used to make the swap operation.
+	DefiUniswapAmountsIn(*struct {
+		AmountOut hexutil.Big
+		Tokens    []common.Address
+	}) ([]hexutil.Big, error)
+
 	// FMintAccount resolves details of a specified DeFi account.
 	FMintAccount(*struct{ Owner common.Address }) (*FMintAccount, error)
 
@@ -171,11 +188,25 @@ type ApiResolver interface {
 		Token common.Address
 	}) (hexutil.Big, error)
 
+	// Erc20Token resolves an instance of ERC20 token if available.
+	Erc20Token(args *struct{ Token common.Address }) *ERC20Token
+
 	// ErcTokenBalance resolves the current available balance of the specified token
 	// for the specified owner.
 	ErcTokenBalance(args *struct {
 		Owner common.Address
 		Token common.Address
+	}) (hexutil.Big, error)
+
+	// ErcTotalSupply resolves the current total supply of the specified token.
+	ErcTotalSupply(args *struct{ Token common.Address }) (hexutil.Big, error)
+
+	// ErcTokenAllowance resolves the current amount of ERC20 tokens unlocked
+	// by the token owner for the spender to be manipulated with.
+	ErcTokenAllowance(args *struct {
+		Token   common.Address
+		Owner   common.Address
+		Spender common.Address
 	}) (hexutil.Big, error)
 
 	// Close terminates resolver broadcast management.

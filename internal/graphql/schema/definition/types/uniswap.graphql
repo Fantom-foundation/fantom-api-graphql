@@ -1,0 +1,39 @@
+# UniswapPair represents the information about single
+# Uniswap pair managed by the Uniswap Core.
+type UniswapPair {
+    # pairAddress represents the Address of the Pair
+    # and also the address of the ERC20 token
+    # managing the share of each liquidity participant.
+    pairAddress: Address!
+
+    # tokens represent the list of tokens in the pair.
+    # The array always contain two tokens, their order
+    # is irrelevant from the Uniswap perspective, but
+    # we always return them in the same order.
+    tokens: [ERC20Token!]!
+
+    # reserves of the tokens of the pair.
+    # The reserve index inside the array corresponds
+    # with the token position.
+    reserves: [BigInt!]!
+
+    # The timestamp of the block
+    # in which this reserves state was reached.
+    reservesTimeStamp: Long!
+
+    # cumulative prices of the tokens of the pair.
+    # The price index inside the array corresponds
+    # with the token position.
+    cumulativePrices: [BigInt!]!
+
+    # totalSupply represents the total amount
+    # of the pair tokens in circulation and represents
+    # the total share pool of all the participants.
+    totalSupply: BigInt!
+
+    # share represents the share of the given user/participant on the pair.
+    # To get the share percentage, divide this value by the total supply
+    # of the pair.
+    shareOf(user: Address!): BigInt!
+}
+
