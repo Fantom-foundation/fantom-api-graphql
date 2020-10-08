@@ -158,7 +158,6 @@ func (ftm *FtmBridge) UniswapTokens(pair *common.Address) ([]common.Address, err
 }
 
 // UniswapReserves returns list of token reserve amounts in a Uniswap pair.
-
 func (ftm *FtmBridge) UniswapReserves(pair *common.Address) ([]hexutil.Big, error) {
 	// get the reserves record from the contract
 	rs, err := ftm.uniswapReservesRecord(pair)

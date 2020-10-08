@@ -61,7 +61,7 @@ func (rs *rootResolver) DefiUniswapAmountsIn(args *struct {
 }
 
 // Tokens resolves a list of tokens of the given Uniswap pair.
-func (up *UniswapPair) Tokens() ([]ERC20Token, error) {
+func (up *UniswapPair) Tokens() ([]*ERC20Token, error) {
 	// load addresses
 	tokens, err := up.repo.UniswapTokens(&up.PairAddress)
 	if err != nil {
@@ -75,12 +75,12 @@ func (up *UniswapPair) Tokens() ([]ERC20Token, error) {
 	}
 
 	// make the list container
-	list := make([]ERC20Token, len(tokens))
+	list := make([]*ERC20Token, len(tokens))
 
 	// populate a resolvable list of tokens involved with the pair
 	for i, adr := range tokens {
 		erc := NewErc20Token(&adr, up.repo)
-		list[i] = *erc
+		list[i] = erc
 	}
 
 	return list, nil
