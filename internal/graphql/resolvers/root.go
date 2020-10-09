@@ -178,6 +178,13 @@ type ApiResolver interface {
 		Tokens    []common.Address
 	}) ([]hexutil.Big, error)
 
+	// DefiUniswapQuoteLiquidity resolves a list of optimal amounts of tokens
+	// to be added to both sides of a pair on addLiquidity call.
+	DefiUniswapQuoteLiquidity(*struct {
+		Tokens    []common.Address
+		AmountsIn []hexutil.Big
+	}) ([]hexutil.Big, error)
+
 	// FMintAccount resolves details of a specified DeFi account.
 	FMintAccount(*struct{ Owner common.Address }) (*FMintAccount, error)
 

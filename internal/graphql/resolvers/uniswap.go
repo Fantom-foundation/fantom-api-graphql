@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 )
 
 // UniswapPair represents a pair of tokens in Uniswap protocol.
@@ -58,6 +59,97 @@ func (rs *rootResolver) DefiUniswapAmountsIn(args *struct {
 	Tokens    []common.Address
 }) ([]hexutil.Big, error) {
 	return rs.repo.UniswapAmountsIn(args.AmountOut, args.Tokens)
+}
+
+// DefiUniswapQuoteLiquidity resolves a list of optimal amounts of tokens
+// to be added to both sides of a pair on addLiquidity call.
+func (rs *rootResolver) DefiUniswapQuoteLiquidity(args *struct {
+	Tokens    []common.Address
+	AmountsIn []hexutil.Big
+}) ([]hexutil.Big, error) {
+	// make sure the number of tokens make sense
+	if args.Tokens == nil || len(args.Tokens) != 2 {
+		return nil, fmt.Errorf("invalid tokens pair given")
+	}
+
+	// make sure the number of input prices make sense
+	if args.AmountsIn == nil || len(args.AmountsIn) != 2 {
+		return nil, fmt.Errorf("invalid input amounts pair given")
+	}
+
+	// get the pair address for the given set of tokens
+	pair, err := rs.repo.UniswapPair(&args.Tokens[0], &args.Tokens[1])
+	if err != nil {
+		return nil, err
+	}
+
+	// get normalized tokens order
+	tokens, err := rs.repo.UniswapTokens(pair)
+	if err != nil {
+		return nil, err
+	}
+
+	// make sure to call the amounts correctly
+	if tokens[0] == args.Tokens[0] {
+		return rs.uniswapOptimalLiquidity(pair, &args.AmountsIn[0], &args.AmountsIn[1])
+	}
+
+	// tokens came in in reversed order
+	if tokens[0] == args.Tokens[1] {
+		val, err := rs.uniswapOptimalLiquidity(pair, &args.AmountsIn[1], &args.AmountsIn[0])
+		if err != nil {
+			return nil, err
+		}
+
+		// reverse the order of value in response
+		return []hexutil.Big{val[1], val[0]}, nil
+	}
+
+	// sanity check, tokens don't match the original pair?
+	return nil, fmt.Errorf("the pair tokens don't match with input tokens")
+}
+
+// uniswapQuoteLiquidity calculates the optimal liquidity advance on addLiquidity call.
+func (rs *rootResolver) uniswapOptimalLiquidity(
+	pair *common.Address,
+	amountAIn *hexutil.Big,
+	amountBIn *hexutil.Big,
+) ([]hexutil.Big, error) {
+	// get amount of reserves
+	reserves, err := rs.repo.UniswapReserves(pair)
+	if err != nil {
+		return nil, err
+	}
+
+	// no liquidity on the pair at all? simply confirm desired values
+	zeroInt := new(big.Int)
+	if 0 == reserves[0].ToInt().Cmp(zeroInt) && 0 == reserves[1].ToInt().Cmp(zeroInt) {
+		return []hexutil.Big{*amountAIn, *amountBIn}, nil
+	}
+
+	// get side B optimal
+	optimalB, err := rs.repo.UniswapQuoteInput(*amountAIn, reserves[0], reserves[1])
+	if err != nil {
+		return nil, err
+	}
+
+	// optimal amount on B side is lower or the same as the input amount on B side?
+	if 0 > optimalB.ToInt().Cmp(amountBIn.ToInt()) || 0 == optimalB.ToInt().Cmp(amountBIn.ToInt()) {
+		return []hexutil.Big{*amountAIn, optimalB}, nil
+	}
+
+	// optimal B si higher than the input offered; calculate optimal A from the reversed reserves
+	optimalA, err := rs.repo.UniswapQuoteInput(*amountBIn, reserves[1], reserves[0])
+	if err != nil {
+		return nil, err
+	}
+
+	// optimal A must be lower or same as the desired input
+	if 0 < optimalA.ToInt().Cmp(amountAIn.ToInt()) {
+		return nil, fmt.Errorf("neither optimal value matches inputs")
+	}
+
+	return []hexutil.Big{optimalA, *amountBIn}, nil
 }
 
 // Tokens resolves a list of tokens of the given Uniswap pair.

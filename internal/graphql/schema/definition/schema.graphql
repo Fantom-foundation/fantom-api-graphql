@@ -182,6 +182,16 @@ type Query {
     defiUniswapAmountsIn(amountOut: BigInt!, tokens:[Address!]!): [BigInt!]!
 
     """
+    defiUniswapQuoteLiquidity calculates optimal amount of tokens
+    of an Uniswap pair defined by a pair of tokens for the given amount
+    of both tokens desired to be added to the liquidity pool.
+    The function can be used to calculate minimal amount of tokens expected
+    to be added to the pool on both sides on addLiquidity call.
+    Please note "amountsIn" must be in the same order as are the tokens.
+    """
+    defiUniswapQuoteLiquidity(tokens:[Address!]!, amountsIn:[BigInt!]!): [BigInt!]!
+
+    """
     erc20Token provides the information about an ERC20 token specified by it's
     address, if available. The resolver returns NULL if the token does not exist.
     """

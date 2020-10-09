@@ -43,6 +43,25 @@ func (ftm *FtmBridge) NativeTokenAddress() (*common.Address, error) {
 	return &adr, nil
 }
 
+// UniswapPair returns an address of an Uniswap pair for the given tokens.
+func (ftm *FtmBridge) UniswapPair(tokenA *common.Address, tokenB *common.Address) (*common.Address, error) {
+	// get the router contract if possible
+	contract, err := NewUniswapFactory(ftm.uniswapCore, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("Uniswap factory contract not found; %s", err.Error())
+		return nil, err
+	}
+
+	// try to get the pair
+	pair, err := contract.GetPair(nil, *tokenA, *tokenB)
+	if err != nil {
+		ftm.log.Errorf("Uniswap pair not found for tokens %s and %s; %s", tokenA.String(), tokenB.String(), err.Error())
+		return nil, err
+	}
+
+	return &pair, nil
+}
+
 // UniswapPairs returns list of all token pairs managed by Uniswap core.
 func (ftm *FtmBridge) UniswapPairs() ([]common.Address, error) {
 	// get the router contract if possible
@@ -77,6 +96,30 @@ func (ftm *FtmBridge) UniswapPairs() ([]common.Address, error) {
 	}
 
 	return list, nil
+}
+
+// UniswapQuoteInput calculates optimal input on sibling token based on input amount and
+// self reserves of the analyzed token.
+func (ftm *FtmBridge) UniswapQuoteInput(
+	amountA hexutil.Big,
+	reserveA hexutil.Big,
+	reserveB hexutil.Big,
+) (hexutil.Big, error) {
+	// get the router contract if possible
+	contract, err := NewUniswapRouter(ftm.uniswapRouter, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("Uniswap router contract not found; %s", err.Error())
+		return hexutil.Big{}, err
+	}
+
+	// get the quote amount
+	amount, err := contract.Quote(nil, amountA.ToInt(), reserveA.ToInt(), reserveB.ToInt())
+	if err != nil {
+		ftm.log.Errorf("can not calculate Uniswap quote; %s", err.Error())
+		return hexutil.Big{}, err
+	}
+
+	return hexutil.Big(*amount), nil
 }
 
 // UniswapAmountsOut resolves a list of output amounts for the given

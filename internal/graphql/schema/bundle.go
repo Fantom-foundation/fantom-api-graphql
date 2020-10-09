@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-10-07 21:11
+// Auto generated GraphQL schema bundle; created 2020-10-09 10:51
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -1305,6 +1305,16 @@ type Query {
     for the calculation to succeed.
     """
     defiUniswapAmountsIn(amountOut: BigInt!, tokens:[Address!]!): [BigInt!]!
+
+    """
+    defiUniswapQuoteLiquidity calculates optimal amount of tokens
+    of an Uniswap pair defined by a pair of tokens for the given amount
+    of both tokens desired to be added to the liquidity pool.
+    The function can be used to calculate minimal amount of tokens expected
+    to be added to the pool on both sides on addLiquidity call.
+    Please note "amountsIn" must be in the same order as are the tokens.
+    """
+    defiUniswapQuoteLiquidity(tokens:[Address!]!, amountsIn:[BigInt!]!): [BigInt!]!
 
     """
     erc20Token provides the information about an ERC20 token specified by it's

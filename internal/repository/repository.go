@@ -264,6 +264,9 @@ type Repository interface {
 	// UniswapPairs returns list of all token pairs managed by Uniswap core.
 	UniswapPairs() ([]common.Address, error)
 
+	// UniswapPair returns an address of an Uniswap pair for the given tokens.
+	UniswapPair(*common.Address, *common.Address) (*common.Address, error)
+
 	// UniswapAmountsOut resolves a list of output amounts for the given
 	// input amount and a list of tokens to be used to make the swap operation.
 	UniswapAmountsOut(amountIn hexutil.Big, tokens []common.Address) ([]hexutil.Big, error)
@@ -271,6 +274,10 @@ type Repository interface {
 	// UniswapAmountsIn resolves a list of input amounts for the given
 	// output amount and a list of tokens to be used to make the swap operation.
 	UniswapAmountsIn(amountOut hexutil.Big, tokens []common.Address) ([]hexutil.Big, error)
+
+	// UniswapQuoteInput calculates optimal input on sibling token based on input amount and
+	// self reserves of the analyzed token.
+	UniswapQuoteInput(amountIn hexutil.Big, reserveMy hexutil.Big, reserveSibling hexutil.Big) (hexutil.Big, error)
 
 	// UniswapTokens returns list of addresses of tokens involved in a Uniswap pair.
 	UniswapTokens(*common.Address) ([]common.Address, error)
