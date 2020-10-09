@@ -61,3 +61,8 @@ func (p *proxy) UniswapReservesTimeStamp(pair *common.Address) (hexutil.Uint64, 
 func (p *proxy) UniswapCumulativePrices(pair *common.Address) ([]hexutil.Big, error) {
 	return p.rpc.UniswapCumulativePrices(pair)
 }
+
+// UniswapLastKValue returns the last value of the pool control coefficient.
+func (p *proxy) UniswapLastKValue(pair *common.Address) (hexutil.Big, error) {
+	return p.rpc.UniswapLastKValue(pair)
+}

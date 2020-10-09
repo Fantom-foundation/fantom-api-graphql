@@ -205,3 +205,8 @@ func (up *UniswapPair) TotalSupply() (hexutil.Big, error) {
 func (up *UniswapPair) ShareOf(args *struct{ User common.Address }) (hexutil.Big, error) {
 	return up.repo.Erc20BalanceOf(&up.PairAddress, &args.User)
 }
+
+// LastKValue resolves the last value of the pool control coefficient.
+func (up *UniswapPair) LastKValue() (hexutil.Big, error) {
+	return up.repo.UniswapLastKValue(&up.PairAddress)
+}

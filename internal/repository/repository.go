@@ -291,6 +291,9 @@ type Repository interface {
 	// UniswapCumulativePrices returns list of token cumulative prices of a Uniswap pair.
 	UniswapCumulativePrices(*common.Address) ([]hexutil.Big, error)
 
+	// UniswapLastKValue returns the last value of the pool control coefficient.
+	UniswapLastKValue(*common.Address) (hexutil.Big, error)
+
 	// NativeTokenAddress returns address of the native token wrapper, if available.
 	NativeTokenAddress() (*common.Address, error)
 

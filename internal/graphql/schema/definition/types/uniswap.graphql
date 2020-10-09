@@ -26,6 +26,11 @@ type UniswapPair {
     # with the token position.
     cumulativePrices: [BigInt!]!
 
+    # lastKValue represents the last coeficient
+    # of reserves multiplied. It's the value Uniswap protocol
+    # uses to control reserves growth on both sides of the pool.
+    lastKValue: BigInt!
+
     # totalSupply represents the total amount
     # of the pair tokens in circulation and represents
     # the total share pool of all the participants.

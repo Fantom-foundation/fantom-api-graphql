@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-10-09 10:51
+// Auto generated GraphQL schema bundle; created 2020-10-09 12:18
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -982,6 +982,11 @@ type UniswapPair {
     # The price index inside the array corresponds
     # with the token position.
     cumulativePrices: [BigInt!]!
+
+    # lastKValue represents the last coeficient
+    # of reserves multiplied. It's the value Uniswap protocol
+    # uses to control reserves growth on both sides of the pool.
+    lastKValue: BigInt!
 
     # totalSupply represents the total amount
     # of the pair tokens in circulation and represents

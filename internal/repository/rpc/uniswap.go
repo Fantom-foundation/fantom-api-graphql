@@ -281,3 +281,22 @@ func (ftm *FtmBridge) uniswapReservesRecord(pair *common.Address) (*struct {
 	rs, err := contract.GetReserves(nil)
 	return &rs, err
 }
+
+// UniswapLastKValue returns the last value of the pool control coefficient.
+func (ftm *FtmBridge) UniswapLastKValue(pair *common.Address) (hexutil.Big, error) {
+	// get the pair contract if possible
+	contract, err := NewUniswapPair(*pair, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("Uniswap pair %s not found; %s", pair.String(), err.Error())
+		return hexutil.Big{}, err
+	}
+
+	// try to get the reserves
+	k, err := contract.KLast(nil)
+	if err != nil {
+		ftm.log.Errorf("Uniswap pair %s coefficient K not available; %s", pair.String(), err.Error())
+		return hexutil.Big{}, err
+	}
+
+	return hexutil.Big(*k), nil
+}
