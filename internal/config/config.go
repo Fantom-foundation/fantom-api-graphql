@@ -39,6 +39,9 @@ const (
 	keyDefiFMintAddressProvider = "defi.address-provider"
 	keyDefiUniswapCore          = "defi.uniswap.core"
 	keyDefiUniswapRouter        = "defi.uniswap.router"
+
+	// Governance related stuff
+	keyGovernanceContracts = "governance.contracts"
 )
 
 // Config defines configuration options structure for Fantom API server.
@@ -93,6 +96,9 @@ type Config struct {
 
 	// DefiUniswapRouter is the address of the Uniswap router contract.
 	DefiUniswapRouter string
+
+	// GovernanceContracts
+	GovernanceContracts map[string]string
 }
 
 // Load provides a loaded configuration for Fantom API server.
@@ -136,6 +142,9 @@ func Load() (*Config, error) {
 		DefiFMintAddressProvider: cfg.GetString(keyDefiFMintAddressProvider),
 		DefiUniswapCore:          cfg.GetString(keyDefiUniswapCore),
 		DefiUniswapRouter:        cfg.GetString(keyDefiUniswapRouter),
+
+		// Governance contracts
+		GovernanceContracts: cfg.GetStringMapString(keyGovernanceContracts),
 	}, nil
 }
 
