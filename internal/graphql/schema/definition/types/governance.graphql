@@ -1,0 +1,190 @@
+# GovernanceContract represents basic information
+# about a Governance contract deployed on the block chain.
+type GovernanceContract {
+    # name represents the name of the controler
+    name: String!
+
+    # address represents the address of the Governance contract
+    address: Address!
+
+    # totalProposals represents the total number of proposals
+    # managed by the Governance contract.
+    totalProposals: BigInt!
+
+    # proposals represents list of proposals on the contract.
+    proposals(cursor:Cursor, count:Int!):GovernanceProposalList!
+
+    # proposal provides specific Governance Proposal detail identified
+    # by its ID inside the Governance contract.
+    proposal(id: BigInt!):GovernanceProposal
+
+    # delegationsBy represents list of delegations for the given address.
+    # If the address does not delegate, the list is empty.
+    # Delegations are handled by the governed contract, so this list may
+    # be always empty for certain Governance instances. If the list is empty
+    # the source address may still be eligible for voting by itself.
+    delegationsBy(from: Address!): [Address!]!
+
+    # canVote checks if the given address can submit votes to Proposals
+    # of this Governance conract. The ability to vote is bound
+    # to the governed contract logic and can be unavailable
+    # to some network participants on certain situation.
+    canVote(from: Address): Boolean!
+
+    # proposalFee represents the fee required by the Governance
+    # to accept proposals. The fee is never refunded,
+    # even if a Proposal is canceled.
+    proposalFee: BigInt!
+}
+
+# GovernanceProposalList is a list of governance proposal edges
+# provided by sequential access request.
+type GovernanceProposalList {
+    # Edges contains provided edges of the sequential list.
+    edges: [GovernanceProposalListEdge!]!
+
+    # TotalCount is the maximum number of governance proposals
+    # available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of governance
+    # proposal edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list
+# of governance proposals.
+type GovernanceProposalListEdge {
+    cursor: Cursor!
+    proposal: GovernanceProposal!
+}
+
+# GovernanceProposal represents the details of a single proposal
+# in the governance contract.
+type GovernanceProposal {
+    # governanceId represents the identifier of the Governance
+    # contract this Proposal belongs to.
+    governanceId: Address!
+
+    # governanceName represents a short name of Governance contract
+    # the Proposal belongs to.
+    governanceName: String!
+
+    # governance represents the Governance contract reference.
+    # Please make sure not to engage in a circular reference too deep.
+    governance: GovernanceContract!
+
+    # name represents a name of the Proposal.
+    name: String!
+
+    # description represents a textual description of the Proposal.
+    description: String!
+
+    # state represents the state of the Proposal.
+    state: ProposalState!
+
+    # contract represents the contract of the Proposal. Each Proposal
+    # is represented by a contract responsible for maintaining the Proposal
+    # parameters, options and finalization actions.
+    contract: Address!
+
+    # proposalType represents the type of the Proposal that corresponds
+    # with the Proposal Template.
+    proposalType: Long!
+
+    # isExecutable identifies if the proposal will be finalized
+    # by executing a finializing code.
+    isExecutable: Boolean!
+
+    # minVotes corresponds with the minimal number of votes
+    # required by the Proposal to be settled in any way
+    # other than REJECTED.
+    minVotes: BigInt!
+
+    # minAgreement represents the minimal agreement ratio
+    # required to be reached on any of the Proposal options
+    # so the Proposal could be settled in any way
+    # other than REJECTED.
+    minAgreement: BigInt!
+
+    # opinionScales is the scale of opinions on available options.
+    # A voter provides a single opinion picked from the scale
+    # for each option during the voting for a proposal.
+    # I.e.: Scales {0, 2, 3, 4, 5} represent opinions of
+    # {strongly disagree, disagree, neutral, agree and strongly agree}.
+    opinionScales: [BigInt!]!
+
+    # options is a list of options available on the Proposal.
+    # A voter must provide their opinion expressed by a chosen scale
+    # for each option on the list. It's generally better to scatter
+    # opinions across options instead of having a binary view.
+    options: [String!]!
+
+    # votingStarts is the time stamp of the voting getting opened
+    # to receive votes.
+    votingStarts: Long!
+
+    # votingMinEnd is the time stamp when the voting could be closed
+    # if enough votes are collected to settle the Proposal (winner option is selectable).
+    votingMayEnd: Long!
+
+    # votingMustEnd is the time stamp when the voting must be closed.
+    # If enough votes to settle the Proposal were not collected up until this time
+    # the Proposal is rejected and will not be settled in any way (no winner option is selectable).
+    votingMustEnd: Long!
+
+    # optionStates is the list of states of all the options in the Proposal.
+    # Warning: This is an expensive call, use with caution.
+    optionStates: [OptionState!]!
+
+    # optionState represents a state of the selected option of the Proposal.
+    optionState(optionId:BigInt!):OptionState
+
+    # vote pulls the vote for the given <from> address linked with the <delegatedTo> delegation
+    # recipient. If the <from> address is not delegator in the context of the governance
+    # subject contract, the <delegatedTo> may be left empty, or set to the same address
+    # as the <from> address.
+    vote(from: Address!, delegatedTo: Address): GovernanceVote
+}
+
+# ProposalState represents the state of the whole proposal.
+type ProposalState {
+    # isResolved signals if the Proposal is already resolved.
+    isResolved: Boolean!
+
+    # winnerId is the identifier of the winning option.
+    winnerId: BigInt
+
+    # votes is the number of votes received on the Proposal.
+    votes: BigInt!
+
+    # status represents the status of the Proposal.
+    # 0 = Initial, 1 = Resolved, 2 = Failed, 4 = Canceled, 8 = Execution Expired
+    status: BigInt!
+}
+
+# OptionState represents a state in options of a Proposal.
+type OptionState {
+    # optionId is the identifier of the option,
+    # effectively option index in the options array
+    optionId: BigInt!
+
+    # votes is the number of votes received on the option.
+    votes: BigInt!
+
+    # agreementRatio represents the ratio of the option agreement across votes.
+    agreementRatio: BigInt!
+
+    # agreement represents the absolute value of the agreement across votes.
+    agreement: BigInt!
+}
+
+# GovernanceVote is the vote in the context of the given Governance Proposal.
+type GovernanceVote {
+    # weight represents the weight of the vote
+    weight: BigInt!
+
+    # choices represents the list of opinions on the Proposal options the vote
+    # presented.
+    choices: [BigInt!]!
+}
