@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fantom-api-graphql/cmd/apiserver/build"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/graphql/resolvers"
 	"fantom-api-graphql/internal/handlers"
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -14,11 +16,16 @@ import (
 
 // main initializes the API server and starts it when ready.
 func main() {
+	// print the version information
+	build.PrintVersion()
+
 	// get the configuration to prepare the server
 	cfg, err := config.Load()
 	if nil != err {
 		log.Fatal(err)
 	}
+
+	fmt.Printf("%+v\n", cfg.GovernanceContracts)
 
 	// make logger
 	lg := logger.New(cfg)
