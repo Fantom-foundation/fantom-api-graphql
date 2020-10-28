@@ -3,6 +3,7 @@ package resolvers
 
 import (
 	"context"
+	"fantom-api-graphql/cmd/apiserver/build"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository"
@@ -30,6 +31,9 @@ type ApiResolver interface {
 
 	// State resolves current state of the blockchain.
 	State() (CurrentState, error)
+
+	// Version resolves current version of the API server.
+	Version() string
 
 	// Account resolves blockchain account by address.
 	Account(struct{ Address common.Address }) (*Account, error)
@@ -216,6 +220,19 @@ type ApiResolver interface {
 		Spender common.Address
 	}) (hexutil.Big, error)
 
+	// GovContracts resolves list of governance contracts details recognized by the API.
+	GovContracts() ([]*GovernanceContract, error)
+
+	// GovContract provides a specific Governance contract information by its address.
+	GovContract(struct{ Address common.Address }) (*GovernanceContract, error)
+
+	// GovProposals represents list of joined proposals across all the Governance contracts.
+	GovProposals(struct {
+		Cursor     *Cursor
+		Count      int32
+		ActiveOnly bool
+	}) (*GovernanceProposalList, error)
+
 	// Close terminates resolver broadcast management.
 	Close()
 }
@@ -358,4 +375,9 @@ func listLimitCount(count int32, limit uint32) int32 {
 // Config returns the application configuration.
 func (rs *rootResolver) Config() *config.Config {
 	return rs.cfg
+}
+
+// Version resolves the current version of the API server.
+func (rs *rootResolver) Version() string {
+	return build.Short(rs.cfg)
 }

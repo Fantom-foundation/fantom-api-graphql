@@ -1,7 +1,9 @@
 // Package config handles API server configuration binding and loading.
 package config
 
-import "time"
+import (
+	"time"
+)
 
 // Config defines configuration options structure for Fantom API server.
 type Config struct {

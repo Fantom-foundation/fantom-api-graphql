@@ -79,7 +79,7 @@ func constructMutationPayload(con *types.Contract) (bytes.Buffer, error) {
 // SyncContract synchronizes contract across all the peers in the API network.
 func (rs *rootResolver) syncContract(con types.Contract) {
 	// no peers to sync against
-	if len(rs.cfg.ApiPeers) <= 0 {
+	if len(rs.cfg.Server.Peers) <= 0 {
 		rs.log.Debugf("no peers for contract validation syncing")
 		return
 	}
@@ -95,12 +95,12 @@ func (rs *rootResolver) syncContract(con types.Contract) {
 	var wg sync.WaitGroup
 
 	// loop over the peers and sync each of them
-	for _, peer := range rs.cfg.ApiPeers {
+	for _, peer := range rs.cfg.Server.Peers {
 		// add this sync to the wait group
 		wg.Add(1)
 
 		// run the sync
-		go syncContractToPeer(&payload, peer, rs.cfg.ApiStateOrigin, &wg, rs.log)
+		go syncContractToPeer(&payload, peer, rs.cfg.Server.DomainAddress, &wg, rs.log)
 	}
 
 	// wait for all the sync to finish

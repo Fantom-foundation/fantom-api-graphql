@@ -38,11 +38,11 @@ func (rs *rootResolver) DefiConfiguration() (*DefiConfiguration, error) {
 // UniswapCoreFactory returns the address of the Uniswap factory contract
 // from the app configuration.
 func (dfc *DefiConfiguration) UniswapCoreFactory() common.Address {
-	return common.HexToAddress(dfc.cfg.DefiUniswapCore)
+	return common.HexToAddress(dfc.cfg.DeFi.Uniswap.Core)
 }
 
 // UniswapRouter returns the address of the Uniswap router contract
 // from the app configuration.
 func (dfc *DefiConfiguration) UniswapRouter() common.Address {
-	return common.HexToAddress(dfc.cfg.DefiUniswapRouter)
+	return common.HexToAddress(dfc.cfg.DeFi.Uniswap.Router)
 }
