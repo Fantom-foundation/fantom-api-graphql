@@ -9,6 +9,7 @@ results. BigCache for in-memory object storage to speed up loading of frequently
 package repository
 
 import (
+	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/types"
 	"sync"
@@ -39,7 +40,7 @@ type orchestrator struct {
 }
 
 // NewOrchestrator creates a new instance of repository orchestrator.
-func newOrchestrator(repo Repository, log logger.Logger) *orchestrator {
+func newOrchestrator(repo Repository, log logger.Logger, cfg *config.Repository) *orchestrator {
 	// make a wait group for orchestrated services
 	var wg sync.WaitGroup
 
@@ -50,7 +51,7 @@ func newOrchestrator(repo Repository, log logger.Logger) *orchestrator {
 	}
 
 	// init the orchestration
-	or.init()
+	or.init(cfg)
 
 	// start orchestrating
 	wg.Add(1)
@@ -60,20 +61,8 @@ func newOrchestrator(repo Repository, log logger.Logger) *orchestrator {
 
 // close signals orchestrator to terminate all orchestrated services.
 func (or *orchestrator) close() {
-	// signal the service to close
-	or.service.close()
-
-	// signal scanner
-	or.sys.close()
-
-	// signal monitor
-	or.mon.close()
-
-	// signal tx dispatcher
-	or.txd.close()
-
-	// signal sti monitor
-	or.sti.close()
+	// close all the services
+	or.closeServices()
 
 	// kill re-scan scheduler
 	or.sigKillScheduler <- true
@@ -91,6 +80,26 @@ func (or *orchestrator) close() {
 	or.log.Notice("orchestrator done")
 }
 
+// closeServices signals services of the orchestrator to close
+func (or *orchestrator) closeServices() {
+	// signal the service to close
+	or.service.close()
+
+	// signal scanner
+	or.sys.close()
+
+	// signal monitor
+	or.mon.close()
+
+	// signal tx dispatcher
+	or.txd.close()
+
+	// signal sti monitor
+	if or.sti != nil {
+		or.sti.close()
+	}
+}
+
 // setBlockChannel registers a channel for notifying new block events.
 func (or *orchestrator) setBlockChannel(ch chan *types.Block) {
 	or.mon.onBlock = ch
@@ -102,7 +111,7 @@ func (or *orchestrator) setTrxChannel(ch chan *types.Transaction) {
 }
 
 // init initiates the orchestrator work.
-func (or *orchestrator) init() {
+func (or *orchestrator) init(cfg *config.Repository) {
 	// create a channel for transaction dispatcher
 	or.trxBuffer = make(chan *evtTransaction, trxDispatchBufferCapacity)
 
@@ -118,7 +127,9 @@ func (or *orchestrator) init() {
 	or.mon = NewBlockMonitor(or.repo.FtmConnection(), or.trxBuffer, or.reScan, or.repo, or.log, or.wg)
 
 	// create staker information monitor; it starts right away on slow peace
-	or.sti = newStiMonitor(or.repo, or.log, or.wg)
+	if cfg.MonitorStakers {
+		or.sti = newStiMonitor(or.repo, or.log, or.wg)
+	}
 }
 
 // orchestrate starts the service orchestration.

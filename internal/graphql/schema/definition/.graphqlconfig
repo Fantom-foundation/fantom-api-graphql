@@ -34,8 +34,12 @@
         },
         "introspect": false
       },
-      "XAPI5 TestNet.Fantom.Network": {
+      "XAPI1 TestNet.Fantom.Network": {
         "url": "https://xapi.testnet.fantom.network/api",
+        "introspect": false
+      },
+      "XAPI5 TestNet.Fantom.Network": {
+        "url": "https://xapi5.testnet.fantom.network/api",
         "introspect": false
       }
     }

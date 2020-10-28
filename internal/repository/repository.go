@@ -408,7 +408,7 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 	dbBridge.SetBalance(p.AccountBalance)
 
 	// make the service orchestrator
-	p.orc = newOrchestrator(&p, log)
+	p.orc = newOrchestrator(&p, log, &cfg.Repository)
 
 	// return the proxy
 	return &p, nil

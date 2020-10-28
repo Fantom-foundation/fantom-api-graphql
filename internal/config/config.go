@@ -28,6 +28,9 @@ type Config struct {
 	// Cache configuration
 	Compiler Compiler `mapstructure:"compiler"`
 
+	// Repository configuration
+	Repository Repository `mapstructure:"repository"`
+
 	// DeFi configuration
 	DeFi DeFi `mapstructure:"defi"`
 
@@ -72,6 +75,11 @@ type Cache struct {
 // Compiler represents the contract compilers configuration.
 type Compiler struct {
 	DefaultSolCompilerPath string `mapstructure:"sol"`
+}
+
+// Repository represents the repository configuration.
+type Repository struct {
+	MonitorStakers bool `mapstructure:"stakers"`
 }
 
 // DeFi represents the DeFi and financial contracts configuration.
