@@ -196,7 +196,7 @@ func (fmc *fMintConfig) loadAddress(name string) (*common.Address, error) {
 	// try to get the address
 	addr, err := ap.GetAddress(nil, id)
 	if err != nil {
-		fmc.bridge.log.Errorf("can not get address of %s, %s", name, err.Error())
+		fmc.bridge.log.Errorf("[%s] can not get address of %s; %s", fmc.addressProvider.String(), name, err.Error())
 		return nil, err
 	}
 
