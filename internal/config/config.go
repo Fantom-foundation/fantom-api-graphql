@@ -1,173 +1,107 @@
-/*
-Package config handles API server configuration binding and loading.
-
-The config can be read from an environment (twelve-factor methodology),
-from a command flags, and from a config file. We strongly recommend
-
-*/
+// Package config handles API server configuration binding and loading.
 package config
 
-import (
-	"flag"
-	"github.com/spf13/viper"
-	"log"
-	"time"
-)
-
-// default configuration elements and keys
-const (
-	appName        = "FantomAPI"
-	configFileName = "apiserver"
-
-	// configuration options
-	keyConfigFilePath    = "cfg"
-	keyBindAddress       = "server.bind"
-	keyDomainAddress     = "server.domain"
-	keyApiPeers          = "server.peers"
-	keyApiStateOrigin    = "server.origin"
-	keyLoggingLevel      = "log.level"
-	keyLoggingFormat     = "log.format"
-	keyLachesisUrl       = "lachesis.url"
-	keyMongoUrl          = "mongo.url"
-	keyMongoDatabase     = "mongo.db"
-	keyCorsAllowOrigins  = "cors.origins"
-	keyCacheEvictionTime = "cache.eviction"
-	keySolCompilerPath   = "sol.compiler"
-	keyVotingSources     = "voting.sources"
-
-	// defi related configs
-	keyDefiFMintAddressProvider = "defi.address-provider"
-	keyDefiUniswapCore          = "defi.uniswap.core"
-	keyDefiUniswapRouter        = "defi.uniswap.router"
-
-	// Governance related stuff
-	keyGovernanceContracts = "governance.contracts"
-)
+import "time"
 
 // Config defines configuration options structure for Fantom API server.
 type Config struct {
 	// AppName holds the name of the application
-	AppName string
+	AppName string `mapstructure:"app_name"`
 
-	// BindAddress holds the API server network binding address
-	BindAddress string
+	// Server configuration
+	Server Server `mapstructure:"server"`
 
-	// DomainName holds the domain of the API server deployment.
-	DomainName string
+	// Logger configuration
+	Log Log `mapstructure:"log"`
 
-	// LoggingLevel and LoggingFormat hold configuration for the API server logger
-	LoggingLevel  string
-	LoggingFormat string
+	// Lachesis represents the node structure
+	Lachesis Lachesis `mapstructure:"node"`
 
-	// LachesisUrl holds address of the Lachesis node we want to communicate with
-	LachesisUrl string
+	// Database configuration
+	Db Database `mapstructure:"db"`
 
-	// MongoUrl holds address of the MongoDB we use for persistent storage
-	MongoUrl string
+	// Cache configuration
+	Cache Cache `mapstructure:"cache"`
 
-	// MongoDatabase represents the name of the database used for the API persistent data storage.
-	MongoDatabase string
+	// Cache configuration
+	Compiler Compiler `mapstructure:"compiler"`
 
-	// CorsAllowOrigins keeps list of origins allowed to make requests on the server HTTP interface
-	CorsAllowOrigins []string
+	// DeFi configuration
+	DeFi DeFi `mapstructure:"defi"`
 
-	// CacheEvictionTime specifies the time after which entry can be evicted from in-memory cache
-	CacheEvictionTime time.Duration
+	// Voting configuration
+	Voting Voting `mapstructure:"voting"`
 
-	// SolCompilerPath represents the path to sol compiler for smart contract validation.
-	SolCompilerPath string
-
-	// ApiPeers represents a list of other API points of the same type we need to inform
-	// on possible state change.
-	ApiPeers []string
-
-	// VotingSources represents a list of addresses used to deploy voting smart contracts
-	// for official Fantom ballots.
-	VotingSources []string
-
-	// ApiStateOrigin represents request origin used on state syncing events.
-	ApiStateOrigin string
-
-	// DefiFMintAddressProvider is the address of the fMint address provider.
-	DefiFMintAddressProvider string
-
-	// DefiUniswapCore is the address of the Uniswap core contract.
-	DefiUniswapCore string
-
-	// DefiUniswapRouter is the address of the Uniswap router contract.
-	DefiUniswapRouter string
-
-	// GovernanceContracts
-	GovernanceContracts map[string]string
+	// Governance configuration
+	Governance Governance `mapstructure:"governance"`
 }
 
-// Load provides a loaded configuration for Fantom API server.
-func Load() (*Config, error) {
-	// Get the config reader
-	cfg := reader()
-
-	// set default values
-	applyDefaults(cfg)
-
-	// Try to read the file
-	if err := cfg.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found; ignore the error, we may not need the config file
-			log.Print("configuration file not found, using default values")
-		} else {
-			// Config file was found but another error was produced
-			log.Printf("can not read the server configuration")
-			return nil, err
-		}
-	}
-
-	// Build and return the config structure
-	return &Config{
-		AppName:           appName,
-		BindAddress:       cfg.GetString(keyBindAddress),
-		DomainName:        cfg.GetString(keyDomainAddress),
-		LoggingLevel:      cfg.GetString(keyLoggingLevel),
-		LoggingFormat:     cfg.GetString(keyLoggingFormat),
-		LachesisUrl:       cfg.GetString(keyLachesisUrl),
-		MongoUrl:          cfg.GetString(keyMongoUrl),
-		MongoDatabase:     cfg.GetString(keyMongoDatabase),
-		CorsAllowOrigins:  cfg.GetStringSlice(keyCorsAllowOrigins),
-		CacheEvictionTime: cfg.GetDuration(keyCacheEvictionTime),
-		SolCompilerPath:   cfg.GetString(keySolCompilerPath),
-		ApiPeers:          cfg.GetStringSlice(keyApiPeers),
-		ApiStateOrigin:    cfg.GetString(keyApiStateOrigin),
-		VotingSources:     cfg.GetStringSlice(keyVotingSources),
-
-		// DeFi below this line
-		DefiFMintAddressProvider: cfg.GetString(keyDefiFMintAddressProvider),
-		DefiUniswapCore:          cfg.GetString(keyDefiUniswapCore),
-		DefiUniswapRouter:        cfg.GetString(keyDefiUniswapRouter),
-
-		// Governance contracts
-		GovernanceContracts: cfg.GetStringMapString(keyGovernanceContracts),
-	}, nil
+// Server represents the GraphQL server configuration
+type Server struct {
+	BindAddress   string   `mapstructure:"bind"`
+	DomainAddress string   `mapstructure:"domain"`
+	Origin        string   `mapstructure:"origin"`
+	Peers         []string `mapstructure:"peers"`
+	CorsOrigin    []string `mapstructure:"cors_origins"`
 }
 
-// reader provides instance of the config reader.
-// It accepts an explicit path to a config file if it was requested by `cfg` flag.
-func reader() *viper.Viper {
-	// make new Viper
-	cfg := viper.New()
+// Log represents the logger configuration
+type Log struct {
+	Level  string `mapstructure:"level"`
+	Format string `mapstructure:"format"`
+}
 
-	// what is the expected name of the config file
-	cfg.SetConfigName(configFileName)
+// Lachesis represents the Lachesis node access configuration
+type Lachesis struct {
+	Url string `mapstructure:"url"`
+}
 
-	// where to look for common files
-	cfg.AddConfigPath(defaultConfigDir())
-	cfg.AddConfigPath(".")
+// Database represents the database access configuration.
+type Database struct {
+	Url    string `mapstructure:"url"`
+	DbName string `mapstructure:"db"`
+}
 
-	// Try to get an explicit configuration file path if present
-	var cfgPath string
-	flag.StringVar(&cfgPath, keyConfigFilePath, "", "Path to a configuration file")
-	flag.Parse()
+// Cache represents the cache sub-system configuration.
+type Cache struct {
+	Eviction time.Duration `mapstructure:"eviction"`
+}
 
-	// Any path found?
-	cfg.SetConfigFile(cfgPath)
+// Compiler represents the contract compilers configuration.
+type Compiler struct {
+	DefaultSolCompilerPath string `mapstructure:"sol"`
+}
 
-	return cfg
+// DeFi represents the DeFi and financial contracts configuration.
+type DeFi struct {
+	FMint   DeFiFMint   `mapstructure:"fmint"`
+	Uniswap DeFiUniswap `mapstructure:"uniswap"`
+}
+
+// DeFiFMint represents the fMint DeFi module configuration.
+type DeFiFMint struct {
+	AddressProvider string `mapstructure:"address_provider"`
+}
+
+// DeFiUniswap represents the Uniswap protocol DeFi module configuration.
+type DeFiUniswap struct {
+	Core   string `mapstructure:"core"`
+	Router string `mapstructure:"router"`
+}
+
+// Voting represents the simple voting/ballots module configuration.
+type Voting struct {
+	Sources []string `mapstructure:"sources"`
+}
+
+// Governance represents the governance module configuration.
+type Governance struct {
+	Contracts []GovernanceContract `mapstructure:"contracts"`
+}
+
+// GovernanceContract represents a single Governance contract configuration.
+type GovernanceContract struct {
+	Address string `mapstructure:"address"`
+	Name    string `mapstructure:"name"`
+	Type    string `mapstructure:"type"`
 }

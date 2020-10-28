@@ -7,6 +7,9 @@ import (
 
 // Default values of configuration options
 const (
+	// this defines default application name
+	defApplicationName = "GraphQL API Server (unspecified)"
+
 	// this defines empty address
 	defNoAddress = "0x0000000000000000000000000000000000000000"
 
@@ -22,7 +25,7 @@ const (
 	defLoggingLevel = "INFO"
 
 	// defLoggingFormat holds default format of the Logger output
-	defLoggingFormat = "%{color}%{time:2006-01-02 15:04:05.000} %{shortfunc} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}"
+	defLoggingFormat = "%{color}%{level:-8s} %{shortpkg}/%{shortfunc}%{color:reset}: %{message}"
 
 	// defLachesisUrl holds default Lachesis connection string
 	defLachesisUrl = "~/.lachesis/data/lachesis.ipc"
@@ -64,6 +67,7 @@ var defVotingSources = make([]string, 0)
 // applyDefaults sets default values for configuration options.
 func applyDefaults(cfg *viper.Viper) {
 	// set simple details
+	cfg.SetDefault(keyAppName, defApplicationName)
 	cfg.SetDefault(keyBindAddress, defServerBind)
 	cfg.SetDefault(keyDomainAddress, defServerDomain)
 	cfg.SetDefault(keyLoggingLevel, defLoggingLevel)
