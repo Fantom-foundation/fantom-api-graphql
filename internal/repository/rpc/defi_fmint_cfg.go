@@ -21,12 +21,12 @@ import (
 
 // identifiers of fMint contracts we may want to get
 const (
-	fMintAddressMinter             = "getFantomMint"
-	fMintAddressPriceOracleProxy   = "getPriceOracleProxy"
-	fMintAddressRewardDistribution = "getRewardDistribution"
-	fMintAddressTokenRegistry      = "getTokenRegistry"
-	fMintCollateralPool            = "getCollateralPool"
-	fMintDebtPool                  = "getDebtPool"
+	fMintAddressMinter             = "fantom_mint"
+	fMintAddressPriceOracleProxy   = "price_oracle_proxy"
+	fMintAddressRewardDistribution = "reward_distribution"
+	fMintAddressTokenRegistry      = "token_registry"
+	fMintCollateralPool            = "collateral_pool"
+	fMintDebtPool                  = "debt_pool"
 )
 
 // fMintConfig represents the configuration for DeFi fMint module.
@@ -189,13 +189,16 @@ func (fmc *fMintConfig) loadAddress(name string) (*common.Address, error) {
 		return nil, err
 	}
 
+	// make the id
+	var id [32]byte
+	copy(id[:], name)
+
 	// try to get the address
-	out := new(common.Address)
-	err = ap.DefiFMintAddressProviderCaller.contract.Call(nil, out, name)
+	addr, err := ap.GetAddress(nil, id)
 	if err != nil {
 		fmc.bridge.log.Errorf("can not get address of %s, %s", name, err.Error())
 		return nil, err
 	}
 
-	return out, nil
+	return &addr, nil
 }
