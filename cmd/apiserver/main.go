@@ -66,8 +66,8 @@ func setupSignals(repo repository.Repository, rs resolvers.ApiResolver, log logg
 	log.Info("os signals captured")
 
 	// make the signal consumer
-	ts := make(chan os.Signal, 2)
-	signal.Notify(ts, os.Interrupt, os.Kill, syscall.SIGQUIT)
+	ts := make(chan os.Signal, 1)
+	signal.Notify(ts, syscall.SIGINT, syscall.SIGTERM)
 
 	// start monitoring
 	go func() {
@@ -75,11 +75,11 @@ func setupSignals(repo repository.Repository, rs resolvers.ApiResolver, log logg
 		<-ts
 
 		// log nad close
-		log.Info("server is terminating")
+		log.Critical("server is terminating")
 		repo.Close()
 		rs.Close()
 
-		log.Info("have a great day")
+		log.Info("done")
 		os.Exit(0)
 	}()
 }
