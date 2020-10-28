@@ -102,6 +102,9 @@ type Repository interface {
 	// StakersNum returns the number of stakers in Opera blockchain.
 	StakersNum() (hexutil.Uint64, error)
 
+	// IsStaker returns if the given address is an SFC staker.
+	IsStaker(*common.Address) (bool, error)
+
 	// Staker extract a staker information from SFC smart contract.
 	Staker(hexutil.Uint64) (*types.Staker, error)
 
@@ -119,6 +122,9 @@ type Repository interface {
 
 	// RetrieveStakerInfo gets staker information from in-memory if available.
 	RetrieveStakerInfo(hexutil.Uint64) *types.StakerInfo
+
+	// IsDelegating returns if the given address is an SFC delegator.
+	IsDelegating(*common.Address) (bool, error)
 
 	// Delegation returns a detail of delegation for the given address.
 	Delegation(common.Address, hexutil.Uint64) (*types.Delegation, error)
@@ -317,6 +323,37 @@ type Repository interface {
 	// Erc20Decimals provides information about the decimals of the ERC20 token.
 	Erc20Decimals(*common.Address) (int32, error)
 
+	// GovernanceContractBy provides governance contract details by its address.
+	GovernanceContractBy(*common.Address) (*config.GovernanceContract, error)
+
+	// GovernanceProposalsCount provides the total number of prpoposals
+	// in a given Governance contract.
+	GovernanceProposalsCount(*common.Address) (hexutil.Big, error)
+
+	// GovernanceProposal provides a detail of Proposal of a governance contract
+	// specified by its id.
+	GovernanceProposal(*common.Address, *hexutil.Big) (*types.GovernanceProposal, error)
+
+	// GovernanceProposalState provides a state of Proposal of a governance contract
+	// specified by its id.
+	GovernanceProposalState(*common.Address, *hexutil.Big) (*types.GovernanceProposalState, error)
+
+	// GovernanceOptionState returns a state of the given option of a proposal.
+	GovernanceOptionState(*common.Address, *hexutil.Big, *hexutil.Big) (*types.GovernanceOptionState, error)
+
+	// GovernanceOptionStates returns a list of states of options of a proposal.
+	GovernanceOptionStates(*common.Address, *hexutil.Big) ([]*types.GovernanceOptionState, error)
+
+	// GovernanceVote provides a single vote in the Governance Proposal context.
+	GovernanceVote(*common.Address, *hexutil.Big, *common.Address, *common.Address) (*types.GovernanceVote, error)
+
+	// GovernanceProposals loads list of proposals from given set of Governance contracts.
+	GovernanceProposals([]*common.Address, *string, int32, bool) (*types.GovernanceProposalList, error)
+
+	// GovernanceProposalFee returns the fee payable for a new proposal
+	// in given Governance contract context.
+	GovernanceProposalFee(*common.Address) (hexutil.Big, error)
+
 	// Close and cleanup the repository.
 	Close()
 }
@@ -328,6 +365,9 @@ type proxy struct {
 	db    *db.MongoDbBridge
 	rpc   *rpc.FtmBridge
 	log   logger.Logger
+
+	// governance contracts reference
+	govContracts []config.GovernanceContract
 
 	// smart contract compilers
 	solCompiler string
@@ -342,29 +382,9 @@ type proxy struct {
 // New creates new instance of Repository implementation, namely proxy structure.
 func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 	// create new in-memory cache bridge
-	caBridge, err := cache.New(cfg, log)
+	caBridge, dbBridge, rpcBridge, err := connect(cfg, log)
 	if err != nil {
 		log.Criticalf("can not create in-memory cache bridge, %s", err.Error())
-		return nil, err
-	}
-
-	// create new database connection bridge
-	dbBridge, err := db.New(cfg, log)
-	if err != nil {
-		log.Criticalf("can not connect backend persistent storage, %s", err.Error())
-		return nil, err
-	}
-
-	// create new Lachesis RPC bridge
-	rpcBridge, err := rpc.New(cfg, log)
-	if err != nil {
-		log.Criticalf("can not connect Lachesis RPC interface, %s", err.Error())
-		return nil, err
-	}
-
-	// try to validate the solidity compiler by asking for it's version
-	if _, err := compiler.SolidityVersion(cfg.SolCompilerPath); err != nil {
-		log.Criticalf("can not invoke the Solidity compiler, %s", err.Error())
 		return nil, err
 	}
 
@@ -375,15 +395,14 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 		rpc:   rpcBridge,
 		log:   log,
 
+		govContracts: cfg.Governance.Contracts,
+
 		// keep reference to the SOL compiler
-		solCompiler: cfg.SolCompilerPath,
+		solCompiler: cfg.Compiler.DefaultSolCompilerPath,
 
 		// keep the ballot sources ref
-		ballotSources: cfg.VotingSources,
+		ballotSources: cfg.Voting.Sources,
 	}
-
-	// inform about voting sources
-	log.Infof("voting ballots accepted from %s", cfg.VotingSources)
 
 	// propagate callbacks
 	dbBridge.SetBalance(p.AccountBalance)
@@ -393,6 +412,38 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 
 	// return the proxy
 	return &p, nil
+}
+
+// connect opens connections to the external sources we need.
+func connect(cfg *config.Config, log logger.Logger) (*cache.MemBridge, *db.MongoDbBridge, *rpc.FtmBridge, error) {
+	// create new in-memory cache bridge
+	caBridge, err := cache.New(cfg, log)
+	if err != nil {
+		log.Criticalf("can not create in-memory cache bridge, %s", err.Error())
+		return nil, nil, nil, err
+	}
+
+	// create new database connection bridge
+	dbBridge, err := db.New(cfg, log)
+	if err != nil {
+		log.Criticalf("can not connect backend persistent storage, %s", err.Error())
+		return nil, nil, nil, err
+	}
+
+	// create new Lachesis RPC bridge
+	rpcBridge, err := rpc.New(cfg, log)
+	if err != nil {
+		log.Criticalf("can not connect Lachesis RPC interface, %s", err.Error())
+		return nil, nil, nil, err
+	}
+
+	// try to validate the solidity compiler by asking for it's version
+	if _, err := compiler.SolidityVersion(cfg.Compiler.DefaultSolCompilerPath); err != nil {
+		log.Criticalf("can not invoke the Solidity compiler, %s", err.Error())
+		return nil, nil, nil, err
+	}
+
+	return caBridge, dbBridge, rpcBridge, nil
 }
 
 // Close with close all connections and clean up the pending work for graceful termination.
