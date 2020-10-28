@@ -25,11 +25,11 @@ func New(cfg *config.Config) Logger {
 	backend := logging.NewLogBackend(os.Stderr, "", 0)
 
 	// Parse log format from configuration and apply it to the backend
-	format := logging.MustStringFormatter(cfg.LoggingFormat)
+	format := logging.MustStringFormatter(cfg.Log.Format)
 	fmtBackend := logging.NewBackendFormatter(backend, format)
 
 	// Parse and apply the configured level on which the recording will be emitted
-	level, err := logging.LogLevel(cfg.LoggingLevel)
+	level, err := logging.LogLevel(cfg.Log.Level)
 	if err != nil {
 		level = logging.INFO
 	}
