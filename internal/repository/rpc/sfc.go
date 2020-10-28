@@ -21,6 +21,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"strconv"
 )
 
 // sfcContractAddress represents the address on which the Sfc contract is deployed.
@@ -273,7 +274,7 @@ func (ftm *FtmBridge) IsStaker(addr *common.Address) (bool, error) {
 	}
 
 	// keep track of the operation
-	ftm.log.Debugf("staker %s verified to be %s", addr.String(), st.IsActive)
+	ftm.log.Debugf("staker %s verified to be %s", addr.String(), strconv.FormatBool(st.Id > 0))
 	return st.Id > 0, nil
 }
 
@@ -369,7 +370,7 @@ func (ftm *FtmBridge) DelegationRewards(addr string, staker hexutil.Uint64) (typ
 // DelegationsOf extract a list of delegations for a given staker.
 func (ftm *FtmBridge) DelegationsOf(staker hexutil.Uint64) ([]types.Delegation, error) {
 	// keep track of the operation
-	ftm.log.Debugf("loading delegations of staker %d", staker)
+	ftm.log.Debugf("loading delegations of staker %s", staker)
 
 	// call for data
 	dl := make([]types.Delegation, 0)
@@ -387,7 +388,7 @@ func (ftm *FtmBridge) DelegationsOf(staker hexutil.Uint64) ([]types.Delegation, 
 // IsDelegating returns if the given address is an SFC delegator.
 func (ftm *FtmBridge) IsDelegating(addr *common.Address) (bool, error) {
 	// keep track of the operation
-	ftm.log.Debugf("checking delegations of account %d", addr.String())
+	ftm.log.Debugf("checking delegations of account %s", addr.String())
 
 	// call for data
 	dl := make([]types.Delegation, 0)
@@ -397,6 +398,8 @@ func (ftm *FtmBridge) IsDelegating(addr *common.Address) (bool, error) {
 		return false, err
 	}
 
+	// keep track of the operation
+	ftm.log.Debugf("delegation check of %s is %s", addr.String(), strconv.FormatBool(0 < len(dl)))
 	return 0 < len(dl), nil
 }
 
@@ -404,7 +407,7 @@ func (ftm *FtmBridge) IsDelegating(addr *common.Address) (bool, error) {
 // of a given delegator address.
 func (ftm *FtmBridge) DelegationsByAddress(addr common.Address) ([]types.Delegation, error) {
 	// keep track of the operation
-	ftm.log.Debugf("loading delegations of account %d", addr.String())
+	ftm.log.Debugf("loading delegations of account %s", addr.String())
 
 	// call for data
 	dl := make([]types.Delegation, 0)
@@ -415,7 +418,7 @@ func (ftm *FtmBridge) DelegationsByAddress(addr common.Address) ([]types.Delegat
 	}
 
 	// keep track of the operation
-	ftm.log.Debugf("delegations of account %d loaded", addr.String())
+	ftm.log.Debugf("%d delegations of account %s loaded", len(dl), addr.String())
 	return dl, nil
 }
 
