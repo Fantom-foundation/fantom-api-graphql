@@ -7,6 +7,9 @@ schema {
 
 # Entry points for querying the API
 type Query {
+    # version represents the API server version responding to your requests.
+    version: String!
+
     # State represents the current state of the blockchain and network.
     state: CurrentState!
 
@@ -180,8 +183,8 @@ type Query {
     # govContract provides a specific Governance contract information by its address.
     govContract(address: Address!): GovernanceContract
 
-    # proposals represents list of joined proposals across all the Governance contracts.
-    govProposals(cursor:Cursor, count:Int!):GovernanceProposalList!
+    # govProposals represents list of joined proposals across all the Governance contracts.
+    govProposals(cursor:Cursor, count:Int!, activeOnly: Boolean = false):GovernanceProposalList!
 }
 
 # Mutation endpoints for modifying the data

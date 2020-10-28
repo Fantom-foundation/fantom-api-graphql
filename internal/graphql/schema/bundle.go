@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-10-09 12:18
+// Auto generated GraphQL schema bundle; created 2020-10-28 18:14
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -1047,6 +1047,208 @@ type Account {
     contract: Contract
 }
 
+# GovernanceContract represents basic information
+# about a Governance contract deployed on the block chain.
+type GovernanceContract {
+    # name represents the name of the contract
+    name: String!
+
+    # address represents the address of the Governance contract
+    address: Address!
+
+    # totalProposals represents the total number of proposals
+    # managed by the Governance contract.
+    totalProposals: BigInt!
+
+    # proposals represents list of proposals on the contract.
+    proposals(cursor:Cursor, count:Int!, activeOnly: Boolean = false):GovernanceProposalList!
+
+    # proposal provides specific Governance Proposal detail identified
+    # by its ID inside the Governance contract.
+    proposal(id: BigInt!):GovernanceProposal
+
+    # delegationsBy represents list of delegations for the given address.
+    # If the address does not delegate, the list is empty.
+    # Delegations are handled by the governed contract, so this list may
+    # be always empty for certain Governance instances. If the list is empty
+    # the source address may still be eligible for voting by itself.
+    delegationsBy(from: Address!): [Address!]!
+
+    # canVote checks if the given address can submit votes to Proposals
+    # of this Governance conract. The ability to vote is bound
+    # to the governed contract logic and can be unavailable
+    # to some network participants on certain situation.
+    canVote(from: Address!): Boolean!
+
+    # proposalFee represents the fee required by the Governance
+    # to accept proposals. The fee is never refunded,
+    # even if a Proposal is canceled.
+    proposalFee: BigInt!
+}
+
+# GovernanceProposalList is a list of governance proposal edges
+# provided by sequential access request.
+type GovernanceProposalList {
+    # Edges contains provided edges of the sequential list.
+    edges: [GovernanceProposalListEdge!]!
+
+    # TotalCount is the maximum number of governance proposals
+    # available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of governance
+    # proposal edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list
+# of governance proposals.
+type GovernanceProposalListEdge {
+    cursor: Cursor!
+    proposal: GovernanceProposal!
+}
+
+# GovernanceProposal represents the details of a single proposal
+# in the governance contract.
+type GovernanceProposal {
+    # governanceId represents the identifier of the Governance
+    # contract this Proposal belongs to.
+    governanceId: Address!
+
+    # governance represents the Governance contract reference.
+    # Please make sure not to engage in a circular reference too deep.
+    governance: GovernanceContract!
+
+    # id identifier of the proposal in the governance contract
+    # the proposal is managed by.
+    id: BigInt!
+
+    # name represents a name of the Proposal.
+    name: String!
+
+    # description represents a textual description of the Proposal.
+    description: String!
+
+    # state represents the state of the Proposal.
+    state: ProposalState!
+
+    # contract represents the contract of the Proposal. Each Proposal
+    # is represented by a contract responsible for maintaining the Proposal
+    # parameters, options and finalization actions.
+    contract: Address!
+
+    # proposalType represents the type of the Proposal that corresponds
+    # with the Proposal Template.
+    proposalType: Long!
+
+    # isExecutable identifies if the proposal will be finalized
+    # by executing a finalizing code.
+    isExecutable: Boolean!
+
+    # minVotes corresponds with the minimal number of votes
+    # required by the Proposal to be settled in any way
+    # other than REJECTED.
+    minVotes: BigInt!
+
+    # minAgreement represents the minimal agreement ratio
+    # required to be reached on any of the Proposal options
+    # so the Proposal could be settled in any way
+    # other than REJECTED.
+    minAgreement: BigInt!
+
+    # opinionScales is the scale of opinions on available options.
+    # A voter provides a single opinion picked from the scale
+    # for each option during the voting for a proposal.
+    # I.e.: Scales {0, 2, 3, 4, 5} represent opinions of
+    # {strongly disagree, disagree, neutral, agree and strongly agree}.
+    opinionScales: [Long!]!
+
+    # options is a list of options available on the Proposal.
+    # A voter must provide their opinion expressed by a chosen scale
+    # for each option on the list. It's generally better to scatter
+    # opinions across options instead of having a binary view.
+    options: [String!]!
+
+    # votingStarts is the time stamp of the voting getting opened
+    # to receive votes.
+    votingStarts: Long!
+
+    # votingMayEnd is the time stamp when the voting could be closed
+    # if enough votes are collected to settle the Proposal (winner option is selectable).
+    votingMayEnd: Long!
+
+    # votingMustEnd is the time stamp when the voting must be closed.
+    # If enough votes to settle the Proposal were not collected up until this time
+    # the Proposal is rejected and will not be settled in any way (no winner option is selectable).
+    votingMustEnd: Long!
+
+    # optionStates is the list of states of all the options in the Proposal.
+    # Warning: This is an expensive call, use with caution.
+    optionStates: [OptionState!]!
+
+    # optionState represents a state of the selected option of the Proposal.
+    optionState(optionId:BigInt!):OptionState
+
+    # vote pulls the vote for the given <from> address linked with the <delegatedTo> delegation
+    # recipient. If the <from> address is not delegator in the context of the governance
+    # subject contract, the <delegatedTo> may be left empty, or set to the same address
+    # as the <from> address.
+    vote(from: Address!, delegatedTo: Address): GovernanceVote
+}
+
+# ProposalState represents the state of the whole proposal.
+type ProposalState {
+    # isResolved signals if the Proposal is already resolved.
+    isResolved: Boolean!
+
+    # winnerId is the identifier of the winning option.
+    winnerId: BigInt
+
+    # votes is the number of votes received on the Proposal.
+    votes: BigInt!
+
+    # status represents the status of the Proposal.
+    # 0 = Initial, 1 = Resolved, 2 = Failed, 4 = Canceled, 8 = Execution Expired
+    status: BigInt!
+}
+
+# OptionState represents a state in options of a Proposal.
+type OptionState {
+    # optionId is the identifier of the option,
+    # effectively option index in the options array
+    optionId: BigInt!
+
+    # votes is the number of votes received on the option.
+    votes: BigInt!
+
+    # agreementRatio represents the ratio of the option agreement across votes.
+    agreementRatio: BigInt!
+
+    # agreement represents the absolute value of the agreement across votes.
+    agreement: BigInt!
+}
+
+# GovernanceVote is the vote in the context of the given Governance Proposal.
+type GovernanceVote {
+    # governanceId is the identifier of the Governance contract.
+    governanceId: Address!
+
+    # proposalId is the identifier of the proposal of the contract.
+    proposalId: BigInt!
+
+    # from is the address of the voting party
+    from: Address!
+
+    # delegatedTo is the address of the delegation the vote refers to.
+    delegatedTo: Address
+
+    # weight represents the weight of the vote
+    weight: BigInt!
+
+    # choices represents the list of opinions on the Proposal options the vote
+    # presented.
+    choices: [Long!]!
+}
 # Ballot represents an official deployed ballot contract
 # used for Fantom Opera related voting poll.
 type Ballot {
@@ -1137,239 +1339,206 @@ schema {
 
 # Entry points for querying the API
 type Query {
-    "State represents the current state of the blockchain and network."
+    # version represents the API server version responding to your requests.
+    version: String!
+
+    # State represents the current state of the blockchain and network.
     state: CurrentState!
 
-    "Total number of accounts active on the Opera blockchain."
+    # Total number of accounts active on the Opera blockchain.
     accountsActive:Long!
 
-    "Get an Account information by hash address."
+    # Get an Account information by hash address.
     account(address:Address!):Account!
 
-    """
-    Get list of Contracts with at most <count> edges.
-    If <count> is positive, return edges after the cursor,
-    if negative, return edges before the cursor.
-    For undefined cursor, positive <count> starts the list from top,
-    negative <count> starts the list from bottom.
-    ValidatedOnly specifies if the list should contain all the Contracts,
-    or just contracts with validated byte code and available source/ABI.
-    """
+    # Get list of Contracts with at most <count> edges.
+    # If <count> is positive, return edges after the cursor,
+    # if negative, return edges before the cursor.
+    # For undefined cursor, positive <count> starts the list from top,
+    # negative <count> starts the list from bottom.
+    # ValidatedOnly specifies if the list should contain all the Contracts,
+    # or just contracts with validated byte code and available source/ABI.
     contracts(validatedOnly: Boolean = false, cursor:Cursor, count:Int!):ContractList!
 
-    """
-    Get block information by number or by hash.
-    If neither is provided, the most recent block is given.
-    """
+    # Get block information by number or by hash.
+    # If neither is provided, the most recent block is given.
     block(number:Long, hash: Hash):Block
 
-    "Get transaction information for given transaction hash."
+    # Get transaction information for given transaction hash.
     transaction(hash:Hash!):Transaction
 
-    """
-    Get list of Blocks with at most <count> edges.
-    If <count> is positive, return edges after the cursor,
-    if negative, return edges before the cursor.
-    For undefined cursor, positive <count> starts the list from top,
-    negative <count> starts the list from bottom.
-    """
+    # Get list of Blocks with at most <count> edges.
+    # If <count> is positive, return edges after the cursor,
+    # if negative, return edges before the cursor.
+    # For undefined cursor, positive <count> starts the list from top,
+    # negative <count> starts the list from bottom.
     blocks(cursor:Cursor, count:Int!):BlockList!
 
-    """
-    Get list of Transactions with at most <count> edges.
-    If <count> is positive, return edges after the cursor,
-    if negative, return edges before the cursor.
-    For undefined cursor, positive <count> starts the list from top,
-    negative <count> starts the list from bottom.
-    """
+    # Get list of Transactions with at most <count> edges.
+    # If <count> is positive, return edges after the cursor,
+    # if negative, return edges before the cursor.
+    # For undefined cursor, positive <count> starts the list from top,
+    # negative <count> starts the list from bottom.
     transactions(cursor:Cursor, count:Int!):TransactionList!
 
-    "Get the id of the current epoch of the Opera blockchain."
+    # Get the id of the current epoch of the Opera blockchain.
     currentEpoch:Long!
 
-    """
-    Get information about specified epoch. Returns current epoch information
-    if id is not provided.
-    """
+    # Get information about specified epoch. Returns current epoch information
+    # if id is not provided.
     epoch(id: Long!): Epoch!
 
-    "The last staker id in Opera blockchain."
+    # The last staker id in Opera blockchain.
     lastStakerId: Long!
 
-    "The number of stakers in Opera blockchain."
+    # The number of stakers in Opera blockchain.
     stakersNum: Long!
 
-    """
-    Staker information. The staker is loaded either by numeric ID,
-    or by address. null if none is provided.
-    """
+    # Staker information. The staker is loaded either by numeric ID,
+    # or by address. null if none is provided.
     staker(id: Long, address: Address): Staker
 
-    "List of staker information from SFC smart contract."
+    # List of staker information from SFC smart contract.
     stakers: [Staker!]!
 
-    """
-    The list of delegations for the given staker ID.
-    Cursor is used to obtain specific slice of the staker's delegations.
-    The most recent delegations are provided if cursor is omitted.
-    """
+    # The list of delegations for the given staker ID.
+    # Cursor is used to obtain specific slice of the staker's delegations.
+    # The most recent delegations are provided if cursor is omitted.
     delegationsOf(staker:Long!, cursor: Cursor, count: Int = 25): DelegationList!
 
-    "Get the details of a specific delegation by it's delegator address and staker the delegation belongs to."
+    # Get the details of a specific delegation by it's delegator address
+    # and staker the delegation belongs to.
     delegation(address:Address!, staker: Long!): Delegation
 
-    "Get the list of all delegations by it's delegator address."
+    # Get the list of all delegations by it's delegator address.
     delegationsByAddress(address:Address!, cursor: Cursor, count: Int = 25): DelegationList!
 
-    "Returns the current price per gas in WEI units."
+    # Returns the current price per gas in WEI units.
     gasPrice: Long!
 
-    "Get price details of the Opera blockchain token for the given target symbols."
+    # Get price details of the Opera blockchain token for the given target symbols.
     price(to:String!):Price!
 
-    """
-    Get calculated staking rewards for an account or given
-    staking amount in FTM tokens.
-    At least one of the address and amount parameters must be provided.
-    If you provide both, the address takes precedence and the amount is ignored.
-    """
+    # Get calculated staking rewards for an account or given
+    # staking amount in FTM tokens.
+    # At least one of the address and amount parameters must be provided.
+    # If you provide both, the address takes precedence and the amount is ignored.
     estimateRewards(address:Address, amount:Long):EstimatedRewards!
 
-    "Get official ballot information by its address."
+    # Get official ballot information by its address.
     ballot(address: Address!):Ballot
 
-    """
-    Get list of official Ballots with at most <count> edges.
-    If <count> is positive, return edges after the cursor,
-    if negative, return edges before the cursor.
-    For undefined cursor, positive <count> starts the list from top,
-    negative <count> starts the list from bottom.
-    """
+    # Get list of official Ballots with at most <count> edges.
+    # If <count> is positive, return edges after the cursor,
+    # if negative, return edges before the cursor.
+    # For undefined cursor, positive <count> starts the list from top,
+    # negative <count> starts the list from bottom.
     ballots(cursor: Cursor, count: Int!):BallotList!
 
-    """
-    Get list of recently closed official Ballots
-    with at most <count> edges. If the <finalized> is set to false
-    the list contains ballots, which ended, but were not resolved
-    yet.
-    """
+    # Get list of recently closed official Ballots
+    # with at most <count> edges. If the <finalized> is set to false
+    # the list contains ballots, which ended, but were not resolved
+    # yet.
     ballotsClosed(finalized: Boolean = true, count: Int = 25):[Ballot!]!
 
-    "Get list of currently active Ballots with at most <count> edges."
+    # Get list of currently active Ballots with at most <count> edges.
     ballotsActive(count: Int = 25):[Ballot!]!
 
-    """
-    List of all votes of the given voter identified by the address
-    for the given list of ballots identified by an array of ballot
-    addresses.
-    """
+    # List of all votes of the given voter identified by the address
+    # for the given list of ballots identified by an array of ballot
+    # addresses.
     votes(voter:Address!, ballots:[Address!]!):[Vote!]!
 
-    "defiConfiguration exposes the current DeFi contract setup."
+    # defiConfiguration exposes the current DeFi contract setup.
     defiConfiguration:DefiSettings!
 
-    "defiTokens represents a list of all available DeFi tokens."
+    # defiTokens represents a list of all available DeFi tokens.
     defiTokens:[DefiToken!]!
 
-    """
-    defiNativeToken represents the information about the native token
-    wrapper ERC20 contract. Returns NULL if the native token wraper
-    is not available.
-    """
+    # defiNativeToken represents the information about the native token
+    # wrapper ERC20 contract. Returns NULL if the native token wraper
+    # is not available.
     defiNativeToken: ERC20Token
 
-    "fMintAccount provides DeFi/fMint information about an account on fMint protocol."
+    # fMintAccount provides DeFi/fMint information about an account on fMint protocol.
     fMintAccount(owner: Address!):FMintAccount!
 
-    """
-    fMintTokenAllowance resolves the amount of ERC20 tokens unlocked
-    by the token owner for DeFi/fMint operations.
-    """
+    # fMintTokenAllowance resolves the amount of ERC20 tokens unlocked
+    # by the token owner for DeFi/fMint operations.
     fMintTokenAllowance(owner: Address!, token: Address!):BigInt!
 
-    """
-    defiUniswapPairs represents a list of all pairs managed
-    by the Uniswap Core contract on Opera blockchain.
-    """
+    # defiUniswapPairs represents a list of all pairs managed
+    # by the Uniswap Core contract on Opera blockchain.
     defiUniswapPairs: [UniswapPair!]!
 
-    """
-    defiUniswapAmountsOut calculates the expected output amounts
-    required to finalize a swap operation specified by a list of
-    tokens involved in the swap steps and the input amount.
-    At least two addresses of tokens must be given
-    for the calculation to succeed.
-    """
+    # defiUniswapAmountsOut calculates the expected output amounts
+    # required to finalize a swap operation specified by a list of
+    # tokens involved in the swap steps and the input amount.
+    # At least two addresses of tokens must be given
+    # for the calculation to succeed.
     defiUniswapAmountsOut(amountIn: BigInt!, tokens:[Address!]!): [BigInt!]!
 
-    """
-    defiUniswapAmountsIn calculates the expected input amounts
-    required to finalize a swap operation specified by a list of
-    tokens involved in the swap steps and the output amount.
-    At least two addresses of tokens must be given
-    for the calculation to succeed.
-    """
+    # defiUniswapAmountsIn calculates the expected input amounts
+    # required to finalize a swap operation specified by a list of
+    # tokens involved in the swap steps and the output amount.
+    # At least two addresses of tokens must be given
+    # for the calculation to succeed.
     defiUniswapAmountsIn(amountOut: BigInt!, tokens:[Address!]!): [BigInt!]!
 
-    """
-    defiUniswapQuoteLiquidity calculates optimal amount of tokens
-    of an Uniswap pair defined by a pair of tokens for the given amount
-    of both tokens desired to be added to the liquidity pool.
-    The function can be used to calculate minimal amount of tokens expected
-    to be added to the pool on both sides on addLiquidity call.
-    Please note "amountsIn" must be in the same order as are the tokens.
-    """
+    # defiUniswapQuoteLiquidity calculates optimal amount of tokens
+    # of an Uniswap pair defined by a pair of tokens for the given amount
+    # of both tokens desired to be added to the liquidity pool.
+    # The function can be used to calculate minimal amount of tokens expected
+    # to be added to the pool on both sides on addLiquidity call.
+    # Please note "amountsIn" must be in the same order as are the tokens.
     defiUniswapQuoteLiquidity(tokens:[Address!]!, amountsIn:[BigInt!]!): [BigInt!]!
 
-    """
-    erc20Token provides the information about an ERC20 token specified by it's
-    address, if available. The resolver returns NULL if the token does not exist.
-    """
+    # erc20Token provides the information about an ERC20 token specified by it's
+    # address, if available. The resolver returns NULL if the token does not exist.
     erc20Token(token: Address!):ERC20Token
 
-    """
-    ercTotalSupply provides the current total supply amount of a specified ERC20 token
-    identified by it's ERC20 contract address.
-    """
+    # ercTotalSupply provides the current total supply amount of a specified ERC20 token
+    # identified by it's ERC20 contract address.
     ercTotalSupply(token: Address!):BigInt!
 
-    """
-    ercTokenBalance provides the current available balance of a specified ERC20 token
-    identified by it's ERC20 contract address.
-    """
+    # ercTokenBalance provides the current available balance of a specified ERC20 token
+    # identified by it's ERC20 contract address.
     ercTokenBalance(owner: Address!, token: Address!):BigInt!
 
-    """
-    ercTokenAllowance provides the current amount of ERC20 tokens unlocked
-    by the token owner for the spender to be manipulated with.
-    """
+    # ercTokenAllowance provides the current amount of ERC20 tokens unlocked
+    # by the token owner for the spender to be manipulated with.
     ercTokenAllowance(token: Address!, owner: Address!, spender: Address!):BigInt!
+
+    # govContracts provides list of governance contracts.
+    govContracts:[GovernanceContract!]!
+
+    # govContract provides a specific Governance contract information by its address.
+    govContract(address: Address!): GovernanceContract
+
+    # govProposals represents list of joined proposals across all the Governance contracts.
+    govProposals(cursor:Cursor, count:Int!, activeOnly: Boolean = false):GovernanceProposalList!
 }
 
 # Mutation endpoints for modifying the data
 type Mutation {
-    """
-    SendTransaction submits a raw signed transaction into the block chain.
-    The tx parameter represents raw signed and RLP encoded transaction data.
-    """
+    # SendTransaction submits a raw signed transaction into the block chain.
+    # The tx parameter represents raw signed and RLP encoded transaction data.
     sendTransaction(tx: Bytes!):Transaction
 
-    """
-    Validate a deployed contract byte code with the provided source code
-    so potential users can check the contract source code, access contract ABI
-    to be able to interact with the contract and get the right metadata.
-    Returns updated contract information. If the contract can not be validated,
-    it raises a GraphQL error.
-    """
+    # Validate a deployed contract byte code with the provided source code
+    # so potential users can check the contract source code, access contract ABI
+    # to be able to interact with the contract and get the right metadata.
+    # Returns updated contract information. If the contract can not be validated,
+    # it raises a GraphQL error.
     validateContract(contract: ContractValidationInput!): Contract!
 }
 
 # Subscriptions to live events broadcasting
 type Subscription {
-    "Subscribe to receive information about new blocks in the blockchain."
+    # Subscribe to receive information about new blocks in the blockchain.
     onBlock: Block!
 
-    "Subscribe to receive information about new transactions in the blockchain."
+    # Subscribe to receive information about new transactions in the blockchain.
     onTransaction: Transaction!
 }
 

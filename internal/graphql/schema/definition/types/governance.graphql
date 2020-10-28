@@ -1,7 +1,7 @@
 # GovernanceContract represents basic information
 # about a Governance contract deployed on the block chain.
 type GovernanceContract {
-    # name represents the name of the controler
+    # name represents the name of the contract
     name: String!
 
     # address represents the address of the Governance contract
@@ -12,7 +12,7 @@ type GovernanceContract {
     totalProposals: BigInt!
 
     # proposals represents list of proposals on the contract.
-    proposals(cursor:Cursor, count:Int!):GovernanceProposalList!
+    proposals(cursor:Cursor, count:Int!, activeOnly: Boolean = false):GovernanceProposalList!
 
     # proposal provides specific Governance Proposal detail identified
     # by its ID inside the Governance contract.
@@ -29,7 +29,7 @@ type GovernanceContract {
     # of this Governance conract. The ability to vote is bound
     # to the governed contract logic and can be unavailable
     # to some network participants on certain situation.
-    canVote(from: Address): Boolean!
+    canVote(from: Address!): Boolean!
 
     # proposalFee represents the fee required by the Governance
     # to accept proposals. The fee is never refunded,
@@ -66,13 +66,13 @@ type GovernanceProposal {
     # contract this Proposal belongs to.
     governanceId: Address!
 
-    # governanceName represents a short name of Governance contract
-    # the Proposal belongs to.
-    governanceName: String!
-
     # governance represents the Governance contract reference.
     # Please make sure not to engage in a circular reference too deep.
     governance: GovernanceContract!
+
+    # id identifier of the proposal in the governance contract
+    # the proposal is managed by.
+    id: BigInt!
 
     # name represents a name of the Proposal.
     name: String!
@@ -93,7 +93,7 @@ type GovernanceProposal {
     proposalType: Long!
 
     # isExecutable identifies if the proposal will be finalized
-    # by executing a finializing code.
+    # by executing a finalizing code.
     isExecutable: Boolean!
 
     # minVotes corresponds with the minimal number of votes
@@ -112,7 +112,7 @@ type GovernanceProposal {
     # for each option during the voting for a proposal.
     # I.e.: Scales {0, 2, 3, 4, 5} represent opinions of
     # {strongly disagree, disagree, neutral, agree and strongly agree}.
-    opinionScales: [BigInt!]!
+    opinionScales: [Long!]!
 
     # options is a list of options available on the Proposal.
     # A voter must provide their opinion expressed by a chosen scale
@@ -124,7 +124,7 @@ type GovernanceProposal {
     # to receive votes.
     votingStarts: Long!
 
-    # votingMinEnd is the time stamp when the voting could be closed
+    # votingMayEnd is the time stamp when the voting could be closed
     # if enough votes are collected to settle the Proposal (winner option is selectable).
     votingMayEnd: Long!
 
@@ -181,10 +181,22 @@ type OptionState {
 
 # GovernanceVote is the vote in the context of the given Governance Proposal.
 type GovernanceVote {
+    # governanceId is the identifier of the Governance contract.
+    governanceId: Address!
+
+    # proposalId is the identifier of the proposal of the contract.
+    proposalId: BigInt!
+
+    # from is the address of the voting party
+    from: Address!
+
+    # delegatedTo is the address of the delegation the vote refers to.
+    delegatedTo: Address
+
     # weight represents the weight of the vote
     weight: BigInt!
 
     # choices represents the list of opinions on the Proposal options the vote
     # presented.
-    choices: [BigInt!]!
+    choices: [Long!]!
 }

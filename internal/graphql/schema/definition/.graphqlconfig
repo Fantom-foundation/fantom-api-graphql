@@ -3,11 +3,8 @@
   "schemaPath": "schema.graphql",
   "extensions": {
     "endpoints": {
-      "VM GraphQL Endpoint": {
-        "url": "http://192.168.3.80:16861/api",
-        "headers": {
-          "user-agent": "JS GraphQL"
-        },
+      "Local GraphQL Endpoint": {
+        "url": "http://localhost:16761/api",
         "introspect": false
       },
       "XAPI1 Fantom.Network": {
@@ -28,10 +25,6 @@
       },
       "XAPI5 Fantom.Network": {
         "url": "https://xapi5.fantom.network/graphql",
-        "introspect": false
-      },
-      "Local GraphQL Endpoint": {
-        "url": "http://localhost:16761/api",
         "introspect": false
       },
       "VM GraphQL Endpoint for TestNET": {
