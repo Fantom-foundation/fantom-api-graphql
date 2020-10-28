@@ -37,18 +37,21 @@ type FtmBridge struct {
 
 // New creates new Lachesis RPC connection bridge.
 func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
+	// log what we do
+	log.Debugf("connecting node at %s", cfg.Lachesis.Url)
+
 	// try to establish a connection
-	client, err := ftm.Dial(cfg.LachesisUrl)
+	client, err := ftm.Dial(cfg.Lachesis.Url)
 	if err != nil {
 		log.Critical(err)
 		return nil, err
 	}
 
 	// log
-	log.Notice("full node rpc connection established")
+	log.Notice("node connection established")
 
 	// try to establish a for smart contract interaction
-	con, err := eth.Dial(cfg.LachesisUrl)
+	con, err := eth.Dial(cfg.Lachesis.Url)
 	if err != nil {
 		log.Critical(err)
 		return nil, err
@@ -65,12 +68,12 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 
 		// special configuration options below this line
 		fMintCfg: fMintConfig{
-			addressProvider: common.HexToAddress(cfg.DefiFMintAddressProvider),
+			addressProvider: common.HexToAddress(cfg.DeFi.FMint.AddressProvider),
 		},
 
 		// uniswap config
-		uniswapCore:   common.HexToAddress(cfg.DefiUniswapCore),
-		uniswapRouter: common.HexToAddress(cfg.DefiUniswapRouter),
+		uniswapCore:   common.HexToAddress(cfg.DeFi.Uniswap.Core),
+		uniswapRouter: common.HexToAddress(cfg.DeFi.Uniswap.Router),
 	}
 
 	// add the bridge ref to the fMintCfg and return the instance
