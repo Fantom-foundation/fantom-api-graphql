@@ -137,7 +137,7 @@ func bindDefiFMintMinter(address common.Address, caller bind.ContractCaller, tra
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_DefiFMintMinter *DefiFMintMinterRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_DefiFMintMinter *DefiFMintMinterRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _DefiFMintMinter.Contract.DefiFMintMinterCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_DefiFMintMinter *DefiFMintMinterRaw) Transact(opts *bind.TransactOpts, me
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_DefiFMintMinter *DefiFMintMinterCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_DefiFMintMinter *DefiFMintMinterCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _DefiFMintMinter.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -175,12 +175,17 @@ func (_DefiFMintMinter *DefiFMintMinterTransactorRaw) Transact(opts *bind.Transa
 //
 // Solidity: function ERR_DEBT_EXCEEDED() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRDEBTEXCEEDED(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_DEBT_EXCEEDED")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_DEBT_EXCEEDED")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRDEBTEXCEEDED is a free data retrieval call binding the contract method 0x372ce3df.
@@ -201,12 +206,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRDEBTEXCEEDED() (*big.In
 //
 // Solidity: function ERR_DEPOSIT_PROHIBITED() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRDEPOSITPROHIBITED(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_DEPOSIT_PROHIBITED")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_DEPOSIT_PROHIBITED")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRDEPOSITPROHIBITED is a free data retrieval call binding the contract method 0x2bfcc373.
@@ -227,12 +237,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRDEPOSITPROHIBITED() (*b
 //
 // Solidity: function ERR_LOW_ALLOWANCE() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRLOWALLOWANCE(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_LOW_ALLOWANCE")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_LOW_ALLOWANCE")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRLOWALLOWANCE is a free data retrieval call binding the contract method 0x911fc3f1.
@@ -253,12 +268,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRLOWALLOWANCE() (*big.In
 //
 // Solidity: function ERR_LOW_AMOUNT() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRLOWAMOUNT(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_LOW_AMOUNT")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_LOW_AMOUNT")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRLOWAMOUNT is a free data retrieval call binding the contract method 0xc7ea4889.
@@ -279,12 +299,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRLOWAMOUNT() (*big.Int, 
 //
 // Solidity: function ERR_LOW_BALANCE() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRLOWBALANCE(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_LOW_BALANCE")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_LOW_BALANCE")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRLOWBALANCE is a free data retrieval call binding the contract method 0x1ac919b0.
@@ -305,12 +330,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRLOWBALANCE() (*big.Int,
 //
 // Solidity: function ERR_LOW_COLLATERAL_RATIO() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRLOWCOLLATERALRATIO(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_LOW_COLLATERAL_RATIO")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_LOW_COLLATERAL_RATIO")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRLOWCOLLATERALRATIO is a free data retrieval call binding the contract method 0x04b62f29.
@@ -331,12 +361,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRLOWCOLLATERALRATIO() (*
 //
 // Solidity: function ERR_MINTING_PROHIBITED() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRMINTINGPROHIBITED(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_MINTING_PROHIBITED")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_MINTING_PROHIBITED")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRMINTINGPROHIBITED is a free data retrieval call binding the contract method 0x8c7b9980.
@@ -357,12 +392,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRMINTINGPROHIBITED() (*b
 //
 // Solidity: function ERR_NOT_AUTHORIZED() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRNOTAUTHORIZED(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_NOT_AUTHORIZED")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_NOT_AUTHORIZED")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRNOTAUTHORIZED is a free data retrieval call binding the contract method 0xbc99d6ae.
@@ -383,12 +423,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRNOTAUTHORIZED() (*big.I
 //
 // Solidity: function ERR_NO_COLLATERAL() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRNOCOLLATERAL(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_NO_COLLATERAL")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_NO_COLLATERAL")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRNOCOLLATERAL is a free data retrieval call binding the contract method 0xb76361c2.
@@ -409,12 +454,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRNOCOLLATERAL() (*big.In
 //
 // Solidity: function ERR_NO_ERROR() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRNOERROR(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_NO_ERROR")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_NO_ERROR")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRNOERROR is a free data retrieval call binding the contract method 0x35052d6e.
@@ -435,12 +485,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRNOERROR() (*big.Int, er
 //
 // Solidity: function ERR_NO_REWARD() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRNOREWARD(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_NO_REWARD")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_NO_REWARD")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRNOREWARD is a free data retrieval call binding the contract method 0x73a93af6.
@@ -461,12 +516,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRNOREWARD() (*big.Int, e
 //
 // Solidity: function ERR_NO_VALUE() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRNOVALUE(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_NO_VALUE")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_NO_VALUE")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRNOVALUE is a free data retrieval call binding the contract method 0x69d1cb27.
@@ -487,12 +547,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRNOVALUE() (*big.Int, er
 //
 // Solidity: function ERR_REWARDS_DEPLETED() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRREWARDSDEPLETED(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_REWARDS_DEPLETED")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_REWARDS_DEPLETED")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRREWARDSDEPLETED is a free data retrieval call binding the contract method 0x0a19dd33.
@@ -513,12 +578,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRREWARDSDEPLETED() (*big
 //
 // Solidity: function ERR_REWARDS_EARLY() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRREWARDSEARLY(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_REWARDS_EARLY")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_REWARDS_EARLY")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRREWARDSEARLY is a free data retrieval call binding the contract method 0x67fc176b.
@@ -539,12 +609,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRREWARDSEARLY() (*big.In
 //
 // Solidity: function ERR_REWARDS_NONE() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRREWARDSNONE(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_REWARDS_NONE")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_REWARDS_NONE")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRREWARDSNONE is a free data retrieval call binding the contract method 0xc7222c72.
@@ -565,12 +640,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRREWARDSNONE() (*big.Int
 //
 // Solidity: function ERR_REWARD_CLAIM_REJECTED() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRREWARDCLAIMREJECTED(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_REWARD_CLAIM_REJECTED")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_REWARD_CLAIM_REJECTED")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRREWARDCLAIMREJECTED is a free data retrieval call binding the contract method 0x4846e345.
@@ -591,12 +671,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRREWARDCLAIMREJECTED() (
 //
 // Solidity: function ERR_ZERO_AMOUNT() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) ERRZEROAMOUNT(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "ERR_ZERO_AMOUNT")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "ERR_ZERO_AMOUNT")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRZEROAMOUNT is a free data retrieval call binding the contract method 0x0aff90bb.
@@ -617,12 +702,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) ERRZEROAMOUNT() (*big.Int,
 //
 // Solidity: function addressProvider() view returns(address)
 func (_DefiFMintMinter *DefiFMintMinterCaller) AddressProvider(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "addressProvider")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "addressProvider")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // AddressProvider is a free data retrieval call binding the contract method 0x2954018c.
@@ -643,12 +733,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) AddressProvider() (common.
 //
 // Solidity: function canDeposit(address _token) view returns(bool)
 func (_DefiFMintMinter *DefiFMintMinterCaller) CanDeposit(opts *bind.CallOpts, _token common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "canDeposit", _token)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "canDeposit", _token)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // CanDeposit is a free data retrieval call binding the contract method 0x4bf0d331.
@@ -669,12 +764,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) CanDeposit(_token common.A
 //
 // Solidity: function canMint(address _token) view returns(bool)
 func (_DefiFMintMinter *DefiFMintMinterCaller) CanMint(opts *bind.CallOpts, _token common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "canMint", _token)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "canMint", _token)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // CanMint is a free data retrieval call binding the contract method 0xc2ba4744.
@@ -695,12 +795,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) CanMint(_token common.Addr
 //
 // Solidity: function checkCollateralCanDecrease(address _account, address _token, uint256 _amount) view returns(bool)
 func (_DefiFMintMinter *DefiFMintMinterCaller) CheckCollateralCanDecrease(opts *bind.CallOpts, _account common.Address, _token common.Address, _amount *big.Int) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "checkCollateralCanDecrease", _account, _token, _amount)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "checkCollateralCanDecrease", _account, _token, _amount)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // CheckCollateralCanDecrease is a free data retrieval call binding the contract method 0xa03a2689.
@@ -721,12 +826,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) CheckCollateralCanDecrease
 //
 // Solidity: function checkDebtCanIncrease(address _account, address _token, uint256 _amount) view returns(bool)
 func (_DefiFMintMinter *DefiFMintMinterCaller) CheckDebtCanIncrease(opts *bind.CallOpts, _account common.Address, _token common.Address, _amount *big.Int) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "checkDebtCanIncrease", _account, _token, _amount)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "checkDebtCanIncrease", _account, _token, _amount)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // CheckDebtCanIncrease is a free data retrieval call binding the contract method 0x4764efb0.
@@ -747,12 +857,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) CheckDebtCanIncrease(_acco
 //
 // Solidity: function collateralCanDecrease(address _account, address _token, uint256 _amount) view returns(bool)
 func (_DefiFMintMinter *DefiFMintMinterCaller) CollateralCanDecrease(opts *bind.CallOpts, _account common.Address, _token common.Address, _amount *big.Int) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "collateralCanDecrease", _account, _token, _amount)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "collateralCanDecrease", _account, _token, _amount)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // CollateralCanDecrease is a free data retrieval call binding the contract method 0xf4305a99.
@@ -773,12 +888,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) CollateralCanDecrease(_acc
 //
 // Solidity: function collateralLowestDebtRatio4dec() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) CollateralLowestDebtRatio4dec(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "collateralLowestDebtRatio4dec")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "collateralLowestDebtRatio4dec")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // CollateralLowestDebtRatio4dec is a free data retrieval call binding the contract method 0x3b8b09b7.
@@ -799,12 +919,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) CollateralLowestDebtRatio4
 //
 // Solidity: function collateralRatioDecimalsCorrection() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) CollateralRatioDecimalsCorrection(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "collateralRatioDecimalsCorrection")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "collateralRatioDecimalsCorrection")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // CollateralRatioDecimalsCorrection is a free data retrieval call binding the contract method 0xe69993ac.
@@ -825,12 +950,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) CollateralRatioDecimalsCor
 //
 // Solidity: function collateralValueOf(address _account, address _token, uint256 _sub) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) CollateralValueOf(opts *bind.CallOpts, _account common.Address, _token common.Address, _sub *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "collateralValueOf", _account, _token, _sub)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "collateralValueOf", _account, _token, _sub)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // CollateralValueOf is a free data retrieval call binding the contract method 0x5a13fd77.
@@ -851,12 +981,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) CollateralValueOf(_account
 //
 // Solidity: function debtCanIncrease(address _account, address _token, uint256 _amount) view returns(bool)
 func (_DefiFMintMinter *DefiFMintMinterCaller) DebtCanIncrease(opts *bind.CallOpts, _account common.Address, _token common.Address, _amount *big.Int) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "debtCanIncrease", _account, _token, _amount)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "debtCanIncrease", _account, _token, _amount)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // DebtCanIncrease is a free data retrieval call binding the contract method 0x905ca247.
@@ -877,12 +1012,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) DebtCanIncrease(_account c
 //
 // Solidity: function debtValueOf(address _account, address _token, uint256 _add) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) DebtValueOf(opts *bind.CallOpts, _account common.Address, _token common.Address, _add *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "debtValueOf", _account, _token, _add)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "debtValueOf", _account, _token, _add)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // DebtValueOf is a free data retrieval call binding the contract method 0xb36607e7.
@@ -903,12 +1043,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) DebtValueOf(_account commo
 //
 // Solidity: function fMintFee4dec() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) FMintFee4dec(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "fMintFee4dec")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "fMintFee4dec")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // FMintFee4dec is a free data retrieval call binding the contract method 0x572511bc.
@@ -929,12 +1074,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) FMintFee4dec() (*big.Int, 
 //
 // Solidity: function fMintFeeDigitsCorrection() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) FMintFeeDigitsCorrection(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "fMintFeeDigitsCorrection")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "fMintFeeDigitsCorrection")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // FMintFeeDigitsCorrection is a free data retrieval call binding the contract method 0xcbf02fd5.
@@ -955,12 +1105,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) FMintFeeDigitsCorrection()
 //
 // Solidity: function feePool(address ) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) FeePool(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "feePool", arg0)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "feePool", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // FeePool is a free data retrieval call binding the contract method 0xfd26fef1.
@@ -981,12 +1136,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) FeePool(arg0 common.Addres
 //
 // Solidity: function getCollateralLowestDebtRatio4dec() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) GetCollateralLowestDebtRatio4dec(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "getCollateralLowestDebtRatio4dec")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "getCollateralLowestDebtRatio4dec")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // GetCollateralLowestDebtRatio4dec is a free data retrieval call binding the contract method 0xd65cb5aa.
@@ -1007,12 +1167,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetCollateralLowestDebtRat
 //
 // Solidity: function getCollateralPool() view returns(address)
 func (_DefiFMintMinter *DefiFMintMinterCaller) GetCollateralPool(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "getCollateralPool")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "getCollateralPool")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // GetCollateralPool is a free data retrieval call binding the contract method 0x73c9641d.
@@ -1033,12 +1198,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetCollateralPool() (commo
 //
 // Solidity: function getDebtPool() view returns(address)
 func (_DefiFMintMinter *DefiFMintMinterCaller) GetDebtPool(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "getDebtPool")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "getDebtPool")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // GetDebtPool is a free data retrieval call binding the contract method 0x03ec357f.
@@ -1062,13 +1232,19 @@ func (_DefiFMintMinter *DefiFMintMinterCaller) GetExtendedPrice(opts *bind.CallO
 	Price  *big.Int
 	Digits *big.Int
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "getExtendedPrice", _token)
+
+	outstruct := new(struct {
 		Price  *big.Int
 		Digits *big.Int
 	})
-	out := ret
-	err := _DefiFMintMinter.contract.Call(opts, out, "getExtendedPrice", _token)
-	return *ret, err
+
+	outstruct.Price = out[0].(*big.Int)
+	outstruct.Digits = out[1].(*big.Int)
+
+	return *outstruct, err
+
 }
 
 // GetExtendedPrice is a free data retrieval call binding the contract method 0x35870d2e.
@@ -1095,12 +1271,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetExtendedPrice(_token co
 //
 // Solidity: function getFMintFee4dec() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) GetFMintFee4dec(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "getFMintFee4dec")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "getFMintFee4dec")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // GetFMintFee4dec is a free data retrieval call binding the contract method 0x7c4b7a86.
@@ -1121,12 +1302,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetFMintFee4dec() (*big.In
 //
 // Solidity: function getMaxToMint(address _account, address _token, uint256 _ratio) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) GetMaxToMint(opts *bind.CallOpts, _account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "getMaxToMint", _account, _token, _ratio)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "getMaxToMint", _account, _token, _ratio)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // GetMaxToMint is a free data retrieval call binding the contract method 0x54a36bcf.
@@ -1147,12 +1333,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetMaxToMint(_account comm
 //
 // Solidity: function getMaxToWithdraw(address _account, address _token, uint256 _ratio) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) GetMaxToWithdraw(opts *bind.CallOpts, _account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "getMaxToWithdraw", _account, _token, _ratio)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "getMaxToWithdraw", _account, _token, _ratio)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // GetMaxToWithdraw is a free data retrieval call binding the contract method 0x850e102f.
@@ -1173,12 +1364,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetMaxToWithdraw(_account 
 //
 // Solidity: function getPrice(address _token) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) GetPrice(opts *bind.CallOpts, _token common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "getPrice", _token)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "getPrice", _token)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // GetPrice is a free data retrieval call binding the contract method 0x41976e09.
@@ -1199,12 +1395,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetPrice(_token common.Add
 //
 // Solidity: function getRewardEligibilityRatio4dec() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) GetRewardEligibilityRatio4dec(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "getRewardEligibilityRatio4dec")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "getRewardEligibilityRatio4dec")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // GetRewardEligibilityRatio4dec is a free data retrieval call binding the contract method 0x59eb3570.
@@ -1225,12 +1426,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) GetRewardEligibilityRatio4
 //
 // Solidity: function isOwner() view returns(bool)
 func (_DefiFMintMinter *DefiFMintMinterCaller) IsOwner(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "isOwner")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "isOwner")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
@@ -1251,12 +1457,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) IsOwner() (bool, error) {
 //
 // Solidity: function maxToMint(address _account, address _token, uint256 _ratio) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) MaxToMint(opts *bind.CallOpts, _account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "maxToMint", _account, _token, _ratio)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "maxToMint", _account, _token, _ratio)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MaxToMint is a free data retrieval call binding the contract method 0xd4ca4d74.
@@ -1277,12 +1488,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) MaxToMint(_account common.
 //
 // Solidity: function maxToWithdraw(address _account, address _token, uint256 _ratio) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) MaxToWithdraw(opts *bind.CallOpts, _account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "maxToWithdraw", _account, _token, _ratio)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "maxToWithdraw", _account, _token, _ratio)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MaxToWithdraw is a free data retrieval call binding the contract method 0xdc2b18cc.
@@ -1303,12 +1519,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) MaxToWithdraw(_account com
 //
 // Solidity: function minToDeposit(address _account, address _token, uint256 _ratio) view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) MinToDeposit(opts *bind.CallOpts, _account common.Address, _token common.Address, _ratio *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "minToDeposit", _account, _token, _ratio)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "minToDeposit", _account, _token, _ratio)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MinToDeposit is a free data retrieval call binding the contract method 0x90c36959.
@@ -1329,12 +1550,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) MinToDeposit(_account comm
 //
 // Solidity: function owner() view returns(address)
 func (_DefiFMintMinter *DefiFMintMinterCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "owner")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "owner")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
@@ -1355,12 +1581,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) Owner() (common.Address, e
 //
 // Solidity: function rewardCanClaim(address _account) view returns(bool)
 func (_DefiFMintMinter *DefiFMintMinterCaller) RewardCanClaim(opts *bind.CallOpts, _account common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardCanClaim", _account)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "rewardCanClaim", _account)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // RewardCanClaim is a free data retrieval call binding the contract method 0xda0a0432.
@@ -1381,12 +1612,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardCanClaim(_account co
 //
 // Solidity: function rewardEligibilityRatio4dec() view returns(uint256)
 func (_DefiFMintMinter *DefiFMintMinterCaller) RewardEligibilityRatio4dec(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardEligibilityRatio4dec")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "rewardEligibilityRatio4dec")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardEligibilityRatio4dec is a free data retrieval call binding the contract method 0x50fca4bd.
@@ -1407,12 +1643,17 @@ func (_DefiFMintMinter *DefiFMintMinterCallerSession) RewardEligibilityRatio4dec
 //
 // Solidity: function rewardIsEligible(address _account) view returns(bool)
 func (_DefiFMintMinter *DefiFMintMinterCaller) RewardIsEligible(opts *bind.CallOpts, _account common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintMinter.contract.Call(opts, out, "rewardIsEligible", _account)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintMinter.contract.Call(opts, &out, "rewardIsEligible", _account)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // RewardIsEligible is a free data retrieval call binding the contract method 0x6aee9c13.

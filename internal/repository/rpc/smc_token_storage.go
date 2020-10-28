@@ -137,7 +137,7 @@ func bindDeFiTokenStorage(address common.Address, caller bind.ContractCaller, tr
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_DeFiTokenStorage *DeFiTokenStorageRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_DeFiTokenStorage *DeFiTokenStorageRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _DeFiTokenStorage.Contract.DeFiTokenStorageCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_DeFiTokenStorage *DeFiTokenStorageRaw) Transact(opts *bind.TransactOpts, 
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_DeFiTokenStorage *DeFiTokenStorageCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_DeFiTokenStorage *DeFiTokenStorageCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _DeFiTokenStorage.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -175,12 +175,17 @@ func (_DeFiTokenStorage *DeFiTokenStorageTransactorRaw) Transact(opts *bind.Tran
 //
 // Solidity: function addressProvider() view returns(address)
 func (_DeFiTokenStorage *DeFiTokenStorageCaller) AddressProvider(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "addressProvider")
-	return *ret0, err
+	var out []interface{}
+	err := _DeFiTokenStorage.contract.Call(opts, &out, "addressProvider")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // AddressProvider is a free data retrieval call binding the contract method 0x2954018c.
@@ -201,12 +206,17 @@ func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) AddressProvider() (commo
 //
 // Solidity: function balance(address , address ) view returns(uint256)
 func (_DeFiTokenStorage *DeFiTokenStorageCaller) Balance(opts *bind.CallOpts, arg0 common.Address, arg1 common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "balance", arg0, arg1)
-	return *ret0, err
+	var out []interface{}
+	err := _DeFiTokenStorage.contract.Call(opts, &out, "balance", arg0, arg1)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // Balance is a free data retrieval call binding the contract method 0xb203bb99.
@@ -227,12 +237,17 @@ func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) Balance(arg0 common.Addr
 //
 // Solidity: function balanceOf(address _account, address _token) view returns(uint256)
 func (_DeFiTokenStorage *DeFiTokenStorageCaller) BalanceOf(opts *bind.CallOpts, _account common.Address, _token common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "balanceOf", _account, _token)
-	return *ret0, err
+	var out []interface{}
+	err := _DeFiTokenStorage.contract.Call(opts, &out, "balanceOf", _account, _token)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // BalanceOf is a free data retrieval call binding the contract method 0xf7888aec.
@@ -253,12 +268,17 @@ func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) BalanceOf(_account commo
 //
 // Solidity: function tokenValue(address _token, uint256 _amount) view returns(uint256 value)
 func (_DeFiTokenStorage *DeFiTokenStorageCaller) TokenValue(opts *bind.CallOpts, _token common.Address, _amount *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "tokenValue", _token, _amount)
-	return *ret0, err
+	var out []interface{}
+	err := _DeFiTokenStorage.contract.Call(opts, &out, "tokenValue", _token, _amount)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // TokenValue is a free data retrieval call binding the contract method 0xf1821783.
@@ -279,12 +299,17 @@ func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) TokenValue(_token common
 //
 // Solidity: function tokens(uint256 ) view returns(address)
 func (_DeFiTokenStorage *DeFiTokenStorageCaller) Tokens(opts *bind.CallOpts, arg0 *big.Int) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "tokens", arg0)
-	return *ret0, err
+	var out []interface{}
+	err := _DeFiTokenStorage.contract.Call(opts, &out, "tokens", arg0)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // Tokens is a free data retrieval call binding the contract method 0x4f64b2be.
@@ -305,12 +330,17 @@ func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) Tokens(arg0 *big.Int) (c
 //
 // Solidity: function tokensCount() view returns(uint256)
 func (_DeFiTokenStorage *DeFiTokenStorageCaller) TokensCount(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "tokensCount")
-	return *ret0, err
+	var out []interface{}
+	err := _DeFiTokenStorage.contract.Call(opts, &out, "tokensCount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // TokensCount is a free data retrieval call binding the contract method 0xa64ed8ba.
@@ -331,12 +361,17 @@ func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) TokensCount() (*big.Int,
 //
 // Solidity: function total() view returns(uint256 value)
 func (_DeFiTokenStorage *DeFiTokenStorageCaller) Total(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "total")
-	return *ret0, err
+	var out []interface{}
+	err := _DeFiTokenStorage.contract.Call(opts, &out, "total")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // Total is a free data retrieval call binding the contract method 0x2ddbd13a.
@@ -357,12 +392,17 @@ func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) Total() (*big.Int, error
 //
 // Solidity: function totalBalance(address ) view returns(uint256)
 func (_DeFiTokenStorage *DeFiTokenStorageCaller) TotalBalance(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "totalBalance", arg0)
-	return *ret0, err
+	var out []interface{}
+	err := _DeFiTokenStorage.contract.Call(opts, &out, "totalBalance", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // TotalBalance is a free data retrieval call binding the contract method 0x6eacd398.
@@ -383,12 +423,17 @@ func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) TotalBalance(arg0 common
 //
 // Solidity: function totalOf(address _account) view returns(uint256)
 func (_DeFiTokenStorage *DeFiTokenStorageCaller) TotalOf(opts *bind.CallOpts, _account common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "totalOf", _account)
-	return *ret0, err
+	var out []interface{}
+	err := _DeFiTokenStorage.contract.Call(opts, &out, "totalOf", _account)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // TotalOf is a free data retrieval call binding the contract method 0x912c2673.
@@ -409,12 +454,17 @@ func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) TotalOf(_account common.
 //
 // Solidity: function totalOfDec(address _account, address _token, uint256 _amount) view returns(uint256 value)
 func (_DeFiTokenStorage *DeFiTokenStorageCaller) TotalOfDec(opts *bind.CallOpts, _account common.Address, _token common.Address, _amount *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "totalOfDec", _account, _token, _amount)
-	return *ret0, err
+	var out []interface{}
+	err := _DeFiTokenStorage.contract.Call(opts, &out, "totalOfDec", _account, _token, _amount)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // TotalOfDec is a free data retrieval call binding the contract method 0x65be454d.
@@ -435,12 +485,17 @@ func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) TotalOfDec(_account comm
 //
 // Solidity: function totalOfInc(address _account, address _token, uint256 _amount) view returns(uint256 value)
 func (_DeFiTokenStorage *DeFiTokenStorageCaller) TotalOfInc(opts *bind.CallOpts, _account common.Address, _token common.Address, _amount *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "totalOfInc", _account, _token, _amount)
-	return *ret0, err
+	var out []interface{}
+	err := _DeFiTokenStorage.contract.Call(opts, &out, "totalOfInc", _account, _token, _amount)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // TotalOfInc is a free data retrieval call binding the contract method 0x660eab83.
@@ -461,12 +516,17 @@ func (_DeFiTokenStorage *DeFiTokenStorageCallerSession) TotalOfInc(_account comm
 //
 // Solidity: function valueDustAdjustment() view returns(bool)
 func (_DeFiTokenStorage *DeFiTokenStorageCaller) ValueDustAdjustment(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DeFiTokenStorage.contract.Call(opts, out, "valueDustAdjustment")
-	return *ret0, err
+	var out []interface{}
+	err := _DeFiTokenStorage.contract.Call(opts, &out, "valueDustAdjustment")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // ValueDustAdjustment is a free data retrieval call binding the contract method 0x496a1140.

@@ -137,7 +137,7 @@ func bindPriceOracleProxyInterface(address common.Address, caller bind.ContractC
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_PriceOracleProxyInterface *PriceOracleProxyInterfaceRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_PriceOracleProxyInterface *PriceOracleProxyInterfaceRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _PriceOracleProxyInterface.Contract.PriceOracleProxyInterfaceCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_PriceOracleProxyInterface *PriceOracleProxyInterfaceRaw) Transact(opts *b
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_PriceOracleProxyInterface *PriceOracleProxyInterfaceCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_PriceOracleProxyInterface *PriceOracleProxyInterfaceCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _PriceOracleProxyInterface.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -175,12 +175,17 @@ func (_PriceOracleProxyInterface *PriceOracleProxyInterfaceTransactorRaw) Transa
 //
 // Solidity: function getPrice(address _token) view returns(uint256)
 func (_PriceOracleProxyInterface *PriceOracleProxyInterfaceCaller) GetPrice(opts *bind.CallOpts, _token common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _PriceOracleProxyInterface.contract.Call(opts, out, "getPrice", _token)
-	return *ret0, err
+	var out []interface{}
+	err := _PriceOracleProxyInterface.contract.Call(opts, &out, "getPrice", _token)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // GetPrice is a free data retrieval call binding the contract method 0x41976e09.

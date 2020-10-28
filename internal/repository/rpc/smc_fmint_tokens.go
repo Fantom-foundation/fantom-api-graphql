@@ -137,7 +137,7 @@ func bindDefiFMintTokenRegistry(address common.Address, caller bind.ContractCall
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _DefiFMintTokenRegistry.Contract.DefiFMintTokenRegistryCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryRaw) Transact(opts *bind.Tr
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _DefiFMintTokenRegistry.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -175,12 +175,17 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryTransactorRaw) Transact(opt
 //
 // Solidity: function canDeposit(address _token) view returns(bool)
 func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) CanDeposit(opts *bind.CallOpts, _token common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "canDeposit", _token)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintTokenRegistry.contract.Call(opts, &out, "canDeposit", _token)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // CanDeposit is a free data retrieval call binding the contract method 0x4bf0d331.
@@ -201,12 +206,17 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) CanDeposit(_
 //
 // Solidity: function canMint(address _token) view returns(bool)
 func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) CanMint(opts *bind.CallOpts, _token common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "canMint", _token)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintTokenRegistry.contract.Call(opts, &out, "canMint", _token)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // CanMint is a free data retrieval call binding the contract method 0xc2ba4744.
@@ -227,12 +237,17 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) CanMint(_tok
 //
 // Solidity: function isActive(address _token) view returns(bool)
 func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) IsActive(opts *bind.CallOpts, _token common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "isActive", _token)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintTokenRegistry.contract.Call(opts, &out, "isActive", _token)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // IsActive is a free data retrieval call binding the contract method 0x9f8a13d7.
@@ -253,12 +268,17 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) IsActive(_to
 //
 // Solidity: function isOwner() view returns(bool)
 func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) IsOwner(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "isOwner")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintTokenRegistry.contract.Call(opts, &out, "isOwner")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
@@ -279,12 +299,17 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) IsOwner() (b
 //
 // Solidity: function owner() view returns(address)
 func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "owner")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintTokenRegistry.contract.Call(opts, &out, "owner")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
@@ -305,12 +330,17 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) Owner() (com
 //
 // Solidity: function priceDecimals(address _token) view returns(uint8)
 func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) PriceDecimals(opts *bind.CallOpts, _token common.Address) (uint8, error) {
-	var (
-		ret0 = new(uint8)
-	)
-	out := ret0
-	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "priceDecimals", _token)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintTokenRegistry.contract.Call(opts, &out, "priceDecimals", _token)
+
+	if err != nil {
+		return *new(uint8), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
+
+	return out0, err
+
 }
 
 // PriceDecimals is a free data retrieval call binding the contract method 0xcefe0f21.
@@ -342,7 +372,10 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) Tokens(opts *bind.C
 	CanDeposit    bool
 	CanMint       bool
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _DefiFMintTokenRegistry.contract.Call(opts, &out, "tokens", arg0)
+
+	outstruct := new(struct {
 		Id            *big.Int
 		Name          string
 		Symbol        string
@@ -354,9 +387,20 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) Tokens(opts *bind.C
 		CanDeposit    bool
 		CanMint       bool
 	})
-	out := ret
-	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "tokens", arg0)
-	return *ret, err
+
+	outstruct.Id = out[0].(*big.Int)
+	outstruct.Name = out[1].(string)
+	outstruct.Symbol = out[2].(string)
+	outstruct.Decimals = out[3].(uint8)
+	outstruct.Logo = out[4].(string)
+	outstruct.Oracle = out[5].(common.Address)
+	outstruct.PriceDecimals = out[6].(uint8)
+	outstruct.IsActive = out[7].(bool)
+	outstruct.CanDeposit = out[8].(bool)
+	outstruct.CanMint = out[9].(bool)
+
+	return *outstruct, err
+
 }
 
 // Tokens is a free data retrieval call binding the contract method 0xe4860339.
@@ -399,12 +443,17 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) Tokens(arg0 
 //
 // Solidity: function tokensCount() view returns(uint256)
 func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) TokensCount(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "tokensCount")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintTokenRegistry.contract.Call(opts, &out, "tokensCount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // TokensCount is a free data retrieval call binding the contract method 0xa64ed8ba.
@@ -425,12 +474,17 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCallerSession) TokensCount(
 //
 // Solidity: function tokensList(uint256 ) view returns(address)
 func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) TokensList(opts *bind.CallOpts, arg0 *big.Int) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintTokenRegistry.contract.Call(opts, out, "tokensList", arg0)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintTokenRegistry.contract.Call(opts, &out, "tokensList", arg0)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // TokensList is a free data retrieval call binding the contract method 0x4d12e34e.

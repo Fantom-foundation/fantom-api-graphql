@@ -137,7 +137,7 @@ func bindUniswapPair(address common.Address, caller bind.ContractCaller, transac
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_UniswapPair *UniswapPairRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_UniswapPair *UniswapPairRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _UniswapPair.Contract.UniswapPairCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_UniswapPair *UniswapPairRaw) Transact(opts *bind.TransactOpts, method str
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_UniswapPair *UniswapPairCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_UniswapPair *UniswapPairCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _UniswapPair.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -175,12 +175,17 @@ func (_UniswapPair *UniswapPairTransactorRaw) Transact(opts *bind.TransactOpts, 
 //
 // Solidity: function DOMAIN_SEPARATOR() view returns(bytes32)
 func (_UniswapPair *UniswapPairCaller) DOMAINSEPARATOR(opts *bind.CallOpts) ([32]byte, error) {
-	var (
-		ret0 = new([32]byte)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "DOMAIN_SEPARATOR")
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "DOMAIN_SEPARATOR")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
 }
 
 // DOMAINSEPARATOR is a free data retrieval call binding the contract method 0x3644e515.
@@ -201,12 +206,17 @@ func (_UniswapPair *UniswapPairCallerSession) DOMAINSEPARATOR() ([32]byte, error
 //
 // Solidity: function MINIMUM_LIQUIDITY() view returns(uint256)
 func (_UniswapPair *UniswapPairCaller) MINIMUMLIQUIDITY(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "MINIMUM_LIQUIDITY")
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "MINIMUM_LIQUIDITY")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MINIMUMLIQUIDITY is a free data retrieval call binding the contract method 0xba9a7a56.
@@ -227,12 +237,17 @@ func (_UniswapPair *UniswapPairCallerSession) MINIMUMLIQUIDITY() (*big.Int, erro
 //
 // Solidity: function PERMIT_TYPEHASH() view returns(bytes32)
 func (_UniswapPair *UniswapPairCaller) PERMITTYPEHASH(opts *bind.CallOpts) ([32]byte, error) {
-	var (
-		ret0 = new([32]byte)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "PERMIT_TYPEHASH")
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "PERMIT_TYPEHASH")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
 }
 
 // PERMITTYPEHASH is a free data retrieval call binding the contract method 0x30adf81f.
@@ -253,12 +268,17 @@ func (_UniswapPair *UniswapPairCallerSession) PERMITTYPEHASH() ([32]byte, error)
 //
 // Solidity: function allowance(address , address ) view returns(uint256)
 func (_UniswapPair *UniswapPairCaller) Allowance(opts *bind.CallOpts, arg0 common.Address, arg1 common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "allowance", arg0, arg1)
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "allowance", arg0, arg1)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
@@ -279,12 +299,17 @@ func (_UniswapPair *UniswapPairCallerSession) Allowance(arg0 common.Address, arg
 //
 // Solidity: function balanceOf(address ) view returns(uint256)
 func (_UniswapPair *UniswapPairCaller) BalanceOf(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "balanceOf", arg0)
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "balanceOf", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
@@ -305,12 +330,17 @@ func (_UniswapPair *UniswapPairCallerSession) BalanceOf(arg0 common.Address) (*b
 //
 // Solidity: function decimals() view returns(uint8)
 func (_UniswapPair *UniswapPairCaller) Decimals(opts *bind.CallOpts) (uint8, error) {
-	var (
-		ret0 = new(uint8)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "decimals")
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "decimals")
+
+	if err != nil {
+		return *new(uint8), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
+
+	return out0, err
+
 }
 
 // Decimals is a free data retrieval call binding the contract method 0x313ce567.
@@ -331,12 +361,17 @@ func (_UniswapPair *UniswapPairCallerSession) Decimals() (uint8, error) {
 //
 // Solidity: function factory() view returns(address)
 func (_UniswapPair *UniswapPairCaller) Factory(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "factory")
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "factory")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // Factory is a free data retrieval call binding the contract method 0xc45a0155.
@@ -361,14 +396,21 @@ func (_UniswapPair *UniswapPairCaller) GetReserves(opts *bind.CallOpts) (struct 
 	Reserve1           *big.Int
 	BlockTimestampLast uint32
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "getReserves")
+
+	outstruct := new(struct {
 		Reserve0           *big.Int
 		Reserve1           *big.Int
 		BlockTimestampLast uint32
 	})
-	out := ret
-	err := _UniswapPair.contract.Call(opts, out, "getReserves")
-	return *ret, err
+
+	outstruct.Reserve0 = out[0].(*big.Int)
+	outstruct.Reserve1 = out[1].(*big.Int)
+	outstruct.BlockTimestampLast = out[2].(uint32)
+
+	return *outstruct, err
+
 }
 
 // GetReserves is a free data retrieval call binding the contract method 0x0902f1ac.
@@ -397,12 +439,17 @@ func (_UniswapPair *UniswapPairCallerSession) GetReserves() (struct {
 //
 // Solidity: function kLast() view returns(uint256)
 func (_UniswapPair *UniswapPairCaller) KLast(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "kLast")
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "kLast")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // KLast is a free data retrieval call binding the contract method 0x7464fc3d.
@@ -423,12 +470,17 @@ func (_UniswapPair *UniswapPairCallerSession) KLast() (*big.Int, error) {
 //
 // Solidity: function name() view returns(string)
 func (_UniswapPair *UniswapPairCaller) Name(opts *bind.CallOpts) (string, error) {
-	var (
-		ret0 = new(string)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "name")
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "name")
+
+	if err != nil {
+		return *new(string), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(string)).(*string)
+
+	return out0, err
+
 }
 
 // Name is a free data retrieval call binding the contract method 0x06fdde03.
@@ -449,12 +501,17 @@ func (_UniswapPair *UniswapPairCallerSession) Name() (string, error) {
 //
 // Solidity: function nonces(address ) view returns(uint256)
 func (_UniswapPair *UniswapPairCaller) Nonces(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "nonces", arg0)
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "nonces", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // Nonces is a free data retrieval call binding the contract method 0x7ecebe00.
@@ -475,12 +532,17 @@ func (_UniswapPair *UniswapPairCallerSession) Nonces(arg0 common.Address) (*big.
 //
 // Solidity: function price0CumulativeLast() view returns(uint256)
 func (_UniswapPair *UniswapPairCaller) Price0CumulativeLast(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "price0CumulativeLast")
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "price0CumulativeLast")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // Price0CumulativeLast is a free data retrieval call binding the contract method 0x5909c0d5.
@@ -501,12 +563,17 @@ func (_UniswapPair *UniswapPairCallerSession) Price0CumulativeLast() (*big.Int, 
 //
 // Solidity: function price1CumulativeLast() view returns(uint256)
 func (_UniswapPair *UniswapPairCaller) Price1CumulativeLast(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "price1CumulativeLast")
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "price1CumulativeLast")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // Price1CumulativeLast is a free data retrieval call binding the contract method 0x5a3d5493.
@@ -527,12 +594,17 @@ func (_UniswapPair *UniswapPairCallerSession) Price1CumulativeLast() (*big.Int, 
 //
 // Solidity: function symbol() view returns(string)
 func (_UniswapPair *UniswapPairCaller) Symbol(opts *bind.CallOpts) (string, error) {
-	var (
-		ret0 = new(string)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "symbol")
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "symbol")
+
+	if err != nil {
+		return *new(string), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(string)).(*string)
+
+	return out0, err
+
 }
 
 // Symbol is a free data retrieval call binding the contract method 0x95d89b41.
@@ -553,12 +625,17 @@ func (_UniswapPair *UniswapPairCallerSession) Symbol() (string, error) {
 //
 // Solidity: function token0() view returns(address)
 func (_UniswapPair *UniswapPairCaller) Token0(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "token0")
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "token0")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // Token0 is a free data retrieval call binding the contract method 0x0dfe1681.
@@ -579,12 +656,17 @@ func (_UniswapPair *UniswapPairCallerSession) Token0() (common.Address, error) {
 //
 // Solidity: function token1() view returns(address)
 func (_UniswapPair *UniswapPairCaller) Token1(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "token1")
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "token1")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // Token1 is a free data retrieval call binding the contract method 0xd21220a7.
@@ -605,12 +687,17 @@ func (_UniswapPair *UniswapPairCallerSession) Token1() (common.Address, error) {
 //
 // Solidity: function totalSupply() view returns(uint256)
 func (_UniswapPair *UniswapPairCaller) TotalSupply(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _UniswapPair.contract.Call(opts, out, "totalSupply")
-	return *ret0, err
+	var out []interface{}
+	err := _UniswapPair.contract.Call(opts, &out, "totalSupply")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // TotalSupply is a free data retrieval call binding the contract method 0x18160ddd.

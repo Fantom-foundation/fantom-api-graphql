@@ -137,7 +137,7 @@ func bindERCTwenty(address common.Address, caller bind.ContractCaller, transacto
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_ERCTwenty *ERCTwentyRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_ERCTwenty *ERCTwentyRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _ERCTwenty.Contract.ERCTwentyCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_ERCTwenty *ERCTwentyRaw) Transact(opts *bind.TransactOpts, method string,
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_ERCTwenty *ERCTwentyCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_ERCTwenty *ERCTwentyCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _ERCTwenty.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -175,12 +175,17 @@ func (_ERCTwenty *ERCTwentyTransactorRaw) Transact(opts *bind.TransactOpts, meth
 //
 // Solidity: function allowance(address owner, address spender) view returns(uint256)
 func (_ERCTwenty *ERCTwentyCaller) Allowance(opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _ERCTwenty.contract.Call(opts, out, "allowance", owner, spender)
-	return *ret0, err
+	var out []interface{}
+	err := _ERCTwenty.contract.Call(opts, &out, "allowance", owner, spender)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
@@ -201,12 +206,17 @@ func (_ERCTwenty *ERCTwentyCallerSession) Allowance(owner common.Address, spende
 //
 // Solidity: function balanceOf(address account) view returns(uint256)
 func (_ERCTwenty *ERCTwentyCaller) BalanceOf(opts *bind.CallOpts, account common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _ERCTwenty.contract.Call(opts, out, "balanceOf", account)
-	return *ret0, err
+	var out []interface{}
+	err := _ERCTwenty.contract.Call(opts, &out, "balanceOf", account)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
@@ -227,12 +237,17 @@ func (_ERCTwenty *ERCTwentyCallerSession) BalanceOf(account common.Address) (*bi
 //
 // Solidity: function totalSupply() view returns(uint256)
 func (_ERCTwenty *ERCTwentyCaller) TotalSupply(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _ERCTwenty.contract.Call(opts, out, "totalSupply")
-	return *ret0, err
+	var out []interface{}
+	err := _ERCTwenty.contract.Call(opts, &out, "totalSupply")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // TotalSupply is a free data retrieval call binding the contract method 0x18160ddd.

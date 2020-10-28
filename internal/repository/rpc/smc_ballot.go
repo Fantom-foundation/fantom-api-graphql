@@ -137,7 +137,7 @@ func bindBallotContract(address common.Address, caller bind.ContractCaller, tran
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_BallotContract *BallotContractRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_BallotContract *BallotContractRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _BallotContract.Contract.BallotContractCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_BallotContract *BallotContractRaw) Transact(opts *bind.TransactOpts, meth
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_BallotContract *BallotContractCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_BallotContract *BallotContractCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _BallotContract.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -183,7 +183,10 @@ func (_BallotContract *BallotContractCaller) Ballot(opts *bind.CallOpts) (struct
 	Votes     *big.Int
 	Feeds     *big.Int
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _BallotContract.contract.Call(opts, &out, "ballot")
+
+	outstruct := new(struct {
 		Name      [32]byte
 		Url       string
 		Start     *big.Int
@@ -192,9 +195,17 @@ func (_BallotContract *BallotContractCaller) Ballot(opts *bind.CallOpts) (struct
 		Votes     *big.Int
 		Feeds     *big.Int
 	})
-	out := ret
-	err := _BallotContract.contract.Call(opts, out, "ballot")
-	return *ret, err
+
+	outstruct.Name = out[0].([32]byte)
+	outstruct.Url = out[1].(string)
+	outstruct.Start = out[2].(*big.Int)
+	outstruct.End = out[3].(*big.Int)
+	outstruct.Finalized = out[4].(bool)
+	outstruct.Votes = out[5].(*big.Int)
+	outstruct.Feeds = out[6].(*big.Int)
+
+	return *outstruct, err
+
 }
 
 // Ballot is a free data retrieval call binding the contract method 0xac3910a2.
@@ -231,12 +242,17 @@ func (_BallotContract *BallotContractCallerSession) Ballot() (struct {
 //
 // Solidity: function chairperson() view returns(address)
 func (_BallotContract *BallotContractCaller) Chairperson(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _BallotContract.contract.Call(opts, out, "chairperson")
-	return *ret0, err
+	var out []interface{}
+	err := _BallotContract.contract.Call(opts, &out, "chairperson")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // Chairperson is a free data retrieval call binding the contract method 0x2e4176cf.
@@ -261,14 +277,21 @@ func (_BallotContract *BallotContractCaller) Proposals(opts *bind.CallOpts, arg0
 	Weight *big.Int
 	Votes  *big.Int
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _BallotContract.contract.Call(opts, &out, "proposals", arg0)
+
+	outstruct := new(struct {
 		Name   [32]byte
 		Weight *big.Int
 		Votes  *big.Int
 	})
-	out := ret
-	err := _BallotContract.contract.Call(opts, out, "proposals", arg0)
-	return *ret, err
+
+	outstruct.Name = out[0].([32]byte)
+	outstruct.Weight = out[1].(*big.Int)
+	outstruct.Votes = out[2].(*big.Int)
+
+	return *outstruct, err
+
 }
 
 // Proposals is a free data retrieval call binding the contract method 0x013cf08b.
@@ -297,12 +320,17 @@ func (_BallotContract *BallotContractCallerSession) Proposals(arg0 *big.Int) (st
 //
 // Solidity: function proposalsCount() view returns(uint256)
 func (_BallotContract *BallotContractCaller) ProposalsCount(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _BallotContract.contract.Call(opts, out, "proposalsCount")
-	return *ret0, err
+	var out []interface{}
+	err := _BallotContract.contract.Call(opts, &out, "proposalsCount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ProposalsCount is a free data retrieval call binding the contract method 0x0a9f46ad.
@@ -328,15 +356,23 @@ func (_BallotContract *BallotContractCaller) Votes(opts *bind.CallOpts, arg0 com
 	Weight      *big.Int
 	WeightStamp *big.Int
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _BallotContract.contract.Call(opts, &out, "votes", arg0)
+
+	outstruct := new(struct {
 		Vote        *big.Int
 		Voted       *big.Int
 		Weight      *big.Int
 		WeightStamp *big.Int
 	})
-	out := ret
-	err := _BallotContract.contract.Call(opts, out, "votes", arg0)
-	return *ret, err
+
+	outstruct.Vote = out[0].(*big.Int)
+	outstruct.Voted = out[1].(*big.Int)
+	outstruct.Weight = out[2].(*big.Int)
+	outstruct.WeightStamp = out[3].(*big.Int)
+
+	return *outstruct, err
+
 }
 
 // Votes is a free data retrieval call binding the contract method 0xd8bff5a5.
@@ -367,18 +403,19 @@ func (_BallotContract *BallotContractCallerSession) Votes(arg0 common.Address) (
 //
 // Solidity: function winner() view returns(uint256, uint256, bytes32)
 func (_BallotContract *BallotContractCaller) Winner(opts *bind.CallOpts) (*big.Int, *big.Int, [32]byte, error) {
-	var (
-		ret0 = new(*big.Int)
-		ret1 = new(*big.Int)
-		ret2 = new([32]byte)
-	)
-	out := &[]interface{}{
-		ret0,
-		ret1,
-		ret2,
+	var out []interface{}
+	err := _BallotContract.contract.Call(opts, &out, "winner")
+
+	if err != nil {
+		return *new(*big.Int), *new(*big.Int), *new([32]byte), err
 	}
-	err := _BallotContract.contract.Call(opts, out, "winner")
-	return *ret0, *ret1, *ret2, err
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	out1 := *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	out2 := *abi.ConvertType(out[2], new([32]byte)).(*[32]byte)
+
+	return out0, out1, out2, err
+
 }
 
 // Winner is a free data retrieval call binding the contract method 0xdfbf53ae.

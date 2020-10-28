@@ -137,7 +137,7 @@ func bindDefiFMintAddressProvider(address common.Address, caller bind.ContractCa
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _DefiFMintAddressProvider.Contract.DefiFMintAddressProviderCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderRaw) Transact(opts *bin
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _DefiFMintAddressProvider.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -175,12 +175,17 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderTransactorRaw) Transact
 //
 // Solidity: function getAddress(bytes32 _id) view returns(address)
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) GetAddress(opts *bind.CallOpts, _id [32]byte) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintAddressProvider.contract.Call(opts, out, "getAddress", _id)
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintAddressProvider.contract.Call(opts, &out, "getAddress", _id)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // GetAddress is a free data retrieval call binding the contract method 0x21f8a721.
@@ -201,12 +206,17 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetAddre
 //
 // Solidity: function getCollateralPool() view returns(address)
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) GetCollateralPool(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintAddressProvider.contract.Call(opts, out, "getCollateralPool")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintAddressProvider.contract.Call(opts, &out, "getCollateralPool")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // GetCollateralPool is a free data retrieval call binding the contract method 0x73c9641d.
@@ -227,12 +237,17 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetColla
 //
 // Solidity: function getDebtPool() view returns(address)
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) GetDebtPool(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintAddressProvider.contract.Call(opts, out, "getDebtPool")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintAddressProvider.contract.Call(opts, &out, "getDebtPool")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // GetDebtPool is a free data retrieval call binding the contract method 0x03ec357f.
@@ -253,12 +268,17 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetDebtP
 //
 // Solidity: function getFantomMint() view returns(address)
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) GetFantomMint(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintAddressProvider.contract.Call(opts, out, "getFantomMint")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintAddressProvider.contract.Call(opts, &out, "getFantomMint")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // GetFantomMint is a free data retrieval call binding the contract method 0x44969711.
@@ -279,12 +299,17 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetFanto
 //
 // Solidity: function getPriceOracleProxy() view returns(address)
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) GetPriceOracleProxy(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintAddressProvider.contract.Call(opts, out, "getPriceOracleProxy")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintAddressProvider.contract.Call(opts, &out, "getPriceOracleProxy")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // GetPriceOracleProxy is a free data retrieval call binding the contract method 0x045bb7f8.
@@ -305,12 +330,17 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetPrice
 //
 // Solidity: function getRewardDistribution() view returns(address)
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) GetRewardDistribution(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintAddressProvider.contract.Call(opts, out, "getRewardDistribution")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintAddressProvider.contract.Call(opts, &out, "getRewardDistribution")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // GetRewardDistribution is a free data retrieval call binding the contract method 0x84d9319e.
@@ -331,12 +361,17 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetRewar
 //
 // Solidity: function getRewardToken() view returns(address)
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) GetRewardToken(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintAddressProvider.contract.Call(opts, out, "getRewardToken")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintAddressProvider.contract.Call(opts, &out, "getRewardToken")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // GetRewardToken is a free data retrieval call binding the contract method 0x69940d79.
@@ -357,12 +392,17 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetRewar
 //
 // Solidity: function getTokenRegistry() view returns(address)
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) GetTokenRegistry(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintAddressProvider.contract.Call(opts, out, "getTokenRegistry")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintAddressProvider.contract.Call(opts, &out, "getTokenRegistry")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // GetTokenRegistry is a free data retrieval call binding the contract method 0x057838bd.
@@ -383,12 +423,17 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) GetToken
 //
 // Solidity: function isOwner() view returns(bool)
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) IsOwner(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _DefiFMintAddressProvider.contract.Call(opts, out, "isOwner")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintAddressProvider.contract.Call(opts, &out, "isOwner")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
@@ -409,12 +454,17 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderCallerSession) IsOwner(
 //
 // Solidity: function owner() view returns(address)
 func (_DefiFMintAddressProvider *DefiFMintAddressProviderCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _DefiFMintAddressProvider.contract.Call(opts, out, "owner")
-	return *ret0, err
+	var out []interface{}
+	err := _DefiFMintAddressProvider.contract.Call(opts, &out, "owner")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.

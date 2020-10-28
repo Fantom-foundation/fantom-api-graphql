@@ -137,7 +137,7 @@ func bindFMintRewardsDistribution(address common.Address, caller bind.ContractCa
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_FMintRewardsDistribution *FMintRewardsDistributionRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_FMintRewardsDistribution *FMintRewardsDistributionRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _FMintRewardsDistribution.Contract.FMintRewardsDistributionCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionRaw) Transact(opts *bin
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_FMintRewardsDistribution *FMintRewardsDistributionCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_FMintRewardsDistribution *FMintRewardsDistributionCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _FMintRewardsDistribution.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -175,12 +175,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionTransactorRaw) Transact
 //
 // Solidity: function ERR_DEBT_EXCEEDED() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRDEBTEXCEEDED(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_DEBT_EXCEEDED")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_DEBT_EXCEEDED")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRDEBTEXCEEDED is a free data retrieval call binding the contract method 0x372ce3df.
@@ -201,12 +206,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRDEBTE
 //
 // Solidity: function ERR_DEPOSIT_PROHIBITED() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRDEPOSITPROHIBITED(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_DEPOSIT_PROHIBITED")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_DEPOSIT_PROHIBITED")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRDEPOSITPROHIBITED is a free data retrieval call binding the contract method 0x2bfcc373.
@@ -227,12 +237,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRDEPOS
 //
 // Solidity: function ERR_LOW_ALLOWANCE() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRLOWALLOWANCE(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_LOW_ALLOWANCE")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_LOW_ALLOWANCE")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRLOWALLOWANCE is a free data retrieval call binding the contract method 0x911fc3f1.
@@ -253,12 +268,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRLOWAL
 //
 // Solidity: function ERR_LOW_AMOUNT() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRLOWAMOUNT(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_LOW_AMOUNT")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_LOW_AMOUNT")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRLOWAMOUNT is a free data retrieval call binding the contract method 0xc7ea4889.
@@ -279,12 +299,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRLOWAM
 //
 // Solidity: function ERR_LOW_BALANCE() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRLOWBALANCE(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_LOW_BALANCE")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_LOW_BALANCE")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRLOWBALANCE is a free data retrieval call binding the contract method 0x1ac919b0.
@@ -305,12 +330,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRLOWBA
 //
 // Solidity: function ERR_LOW_COLLATERAL_RATIO() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRLOWCOLLATERALRATIO(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_LOW_COLLATERAL_RATIO")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_LOW_COLLATERAL_RATIO")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRLOWCOLLATERALRATIO is a free data retrieval call binding the contract method 0x04b62f29.
@@ -331,12 +361,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRLOWCO
 //
 // Solidity: function ERR_MINTING_PROHIBITED() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRMINTINGPROHIBITED(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_MINTING_PROHIBITED")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_MINTING_PROHIBITED")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRMINTINGPROHIBITED is a free data retrieval call binding the contract method 0x8c7b9980.
@@ -357,12 +392,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRMINTI
 //
 // Solidity: function ERR_NOT_AUTHORIZED() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRNOTAUTHORIZED(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_NOT_AUTHORIZED")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_NOT_AUTHORIZED")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRNOTAUTHORIZED is a free data retrieval call binding the contract method 0xbc99d6ae.
@@ -383,12 +423,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRNOTAU
 //
 // Solidity: function ERR_NO_COLLATERAL() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRNOCOLLATERAL(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_NO_COLLATERAL")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_NO_COLLATERAL")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRNOCOLLATERAL is a free data retrieval call binding the contract method 0xb76361c2.
@@ -409,12 +454,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRNOCOL
 //
 // Solidity: function ERR_NO_ERROR() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRNOERROR(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_NO_ERROR")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_NO_ERROR")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRNOERROR is a free data retrieval call binding the contract method 0x35052d6e.
@@ -435,12 +485,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRNOERR
 //
 // Solidity: function ERR_NO_REWARD() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRNOREWARD(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_NO_REWARD")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_NO_REWARD")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRNOREWARD is a free data retrieval call binding the contract method 0x73a93af6.
@@ -461,12 +516,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRNOREW
 //
 // Solidity: function ERR_NO_VALUE() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRNOVALUE(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_NO_VALUE")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_NO_VALUE")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRNOVALUE is a free data retrieval call binding the contract method 0x69d1cb27.
@@ -487,12 +547,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRNOVAL
 //
 // Solidity: function ERR_REWARDS_DEPLETED() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRREWARDSDEPLETED(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_REWARDS_DEPLETED")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_REWARDS_DEPLETED")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRREWARDSDEPLETED is a free data retrieval call binding the contract method 0x0a19dd33.
@@ -513,12 +578,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRREWAR
 //
 // Solidity: function ERR_REWARDS_EARLY() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRREWARDSEARLY(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_REWARDS_EARLY")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_REWARDS_EARLY")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRREWARDSEARLY is a free data retrieval call binding the contract method 0x67fc176b.
@@ -539,12 +609,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRREWAR
 //
 // Solidity: function ERR_REWARDS_NONE() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRREWARDSNONE(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_REWARDS_NONE")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_REWARDS_NONE")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRREWARDSNONE is a free data retrieval call binding the contract method 0xc7222c72.
@@ -565,12 +640,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRREWAR
 //
 // Solidity: function ERR_REWARD_CLAIM_REJECTED() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRREWARDCLAIMREJECTED(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_REWARD_CLAIM_REJECTED")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_REWARD_CLAIM_REJECTED")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRREWARDCLAIMREJECTED is a free data retrieval call binding the contract method 0x4846e345.
@@ -591,12 +671,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRREWAR
 //
 // Solidity: function ERR_ZERO_AMOUNT() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) ERRZEROAMOUNT(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "ERR_ZERO_AMOUNT")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "ERR_ZERO_AMOUNT")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ERRZEROAMOUNT is a free data retrieval call binding the contract method 0x0aff90bb.
@@ -617,12 +702,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) ERRZEROA
 //
 // Solidity: function addressProvider() view returns(address)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) AddressProvider(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "addressProvider")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "addressProvider")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // AddressProvider is a free data retrieval call binding the contract method 0x2954018c.
@@ -643,12 +733,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) AddressP
 //
 // Solidity: function isOwner() view returns(bool)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) IsOwner(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "isOwner")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "isOwner")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
@@ -669,12 +764,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) IsOwner(
 //
 // Solidity: function lastRewardPush() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) LastRewardPush(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "lastRewardPush")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "lastRewardPush")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // LastRewardPush is a free data retrieval call binding the contract method 0xa664150a.
@@ -695,12 +795,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) LastRewa
 //
 // Solidity: function minRewardPushInterval() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) MinRewardPushInterval(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "minRewardPushInterval")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "minRewardPushInterval")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MinRewardPushInterval is a free data retrieval call binding the contract method 0xc0464d45.
@@ -721,12 +826,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) MinRewar
 //
 // Solidity: function owner() view returns(address)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "owner")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "owner")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
@@ -747,12 +857,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) Owner() 
 //
 // Solidity: function principalBalance() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) PrincipalBalance(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "principalBalance")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "principalBalance")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // PrincipalBalance is a free data retrieval call binding the contract method 0xa83e53ac.
@@ -773,12 +888,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) Principa
 //
 // Solidity: function principalBalanceOf(address _account) view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) PrincipalBalanceOf(opts *bind.CallOpts, _account common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "principalBalanceOf", _account)
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "principalBalanceOf", _account)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // PrincipalBalanceOf is a free data retrieval call binding the contract method 0xc634dfaa.
@@ -799,12 +919,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) Principa
 //
 // Solidity: function rewardApplicableUntil() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardApplicableUntil(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardApplicableUntil")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardApplicableUntil")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardApplicableUntil is a free data retrieval call binding the contract method 0xdb16e0b5.
@@ -825,12 +950,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardAp
 //
 // Solidity: function rewardCanClaim(address _account) view returns(bool)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardCanClaim(opts *bind.CallOpts, _account common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardCanClaim", _account)
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardCanClaim", _account)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // RewardCanClaim is a free data retrieval call binding the contract method 0xda0a0432.
@@ -851,12 +981,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardCa
 //
 // Solidity: function rewardEarned(address _account) view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardEarned(opts *bind.CallOpts, _account common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardEarned", _account)
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardEarned", _account)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardEarned is a free data retrieval call binding the contract method 0x16ba6bf3.
@@ -877,12 +1012,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardEa
 //
 // Solidity: function rewardEpochEnds() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardEpochEnds(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardEpochEnds")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardEpochEnds")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardEpochEnds is a free data retrieval call binding the contract method 0x3ce9b316.
@@ -903,12 +1043,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardEp
 //
 // Solidity: function rewardEpochLength() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardEpochLength(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardEpochLength")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardEpochLength")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardEpochLength is a free data retrieval call binding the contract method 0x20a0a0e9.
@@ -929,12 +1074,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardEp
 //
 // Solidity: function rewardIsEligible(address _account) view returns(bool)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardIsEligible(opts *bind.CallOpts, _account common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardIsEligible", _account)
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardIsEligible", _account)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // RewardIsEligible is a free data retrieval call binding the contract method 0x6aee9c13.
@@ -955,12 +1105,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardIs
 //
 // Solidity: function rewardLastPerToken() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardLastPerToken(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardLastPerToken")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardLastPerToken")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardLastPerToken is a free data retrieval call binding the contract method 0x544bb473.
@@ -981,12 +1136,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardLa
 //
 // Solidity: function rewardPerSecond() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardPerSecond(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardPerSecond")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardPerSecond")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardPerSecond is a free data retrieval call binding the contract method 0x8f10369a.
@@ -1007,12 +1167,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardPe
 //
 // Solidity: function rewardPerToken() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardPerToken(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardPerToken")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardPerToken")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardPerToken is a free data retrieval call binding the contract method 0xcd3daf9d.
@@ -1033,12 +1198,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardPe
 //
 // Solidity: function rewardPerTokenDecimalsCorrection() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardPerTokenDecimalsCorrection(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardPerTokenDecimalsCorrection")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardPerTokenDecimalsCorrection")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardPerTokenDecimalsCorrection is a free data retrieval call binding the contract method 0x64631d9b.
@@ -1059,12 +1229,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardPe
 //
 // Solidity: function rewardPerTokenPaid(address ) view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardPerTokenPaid(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardPerTokenPaid", arg0)
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardPerTokenPaid", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardPerTokenPaid is a free data retrieval call binding the contract method 0x653a8da1.
@@ -1085,12 +1260,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardPe
 //
 // Solidity: function rewardRate() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardRate(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardRate")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardRate")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardRate is a free data retrieval call binding the contract method 0x7b0a47ee.
@@ -1111,12 +1291,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardRa
 //
 // Solidity: function rewardStash(address ) view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardStash(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardStash", arg0)
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardStash", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardStash is a free data retrieval call binding the contract method 0xf2392c8d.
@@ -1137,12 +1322,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardSt
 //
 // Solidity: function rewardTokenAddress() view returns(address)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardTokenAddress(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardTokenAddress")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardTokenAddress")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // RewardTokenAddress is a free data retrieval call binding the contract method 0x125f9e33.
@@ -1163,12 +1353,17 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionCallerSession) RewardTo
 //
 // Solidity: function rewardUpdated() view returns(uint256)
 func (_FMintRewardsDistribution *FMintRewardsDistributionCaller) RewardUpdated(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _FMintRewardsDistribution.contract.Call(opts, out, "rewardUpdated")
-	return *ret0, err
+	var out []interface{}
+	err := _FMintRewardsDistribution.contract.Call(opts, &out, "rewardUpdated")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardUpdated is a free data retrieval call binding the contract method 0x6e718e04.

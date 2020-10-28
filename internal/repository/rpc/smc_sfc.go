@@ -137,7 +137,7 @@ func bindSfcContract(address common.Address, caller bind.ContractCaller, transac
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_SfcContract *SfcContractRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_SfcContract *SfcContractRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _SfcContract.Contract.SfcContractCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_SfcContract *SfcContractRaw) Transact(opts *bind.TransactOpts, method str
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_SfcContract *SfcContractCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_SfcContract *SfcContractCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _SfcContract.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -175,12 +175,17 @@ func (_SfcContract *SfcContractTransactorRaw) Transact(opts *bind.TransactOpts, 
 //
 // Solidity: function _sfcAddressToStakerID(address sfcAddress) view returns(uint256)
 func (_SfcContract *SfcContractCaller) SfcAddressToStakerID(opts *bind.CallOpts, sfcAddress common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "_sfcAddressToStakerID", sfcAddress)
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "_sfcAddressToStakerID", sfcAddress)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // SfcAddressToStakerID is a free data retrieval call binding the contract method 0xb42cb58d.
@@ -201,18 +206,19 @@ func (_SfcContract *SfcContractCallerSession) SfcAddressToStakerID(sfcAddress co
 //
 // Solidity: function calcDelegationCompoundRewards(address delegator, uint256 toStakerID, uint256 _fromEpoch, uint256 maxEpochs) view returns(uint256, uint256, uint256)
 func (_SfcContract *SfcContractCaller) CalcDelegationCompoundRewards(opts *bind.CallOpts, delegator common.Address, toStakerID *big.Int, _fromEpoch *big.Int, maxEpochs *big.Int) (*big.Int, *big.Int, *big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-		ret1 = new(*big.Int)
-		ret2 = new(*big.Int)
-	)
-	out := &[]interface{}{
-		ret0,
-		ret1,
-		ret2,
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "calcDelegationCompoundRewards", delegator, toStakerID, _fromEpoch, maxEpochs)
+
+	if err != nil {
+		return *new(*big.Int), *new(*big.Int), *new(*big.Int), err
 	}
-	err := _SfcContract.contract.Call(opts, out, "calcDelegationCompoundRewards", delegator, toStakerID, _fromEpoch, maxEpochs)
-	return *ret0, *ret1, *ret2, err
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	out1 := *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	out2 := *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+
+	return out0, out1, out2, err
+
 }
 
 // CalcDelegationCompoundRewards is a free data retrieval call binding the contract method 0x9864183d.
@@ -233,18 +239,19 @@ func (_SfcContract *SfcContractCallerSession) CalcDelegationCompoundRewards(dele
 //
 // Solidity: function calcDelegationRewards(address delegator, uint256 toStakerID, uint256 _fromEpoch, uint256 maxEpochs) view returns(uint256, uint256, uint256)
 func (_SfcContract *SfcContractCaller) CalcDelegationRewards(opts *bind.CallOpts, delegator common.Address, toStakerID *big.Int, _fromEpoch *big.Int, maxEpochs *big.Int) (*big.Int, *big.Int, *big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-		ret1 = new(*big.Int)
-		ret2 = new(*big.Int)
-	)
-	out := &[]interface{}{
-		ret0,
-		ret1,
-		ret2,
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "calcDelegationRewards", delegator, toStakerID, _fromEpoch, maxEpochs)
+
+	if err != nil {
+		return *new(*big.Int), *new(*big.Int), *new(*big.Int), err
 	}
-	err := _SfcContract.contract.Call(opts, out, "calcDelegationRewards", delegator, toStakerID, _fromEpoch, maxEpochs)
-	return *ret0, *ret1, *ret2, err
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	out1 := *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	out2 := *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+
+	return out0, out1, out2, err
+
 }
 
 // CalcDelegationRewards is a free data retrieval call binding the contract method 0xd845fc90.
@@ -265,18 +272,19 @@ func (_SfcContract *SfcContractCallerSession) CalcDelegationRewards(delegator co
 //
 // Solidity: function calcValidatorCompoundRewards(uint256 stakerID, uint256 _fromEpoch, uint256 maxEpochs) view returns(uint256, uint256, uint256)
 func (_SfcContract *SfcContractCaller) CalcValidatorCompoundRewards(opts *bind.CallOpts, stakerID *big.Int, _fromEpoch *big.Int, maxEpochs *big.Int) (*big.Int, *big.Int, *big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-		ret1 = new(*big.Int)
-		ret2 = new(*big.Int)
-	)
-	out := &[]interface{}{
-		ret0,
-		ret1,
-		ret2,
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "calcValidatorCompoundRewards", stakerID, _fromEpoch, maxEpochs)
+
+	if err != nil {
+		return *new(*big.Int), *new(*big.Int), *new(*big.Int), err
 	}
-	err := _SfcContract.contract.Call(opts, out, "calcValidatorCompoundRewards", stakerID, _fromEpoch, maxEpochs)
-	return *ret0, *ret1, *ret2, err
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	out1 := *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	out2 := *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+
+	return out0, out1, out2, err
+
 }
 
 // CalcValidatorCompoundRewards is a free data retrieval call binding the contract method 0x74240362.
@@ -297,18 +305,19 @@ func (_SfcContract *SfcContractCallerSession) CalcValidatorCompoundRewards(stake
 //
 // Solidity: function calcValidatorRewards(uint256 stakerID, uint256 _fromEpoch, uint256 maxEpochs) view returns(uint256, uint256, uint256)
 func (_SfcContract *SfcContractCaller) CalcValidatorRewards(opts *bind.CallOpts, stakerID *big.Int, _fromEpoch *big.Int, maxEpochs *big.Int) (*big.Int, *big.Int, *big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-		ret1 = new(*big.Int)
-		ret2 = new(*big.Int)
-	)
-	out := &[]interface{}{
-		ret0,
-		ret1,
-		ret2,
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "calcValidatorRewards", stakerID, _fromEpoch, maxEpochs)
+
+	if err != nil {
+		return *new(*big.Int), *new(*big.Int), *new(*big.Int), err
 	}
-	err := _SfcContract.contract.Call(opts, out, "calcValidatorRewards", stakerID, _fromEpoch, maxEpochs)
-	return *ret0, *ret1, *ret2, err
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	out1 := *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	out2 := *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+
+	return out0, out1, out2, err
+
 }
 
 // CalcValidatorRewards is a free data retrieval call binding the contract method 0x96060e71.
@@ -329,12 +338,17 @@ func (_SfcContract *SfcContractCallerSession) CalcValidatorRewards(stakerID *big
 //
 // Solidity: function contractCommission() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) ContractCommission(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "contractCommission")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "contractCommission")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ContractCommission is a free data retrieval call binding the contract method 0x2709275e.
@@ -355,12 +369,17 @@ func (_SfcContract *SfcContractCallerSession) ContractCommission() (*big.Int, er
 //
 // Solidity: function currentEpoch() view returns(uint256)
 func (_SfcContract *SfcContractCaller) CurrentEpoch(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "currentEpoch")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "currentEpoch")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // CurrentEpoch is a free data retrieval call binding the contract method 0x76671808.
@@ -381,12 +400,17 @@ func (_SfcContract *SfcContractCallerSession) CurrentEpoch() (*big.Int, error) {
 //
 // Solidity: function currentSealedEpoch() view returns(uint256)
 func (_SfcContract *SfcContractCaller) CurrentSealedEpoch(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "currentSealedEpoch")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "currentSealedEpoch")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // CurrentSealedEpoch is a free data retrieval call binding the contract method 0x7cacb1d6.
@@ -407,12 +431,17 @@ func (_SfcContract *SfcContractCallerSession) CurrentSealedEpoch() (*big.Int, er
 //
 // Solidity: function delegationEarlyWithdrawalPenalty(address , uint256 ) view returns(uint256)
 func (_SfcContract *SfcContractCaller) DelegationEarlyWithdrawalPenalty(opts *bind.CallOpts, arg0 common.Address, arg1 *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "delegationEarlyWithdrawalPenalty", arg0, arg1)
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "delegationEarlyWithdrawalPenalty", arg0, arg1)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // DelegationEarlyWithdrawalPenalty is a free data retrieval call binding the contract method 0x66799a54.
@@ -433,12 +462,17 @@ func (_SfcContract *SfcContractCallerSession) DelegationEarlyWithdrawalPenalty(a
 //
 // Solidity: function delegationLockPeriodEpochs() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) DelegationLockPeriodEpochs(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "delegationLockPeriodEpochs")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "delegationLockPeriodEpochs")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // DelegationLockPeriodEpochs is a free data retrieval call binding the contract method 0x1d58179c.
@@ -459,12 +493,17 @@ func (_SfcContract *SfcContractCallerSession) DelegationLockPeriodEpochs() (*big
 //
 // Solidity: function delegationLockPeriodTime() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) DelegationLockPeriodTime(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "delegationLockPeriodTime")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "delegationLockPeriodTime")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // DelegationLockPeriodTime is a free data retrieval call binding the contract method 0xec6a7f1c.
@@ -493,7 +532,10 @@ func (_SfcContract *SfcContractCaller) Delegations(opts *bind.CallOpts, arg0 com
 	PaidUntilEpoch   *big.Int
 	ToStakerID       *big.Int
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "delegations", arg0, arg1)
+
+	outstruct := new(struct {
 		CreatedEpoch     *big.Int
 		CreatedTime      *big.Int
 		DeactivatedEpoch *big.Int
@@ -502,9 +544,17 @@ func (_SfcContract *SfcContractCaller) Delegations(opts *bind.CallOpts, arg0 com
 		PaidUntilEpoch   *big.Int
 		ToStakerID       *big.Int
 	})
-	out := ret
-	err := _SfcContract.contract.Call(opts, out, "delegations", arg0, arg1)
-	return *ret, err
+
+	outstruct.CreatedEpoch = out[0].(*big.Int)
+	outstruct.CreatedTime = out[1].(*big.Int)
+	outstruct.DeactivatedEpoch = out[2].(*big.Int)
+	outstruct.DeactivatedTime = out[3].(*big.Int)
+	outstruct.Amount = out[4].(*big.Int)
+	outstruct.PaidUntilEpoch = out[5].(*big.Int)
+	outstruct.ToStakerID = out[6].(*big.Int)
+
+	return *outstruct, err
+
 }
 
 // Delegations is a free data retrieval call binding the contract method 0x223fae09.
@@ -541,12 +591,17 @@ func (_SfcContract *SfcContractCallerSession) Delegations(arg0 common.Address, a
 //
 // Solidity: function delegationsNum() view returns(uint256)
 func (_SfcContract *SfcContractCaller) DelegationsNum(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "delegationsNum")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "delegationsNum")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // DelegationsNum is a free data retrieval call binding the contract method 0x4bd202dc.
@@ -567,12 +622,17 @@ func (_SfcContract *SfcContractCallerSession) DelegationsNum() (*big.Int, error)
 //
 // Solidity: function delegationsTotalAmount() view returns(uint256)
 func (_SfcContract *SfcContractCaller) DelegationsTotalAmount(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "delegationsTotalAmount")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "delegationsTotalAmount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // DelegationsTotalAmount is a free data retrieval call binding the contract method 0x30fa9929.
@@ -603,7 +663,10 @@ func (_SfcContract *SfcContractCaller) EpochSnapshots(opts *bind.CallOpts, arg0 
 	DelegationsTotalAmount *big.Int
 	TotalSupply            *big.Int
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "epochSnapshots", arg0)
+
+	outstruct := new(struct {
 		EndTime                *big.Int
 		Duration               *big.Int
 		EpochFee               *big.Int
@@ -614,9 +677,19 @@ func (_SfcContract *SfcContractCaller) EpochSnapshots(opts *bind.CallOpts, arg0 
 		DelegationsTotalAmount *big.Int
 		TotalSupply            *big.Int
 	})
-	out := ret
-	err := _SfcContract.contract.Call(opts, out, "epochSnapshots", arg0)
-	return *ret, err
+
+	outstruct.EndTime = out[0].(*big.Int)
+	outstruct.Duration = out[1].(*big.Int)
+	outstruct.EpochFee = out[2].(*big.Int)
+	outstruct.TotalBaseRewardWeight = out[3].(*big.Int)
+	outstruct.TotalTxRewardWeight = out[4].(*big.Int)
+	outstruct.BaseRewardPerSecond = out[5].(*big.Int)
+	outstruct.StakeTotalAmount = out[6].(*big.Int)
+	outstruct.DelegationsTotalAmount = out[7].(*big.Int)
+	outstruct.TotalSupply = out[8].(*big.Int)
+
+	return *outstruct, err
+
 }
 
 // EpochSnapshots is a free data retrieval call binding the contract method 0x1e8a6956.
@@ -662,15 +735,23 @@ func (_SfcContract *SfcContractCaller) EpochValidator(opts *bind.CallOpts, e *bi
 	BaseRewardWeight *big.Int
 	TxRewardWeight   *big.Int
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "epochValidator", e, v)
+
+	outstruct := new(struct {
 		StakeAmount      *big.Int
 		DelegatedMe      *big.Int
 		BaseRewardWeight *big.Int
 		TxRewardWeight   *big.Int
 	})
-	out := ret
-	err := _SfcContract.contract.Call(opts, out, "epochValidator", e, v)
-	return *ret, err
+
+	outstruct.StakeAmount = out[0].(*big.Int)
+	outstruct.DelegatedMe = out[1].(*big.Int)
+	outstruct.BaseRewardWeight = out[2].(*big.Int)
+	outstruct.TxRewardWeight = out[3].(*big.Int)
+
+	return *outstruct, err
+
 }
 
 // EpochValidator is a free data retrieval call binding the contract method 0xb9029d50.
@@ -701,12 +782,17 @@ func (_SfcContract *SfcContractCallerSession) EpochValidator(e *big.Int, v *big.
 //
 // Solidity: function firstLockedUpEpoch() view returns(uint256)
 func (_SfcContract *SfcContractCaller) FirstLockedUpEpoch(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "firstLockedUpEpoch")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "firstLockedUpEpoch")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // FirstLockedUpEpoch is a free data retrieval call binding the contract method 0x6e1a767a.
@@ -727,12 +813,17 @@ func (_SfcContract *SfcContractCallerSession) FirstLockedUpEpoch() (*big.Int, er
 //
 // Solidity: function getDelegationRewardRatio(address delegator, uint256 toStakerID) view returns(uint256)
 func (_SfcContract *SfcContractCaller) GetDelegationRewardRatio(opts *bind.CallOpts, delegator common.Address, toStakerID *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "getDelegationRewardRatio", delegator, toStakerID)
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "getDelegationRewardRatio", delegator, toStakerID)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // GetDelegationRewardRatio is a free data retrieval call binding the contract method 0x5573184d.
@@ -753,12 +844,17 @@ func (_SfcContract *SfcContractCallerSession) GetDelegationRewardRatio(delegator
 //
 // Solidity: function getStakerID(address addr) view returns(uint256)
 func (_SfcContract *SfcContractCaller) GetStakerID(opts *bind.CallOpts, addr common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "getStakerID", addr)
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "getStakerID", addr)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // GetStakerID is a free data retrieval call binding the contract method 0x63321e27.
@@ -779,12 +875,17 @@ func (_SfcContract *SfcContractCallerSession) GetStakerID(addr common.Address) (
 //
 // Solidity: function getValidatorRewardRatio(uint256 stakerID) view returns(uint256)
 func (_SfcContract *SfcContractCaller) GetValidatorRewardRatio(opts *bind.CallOpts, stakerID *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "getValidatorRewardRatio", stakerID)
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "getValidatorRewardRatio", stakerID)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // GetValidatorRewardRatio is a free data retrieval call binding the contract method 0x8e431b8d.
@@ -805,12 +906,17 @@ func (_SfcContract *SfcContractCallerSession) GetValidatorRewardRatio(stakerID *
 //
 // Solidity: function isDelegationLockedUp(address delegator, uint256 toStakerID) view returns(bool)
 func (_SfcContract *SfcContractCaller) IsDelegationLockedUp(opts *bind.CallOpts, delegator common.Address, toStakerID *big.Int) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "isDelegationLockedUp", delegator, toStakerID)
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "isDelegationLockedUp", delegator, toStakerID)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // IsDelegationLockedUp is a free data retrieval call binding the contract method 0xcfd5fa0c.
@@ -831,12 +937,17 @@ func (_SfcContract *SfcContractCallerSession) IsDelegationLockedUp(delegator com
 //
 // Solidity: function isOwner() view returns(bool)
 func (_SfcContract *SfcContractCaller) IsOwner(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "isOwner")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "isOwner")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
@@ -857,12 +968,17 @@ func (_SfcContract *SfcContractCallerSession) IsOwner() (bool, error) {
 //
 // Solidity: function isStakeLockedUp(uint256 staker) view returns(bool)
 func (_SfcContract *SfcContractCaller) IsStakeLockedUp(opts *bind.CallOpts, staker *big.Int) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "isStakeLockedUp", staker)
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "isStakeLockedUp", staker)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // IsStakeLockedUp is a free data retrieval call binding the contract method 0x7f664d87.
@@ -891,7 +1007,10 @@ func (_SfcContract *SfcContractCaller) LegacyDelegations(opts *bind.CallOpts, ar
 	PaidUntilEpoch   *big.Int
 	ToStakerID       *big.Int
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "legacyDelegations", arg0)
+
+	outstruct := new(struct {
 		CreatedEpoch     *big.Int
 		CreatedTime      *big.Int
 		DeactivatedEpoch *big.Int
@@ -900,9 +1019,17 @@ func (_SfcContract *SfcContractCaller) LegacyDelegations(opts *bind.CallOpts, ar
 		PaidUntilEpoch   *big.Int
 		ToStakerID       *big.Int
 	})
-	out := ret
-	err := _SfcContract.contract.Call(opts, out, "legacyDelegations", arg0)
-	return *ret, err
+
+	outstruct.CreatedEpoch = out[0].(*big.Int)
+	outstruct.CreatedTime = out[1].(*big.Int)
+	outstruct.DeactivatedEpoch = out[2].(*big.Int)
+	outstruct.DeactivatedTime = out[3].(*big.Int)
+	outstruct.Amount = out[4].(*big.Int)
+	outstruct.PaidUntilEpoch = out[5].(*big.Int)
+	outstruct.ToStakerID = out[6].(*big.Int)
+
+	return *outstruct, err
+
 }
 
 // LegacyDelegations is a free data retrieval call binding the contract method 0x5b81b886.
@@ -943,14 +1070,21 @@ func (_SfcContract *SfcContractCaller) LockedDelegations(opts *bind.CallOpts, ar
 	EndTime   *big.Int
 	Duration  *big.Int
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "lockedDelegations", arg0, arg1)
+
+	outstruct := new(struct {
 		FromEpoch *big.Int
 		EndTime   *big.Int
 		Duration  *big.Int
 	})
-	out := ret
-	err := _SfcContract.contract.Call(opts, out, "lockedDelegations", arg0, arg1)
-	return *ret, err
+
+	outstruct.FromEpoch = out[0].(*big.Int)
+	outstruct.EndTime = out[1].(*big.Int)
+	outstruct.Duration = out[2].(*big.Int)
+
+	return *outstruct, err
+
 }
 
 // LockedDelegations is a free data retrieval call binding the contract method 0xdd099bb6.
@@ -983,14 +1117,21 @@ func (_SfcContract *SfcContractCaller) LockedStakes(opts *bind.CallOpts, arg0 *b
 	EndTime   *big.Int
 	Duration  *big.Int
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "lockedStakes", arg0)
+
+	outstruct := new(struct {
 		FromEpoch *big.Int
 		EndTime   *big.Int
 		Duration  *big.Int
 	})
-	out := ret
-	err := _SfcContract.contract.Call(opts, out, "lockedStakes", arg0)
-	return *ret, err
+
+	outstruct.FromEpoch = out[0].(*big.Int)
+	outstruct.EndTime = out[1].(*big.Int)
+	outstruct.Duration = out[2].(*big.Int)
+
+	return *outstruct, err
+
 }
 
 // LockedStakes is a free data retrieval call binding the contract method 0xdf4f49d4.
@@ -1019,12 +1160,17 @@ func (_SfcContract *SfcContractCallerSession) LockedStakes(arg0 *big.Int) (struc
 //
 // Solidity: function maxDelegatedRatio() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) MaxDelegatedRatio(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "maxDelegatedRatio")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "maxDelegatedRatio")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MaxDelegatedRatio is a free data retrieval call binding the contract method 0x2265f284.
@@ -1045,12 +1191,17 @@ func (_SfcContract *SfcContractCallerSession) MaxDelegatedRatio() (*big.Int, err
 //
 // Solidity: function maxLockupDuration() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) MaxLockupDuration(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "maxLockupDuration")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "maxLockupDuration")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MaxLockupDuration is a free data retrieval call binding the contract method 0x0d4955e3.
@@ -1071,12 +1222,17 @@ func (_SfcContract *SfcContractCallerSession) MaxLockupDuration() (*big.Int, err
 //
 // Solidity: function maxStakerMetadataSize() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) MaxStakerMetadataSize(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "maxStakerMetadataSize")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "maxStakerMetadataSize")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MaxStakerMetadataSize is a free data retrieval call binding the contract method 0xab2273c0.
@@ -1097,12 +1253,17 @@ func (_SfcContract *SfcContractCallerSession) MaxStakerMetadataSize() (*big.Int,
 //
 // Solidity: function minDelegation() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) MinDelegation(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "minDelegation")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "minDelegation")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MinDelegation is a free data retrieval call binding the contract method 0x02985992.
@@ -1123,12 +1284,17 @@ func (_SfcContract *SfcContractCallerSession) MinDelegation() (*big.Int, error) 
 //
 // Solidity: function minDelegationDecrease() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) MinDelegationDecrease(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "minDelegationDecrease")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "minDelegationDecrease")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MinDelegationDecrease is a free data retrieval call binding the contract method 0xcb1c4e67.
@@ -1149,12 +1315,17 @@ func (_SfcContract *SfcContractCallerSession) MinDelegationDecrease() (*big.Int,
 //
 // Solidity: function minDelegationIncrease() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) MinDelegationIncrease(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "minDelegationIncrease")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "minDelegationIncrease")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MinDelegationIncrease is a free data retrieval call binding the contract method 0x60c7e37f.
@@ -1175,12 +1346,17 @@ func (_SfcContract *SfcContractCallerSession) MinDelegationIncrease() (*big.Int,
 //
 // Solidity: function minLockupDuration() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) MinLockupDuration(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "minLockupDuration")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "minLockupDuration")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MinLockupDuration is a free data retrieval call binding the contract method 0x0d7b2609.
@@ -1201,12 +1377,17 @@ func (_SfcContract *SfcContractCallerSession) MinLockupDuration() (*big.Int, err
 //
 // Solidity: function minStake() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) MinStake(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "minStake")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "minStake")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MinStake is a free data retrieval call binding the contract method 0x375b3c0a.
@@ -1227,12 +1408,17 @@ func (_SfcContract *SfcContractCallerSession) MinStake() (*big.Int, error) {
 //
 // Solidity: function minStakeDecrease() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) MinStakeDecrease(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "minStakeDecrease")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "minStakeDecrease")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MinStakeDecrease is a free data retrieval call binding the contract method 0x19ddb54f.
@@ -1253,12 +1439,17 @@ func (_SfcContract *SfcContractCallerSession) MinStakeDecrease() (*big.Int, erro
 //
 // Solidity: function minStakeIncrease() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) MinStakeIncrease(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "minStakeIncrease")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "minStakeIncrease")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // MinStakeIncrease is a free data retrieval call binding the contract method 0xc4b5dd7e.
@@ -1279,12 +1470,17 @@ func (_SfcContract *SfcContractCallerSession) MinStakeIncrease() (*big.Int, erro
 //
 // Solidity: function owner() view returns(address)
 func (_SfcContract *SfcContractCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "owner")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "owner")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
@@ -1305,12 +1501,17 @@ func (_SfcContract *SfcContractCallerSession) Owner() (common.Address, error) {
 //
 // Solidity: function rewardsStash(address , uint256 ) view returns(uint256 amount)
 func (_SfcContract *SfcContractCaller) RewardsStash(opts *bind.CallOpts, arg0 common.Address, arg1 *big.Int) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "rewardsStash", arg0, arg1)
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "rewardsStash", arg0, arg1)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // RewardsStash is a free data retrieval call binding the contract method 0x6f498663.
@@ -1331,12 +1532,17 @@ func (_SfcContract *SfcContractCallerSession) RewardsStash(arg0 common.Address, 
 //
 // Solidity: function slashedDelegationsTotalAmount() view returns(uint256)
 func (_SfcContract *SfcContractCaller) SlashedDelegationsTotalAmount(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "slashedDelegationsTotalAmount")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "slashedDelegationsTotalAmount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // SlashedDelegationsTotalAmount is a free data retrieval call binding the contract method 0xa70da4d2.
@@ -1357,12 +1563,17 @@ func (_SfcContract *SfcContractCallerSession) SlashedDelegationsTotalAmount() (*
 //
 // Solidity: function slashedStakeTotalAmount() view returns(uint256)
 func (_SfcContract *SfcContractCaller) SlashedStakeTotalAmount(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "slashedStakeTotalAmount")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "slashedStakeTotalAmount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // SlashedStakeTotalAmount is a free data retrieval call binding the contract method 0x0a29180c.
@@ -1383,12 +1594,17 @@ func (_SfcContract *SfcContractCallerSession) SlashedStakeTotalAmount() (*big.In
 //
 // Solidity: function stakeLockPeriodEpochs() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) StakeLockPeriodEpochs(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "stakeLockPeriodEpochs")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "stakeLockPeriodEpochs")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // StakeLockPeriodEpochs is a free data retrieval call binding the contract method 0x54d77ed2.
@@ -1409,12 +1625,17 @@ func (_SfcContract *SfcContractCallerSession) StakeLockPeriodEpochs() (*big.Int,
 //
 // Solidity: function stakeLockPeriodTime() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) StakeLockPeriodTime(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "stakeLockPeriodTime")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "stakeLockPeriodTime")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // StakeLockPeriodTime is a free data retrieval call binding the contract method 0x3fee10a8.
@@ -1435,12 +1656,17 @@ func (_SfcContract *SfcContractCallerSession) StakeLockPeriodTime() (*big.Int, e
 //
 // Solidity: function stakeTotalAmount() view returns(uint256)
 func (_SfcContract *SfcContractCaller) StakeTotalAmount(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "stakeTotalAmount")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "stakeTotalAmount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // StakeTotalAmount is a free data retrieval call binding the contract method 0x3d0317fe.
@@ -1461,12 +1687,17 @@ func (_SfcContract *SfcContractCallerSession) StakeTotalAmount() (*big.Int, erro
 //
 // Solidity: function stakerMetadata(uint256 ) view returns(bytes)
 func (_SfcContract *SfcContractCaller) StakerMetadata(opts *bind.CallOpts, arg0 *big.Int) ([]byte, error) {
-	var (
-		ret0 = new([]byte)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "stakerMetadata", arg0)
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "stakerMetadata", arg0)
+
+	if err != nil {
+		return *new([]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
+
+	return out0, err
+
 }
 
 // StakerMetadata is a free data retrieval call binding the contract method 0x98ec2de5.
@@ -1498,7 +1729,10 @@ func (_SfcContract *SfcContractCaller) Stakers(opts *bind.CallOpts, arg0 *big.In
 	DagAddress       common.Address
 	SfcAddress       common.Address
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "stakers", arg0)
+
+	outstruct := new(struct {
 		Status           *big.Int
 		CreatedEpoch     *big.Int
 		CreatedTime      *big.Int
@@ -1510,9 +1744,20 @@ func (_SfcContract *SfcContractCaller) Stakers(opts *bind.CallOpts, arg0 *big.In
 		DagAddress       common.Address
 		SfcAddress       common.Address
 	})
-	out := ret
-	err := _SfcContract.contract.Call(opts, out, "stakers", arg0)
-	return *ret, err
+
+	outstruct.Status = out[0].(*big.Int)
+	outstruct.CreatedEpoch = out[1].(*big.Int)
+	outstruct.CreatedTime = out[2].(*big.Int)
+	outstruct.DeactivatedEpoch = out[3].(*big.Int)
+	outstruct.DeactivatedTime = out[4].(*big.Int)
+	outstruct.StakeAmount = out[5].(*big.Int)
+	outstruct.PaidUntilEpoch = out[6].(*big.Int)
+	outstruct.DelegatedMe = out[7].(*big.Int)
+	outstruct.DagAddress = out[8].(common.Address)
+	outstruct.SfcAddress = out[9].(common.Address)
+
+	return *outstruct, err
+
 }
 
 // Stakers is a free data retrieval call binding the contract method 0xfd5e6dd1.
@@ -1555,12 +1800,17 @@ func (_SfcContract *SfcContractCallerSession) Stakers(arg0 *big.Int) (struct {
 //
 // Solidity: function stakersLastID() view returns(uint256)
 func (_SfcContract *SfcContractCaller) StakersLastID(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "stakersLastID")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "stakersLastID")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // StakersLastID is a free data retrieval call binding the contract method 0x81d9dc7a.
@@ -1581,12 +1831,17 @@ func (_SfcContract *SfcContractCallerSession) StakersLastID() (*big.Int, error) 
 //
 // Solidity: function stakersNum() view returns(uint256)
 func (_SfcContract *SfcContractCaller) StakersNum(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "stakersNum")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "stakersNum")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // StakersNum is a free data retrieval call binding the contract method 0x08728f6e.
@@ -1607,12 +1862,17 @@ func (_SfcContract *SfcContractCallerSession) StakersNum() (*big.Int, error) {
 //
 // Solidity: function totalBurntLockupRewards() view returns(uint256)
 func (_SfcContract *SfcContractCaller) TotalBurntLockupRewards(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "totalBurntLockupRewards")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "totalBurntLockupRewards")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // TotalBurntLockupRewards is a free data retrieval call binding the contract method 0xa289ad6e.
@@ -1633,12 +1893,17 @@ func (_SfcContract *SfcContractCallerSession) TotalBurntLockupRewards() (*big.In
 //
 // Solidity: function unlockedRewardRatio() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) UnlockedRewardRatio(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "unlockedRewardRatio")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "unlockedRewardRatio")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // UnlockedRewardRatio is a free data retrieval call binding the contract method 0x5e2308d2.
@@ -1659,12 +1924,17 @@ func (_SfcContract *SfcContractCallerSession) UnlockedRewardRatio() (*big.Int, e
 //
 // Solidity: function validatorCommission() pure returns(uint256)
 func (_SfcContract *SfcContractCaller) ValidatorCommission(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "validatorCommission")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "validatorCommission")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ValidatorCommission is a free data retrieval call binding the contract method 0xa7786515.
@@ -1685,12 +1955,17 @@ func (_SfcContract *SfcContractCallerSession) ValidatorCommission() (*big.Int, e
 //
 // Solidity: function version() pure returns(bytes3)
 func (_SfcContract *SfcContractCaller) Version(opts *bind.CallOpts) ([3]byte, error) {
-	var (
-		ret0 = new([3]byte)
-	)
-	out := ret0
-	err := _SfcContract.contract.Call(opts, out, "version")
-	return *ret0, err
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "version")
+
+	if err != nil {
+		return *new([3]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([3]byte)).(*[3]byte)
+
+	return out0, err
+
 }
 
 // Version is a free data retrieval call binding the contract method 0x54fd4d50.
@@ -1717,16 +1992,25 @@ func (_SfcContract *SfcContractCaller) WithdrawalRequests(opts *bind.CallOpts, a
 	Amount     *big.Int
 	Delegation bool
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _SfcContract.contract.Call(opts, &out, "withdrawalRequests", arg0, arg1)
+
+	outstruct := new(struct {
 		StakerID   *big.Int
 		Epoch      *big.Int
 		Time       *big.Int
 		Amount     *big.Int
 		Delegation bool
 	})
-	out := ret
-	err := _SfcContract.contract.Call(opts, out, "withdrawalRequests", arg0, arg1)
-	return *ret, err
+
+	outstruct.StakerID = out[0].(*big.Int)
+	outstruct.Epoch = out[1].(*big.Int)
+	outstruct.Time = out[2].(*big.Int)
+	outstruct.Amount = out[3].(*big.Int)
+	outstruct.Delegation = out[4].(bool)
+
+	return *outstruct, err
+
 }
 
 // WithdrawalRequests is a free data retrieval call binding the contract method 0x4e5a2328.
