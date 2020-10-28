@@ -25,6 +25,9 @@ type MongoDbBridge struct {
 
 // New creates a new Mongo Db connection bridge.
 func New(cfg *config.Config, log logger.Logger) (*MongoDbBridge, error) {
+	// log what we do
+	log.Debugf("connecting database at %s/%s", cfg.Db.Url, cfg.Db.DbName)
+
 	// get empty unrestricted context
 	ctx := context.Background()
 
@@ -43,13 +46,13 @@ func New(cfg *config.Config, log logger.Logger) (*MongoDbBridge, error) {
 	}
 
 	// log the event
-	log.Notice("database backend connection established")
+	log.Notice("database connection established")
 
 	// make a new Bridge
 	return &MongoDbBridge{
 		client: client,
 		log:    log,
-		dbName: cfg.MongoDatabase,
+		dbName: cfg.Db.DbName,
 	}, nil
 }
 
@@ -70,7 +73,7 @@ func (db *MongoDbBridge) Close() {
 
 // clientOptions creates a new Mongo configuration for connecting the database backend.
 func clientOptions(cfg *config.Config) *options.ClientOptions {
-	return options.Client().ApplyURI(cfg.MongoUrl)
+	return options.Client().ApplyURI(cfg.Db.Url)
 }
 
 // SetBalance sets the account balance retrieval callback.
