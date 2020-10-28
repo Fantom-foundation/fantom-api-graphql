@@ -18,6 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"strings"
 )
 
 //go:generate abigen --abi ./contracts/gov_governance.abi --pkg rpc --type Governance --out ./smc_governance.go
@@ -142,7 +143,7 @@ func govConvertOptions(opt [][32]byte) []string {
 
 	// loop the options
 	for i, v := range opt {
-		res[i] = string(v[:])
+		res[i] = strings.TrimRight(string(v[:]), "\u0000 ")
 	}
 
 	return res
@@ -318,8 +319,11 @@ func (ftm *FtmBridge) GovernanceProposalsBy(gov *common.Address) ([]*types.Gover
 		return nil, err
 	}
 
+	// log what we do
+	ftm.log.Debugf("loading %d proposals of %s", maxProposalId.Uint64(), gov.String())
+
 	// make the array; the maxProposalId starts with 1 so we need array for one less
-	result := make([]*types.GovernanceProposal, maxProposalId.Uint64()-1)
+	result := make([]*types.GovernanceProposal, 0)
 
 	// loop the sys to load proposals
 	for i := maxProposalId.Int64(); i > 0; i-- {
@@ -331,9 +335,12 @@ func (ftm *FtmBridge) GovernanceProposalsBy(gov *common.Address) ([]*types.Gover
 		}
 
 		// keep the proposal in the list
-		result[i-maxProposalId.Int64()] = gp
+		ftm.log.Debugf("found proposal #%d on %s", gp.Id.ToInt().Uint64(), gov.String())
+		result = append(result, gp)
 	}
 
+	// log what we do
+	ftm.log.Debugf("%d proposals of %s loaded", maxProposalId.Uint64(), gov.String())
 	return result, nil
 }
 
