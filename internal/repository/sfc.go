@@ -40,6 +40,11 @@ func (p *proxy) StakersNum() (hexutil.Uint64, error) {
 	return p.rpc.StakersNum()
 }
 
+// IsStaker returns if the given address is an SFC staker.
+func (p *proxy) IsStaker(addr *common.Address) (bool, error) {
+	return p.rpc.IsStaker(addr)
+}
+
 // Staker extract a staker information from SFC smart contract.
 func (p *proxy) Staker(id hexutil.Uint64) (*types.Staker, error) {
 	return p.rpc.Staker(id)
@@ -48,6 +53,11 @@ func (p *proxy) Staker(id hexutil.Uint64) (*types.Staker, error) {
 // Staker extract a staker information by address.
 func (p *proxy) StakerByAddress(addr common.Address) (*types.Staker, error) {
 	return p.rpc.StakerByAddress(addr)
+}
+
+// IsDelegating returns if the given address is an SFC delegator.
+func (p *proxy) IsDelegating(addr *common.Address) (bool, error) {
+	return p.rpc.IsDelegating(addr)
 }
 
 // DelegationsOf extract a list of delegations for a given staker.
