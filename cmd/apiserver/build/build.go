@@ -4,24 +4,42 @@
 // results, or check it to inject the variables manually.
 package build
 
-import "fmt"
+import (
+	"fantom-api-graphql/internal/config"
+	"fmt"
+	"runtime"
+)
 
 var Version = "undefined"
 var Commit = "undefined"
+var CommitTime = "undefined"
 var Time = "undefined"
 var Compiler = "undefined"
 
+var Reset = "\033[0m"
+var Blue = "\033[34m"
+
+// init initializes the build reference on the given OS
+func init() {
+	if runtime.GOOS == "windows" {
+		Reset = ""
+		Blue = ""
+	}
+}
+
 // PrintVersion prints the version information
 // into the std output.
-func PrintVersion() {
-	fmt.Printf("Fantom GraphQL API Server\n")
-	fmt.Printf("App Version:\t%s\n", Version)
-	fmt.Printf("Build Commit:\t%s\n", Commit)
-	fmt.Printf("Build Time:\t%s\n", Time)
-	fmt.Printf("Build GoLang:\t%s\n", Compiler)
+func PrintVersion(cfg *config.Config) {
+	fmt.Printf("%sApp Name:%s\t%s\n", Blue, Reset, cfg.AppName)
+	fmt.Printf("%sApp Version:%s\t%s\n", Blue, Reset, Version)
+	fmt.Printf("%sCommit Hash:%s\t%s\n", Blue, Reset, Commit)
+	fmt.Printf("%sCommit Time:%s\t%s\n", Blue, Reset, CommitTime)
+	fmt.Printf("%sBuild Time:%s\t%s\n", Blue, Reset, Time)
+	fmt.Printf("%sBuild By:%s\t%s\n", Blue, Reset, Compiler)
+	fmt.Printf("%sIdentity:%s\t%s\n", Blue, Reset, Short(cfg))
 }
 
 // Short returns a short, single line version of the app.
-func Short() string {
-	return fmt.Sprintf("v%s, commit %s (%s by %s)", Version, Commit, Time, Compiler)
+func Short(cfg *config.Config) string {
+	return fmt.Sprintf("%s v%s, commit:%s, build:%s", cfg.AppName, Version, Commit, Time)
 }
