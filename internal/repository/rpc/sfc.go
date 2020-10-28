@@ -259,6 +259,24 @@ func (ftm *FtmBridge) Staker(id hexutil.Uint64) (*types.Staker, error) {
 	return ftm.extendStaker(&st)
 }
 
+// IsStaker returns if the given address is an SFC staker.
+func (ftm *FtmBridge) IsStaker(addr *common.Address) (bool, error) {
+	// keep track of the operation
+	ftm.log.Debugf("loading staker %s", addr.String())
+
+	// check the status
+	var st types.Staker
+	err := ftm.rpc.Call(&st, "sfc_getStakerByAddress", *addr, "0x0")
+	if err != nil {
+		ftm.log.Error("staker information could not be extracted")
+		return false, err
+	}
+
+	// keep track of the operation
+	ftm.log.Debugf("staker %s verified to be %s", addr.String(), st.IsActive)
+	return st.Id > 0, nil
+}
+
 // StakerByAddress extracts a staker information by address.
 func (ftm *FtmBridge) StakerByAddress(addr common.Address) (*types.Staker, error) {
 	// keep track of the operation
@@ -364,6 +382,22 @@ func (ftm *FtmBridge) DelegationsOf(staker hexutil.Uint64) ([]types.Delegation, 
 	// keep track of the operation
 	ftm.log.Debugf("delegations of staker %d loaded", staker)
 	return dl, nil
+}
+
+// IsDelegating returns if the given address is an SFC delegator.
+func (ftm *FtmBridge) IsDelegating(addr *common.Address) (bool, error) {
+	// keep track of the operation
+	ftm.log.Debugf("checking delegations of account %d", addr.String())
+
+	// call for data
+	dl := make([]types.Delegation, 0)
+	err := ftm.rpc.Call(&dl, "sfc_getDelegationsByAddress", addr.String(), "0x0")
+	if err != nil {
+		ftm.log.Error("delegations list could not be extracted")
+		return false, err
+	}
+
+	return 0 < len(dl), nil
 }
 
 // DelegationsByAddress returns a list of all delegations
