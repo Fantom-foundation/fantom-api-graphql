@@ -35,7 +35,7 @@ func Api(cfg *config.Config, log logger.Logger, rs resolvers.ApiResolver) http.H
 // corsOptions constructs new set of options for the CORS handler based on provided configuration.
 func corsOptions(cfg *config.Config) cors.Options {
 	return cors.Options{
-		AllowedOrigins: cfg.CorsAllowOrigins,
+		AllowedOrigins: cfg.Server.CorsOrigin,
 		AllowedMethods: []string{"HEAD", "GET", "POST"},
 		AllowedHeaders: []string{"Origin", "Accept", "Content-Type", "X-Requested-With"},
 		MaxAge:         300,
