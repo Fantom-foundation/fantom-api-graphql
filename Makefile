@@ -9,12 +9,22 @@
 PROJECT := $(shell basename "$(PWD)")
 
 # go related vars
-GOBASE := $(shell pwd)
-GOBIN=$(CURDIR)/build
+GO_BASE := $(shell pwd)
+GO_BIN := $(CURDIR)/build
+
+# compile time variables will be injected into the app
+APP_VERSION := 0.1.1
+BUILD_DATE := $(shell date)
+BUILD_COMPILER := $(shell go version)
+BUILD_COMMIT := $(shell git show --format="%H" --no-patch)
+BUILD_COMMIT_TIME := $(shell git show --format="%cD" --no-patch)
 
 ## server: Make the API server as build/apiserver
 server:
-	go build -o $(GOBIN)/apiserver ./cmd/apiserver
+	go build \
+	-ldflags="-X 'fantom-api-graphql/cmd/apiserver/build.Version=$(APP_VERSION)' -X 'fantom-api-graphql/cmd/apiserver/build.Time=$(BUILD_DATE)' -X 'fantom-api-graphql/cmd/apiserver/build.Compiler=$(BUILD_COMPILER)' -X 'fantom-api-graphql/cmd/apiserver/build.Commit=$(BUILD_COMMIT)' -X 'fantom-api-graphql/cmd/apiserver/build.CommitTime=$(BUILD_COMMIT_TIME)'" \
+	-o $(GO_BIN)/apiserver \
+	./cmd/apiserver
 
 .PHONY: help
 all: help
