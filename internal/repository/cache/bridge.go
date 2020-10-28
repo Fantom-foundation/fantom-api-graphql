@@ -35,12 +35,16 @@ func New(cfg *config.Config, log logger.Logger) (*MemBridge, error) {
 
 // cacheConfig constructs a configuration structure for BigCache initialization.
 func cacheConfig(cfg *config.Config, log logger.Logger) bigcache.Config {
+	// log the info
+	log.Debugf("memory cache eviction set to %s", cfg.Cache.Eviction)
+
+	// return the cache config
 	return bigcache.Config{
 		// number of shards (must be a power of 2)
 		Shards: 1024,
 
 		// time after which entry can be evicted
-		LifeWindow: cfg.CacheEvictionTime,
+		LifeWindow: cfg.Cache.Eviction,
 
 		// Interval between removing expired entries (clean up).
 		// If set to <= 0 then no action is performed.
