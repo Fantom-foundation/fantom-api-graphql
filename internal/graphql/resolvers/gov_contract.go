@@ -140,11 +140,18 @@ func (gc *GovernanceContract) sfcDelegationsBy(addr common.Address) ([]common.Ad
 	}
 
 	// prep the result container
-	res := make([]common.Address, len(dl))
+	res := make([]common.Address, 0)
+
+	// check if the address is a staker
+	// if so, it also delegates to itself in the context of the contract
+	isStaker, err := gc.repo.IsStaker(&addr)
+	if err != nil && isStaker {
+		res = append(res, addr)
+	}
 
 	// loop delegations to make the list
-	for i, d := range dl {
-		res[i] = d.Address
+	for _, d := range dl {
+		res = append(res, d.Address)
 	}
 
 	return res, nil
