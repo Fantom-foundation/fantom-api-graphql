@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"strings"
 )
 
 // GovernanceProposalsCount provides the total number of proposals
@@ -57,7 +58,7 @@ func (p *proxy) GovernanceVote(
 func (p *proxy) GovernanceContractBy(addr *common.Address) (*config.GovernanceContract, error) {
 	// loop all contracts
 	for _, gc := range p.govContracts {
-		if gc.Address == addr.String() {
+		if strings.EqualFold(gc.Address, addr.String()) {
 			return &gc, nil
 		}
 	}
