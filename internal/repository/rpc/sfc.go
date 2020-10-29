@@ -260,6 +260,21 @@ func (ftm *FtmBridge) Staker(id hexutil.Uint64) (*types.Staker, error) {
 	return ftm.extendStaker(&st)
 }
 
+// StakerAddress extract a staker address for the given staker ID.
+func (ftm *FtmBridge) StakerAddress(id hexutil.Uint64) (common.Address, error) {
+	// call for data
+	var st types.Staker
+	err := ftm.rpc.Call(&st, "sfc_getStaker", id, "0x0")
+	if err != nil {
+		ftm.log.Error("staker information could not be extracted")
+		return common.Address{}, err
+	}
+
+	// keep track of the operation
+	ftm.log.Debugf("staker #%d identified as %s", id, st.StakerAddress.String())
+	return st.StakerAddress, nil
+}
+
 // IsStaker returns if the given address is an SFC staker.
 func (ftm *FtmBridge) IsStaker(addr *common.Address) (bool, error) {
 	// keep track of the operation

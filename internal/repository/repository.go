@@ -24,6 +24,9 @@ import (
 
 // Repository interface defines functions the underlying implementation provides to API resolvers.
 type Repository interface {
+	// log provides access to the system wide logger.
+	Log() logger.Logger
+
 	// FtmConnection returns open connection to Opera/Lachesis full node.
 	FtmConnection() *ftm.Client
 
@@ -107,6 +110,9 @@ type Repository interface {
 
 	// Staker extract a staker information from SFC smart contract.
 	Staker(hexutil.Uint64) (*types.Staker, error)
+
+	// StakerAddress extract a staker address for the given staker ID.
+	StakerAddress(hexutil.Uint64) (common.Address, error)
 
 	// Staker extract a staker information by address.
 	StakerByAddress(common.Address) (*types.Staker, error)
@@ -460,6 +466,11 @@ func (p *proxy) Close() {
 
 	// inform about actions
 	p.log.Notice("repository done")
+}
+
+// FtmClient returns open connection to Opera/Lachesis full node.
+func (p *proxy) Log() logger.Logger {
+	return p.log
 }
 
 // FtmClient returns open connection to Opera/Lachesis full node.

@@ -145,15 +145,25 @@ func (gc *GovernanceContract) sfcDelegationsBy(addr common.Address) ([]common.Ad
 	// check if the address is a staker
 	// if so, it also delegates to itself in the context of the contract
 	isStaker, err := gc.repo.IsStaker(&addr)
-	if err != nil && isStaker {
+	if err == nil && isStaker {
 		res = append(res, addr)
 	}
 
 	// loop delegations to make the list
 	for _, d := range dl {
-		res = append(res, d.Address)
+		// get the staker info
+		staker, err := gc.repo.StakerAddress(d.ToStakerId)
+		if err != nil {
+			gc.repo.Log().Errorf("error loading staker %d info; %s", d.ToStakerId, addr.String())
+			return nil, err
+		}
+
+		// get the
+		res = append(res, staker)
 	}
 
+	// log delegations found
+	gc.repo.Log().Debugf("%d delegations on %s", len(res), addr.String())
 	return res, nil
 }
 
@@ -167,6 +177,7 @@ func (gc *GovernanceContract) sfcCanVote(addr common.Address) (bool, error) {
 
 	// if the account is a staker, we are done here
 	if isStaker {
+		gc.repo.Log().Debugf("%s is validator", addr.String())
 		return true, nil
 	}
 

@@ -50,6 +50,11 @@ func (p *proxy) Staker(id hexutil.Uint64) (*types.Staker, error) {
 	return p.rpc.Staker(id)
 }
 
+// StakerAddress extract a staker address for the given staker ID.
+func (p *proxy) StakerAddress(id hexutil.Uint64) (common.Address, error) {
+	return p.rpc.StakerAddress(id)
+}
+
 // Staker extract a staker information by address.
 func (p *proxy) StakerByAddress(addr common.Address) (*types.Staker, error) {
 	return p.rpc.StakerByAddress(addr)
