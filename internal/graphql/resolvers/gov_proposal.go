@@ -32,10 +32,10 @@ func (gp *GovernanceProposal) OptionStates() ([]*types.GovernanceOptionState, er
 // Vote resolves the vote for the given <from> address linked
 // with the <delegatedTo> delegation recipient.
 func (gp *GovernanceProposal) Vote(args *struct {
-	From        *common.Address
+	From        common.Address
 	DelegatedTo *common.Address
 }) (*types.GovernanceVote, error) {
-	return gp.repo.GovernanceVote(&gp.GovernanceId, &gp.Id, args.From, args.DelegatedTo)
+	return gp.repo.GovernanceVote(&gp.GovernanceId, &gp.Id, &args.From, args.DelegatedTo)
 }
 
 // Governance resolves the parent Governance instance.
