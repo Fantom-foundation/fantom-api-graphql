@@ -266,7 +266,16 @@ func extendBallotFromDetails(ballot *types.Ballot, details *ballotDetails) {
 // ballotDetails loads additional ballot details from a deployed smart contract.
 // The initial ballot address is supposed to be already available
 // so the contract connection can be made.
-func (ftm *FtmBridge) ballotDetails(contract *BallotContract) (*ballotDetails, error) {
+func (ftm *FtmBridge) ballotDetails(contract *BallotContract) (detail *ballotDetails, err error) {
+	// make sure to recover from panic
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			ftm.log.Errorf("ballot details loader panicked")
+			err = fmt.Errorf("ballot details not available")
+			detail = nil
+		}
+	}()
+
 	// get base ballot details
 	details, err := contract.Ballot(nil)
 	if err != nil {
@@ -276,11 +285,21 @@ func (ftm *FtmBridge) ballotDetails(contract *BallotContract) (*ballotDetails, e
 
 	// make the conversion
 	det := ballotDetails(details)
-	return &det, nil
+	detail = &det
+	return detail, err
 }
 
 // ballotProposals load list of ballot proposal names from the smart contract.
-func (ftm *FtmBridge) ballotProposals(contract *BallotContract) ([]string, error) {
+func (ftm *FtmBridge) ballotProposals(contract *BallotContract) (list []string, err error) {
+	// make sure to recover from panic
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			ftm.log.Errorf("ballot proposals loader panicked")
+			err = fmt.Errorf("ballot proposals not available")
+			list = nil
+		}
+	}()
+
 	// get the number of proposals in the ballot
 	count, err := contract.ProposalsCount(nil)
 	if err != nil {
@@ -289,7 +308,7 @@ func (ftm *FtmBridge) ballotProposals(contract *BallotContract) ([]string, error
 	}
 
 	// make a container for proposals
-	list := make([]string, 0)
+	list = make([]string, 0)
 	index := new(big.Int)
 
 	// load all the proposals
