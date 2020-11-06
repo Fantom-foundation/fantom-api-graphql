@@ -16,6 +16,10 @@ type CurrentState {
     # accounts represents number of accounts participating on transactions.
     accounts: Long!
 
+    # sfcContractAddress is the address of the SFC contract
+    # used for PoS staking control.
+    sfcContractAddress: Address!
+
     # sfcLockingEnabled indicates if the SFC locking feature is enabled.
     sfcLockingEnabled: Boolean!
 

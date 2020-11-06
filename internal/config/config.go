@@ -94,9 +94,8 @@ type Staking struct {
 
 // DeFi represents the DeFi and financial contracts configuration.
 type DeFi struct {
-	StakeTokenizer string      `mapstructure:"stake_tokenizer"`
-	FMint          DeFiFMint   `mapstructure:"fmint"`
-	Uniswap        DeFiUniswap `mapstructure:"uniswap"`
+	FMint   DeFiFMint   `mapstructure:"fmint"`
+	Uniswap DeFiUniswap `mapstructure:"uniswap"`
 }
 
 // DeFiFMint represents the fMint DeFi module configuration.

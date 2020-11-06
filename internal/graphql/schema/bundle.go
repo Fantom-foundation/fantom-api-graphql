@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-11-06 11:01
+// Auto generated GraphQL schema bundle; created 2020-11-06 11:09
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -572,6 +572,10 @@ type CurrentState {
 
     # accounts represents number of accounts participating on transactions.
     accounts: Long!
+
+    # sfcContractAddress is the address of the SFC contract
+    # used for PoS staking control.
+    sfcContractAddress: Address!
 
     # sfcLockingEnabled indicates if the SFC locking feature is enabled.
     sfcLockingEnabled: Boolean!
