@@ -22,8 +22,12 @@ const (
 	keySolCompilerPath   = "compiler.sol"
 	keyVotingSources     = "voting.sources"
 
+	// PoS staking configuration
+	keyStakingSfcContract       = "staking.sfc"
+	keyStakingTokenizerContract = "staking.tokenizer"
+	keyStakingERC20Token        = "staking.token"
+
 	// defi related configs
-	keyDefiStakeTokenizer       = "defi.stake_tokenizer"
 	keyDefiFMintAddressProvider = "defi.fmint.address_provider"
 	keyDefiUniswapCore          = "defi.uniswap.core"
 	keyDefiUniswapRouter        = "defi.uniswap.router"

@@ -31,6 +31,9 @@ type Config struct {
 	// Repository configuration
 	Repository Repository `mapstructure:"repository"`
 
+	// Staking configuration
+	Staking Staking `mapstructure:"staking"`
+
 	// DeFi configuration
 	DeFi DeFi `mapstructure:"defi"`
 
@@ -80,6 +83,13 @@ type Compiler struct {
 // Repository represents the repository configuration.
 type Repository struct {
 	MonitorStakers bool `mapstructure:"stakers"`
+}
+
+// Staking represents the PoS Staking module configuration.
+type Staking struct {
+	SFCContract         string `mapstructure:"sfc"`
+	TokenizerContract   string `mapstructure:"tokenizer"`
+	TokenizedStakeToken string `mapstructure:"token"`
 }
 
 // DeFi represents the DeFi and financial contracts configuration.

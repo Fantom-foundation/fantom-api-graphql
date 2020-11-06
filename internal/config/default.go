@@ -45,6 +45,9 @@ const (
 	// defApiStateOrigin represents the default origin used for API state syncing
 	defApiStateOrigin = "https://localhost"
 
+	// defSfcContract is the default address of the SFC contract
+	defSfcContract = "0xfc00face00000000000000000000000000000000"
+
 	// defDefiFMintAddressProvider represents the address of the fMintAddressProvider
 	defDefiFMintAddressProvider = "0x730e27f6c52d07b1a6ab39b639b617dc566c91af"
 
@@ -86,8 +89,12 @@ func applyDefaults(cfg *viper.Viper) {
 	// cors
 	cfg.SetDefault(keyCorsAllowOrigins, defCorsAllowOrigins)
 
+	// staking configuration defaults
+	cfg.SetDefault(keyStakingSfcContract, defSfcContract)
+	cfg.SetDefault(keyStakingTokenizerContract, defNoAddress)
+	cfg.SetDefault(keyStakingERC20Token, defNoAddress)
+
 	// DeFi configuration
-	cfg.SetDefault(keyDefiStakeTokenizer, defNoAddress)
 	cfg.SetDefault(keyDefiFMintAddressProvider, defDefiFMintAddressProvider)
 	cfg.SetDefault(keyDefiUniswapCore, defDefiUniswapCore)
 	cfg.SetDefault(keyDefiUniswapRouter, defDefiUniswapRouter)
