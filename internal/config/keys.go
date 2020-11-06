@@ -23,7 +23,8 @@ const (
 	keyVotingSources     = "voting.sources"
 
 	// defi related configs
-	keyDefiFMintAddressProvider = "defi.address-provider"
+	keyDefiStakeTokenizer       = "defi.stake_tokenizer"
+	keyDefiFMintAddressProvider = "defi.fmint.address_provider"
 	keyDefiUniswapCore          = "defi.uniswap.core"
 	keyDefiUniswapRouter        = "defi.uniswap.router"
 )

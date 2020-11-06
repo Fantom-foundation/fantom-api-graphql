@@ -87,6 +87,7 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyCorsAllowOrigins, defCorsAllowOrigins)
 
 	// DeFi configuration
+	cfg.SetDefault(keyDefiStakeTokenizer, defNoAddress)
 	cfg.SetDefault(keyDefiFMintAddressProvider, defDefiFMintAddressProvider)
 	cfg.SetDefault(keyDefiUniswapCore, defDefiUniswapCore)
 	cfg.SetDefault(keyDefiUniswapRouter, defDefiUniswapRouter)

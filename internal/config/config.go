@@ -84,8 +84,9 @@ type Repository struct {
 
 // DeFi represents the DeFi and financial contracts configuration.
 type DeFi struct {
-	FMint   DeFiFMint   `mapstructure:"fmint"`
-	Uniswap DeFiUniswap `mapstructure:"uniswap"`
+	StakeTokenizer string      `mapstructure:"stake_tokenizer"`
+	FMint          DeFiFMint   `mapstructure:"fmint"`
+	Uniswap        DeFiUniswap `mapstructure:"uniswap"`
 }
 
 // DeFiFMint represents the fMint DeFi module configuration.
