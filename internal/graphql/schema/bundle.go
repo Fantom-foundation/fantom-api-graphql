@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-10-28 18:14
+// Auto generated GraphQL schema bundle; created 2020-11-06 11:01
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -801,6 +801,12 @@ type DefiSettings {
     # priceOracleAggregate is the address of the current price oracle
     # aggregate used by the DeFi to obtain USD price of tokens managed.
     priceOracleAggregate: Address!
+
+    # StakeTokenizerContract is the address of the Stake Tokenizer contract.
+    StakeTokenizerContract: Address!
+
+    # StakeTokenizedERC20Token is the address of the Tokenized Stake ERC20 contract.
+    StakeTokenizedERC20Token: Address!
 
     # fMintAddress is the address of the fMint contract.
     fMintContract: Address!
