@@ -2,6 +2,7 @@
 package config
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"time"
 )
 
@@ -87,9 +88,9 @@ type Repository struct {
 
 // Staking represents the PoS Staking module configuration.
 type Staking struct {
-	SFCContract         string `mapstructure:"sfc"`
-	TokenizerContract   string `mapstructure:"tokenizer"`
-	TokenizedStakeToken string `mapstructure:"token"`
+	SFCContract         common.Address `mapstructure:"sfc"`
+	TokenizerContract   common.Address `mapstructure:"tokenizer"`
+	TokenizedStakeToken common.Address `mapstructure:"token"`
 }
 
 // DeFi represents the DeFi and financial contracts configuration.
@@ -100,13 +101,13 @@ type DeFi struct {
 
 // DeFiFMint represents the fMint DeFi module configuration.
 type DeFiFMint struct {
-	AddressProvider string `mapstructure:"address_provider"`
+	AddressProvider common.Address `mapstructure:"address_provider"`
 }
 
 // DeFiUniswap represents the Uniswap protocol DeFi module configuration.
 type DeFiUniswap struct {
-	Core   string `mapstructure:"core"`
-	Router string `mapstructure:"router"`
+	Core   common.Address `mapstructure:"core"`
+	Router common.Address `mapstructure:"router"`
 }
 
 // Voting represents the simple voting/ballots module configuration.
@@ -121,7 +122,7 @@ type Governance struct {
 
 // GovernanceContract represents a single Governance contract configuration.
 type GovernanceContract struct {
-	Address string `mapstructure:"address"`
-	Name    string `mapstructure:"name"`
-	Type    string `mapstructure:"type"`
+	Address common.Address `mapstructure:"address"`
+	Name    string         `mapstructure:"name"`
+	Type    string         `mapstructure:"type"`
 }

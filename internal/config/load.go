@@ -2,8 +2,11 @@ package config
 
 import (
 	"flag"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 	"log"
+	"reflect"
 )
 
 // Load provides a loaded configuration for Fantom API server.
@@ -29,7 +32,7 @@ func Load() (*Config, error) {
 	// prep the container and try to unmarshal
 	// the config file into the config structure
 	var config Config
-	err := cfg.Unmarshal(&config)
+	err := cfg.Unmarshal(&config, setupConfigUnmarshaler)
 	if err != nil {
 		log.Println("can not extract API server configuration")
 		log.Println(err.Error())
@@ -37,6 +40,41 @@ func Load() (*Config, error) {
 	}
 
 	return &config, nil
+}
+
+// setupConfigUnmarshaler configures the Config loader to properly unmarshal
+// special types we use for the API server
+func setupConfigUnmarshaler(cfg *mapstructure.DecoderConfig) {
+	// add the decoders missing here
+	cfg.DecodeHook = mapstructure.ComposeDecodeHookFunc(
+		StringToAddressHookFunc(),
+		cfg.DecodeHook)
+}
+
+// StringToAddressHookFunc returns a DecodeHookFunc that converts
+// strings to common.Address type on config loading.
+func StringToAddressHookFunc() mapstructure.DecodeHookFuncType {
+	// return the decoder function
+	return func(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+		// make sure the input is expected String
+		if f.Kind() != reflect.String {
+			return data, nil
+		}
+
+		// make sure the output is expected common.Address
+		if t != reflect.TypeOf(common.Address{}) {
+			return data, nil
+		}
+
+		// empty address
+		raw := data.(string)
+		if raw == "" {
+			return common.HexToAddress(defNoAddress), nil
+		}
+
+		// convert it by parsing
+		return common.HexToAddress(data.(string)), nil
+	}
 }
 
 // reader provides instance of the config reader.
