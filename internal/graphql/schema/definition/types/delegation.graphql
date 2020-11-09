@@ -58,11 +58,11 @@ type Delegation {
     "lockedUntil represents the timestamp up to which the delegation is locked, zero if not locked."
     lockedUntil: Long!
 
-    # outstandingSFTM represents the amount of sFTM tokens representing the tokenized stake
-    # minted and un-repiad on this delegation.
+    # outstandingSFTM represents the amount of sFTM tokens representing the tokenised stake
+    # minted and un-repaid on this delegation.
     outstandingSFTM: BigInt!
 
-    # tokenizerAllowedToWithdraw indicates if the stake tokenizer allows the stake
+    # tokenizerAllowedToWithdraw indicates if the stake tokeniser allows the stake
     # to be withdrawn. That means all the sFTM tokens have been repaid and the sFTM
     # debt is effectively zero for the delegation.
     tokenizerAllowedToWithdraw: Boolean!
