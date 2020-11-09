@@ -65,7 +65,7 @@ func (ftm *FtmBridge) deactivatedDelegationList(addr *common.Address, staker *bi
 	}
 
 	// prepare to interact with the SFC contract
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
 		return nil, err

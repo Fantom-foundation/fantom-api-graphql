@@ -27,7 +27,7 @@ import (
 // UniswapPairs returns list of all token pairs managed by Uniswap core.
 func (ftm *FtmBridge) NativeTokenAddress() (*common.Address, error) {
 	// get the router contract if possible
-	contract, err := NewUniswapRouter(ftm.uniswapRouter, ftm.eth)
+	contract, err := NewUniswapRouter(ftm.uniswapConfig.Router, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("Uniswap router contract not found; %s", err.Error())
 		return nil, err
@@ -46,7 +46,7 @@ func (ftm *FtmBridge) NativeTokenAddress() (*common.Address, error) {
 // UniswapPair returns an address of an Uniswap pair for the given tokens.
 func (ftm *FtmBridge) UniswapPair(tokenA *common.Address, tokenB *common.Address) (*common.Address, error) {
 	// get the router contract if possible
-	contract, err := NewUniswapFactory(ftm.uniswapCore, ftm.eth)
+	contract, err := NewUniswapFactory(ftm.uniswapConfig.Core, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("Uniswap factory contract not found; %s", err.Error())
 		return nil, err
@@ -65,7 +65,7 @@ func (ftm *FtmBridge) UniswapPair(tokenA *common.Address, tokenB *common.Address
 // UniswapPairs returns list of all token pairs managed by Uniswap core.
 func (ftm *FtmBridge) UniswapPairs() ([]common.Address, error) {
 	// get the router contract if possible
-	contract, err := NewUniswapFactory(ftm.uniswapCore, ftm.eth)
+	contract, err := NewUniswapFactory(ftm.uniswapConfig.Core, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("Uniswap factory contract not found; %s", err.Error())
 		return nil, err
@@ -106,7 +106,7 @@ func (ftm *FtmBridge) UniswapQuoteInput(
 	reserveB hexutil.Big,
 ) (hexutil.Big, error) {
 	// get the router contract if possible
-	contract, err := NewUniswapRouter(ftm.uniswapRouter, ftm.eth)
+	contract, err := NewUniswapRouter(ftm.uniswapConfig.Router, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("Uniswap router contract not found; %s", err.Error())
 		return hexutil.Big{}, err
@@ -126,7 +126,7 @@ func (ftm *FtmBridge) UniswapQuoteInput(
 // input amount and a list of tokens to be used to make the swap operation.
 func (ftm *FtmBridge) UniswapAmountsOut(amountIn hexutil.Big, tokens []common.Address) ([]hexutil.Big, error) {
 	// get the router contract if possible
-	contract, err := NewUniswapRouter(ftm.uniswapRouter, ftm.eth)
+	contract, err := NewUniswapRouter(ftm.uniswapConfig.Router, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("Uniswap router contract not found; %s", err.Error())
 		return nil, err
@@ -139,7 +139,7 @@ func (ftm *FtmBridge) UniswapAmountsOut(amountIn hexutil.Big, tokens []common.Ad
 // output amount and a list of tokens to be used to make the swap operation.
 func (ftm *FtmBridge) UniswapAmountsIn(amountOut hexutil.Big, tokens []common.Address) ([]hexutil.Big, error) {
 	// get the router contract if possible
-	contract, err := NewUniswapRouter(ftm.uniswapRouter, ftm.eth)
+	contract, err := NewUniswapRouter(ftm.uniswapConfig.Router, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("Uniswap router contract not found; %s", err.Error())
 		return nil, err
