@@ -68,7 +68,7 @@ func (cst CurrentState) Transactions() (hexutil.Uint64, error) {
 
 // SfcContractAddress resolves address of the SFC contract.
 func (cst CurrentState) SfcContractAddress() common.Address {
-	return common.HexToAddress(cst.sfc.SFCContract)
+	return cst.sfc.SFCContract
 }
 
 // SfcLockingEnabled indicates if the stake locking has been enabled in SFC contract.

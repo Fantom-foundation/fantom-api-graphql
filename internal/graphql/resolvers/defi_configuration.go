@@ -38,23 +38,23 @@ func (rs *rootResolver) DefiConfiguration() (*DefiConfiguration, error) {
 // UniswapCoreFactory returns the address of the Uniswap factory contract
 // from the app configuration.
 func (dfc *DefiConfiguration) UniswapCoreFactory() common.Address {
-	return common.HexToAddress(dfc.cfg.DeFi.Uniswap.Core)
+	return dfc.cfg.DeFi.Uniswap.Core
 }
 
 // UniswapRouter returns the address of the Uniswap router contract
 // from the app configuration.
 func (dfc *DefiConfiguration) UniswapRouter() common.Address {
-	return common.HexToAddress(dfc.cfg.DeFi.Uniswap.Router)
+	return dfc.cfg.DeFi.Uniswap.Router
 }
 
 // StakeTokenizerContract returns the address of the Stake Tokenizer contract
 // from the app configuration.
 func (dfc *DefiConfiguration) StakeTokenizerContract() common.Address {
-	return common.HexToAddress(dfc.cfg.Staking.TokenizerContract)
+	return dfc.cfg.Staking.TokenizerContract
 }
 
 // StakeTokenizedERC20Token returns the address of the ERC20 token representing
 // the tokenized locked stake.
 func (dfc *DefiConfiguration) StakeTokenizedERC20Token() common.Address {
-	return common.HexToAddress(dfc.cfg.Staking.TokenizedStakeToken)
+	return dfc.cfg.Staking.TokenizedStakeToken
 }

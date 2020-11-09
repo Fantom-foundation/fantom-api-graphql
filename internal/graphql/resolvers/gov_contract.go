@@ -58,7 +58,7 @@ func (rs *rootResolver) GovContracts() ([]*GovernanceContract, error) {
 			repo:    rs.repo,
 			Name:    gc.Name,
 			Type:    gc.Type,
-			Address: common.HexToAddress(gc.Address),
+			Address: gc.Address,
 		})
 	}
 

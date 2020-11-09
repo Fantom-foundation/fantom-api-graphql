@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-11-06 11:09
+// Auto generated GraphQL schema bundle; created 2020-11-09 21:12
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -388,6 +388,15 @@ type Delegation {
 
     "lockedUntil represents the timestamp up to which the delegation is locked, zero if not locked."
     lockedUntil: Long!
+
+    # outstandingSFTM represents the amount of sFTM tokens representing the tokenized stake
+    # minted and un-repiad on this delegation.
+    outstandingSFTM: BigInt!
+
+    # tokenizerAllowedToWithdraw indicates if the stake tokenizer allows the stake
+    # to be withdrawn. That means all the sFTM tokens have been repaid and the sFTM
+    # debt is effectively zero for the delegation.
+    tokenizerAllowedToWithdraw: Boolean!
 }
 
 # PendingRewards represents a detail of pending rewards for staking and delegations

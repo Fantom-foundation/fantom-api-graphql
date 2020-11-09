@@ -22,6 +22,9 @@ type Delegation struct {
 	extendedAmountInWithdraw *big.Int
 }
 
+// DelegationsByAge represents a list of delegations sortable by their age of creation.
+type DelegationsByAge []types.Delegation
+
 // NewDelegator creates new instance of resolvable Delegator.
 func NewDelegation(d *types.Delegation, repo repository.Repository) *Delegation {
 	return &Delegation{
@@ -204,8 +207,25 @@ func (del Delegation) LockedFromEpoch() hexutil.Uint64 {
 	return lock.LockedFromEpoch
 }
 
-// DelegationsByAge represents a list of delegations sortable by their age of creation.
-type DelegationsByAge []types.Delegation
+// OutstandingSFTM resolves the amount of outstanding sFTM tokens
+// minted for this account.
+func (del Delegation) OutstandingSFTM() (hexutil.Big, error) {
+	return del.repo.DelegationOutstandingSFTM(&del.Address, &del.ToStakerId)
+}
+
+// TokenizerAllowedToWithdraw resolves the tokenizer approval
+// of the delegation withdrawal.
+func (del Delegation) TokenizerAllowedToWithdraw() bool {
+	// check the tokenizer lock status
+	lock, err := del.repo.DelegationTokenizerUnlocked(&del.Address, &del.ToStakerId)
+	if err != nil {
+		del.repo.Log().Criticalf("can not check SFC tokenizer status for %s / %d",
+			del.Address.String(), uint64(del.ToStakerId))
+		return false
+	}
+
+	return lock
+}
 
 // Len returns size of the delegation list.
 func (d DelegationsByAge) Len() int {

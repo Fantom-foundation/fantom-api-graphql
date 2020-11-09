@@ -46,8 +46,7 @@ func (rs *rootResolver) GovProposals(args struct {
 	// prep list of governance contracts we are interested in
 	gcl := make([]*common.Address, len(rs.cfg.Governance.Contracts))
 	for i, gc := range rs.cfg.Governance.Contracts {
-		adr := common.HexToAddress(gc.Address)
-		gcl[i] = &adr
+		gcl[i] = &gc.Address
 	}
 
 	// get the list of all proposals
