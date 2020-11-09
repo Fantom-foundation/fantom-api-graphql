@@ -148,6 +148,14 @@ type Repository interface {
 	// Delegation returns a detail of delegation for the given address.
 	DelegationRewards(string, hexutil.Uint64) (types.PendingRewards, error)
 
+	// DelegationOutstandingSFTM returns the amount of sFTM tokens for the delegation
+	// identified by the delegator address and the staker id.
+	DelegationOutstandingSFTM(*common.Address, *hexutil.Uint64) (hexutil.Big, error)
+
+	// DelegationTokenizerUnlocked returns the status of SFC Tokenizer lock
+	// for a delegation identified by the address and staker id.
+	DelegationTokenizerUnlocked(*common.Address, *hexutil.Uint64) (bool, error)
+
 	// WithdrawRequests extracts a list of partial withdraw requests
 	// for the given address.
 	WithdrawRequests(*common.Address, *hexutil.Uint64) ([]*types.WithdrawRequest, error)

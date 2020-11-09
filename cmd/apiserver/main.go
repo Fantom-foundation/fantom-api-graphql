@@ -75,7 +75,7 @@ func setupSignals(repo repository.Repository, rs resolvers.ApiResolver, log logg
 		<-ts
 
 		// log nad close
-		log.Critical("server is terminating")
+		log.Notice("server is terminating")
 		repo.Close()
 		rs.Close()
 

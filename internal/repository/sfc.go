@@ -245,3 +245,15 @@ func (p *proxy) DelegationFluidStakingActive(dl *types.Delegation) (bool, error)
 func (p *proxy) DelegationPaidUntilEpoch(dl *types.Delegation) (hexutil.Uint64, error) {
 	return p.rpc.DelegationPaidUntilEpoch(dl)
 }
+
+// DelegationOutstandingSFTM returns the amount of sFTM tokens for the delegation
+// identified by the delegator address and the stakerId.
+func (p *proxy) DelegationOutstandingSFTM(addr *common.Address, toStaker *hexutil.Uint64) (hexutil.Big, error) {
+	return p.rpc.DelegationOutstandingSFTM(addr, toStaker)
+}
+
+// DelegationTokenizerUnlocked returns the status of SFC Tokenizer lock
+// for a delegation identified by the address and staker id.
+func (p *proxy) DelegationTokenizerUnlocked(addr *common.Address, toStaker *hexutil.Uint64) (bool, error) {
+	return p.rpc.DelegationTokenizerUnlocked(addr, toStaker)
+}

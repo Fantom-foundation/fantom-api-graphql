@@ -58,7 +58,7 @@ func (p *proxy) GovernanceVote(
 func (p *proxy) GovernanceContractBy(addr *common.Address) (*config.GovernanceContract, error) {
 	// loop all contracts
 	for _, gc := range p.govContracts {
-		if strings.EqualFold(gc.Address, addr.String()) {
+		if strings.EqualFold(gc.Address.String(), addr.String()) {
 			return &gc, nil
 		}
 	}

@@ -60,7 +60,7 @@ func (p *proxy) BlockByHash(hash *types.Hash) (*types.Block, error) {
 // getBlock gets a block of given tag from cache, or from a repository pull function.
 func (p *proxy) getBlock(tag string, pull func(*string) (*types.Block, error)) (*types.Block, error) {
 	// inform what we do
-	p.log.Infof("block [%s] requested", tag)
+	p.log.Debugf("block [%s] requested", tag)
 
 	// try to use the in-memory cache
 	if blk := p.cache.PullBlock(tag); blk != nil {
