@@ -14,6 +14,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 //go:generate abigen --abi ./contracts/sfc-2.0.2-rc2.abi --pkg rpc --type SfcContract --out ./smc_sfc.go
+//go:generate abigen --abi ./contracts/sfc-tokenizer.abi --pkg rpc --type SfcTokenizer --out ./smc_sfc_tokenizer.go
 
 import (
 	"fantom-api-graphql/internal/types"
@@ -24,13 +25,10 @@ import (
 	"strconv"
 )
 
-// sfcContractAddress represents the address on which the Sfc contract is deployed.
-var sfcContractAddress = common.HexToAddress("0xfc00face00000000000000000000000000000000")
-
 // SfcVersion returns current version of the SFC contract as a single number.
 func (ftm *FtmBridge) SfcVersion() (hexutil.Uint64, error) {
 	// instantiate the contract and display its name
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
 		return 0, err
@@ -50,7 +48,7 @@ func (ftm *FtmBridge) SfcVersion() (hexutil.Uint64, error) {
 // CurrentEpoch extract the current epoch id from SFC smart contract.
 func (ftm *FtmBridge) CurrentEpoch() (hexutil.Uint64, error) {
 	// instantiate the contract and display its name
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
 		return 0, err
@@ -70,7 +68,7 @@ func (ftm *FtmBridge) CurrentEpoch() (hexutil.Uint64, error) {
 // CurrentSealedEpoch extract the current sealed epoch id from SFC smart contract.
 func (ftm *FtmBridge) CurrentSealedEpoch() (hexutil.Uint64, error) {
 	// instantiate the contract and display its name
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
 		return 0, err
@@ -90,7 +88,7 @@ func (ftm *FtmBridge) CurrentSealedEpoch() (hexutil.Uint64, error) {
 // LastStakerId returns the last staker id in Opera blockchain.
 func (ftm *FtmBridge) LastStakerId() (hexutil.Uint64, error) {
 	// instantiate the contract and display its name
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
 		return 0, err
@@ -110,7 +108,7 @@ func (ftm *FtmBridge) LastStakerId() (hexutil.Uint64, error) {
 // StakersNum returns the number of stakers in Opera blockchain.
 func (ftm *FtmBridge) StakersNum() (hexutil.Uint64, error) {
 	// instantiate the contract and display its name
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
 		return 0, err
@@ -221,7 +219,7 @@ func (ftm *FtmBridge) maxDelegatedLimit(staked *hexutil.Big, contract *SfcContra
 // extendStaker extends staker information using SFC contract binding.
 func (ftm *FtmBridge) extendStaker(staker *types.Staker) (*types.Staker, error) {
 	// instantiate the contract and display its name
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
 		return nil, err
@@ -314,7 +312,7 @@ func (ftm *FtmBridge) StakerByAddress(addr common.Address) (*types.Staker, error
 // Epoch extract information about an epoch from SFC smart contract.
 func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (types.Epoch, error) {
 	// instantiate the contract and display its name
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
 		return types.Epoch{}, err
@@ -347,7 +345,7 @@ func (ftm *FtmBridge) DelegationRewards(addr string, staker hexutil.Uint64) (typ
 	ftm.log.Debugf("loading delegation rewards for account %s", addr)
 
 	// instantiate the contract and display its name
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
 		return types.PendingRewards{}, err
@@ -458,7 +456,7 @@ func (ftm *FtmBridge) Delegation(addr common.Address, staker hexutil.Uint64) (*t
 // DelegationLock returns delegation lock information using SFC contract binding.
 func (ftm *FtmBridge) DelegationLock(delegation *types.Delegation) (*types.DelegationLock, error) {
 	// instantiate the contract
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
 		return nil, err
@@ -544,9 +542,9 @@ func (ftm *FtmBridge) Stashed(addr common.Address, stash *big.Int) (*big.Int, er
 	ftm.log.Debugf("loading stashed amount of address %s", addr.String())
 
 	// instantiate the contract and display its name
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
 		return nil, err
 	}
 
@@ -569,23 +567,23 @@ func (ftm *FtmBridge) RewardsAllowed() (bool, error) {
 // LockingAllowed indicates if the stake locking has been enabled in SFC.
 func (ftm *FtmBridge) LockingAllowed() (bool, error) {
 	// instantiate the contract and display its name
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
 		return false, err
 	}
 
 	// get the current value of the first lock
 	firstLock, err := contract.FirstLockedUpEpoch(nil)
 	if err != nil {
-		ftm.log.Errorf("failed to get the first epoch with enabled locking: %v", err)
+		ftm.log.Errorf("failed to get the first epoch with enabled locking: %s", err.Error())
 		return false, err
 	}
 
 	// get the current sealed epoch value from the contract
 	epoch, err := contract.CurrentSealedEpoch(nil)
 	if err != nil {
-		ftm.log.Errorf("failed to get the current sealed epoch: %v", err)
+		ftm.log.Errorf("failed to get the current sealed epoch: %s", err.Error())
 		return false, err
 	}
 
@@ -607,9 +605,9 @@ func (ftm *FtmBridge) DelegationFluidStakingActive(dl *types.Delegation) (bool, 
 // DelegationPaidUntilEpoch resolves the id of the last epoch rewards has been paid to."
 func (ftm *FtmBridge) DelegationPaidUntilEpoch(dl *types.Delegation) (hexutil.Uint64, error) {
 	// instantiate the contract and display its name
-	contract, err := NewSfcContract(sfcContractAddress, ftm.eth)
+	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
+		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
 		return 0, err
 	}
 
@@ -627,4 +625,46 @@ func (ftm *FtmBridge) DelegationPaidUntilEpoch(dl *types.Delegation) (hexutil.Ui
 	}
 
 	return hexutil.Uint64(dd.PaidUntilEpoch.Uint64()), nil
+}
+
+// DelegationOutstandingSFTM returns the amount of sFTM tokens for the delegation
+// identified by the delegator address and the stakerId.
+func (ftm *FtmBridge) DelegationOutstandingSFTM(addr *common.Address, toStaker *hexutil.Uint64) (hexutil.Big, error) {
+	// instantiate the contract and display its name
+	contract, err := NewSfcTokenizer(ftm.sfcConfig.TokenizerContract, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC Tokenizer contract: %s", err.Error())
+		return hexutil.Big{}, err
+	}
+
+	// get the amount of outstanding sFTM
+	val, err := contract.OutstandingSFTM(nil, *addr, new(big.Int).SetUint64(uint64(*toStaker)))
+	if err != nil {
+		ftm.log.Criticalf("failed to get sFTM amount from %s/%d: %s",
+			addr.String(), uint64(*toStaker), err.Error())
+		return hexutil.Big{}, err
+	}
+
+	return hexutil.Big(*val), nil
+}
+
+// DelegationTokenizerUnlocked returns the status of SFC Tokenizer lock
+// for a delegation identified by the address and staker id.
+func (ftm *FtmBridge) DelegationTokenizerUnlocked(addr *common.Address, toStaker *hexutil.Uint64) (bool, error) {
+	// instantiate the contract and display its name
+	contract, err := NewSfcTokenizer(ftm.sfcConfig.TokenizerContract, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC Tokenizer contract: %s", err.Error())
+		return false, err
+	}
+
+	// get the lock status
+	lock, err := contract.AllowedToWithdrawStake(nil, *addr, new(big.Int).SetUint64(uint64(*toStaker)))
+	if err != nil {
+		ftm.log.Criticalf("failed to get SFC Tokenizer lock status for %s/%d: %s",
+			addr.String(), uint64(*toStaker), err.Error())
+		return false, err
+	}
+
+	return lock, nil
 }
