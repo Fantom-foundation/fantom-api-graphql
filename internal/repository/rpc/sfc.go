@@ -630,6 +630,9 @@ func (ftm *FtmBridge) DelegationPaidUntilEpoch(dl *types.Delegation) (hexutil.Ui
 // DelegationOutstandingSFTM returns the amount of sFTM tokens for the delegation
 // identified by the delegator address and the stakerId.
 func (ftm *FtmBridge) DelegationOutstandingSFTM(addr *common.Address, toStaker *hexutil.Uint64) (hexutil.Big, error) {
+	// log action
+	ftm.log.Debugf("checking outstanding sFTM on %s / %d", addr.String(), uint64(*toStaker))
+
 	// instantiate the contract and display its name
 	contract, err := NewSfcTokenizer(ftm.sfcConfig.TokenizerContract, ftm.eth)
 	if err != nil {
@@ -651,6 +654,9 @@ func (ftm *FtmBridge) DelegationOutstandingSFTM(addr *common.Address, toStaker *
 // DelegationTokenizerUnlocked returns the status of SFC Tokenizer lock
 // for a delegation identified by the address and staker id.
 func (ftm *FtmBridge) DelegationTokenizerUnlocked(addr *common.Address, toStaker *hexutil.Uint64) (bool, error) {
+	// log action
+	ftm.log.Debugf("checking SFC tokenizer lock on %s / %d", addr.String(), uint64(*toStaker))
+
 	// instantiate the contract and display its name
 	contract, err := NewSfcTokenizer(ftm.sfcConfig.TokenizerContract, ftm.eth)
 	if err != nil {
