@@ -5,9 +5,7 @@ import (
 	"context"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
-	"fantom-api-graphql/internal/types"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -18,9 +16,6 @@ type MongoDbBridge struct {
 	client *mongo.Client
 	log    logger.Logger
 	dbName string
-
-	// fnBalance is a function for retrieving specified account balance.
-	fnBalance func(*types.Account) (*hexutil.Big, error)
 }
 
 // New creates a new Mongo Db connection bridge.
@@ -28,32 +23,42 @@ func New(cfg *config.Config, log logger.Logger) (*MongoDbBridge, error) {
 	// log what we do
 	log.Debugf("connecting database at %s/%s", cfg.Db.Url, cfg.Db.DbName)
 
-	// get empty unrestricted context
-	ctx := context.Background()
-
-	// create new Mongo client
-	client, err := mongo.Connect(ctx, clientOptions(cfg))
+	// open the database connection
+	con, err := connectDb(&cfg.Db)
 	if err != nil {
-		log.Critical(err)
-		return nil, err
-	}
-
-	// validate the connection was indeed established
-	err = client.Ping(ctx, nil)
-	if err != nil {
-		log.Critical(err)
+		log.Criticalf("can not contact the database; %s", err.Error())
 		return nil, err
 	}
 
 	// log the event
 	log.Notice("database connection established")
 
-	// make a new Bridge
+	// return the bridge
 	return &MongoDbBridge{
-		client: client,
+		client: con,
 		log:    log,
 		dbName: cfg.Db.DbName,
 	}, nil
+}
+
+// connectDb opens Mongo database connection
+func connectDb(cfg *config.Database) (*mongo.Client, error) {
+	// get empty unrestricted context
+	ctx := context.Background()
+
+	// create new Mongo client
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Url))
+	if err != nil {
+		return nil, err
+	}
+
+	// validate the connection was indeed established
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }
 
 // Close will terminate or finish all operations and close the connection to Mongo database.
@@ -69,16 +74,6 @@ func (db *MongoDbBridge) Close() {
 		// inform
 		db.log.Info("database connection is closed")
 	}
-}
-
-// clientOptions creates a new Mongo configuration for connecting the database backend.
-func clientOptions(cfg *config.Config) *options.ClientOptions {
-	return options.Client().ApplyURI(cfg.Db.Url)
-}
-
-// SetBalance sets the account balance retrieval callback.
-func (db *MongoDbBridge) SetBalance(fn func(*types.Account) (*hexutil.Big, error)) {
-	db.fnBalance = fn
 }
 
 // getAggregateValue extract single aggregate value for a given collection and aggregation pipeline.
