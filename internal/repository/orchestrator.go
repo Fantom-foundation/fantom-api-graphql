@@ -25,6 +25,7 @@ type orchestrator struct {
 
 	// orchestrator managed channels
 	trxBuffer        chan *evtTransaction
+	accountQueue     chan *accountQueueRequest
 	sysDone          chan bool
 	reScan           chan bool
 	sigKillScheduler chan bool
@@ -37,6 +38,7 @@ type orchestrator struct {
 	sys *scanner
 	mon *blockMonitor
 	sti *stiMonitor
+	acq *accountQueue
 }
 
 // NewOrchestrator creates a new instance of repository orchestrator.
@@ -98,6 +100,9 @@ func (or *orchestrator) closeServices() {
 	if or.sti != nil {
 		or.sti.close()
 	}
+
+	// signal account queue
+	or.acq.close()
 }
 
 // setBlockChannel registers a channel for notifying new block events.
@@ -114,9 +119,13 @@ func (or *orchestrator) setTrxChannel(ch chan *types.Transaction) {
 func (or *orchestrator) init(cfg *config.Repository) {
 	// create a channel for transaction dispatcher
 	or.trxBuffer = make(chan *evtTransaction, trxDispatchBufferCapacity)
+	or.accountQueue = make(chan *accountQueueRequest, accountQueueLength)
 
 	// make the transaction dispatcher; it starts dispatching immediately
-	or.txd = NewTrxDispatcher(or.trxBuffer, or.repo, or.log, or.wg)
+	or.txd = newTrxDispatcher(or.trxBuffer, or.repo, or.log, or.wg)
+
+	// make the account queue
+	or.acq = newAccountQueue(or.accountQueue, or.repo, or.log, or.wg)
 
 	// create sync scanner; it starts scanning immediately
 	or.sysDone = make(chan bool, 1)

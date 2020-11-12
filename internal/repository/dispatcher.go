@@ -27,7 +27,7 @@ type evtTransaction struct {
 }
 
 // NewTrxDispatcher creates a new transaction dispatcher instance.
-func NewTrxDispatcher(buffer chan *evtTransaction, repo Repository, log logger.Logger, wg *sync.WaitGroup) *trxDispatcher {
+func newTrxDispatcher(buffer chan *evtTransaction, repo Repository, log logger.Logger, wg *sync.WaitGroup) *trxDispatcher {
 	// create new dispatcher
 	td := trxDispatcher{
 		service: newService("dispatcher", repo, log, wg),
