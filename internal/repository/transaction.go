@@ -58,17 +58,26 @@ func (p *proxy) MarkTransactionProcessed(trx *types.Transaction) {
 // propagateTrxToAccounts pushes given transaction to accounts on both sides.
 // The function is executed in a separate thread so it doesn't block
 func (p *proxy) propagateTrxToAccounts(block *types.Block, trx *types.Transaction) error {
+	// log what we do here
+	p.log.Debugf("propagating transaction %s to accounts", trx.Hash.String())
+
 	// make sure the sender address is known
 	// it's always either a regular wallet, or a contract we already know from it's creation
 	p.orc.accountQueue <- &accountQueueRequest{
 		blk:         block,
 		trx:         trx,
-		acc:         &types.Account{Address: *trx.To, ContractTx: nil, Type: types.AccountTypeWallet},
+		acc:         &types.Account{Address: trx.From, ContractTx: nil, Type: types.AccountTypeWallet},
 		trxCallback: nil,
 	}
 
+	// log what we do here
+	p.log.Debugf("transaction %s sender %s submitted", trx.Hash.String(), trx.From.String())
+
 	// do we have a receiving account?
 	if trx.To != nil {
+		// log what we do here
+		p.log.Debugf("transaction %s recipient %s submitted", trx.Hash.String(), trx.To.String())
+
 		// just use the real recipient; if it's a contract we already know it and we don't have to
 		// really analyze anything here
 		p.orc.accountQueue <- &accountQueueRequest{
@@ -85,6 +94,9 @@ func (p *proxy) propagateTrxToAccounts(block *types.Block, trx *types.Transactio
 		p.log.Criticalf("contract creation found, but no contract address [%s]", trx.Hash.String())
 		return fmt.Errorf("invalid contract creation")
 	}
+
+	// log what we do here
+	p.log.Debugf("transaction %s contract creation %s submitted", trx.Hash.String(), trx.ContractAddress.String())
 
 	// add new smart contract
 	p.orc.accountQueue <- &accountQueueRequest{
