@@ -150,3 +150,8 @@ func (p *proxy) ValidateContract(sc *types.Contract) error {
 	// validation fails
 	return fmt.Errorf("contract source code does not match with the deployed byte code")
 }
+
+// ContractAdd adds new contract into the repository.
+func (p *proxy) ContractAdd(con *types.Contract) error {
+	return p.db.AddContract(con)
+}
