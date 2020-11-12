@@ -84,7 +84,7 @@ func (p *proxy) propagateTrxToAccounts(block *types.Block, trx *types.Transactio
 			blk:         block,
 			trx:         trx,
 			acc:         &types.Account{Address: *trx.To, ContractTx: nil, Type: types.AccountTypeWallet},
-			trxCallback: nil,
+			trxCallback: p.MarkTransactionProcessed,
 		}
 		return nil
 	}
@@ -103,7 +103,7 @@ func (p *proxy) propagateTrxToAccounts(block *types.Block, trx *types.Transactio
 		blk:         block,
 		trx:         trx,
 		acc:         &types.Account{Address: *trx.ContractAddress, ContractTx: &trx.Hash, Type: types.AccountTypeWallet},
-		trxCallback: nil,
+		trxCallback: p.MarkTransactionProcessed,
 	}
 	return nil
 }
