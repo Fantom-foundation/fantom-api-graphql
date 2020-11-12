@@ -91,22 +91,17 @@ type contractRow struct {
 }
 
 // AddContract stores a smart contract reference in connected persistent storage.
-func (db *MongoDbBridge) AddContract(block *types.Block, trx *types.Transaction) error {
+func (db *MongoDbBridge) AddContract(con *types.Contract) error {
 	// do we have all needed data?
-	if block == nil || trx == nil {
-		return fmt.Errorf("can not add empty contract transaction")
-	}
-
-	// make sure this is indeed a contract transaction
-	if trx.ContractAddress == nil {
-		return fmt.Errorf("not a contract creation transaction")
+	if con == nil {
+		return fmt.Errorf("can not add empty contract")
 	}
 
 	// get the collection for contracts
 	col := db.client.Database(db.dbName).Collection(coContract)
 
 	// check if the contract already exists
-	exists, err := db.isContractKnown(col, trx.ContractAddress)
+	exists, err := db.isContractKnown(col, &con.Address)
 	if err != nil {
 		db.log.Critical(err)
 		return err
@@ -119,22 +114,22 @@ func (db *MongoDbBridge) AddContract(block *types.Block, trx *types.Transaction)
 
 	// try to do the insert
 	_, err = col.InsertOne(context.Background(), bson.D{
-		{fiContractPk, trx.ContractAddress.String()},
-		{fiContractOrdinalIndex, db.TransactionIndex(block, trx)},
-		{fiContractAddress, trx.ContractAddress.String()},
-		{fiContractTransaction, trx.Hash.String()},
-		{fiContractTimestamp, uint64(block.TimeStamp)},
-		{fiContractName, nil},
-		{fiContractSupport, nil},
-		{fiContractVersion, nil},
-		{fiContractCompiler, nil},
-		{fiContractSource, nil},
-		{fiContractSourceHash, nil},
-		{fiContractLicense, nil},
+		{fiContractPk, con.Address.String()},
+		{fiContractOrdinalIndex, con.OrdinalIndex},
+		{fiContractAddress, con.Address.String()},
+		{fiContractTransaction, con.TransactionHash.String()},
+		{fiContractTimestamp, uint64(con.TimeStamp)},
+		{fiContractName, con.Name},
+		{fiContractSupport, con.SupportContact},
+		{fiContractVersion, con.Version},
+		{fiContractCompiler, con.Compiler},
+		{fiContractSource, con.SourceCode},
+		{fiContractSourceHash, con.SourceCodeHash},
+		{fiContractLicense, con.License},
 		{fiContractIsOptimized, true},
 		{fiContractOptimizationRuns, 200},
-		{fiContractAbi, nil},
-		{fiContractSourceValidated, nil},
+		{fiContractAbi, con.Abi},
+		{fiContractSourceValidated, con.Validated},
 	})
 	if err != nil {
 		db.log.Critical(err)
@@ -142,7 +137,7 @@ func (db *MongoDbBridge) AddContract(block *types.Block, trx *types.Transaction)
 	}
 
 	// inform and quit
-	db.log.Debugf("added smart contract reference [%s]", trx.ContractAddress.String())
+	db.log.Debugf("added smart contract reference [%s]", con.Address.String())
 	return nil
 }
 
