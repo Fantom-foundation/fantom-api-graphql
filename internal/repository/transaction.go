@@ -11,6 +11,7 @@ package repository
 import (
 	"errors"
 	"fantom-api-graphql/internal/types"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/rpc"
 	"strings"
@@ -26,14 +27,13 @@ func (p *proxy) AddTransaction(block *types.Block, trx *types.Transaction) error
 		return err
 	}
 
+	// propagate to accounts
+	if err := p.propagateTrxToAccounts(block, trx); err != nil {
+		return err
+	}
+
 	// add smart contract to the persistent storage, too
 	if trx.ContractAddress != nil {
-		// add the smart contract
-		if err := p.db.AddContract(block, trx); err != nil {
-			p.log.Critical(err)
-			return err
-		}
-
 		// check if the smart contract is an official ballot
 		if err := p.processBallot(block, trx); err != nil {
 			p.log.Critical(err)
@@ -42,6 +42,57 @@ func (p *proxy) AddTransaction(block *types.Block, trx *types.Transaction) error
 	}
 
 	// everything seems to be ok
+	return nil
+}
+
+// MarkTransactionProcessed marks given transaction as processed
+// and ready to be served full to API users.
+// AccountQueue processor call this function as a callback.
+func (p *proxy) MarkTransactionProcessed(trx *types.Transaction) {
+	// mark the transaction in database
+	if err := p.db.MarkTransactionProcessed(trx); err != nil {
+		p.log.Errorf("can not finish transaction %s processing", trx.Hash.String())
+	}
+}
+
+// propagateTrxToAccounts pushes given transaction to accounts on both sides.
+// The function is executed in a separate thread so it doesn't block
+func (p *proxy) propagateTrxToAccounts(block *types.Block, trx *types.Transaction) error {
+	// make sure the sender address is known
+	// it's always either a regular wallet, or a contract we already know from it's creation
+	p.orc.accountQueue <- &accountQueueRequest{
+		blk:         block,
+		trx:         trx,
+		acc:         &types.Account{Address: *trx.To, ContractTx: nil, Type: types.AccountTypeWallet},
+		trxCallback: nil,
+	}
+
+	// do we have a receiving account?
+	if trx.To != nil {
+		// just use the real recipient; if it's a contract we already know it and we don't have to
+		// really analyze anything here
+		p.orc.accountQueue <- &accountQueueRequest{
+			blk:         block,
+			trx:         trx,
+			acc:         &types.Account{Address: *trx.To, ContractTx: nil, Type: types.AccountTypeWallet},
+			trxCallback: nil,
+		}
+		return nil
+	}
+
+	// contract address must exist
+	if trx.ContractAddress == nil {
+		p.log.Criticalf("contract creation found, but no contract address [%s]", trx.Hash.String())
+		return fmt.Errorf("invalid contract creation")
+	}
+
+	// add new smart contract
+	p.orc.accountQueue <- &accountQueueRequest{
+		blk:         block,
+		trx:         trx,
+		acc:         &types.Account{Address: *trx.ContractAddress, ContractTx: &trx.Hash, Type: types.AccountTypeWallet},
+		trxCallback: nil,
+	}
 	return nil
 }
 
@@ -76,7 +127,7 @@ func (p *proxy) processBallot(block *types.Block, trx *types.Transaction) error 
 	if p.isBallotContract(trx) {
 		// ballotIndex = db.transactionIndex(block, trx)
 		ballot := types.Ballot{
-			OrdinalIndex: p.db.TransactionIndex(block, trx),
+			OrdinalIndex: types.TransactionIndex(block, trx),
 			Address:      *trx.ContractAddress,
 		}
 
@@ -183,7 +234,7 @@ func (p *proxy) SendTransaction(tx hexutil.Bytes) (*types.Transaction, error) {
 // 	- For negative count we start from the first transaction and scan to newer transactions.
 func (p *proxy) Transactions(cursor *string, count int32) (*types.TransactionHashList, error) {
 	// go to the database for the list of hashes of transaction searched
-	return p.db.Transactions(cursor, count)
+	return p.db.Transactions(cursor, count, nil)
 }
 
 // TransactionsCount returns total number of transactions in the block chain.
