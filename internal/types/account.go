@@ -6,10 +6,22 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+const (
+	// AccountTypeWallet identifies accounts of the type regular wallet
+	AccountTypeWallet = "wallet"
+
+	// AccountTypeContract identifies a generic contract type
+	AccountTypeContract = "contract"
+
+	// AccountTypeERC20Token identifies a contract of type ERC20 token
+	AccountTypeERC20Token = "ERC20"
+)
+
 // Account represents an Opera account at the blockchain.
 type Account struct {
 	Address    common.Address `json:"address"`
 	ContractTx *Hash          `json:"contract"`
+	Type       string         `json:"type"`
 }
 
 // UnmarshalAccount parses the JSON-encoded account data.
