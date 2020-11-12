@@ -1,6 +1,8 @@
 // Package types implements different core types of the API.
 package types
 
+import "go.mongodb.org/mongo-driver/bson"
+
 // TransactionHashList represents a list of transaction hashes.
 type TransactionHashList struct {
 	// Collection represent list of transactions' hash.
@@ -20,6 +22,9 @@ type TransactionHashList struct {
 
 	// IsEnd indicates there are no transactions available below the list currently.
 	IsEnd bool
+
+	// Filter represents the base filter used for filtering the list
+	Filter bson.D
 }
 
 // Reverse reverses the order of transactions in the list.
