@@ -8,7 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"math/rand"
 )
 
 const (
@@ -26,10 +25,12 @@ const (
 	fiTransactionBlock = "blk"
 
 	// fiTransactionSender is the name of the address field of the sender's account.
+	// db.transaction.createIndex({from:1}).
 	fiTransactionSender = "from"
 
 	// fiTransactionRecipient is the name of the address field of the recipients's account.
 	// null for contract creation.
+	// db.transaction.createIndex({to:1}).
 	fiTransactionRecipient = "to"
 
 	// fiTransactionContract is the name of the address field of the smart contract created.
@@ -41,12 +42,15 @@ const (
 
 	// fiTransactionTimestamp is the name of the transaction time stamp field.
 	fiTransactionTimestamp = "ts"
+
+	// fiTransactionProcessed is the name of the field indicating processed transaction.
+	fiTransactionProcessed = "ok"
 )
 
 // shouldAddTransaction validates if the transaction should be added to the persistent storage.
 func (db *MongoDbBridge) shouldAddTransaction(col *mongo.Collection, trx *types.Transaction) bool {
 	// check if the transaction already exists
-	exists, err := db.isTransactionKnown(col, &trx.Hash)
+	exists, err := db.IsTransactionKnown(col, &trx.Hash)
 	if err != nil {
 		db.log.Critical(err)
 		return false
@@ -66,7 +70,8 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	// get the collection for transactions
 	col := db.client.Database(db.dbName).Collection(coTransactions)
 
-	// if the transaction already exists, we don't need to do anything here
+	// if the transaction already exists, we don't need to add it
+	// just make sure the transaction accounts were processed
 	if !db.shouldAddTransaction(col, trx) {
 		return nil
 	}
@@ -88,13 +93,14 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	// try to do the insert
 	_, err := col.InsertOne(context.Background(), bson.D{
 		{fiTransactionPk, trx.Hash.String()},
-		{fiTransactionOrdinalIndex, db.TransactionIndex(block, trx)},
+		{fiTransactionOrdinalIndex, types.TransactionIndex(block, trx)},
 		{fiTransactionBlock, uint64(block.Number)},
 		{fiTransactionSender, trx.From.String()},
 		{fiTransactionRecipient, rcAddress},
 		{fiTransactionContract, scAddress},
 		{fiTransactionValue, trx.Value.String()},
 		{fiTransactionTimestamp, uint64(block.TimeStamp)},
+		{fiTransactionProcessed, false},
 	})
 
 	// check for errors
@@ -104,70 +110,11 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	}
 
 	// add the transaction to the sender's address list
-	return db.propagateTrxToAccounts(block, trx)
-}
-
-// mustTransactionIndex always calculate the index of the current transaction
-func (db *MongoDbBridge) TransactionIndex(block *types.Block, trx *types.Transaction) uint64 {
-	// what is the transaction index
-	var txIndex uint64
-	if trx.TrxIndex != nil {
-		txIndex = uint64(*trx.TrxIndex)
-	} else {
-		// log the issue here
-		txIndex = uint64((rand.Uint32()<<10)|0xff) & 0x3fff
-		db.log.Criticalf("Block %d, Block hash %s, transaction index not set (rng %d)!", block.Number, trx.BlockHash, txIndex)
-	}
-
-	return trxOrdinalIndex(uint64(block.Number), txIndex)
-}
-
-// getTrxOrdinalIndex calculates ordinal index in the whole blockchain.
-// This gives us about 700 years of index space with 50k blocks per second rate + 10 years to fix than.
-func trxOrdinalIndex(block uint64, trxIndex uint64) uint64 {
-	return (block << 14) | trxIndex
-}
-
-// propagateTrxToAccounts push given transaction to sender's account and also to recipient's account, if exists.
-func (db *MongoDbBridge) propagateTrxToAccounts(block *types.Block, trx *types.Transaction) error {
-	// propagate to sender
-	sender := types.Account{Address: trx.From}
-	err := db.AddAccountTransaction(&sender, block, trx)
-	if err != nil {
-		db.log.Error("can not push the transaction to sender account")
-		return err
-	}
-
-	// prep recipient side (can be a smart contract creation)
-	var recipient types.Account
-
-	// do we have a receiving account? may not be present for contract creating transactions
-	if trx.To != nil {
-		// just use the real recipient
-		recipient = types.Account{Address: *trx.To, ContractTx: nil}
-	} else {
-		// contract address must exist
-		if trx.ContractAddress == nil {
-			db.log.Criticalf("contract creation found, but no contract address [%s]", trx.Hash.String())
-			return fmt.Errorf("contract address missing for tx creation transaction")
-		}
-
-		// log the contract found event
-		db.log.Debugf("contract creation found [%s]", trx.ContractAddress.String())
-		recipient = types.Account{Address: *trx.ContractAddress, ContractTx: &trx.Hash}
-	}
-
-	// add the transaction to recipient/contract
-	if err = db.AddAccountTransaction(&recipient, block, trx); err != nil {
-		db.log.Error("can not push the transaction to recipient account")
-		return err
-	}
-
 	return nil
 }
 
 // isTransactionKnown checks if a transaction document already exists in the database.
-func (db *MongoDbBridge) isTransactionKnown(col *mongo.Collection, hash *types.Hash) (bool, error) {
+func (db *MongoDbBridge) IsTransactionKnown(col *mongo.Collection, hash *types.Hash) (bool, error) {
 	// try to find the transaction in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
 		{fiTransactionPk, hash.String()},
@@ -182,11 +129,49 @@ func (db *MongoDbBridge) isTransactionKnown(col *mongo.Collection, hash *types.H
 			return false, nil
 		}
 
+		// log the error of the lookup
 		db.log.Error("can not get existing transaction pk")
 		return false, sr.Err()
 	}
 
 	return true, nil
+}
+
+// MarkTransactionProcessed marks given transaction as processed
+// and ready to be served full to API users.
+// AccountQueue processor call this function as a callback.
+func (db *MongoDbBridge) MarkTransactionProcessed(trx *types.Transaction) error {
+	// get the collection for contracts
+	col := db.client.Database(db.dbName).Collection(coContract)
+
+	// check if the contract already exists
+	exists, err := db.IsTransactionKnown(col, &trx.Hash)
+	if err != nil {
+		db.log.Critical(err)
+		return err
+	}
+
+	// do we know it at all?
+	if !exists {
+		return fmt.Errorf("transaction %s not found", trx.Hash.String())
+	}
+
+	// update the contract details
+	_, err = col.UpdateOne(context.Background(),
+		bson.D{{fiTransactionPk, trx.Hash.String()}},
+		bson.D{
+			{"$set", bson.D{
+				{fiTransactionProcessed, true},
+			}},
+		})
+
+	// error on update?
+	if err != nil {
+		db.log.Errorf("can not update transaction %s status; %s", trx.Hash.String(), err.Error())
+		return err
+	}
+
+	return nil
 }
 
 // LastKnownBlock returns number of the last known block stored in the database.
@@ -198,7 +183,7 @@ func (db *MongoDbBridge) LastKnownBlock() (uint64, error) {
 
 	// get the collection for account transactions
 	col := db.client.Database(db.dbName).Collection(coTransactions)
-	res := col.FindOne(context.Background(), bson.D{}, opt)
+	res := col.FindOne(context.Background(), bson.D{{fiTransactionProcessed, true}}, opt)
 	if res.Err() != nil {
 		// may be no block at all
 		if res.Err() == mongo.ErrNoDocuments {
@@ -227,12 +212,17 @@ func (db *MongoDbBridge) LastKnownBlock() (uint64, error) {
 }
 
 // initTrxList initializes list of transactions based on provided cursor and count.
-func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, count int32) (*types.TransactionHashList, error) {
+func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, count int32, filter *bson.D) (*types.TransactionHashList, error) {
 	// get the context
 	ctx := context.Background()
 
+	// make sure some filter is used
+	if nil == filter {
+		filter = &bson.D{}
+	}
+
 	// find how many transactions do we have in the database
-	total, err := col.CountDocuments(ctx, bson.D{})
+	total, err := col.CountDocuments(ctx, *filter)
 	if err != nil {
 		db.log.Errorf("can not count transactions")
 		return nil, err
@@ -241,6 +231,7 @@ func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, coun
 	// inform what we are about to do
 	db.log.Debugf("found %d transactions in off-chain database", total)
 
+	// init the list
 	list := types.TransactionHashList{
 		Collection: make([]*types.Hash, 0),
 		Total:      uint64(total),
@@ -248,20 +239,21 @@ func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, coun
 		Last:       0,
 		IsStart:    false,
 		IsEnd:      false,
+		Filter:     *filter,
 	}
 
 	// find out the cursor ordinal index
 	if cursor == nil && count > 0 {
 		// get the highest available ordinal index (top transaction)
 		list.First, err = db.findBorderOrdinalIndex(col,
-			bson.D{},
+			*filter,
 			options.FindOne().SetSort(bson.D{{fiTransactionOrdinalIndex, -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available ordinal index (top transaction)
 		list.First, err = db.findBorderOrdinalIndex(col,
-			bson.D{},
+			*filter,
 			options.FindOne().SetSort(bson.D{{fiTransactionOrdinalIndex, 1}}))
 		list.IsEnd = true
 
@@ -311,22 +303,21 @@ func (db *MongoDbBridge) txListFilter(cursor *string, count int32, list *types.T
 	db.log.Debugf("transaction filter starts from index %d", list.First)
 
 	// build the filter query
-	var filter bson.D
 	if cursor == nil {
 		if count > 0 {
-			filter = bson.D{{fiTransactionOrdinalIndex, bson.D{{"$lte", list.First}}}}
+			list.Filter = append(list.Filter, bson.E{Key: fiTransactionOrdinalIndex, Value: bson.D{{"$lte", list.First}}})
 		} else {
-			filter = bson.D{{fiTransactionOrdinalIndex, bson.D{{"$gte", list.First}}}}
+			list.Filter = append(list.Filter, bson.E{Key: fiTransactionOrdinalIndex, Value: bson.D{{"$gte", list.First}}})
 		}
 	} else {
 		if count > 0 {
-			filter = bson.D{{fiTransactionOrdinalIndex, bson.D{{"$lt", list.First}}}}
+			list.Filter = append(list.Filter, bson.E{Key: fiTransactionOrdinalIndex, Value: bson.D{{"$lt", list.First}}})
 		} else {
-			filter = bson.D{{fiTransactionOrdinalIndex, bson.D{{"$gt", list.First}}}}
+			list.Filter = append(list.Filter, bson.E{Key: fiTransactionOrdinalIndex, Value: bson.D{{"$gt", list.First}}})
 		}
 	}
 
-	return &filter
+	return &list.Filter
 }
 
 // txListOptions creates a filter options set for transactions list search.
@@ -436,7 +427,7 @@ func (db *MongoDbBridge) TransactionsCount() (uint64, error) {
 }
 
 // Transactions pulls list of transaction hashes starting on the specified cursor.
-func (db *MongoDbBridge) Transactions(cursor *string, count int32) (*types.TransactionHashList, error) {
+func (db *MongoDbBridge) Transactions(cursor *string, count int32, filter *bson.D) (*types.TransactionHashList, error) {
 	// nothing to load?
 	if count == 0 {
 		return nil, fmt.Errorf("nothing to do, zero transactions requested")
@@ -446,7 +437,7 @@ func (db *MongoDbBridge) Transactions(cursor *string, count int32) (*types.Trans
 	col := db.client.Database(db.dbName).Collection(coTransactions)
 
 	// init the list
-	list, err := db.initTrxList(col, cursor, count)
+	list, err := db.initTrxList(col, cursor, count, filter)
 	if err != nil {
 		db.log.Errorf("can not build transactions list; %s", err.Error())
 		return nil, err
@@ -463,6 +454,5 @@ func (db *MongoDbBridge) Transactions(cursor *string, count int32) (*types.Trans
 	if count < 0 {
 		list.Reverse()
 	}
-
 	return list, nil
 }
