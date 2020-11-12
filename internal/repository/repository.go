@@ -58,6 +58,12 @@ type Repository interface {
 	// Returns total number of accounts known to repository.
 	AccountsActive() (hexutil.Uint64, error)
 
+	// AccountIsKnown checks if the account of the given address is known to the API server.
+	AccountIsKnown(*common.Address) bool
+
+	// AccountAdd adds specified account detail into the repository.
+	AccountAdd(*types.Account) error
+
 	// Block returns a block at Opera blockchain represented by a number.
 	// Top block is returned if the number is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
@@ -206,6 +212,9 @@ type Repository interface {
 
 	// Contract extract a smart contract information by address if available.
 	Contract(*common.Address) (*types.Contract, error)
+
+	// ContractAdd adds new contract into the repository.
+	ContractAdd(*types.Contract) error
 
 	// Contracts returns list of smart contracts at Opera blockchain.
 	Contracts(bool, *string, int32) (*types.ContractList, error)
@@ -417,9 +426,6 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 		// keep the ballot sources ref
 		ballotSources: cfg.Voting.Sources,
 	}
-
-	// propagate callbacks
-	dbBridge.SetBalance(p.AccountBalance)
 
 	// make the service orchestrator
 	p.orc = newOrchestrator(&p, log, &cfg.Repository)
