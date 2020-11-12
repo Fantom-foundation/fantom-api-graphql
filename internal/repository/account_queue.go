@@ -9,7 +9,7 @@ import (
 )
 
 // how many accounts can be pushed into the queue for processing at once
-const accountQueueLength = 10000
+const accountQueueLength = 20000
 
 // testAddress represents an address used to test an account reference
 var testAddress = common.HexToAddress("0xabc00FA001230012300aBc0012300Fa00FACE000")
@@ -94,11 +94,11 @@ func (aq *accountQueue) processAccount(acc *types.Account, block *types.Block, t
 		return nil
 	}
 
-	// notify new account detected
-	aq.log.Debugf("found new account %s", acc.Address.String())
-
 	// simple account; just push it into the database
 	if acc.ContractTx == nil {
+		// notify new account detected
+		aq.log.Noticef("found new account %s", acc.Address.String())
+
 		// add the account into the database
 		err := aq.repo.AccountAdd(acc)
 		if err != nil {
@@ -154,7 +154,7 @@ func (aq *accountQueue) detectContract(addr *common.Address, cType *string, bloc
 	}
 
 	// log that the detection failed
-	aq.log.Debugf("unknown contract on %s", addr.String())
+	aq.log.Noticef("unknown contract on %s", addr.String())
 
 	// set as generic contract type if no other has ben detected
 	*cType = types.AccountTypeContract
@@ -185,6 +185,6 @@ func (aq *accountQueue) detectErc20Token(addr *common.Address, block *types.Bloc
 	}
 
 	// log what we do
-	aq.log.Debugf("ERC20 token %s detected on %s", name, addr.String())
+	aq.log.Noticef("ERC20 token %s detected on %s", name, addr.String())
 	return types.NewErc20Contract(addr, name, block, trx)
 }

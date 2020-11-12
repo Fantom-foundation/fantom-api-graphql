@@ -124,7 +124,7 @@ func (or *orchestrator) init(cfg *config.Repository) {
 	// make the transaction dispatcher; it starts dispatching immediately
 	or.txd = newTrxDispatcher(or.trxBuffer, or.repo, or.log, or.wg)
 
-	// make the account queue
+	// make the account queue; it starts processing immediately
 	or.acq = newAccountQueue(or.accountQueue, or.repo, or.log, or.wg)
 
 	// create sync scanner; it starts scanning immediately
