@@ -14,6 +14,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 import (
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -47,7 +48,7 @@ func (ftm *FtmBridge) withdrawRequestsList(addr *common.Address, staker *big.Int
 	}
 
 	// prepare to interact with the SFC contract
-	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
+	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
 		return nil, err
@@ -91,9 +92,9 @@ func (ftm *FtmBridge) PendingWithdrawalsAmount(addr *common.Address, staker *big
 
 // withdrawnByRequest pulls list of finalized withdraw requests
 // from the SFC contract events using filter iterator.
-func (ftm *FtmBridge) withdrawnByRequest(sfc *SfcContract, addr common.Address, staker *big.Int) ([]withdrawnRequest, error) {
+func (ftm *FtmBridge) withdrawnByRequest(sfc *contracts.SfcContract, addr common.Address, staker *big.Int) ([]withdrawnRequest, error) {
 	// prep iteration variables
-	var it *SfcContractPartialWithdrawnByRequestIterator
+	var it *contracts.SfcContractPartialWithdrawnByRequestIterator
 	var err error
 
 	// create event iterator for the finalized withdraw requests
@@ -124,7 +125,7 @@ func (ftm *FtmBridge) withdrawnByRequest(sfc *SfcContract, addr common.Address, 
 }
 
 // withdrawnByRequestList extracts the finalized withdrawal list from the given iterator.
-func (ftm *FtmBridge) withdrawnByRequestList(it *SfcContractPartialWithdrawnByRequestIterator) ([]withdrawnRequest, error) {
+func (ftm *FtmBridge) withdrawnByRequestList(it *contracts.SfcContractPartialWithdrawnByRequestIterator) ([]withdrawnRequest, error) {
 	// make the container
 	list := make([]withdrawnRequest, 0)
 
@@ -158,9 +159,9 @@ func (ftm *FtmBridge) withdrawnByRequestList(it *SfcContractPartialWithdrawnByRe
 
 // createdWithdrawRequests pulls list of created withdraw requests
 // from the SFC contract events using filter iterator.
-func (ftm *FtmBridge) createdWithdrawRequests(sfc *SfcContract, addr common.Address, staker *big.Int, fin []withdrawnRequest) ([]*types.WithdrawRequest, error) {
+func (ftm *FtmBridge) createdWithdrawRequests(sfc *contracts.SfcContract, addr common.Address, staker *big.Int, fin []withdrawnRequest) ([]*types.WithdrawRequest, error) {
 	// prep iteration variables
-	var it *SfcContractCreatedWithdrawRequestIterator
+	var it *contracts.SfcContractCreatedWithdrawRequestIterator
 	var err error
 
 	// create event iterator for the created withdraw requests
@@ -190,7 +191,7 @@ func (ftm *FtmBridge) createdWithdrawRequests(sfc *SfcContract, addr common.Addr
 }
 
 // pullCreatedWithdrawRequestsList extracts the created withdrawal list from the given iterator.
-func (ftm *FtmBridge) createdWithdrawRequestsList(it *SfcContractCreatedWithdrawRequestIterator, fin []withdrawnRequest) ([]*types.WithdrawRequest, error) {
+func (ftm *FtmBridge) createdWithdrawRequestsList(it *contracts.SfcContractCreatedWithdrawRequestIterator, fin []withdrawnRequest) ([]*types.WithdrawRequest, error) {
 	// make the container
 	list := make([]*types.WithdrawRequest, 0)
 

@@ -14,6 +14,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 import (
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -22,7 +23,7 @@ import (
 	"strings"
 )
 
-//go:generate abigen --abi ./contracts/ballot.abi --pkg rpc --type BallotContract --out ./smc_ballot.go
+//go:generate abigen --abi ./contracts/abi/ballot.abi --pkg contracts --type BallotContract --out ./contracts/ballot.go
 
 // ballotDetails is the structure describing basic ballot details stored in the contract
 type ballotDetails struct {
@@ -43,7 +44,7 @@ type VotesList []types.Vote
 // so the contract connection can be made.
 func (ftm *FtmBridge) LoadBallotDetails(ballot *types.Ballot) error {
 	// connect the contract
-	contract, err := NewBallotContract(ballot.Address, ftm.eth)
+	contract, err := contracts.NewBallotContract(ballot.Address, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not open ballot contract connection; %s", err.Error())
 		return err
@@ -77,7 +78,7 @@ func (ftm *FtmBridge) BallotIsFinalized(addr *common.Address) (bool, error) {
 	}
 
 	// connect the contract
-	contract, err := NewBallotContract(*addr, ftm.eth)
+	contract, err := contracts.NewBallotContract(*addr, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not open ballot contract connection; %s", err.Error())
 		return false, err
@@ -102,7 +103,7 @@ func (ftm *FtmBridge) BallotWinner(addr *common.Address) (*uint64, error) {
 	}
 
 	// connect the contract
-	contract, err := NewBallotContract(*addr, ftm.eth)
+	contract, err := contracts.NewBallotContract(*addr, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not open ballot contract connection; %s", err.Error())
 		return nil, err
@@ -177,16 +178,16 @@ func (ftm *FtmBridge) VotesByBallot(ballot common.Address, voter *common.Address
 }
 
 //  votesIterator creates a new vote iterator for the given ballot and optional voter.
-func (ftm *FtmBridge) votesIterator(ballot common.Address, voter *common.Address) (*BallotContractVotedIterator, error) {
+func (ftm *FtmBridge) votesIterator(ballot common.Address, voter *common.Address) (*contracts.BallotContractVotedIterator, error) {
 	// connect the contract
-	contract, err := NewBallotContract(ballot, ftm.eth)
+	contract, err := contracts.NewBallotContract(ballot, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not open ballot contract connection; %s", err.Error())
 		return nil, err
 	}
 
 	// prep iteration variables
-	var it *BallotContractVotedIterator
+	var it *contracts.BallotContractVotedIterator
 
 	// create event iterator for the votes
 	if voter == nil {
@@ -207,7 +208,7 @@ func (ftm *FtmBridge) votesIterator(ballot common.Address, voter *common.Address
 }
 
 // votedByBallotList creates a list of votes from the given filtered iterator.
-func (ftm *FtmBridge) votesList(it *BallotContractVotedIterator, list *VotesList) error {
+func (ftm *FtmBridge) votesList(it *contracts.BallotContractVotedIterator, list *VotesList) error {
 	// loop through the iterator
 	for it.Next() {
 		// make sure this is a valid record
@@ -266,7 +267,7 @@ func extendBallotFromDetails(ballot *types.Ballot, details *ballotDetails) {
 // ballotDetails loads additional ballot details from a deployed smart contract.
 // The initial ballot address is supposed to be already available
 // so the contract connection can be made.
-func (ftm *FtmBridge) ballotDetails(contract *BallotContract) (detail *ballotDetails, err error) {
+func (ftm *FtmBridge) ballotDetails(contract *contracts.BallotContract) (detail *ballotDetails, err error) {
 	// make sure to recover from panic
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
@@ -290,7 +291,7 @@ func (ftm *FtmBridge) ballotDetails(contract *BallotContract) (detail *ballotDet
 }
 
 // ballotProposals load list of ballot proposal names from the smart contract.
-func (ftm *FtmBridge) ballotProposals(contract *BallotContract) (list []string, err error) {
+func (ftm *FtmBridge) ballotProposals(contract *contracts.BallotContract) (list []string, err error) {
 	// make sure to recover from panic
 	defer func() {
 		if panicErr := recover(); panicErr != nil {

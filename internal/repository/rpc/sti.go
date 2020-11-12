@@ -13,10 +13,11 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
-//go:generate abigen --abi ./contracts/st_info.abi --pkg rpc --type StakerInfoContract --out ./smc_staker_info.go
+//go:generate abigen --abi ./contracts/abi/st_info.abi --pkg contracts --type StakerInfoContract --out ./contracts/staker_info.go
 
 import (
 	"encoding/json"
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -38,7 +39,7 @@ func (ftm *FtmBridge) StakerInfo(id hexutil.Uint64) (*types.StakerInfo, error) {
 	ftm.log.Debugf("loading staker information for staker #%d", id)
 
 	// instantiate the contract and display its name
-	contract, err := NewStakerInfoContract(stiContractAddress, ftm.eth)
+	contract, err := contracts.NewStakerInfoContract(stiContractAddress, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate STI contract: %v", err)
 		return nil, err

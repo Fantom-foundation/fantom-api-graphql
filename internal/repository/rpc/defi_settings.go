@@ -14,6 +14,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 import (
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -21,7 +22,7 @@ import (
 	"math/big"
 )
 
-//go:generate abigen --abi ./contracts/defi-fmint-address-provider.abi --pkg rpc --type DefiFMintAddressProvider --out ./smc_fmint_addresses.go
+//go:generate abigen --abi ./contracts/abi/defi-fmint-address-provider.abi --pkg contracts --type DefiFMintAddressProvider --out ./contracts/fmint_addresses.go
 
 // tConfigItemsLoaders defines a map between DeFi config elements and their respective loaders.
 type tConfigItemsLoaders map[*hexutil.Big]func(*bind.CallOpts) (*big.Int, error)
@@ -70,7 +71,7 @@ func (ftm *FtmBridge) DefiConfiguration() (*types.DefiSettings, error) {
 
 // pullSetOfDefiConfigValues pulls set of DeFi configuration values for the given
 // config loaders map.
-func (ftm *FtmBridge) pullDefiDecimalCorrection(con *DefiFMintMinter) (int32, error) {
+func (ftm *FtmBridge) pullDefiDecimalCorrection(con *contracts.DefiFMintMinter) (int32, error) {
 	// load the decimals correction
 	val, err := ftm.pullDefiConfigValue(con.FMintFeeDigitsCorrection)
 	if err != nil {

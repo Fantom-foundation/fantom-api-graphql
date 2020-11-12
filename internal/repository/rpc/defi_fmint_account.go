@@ -13,12 +13,13 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
-//go:generate abigen --abi ./contracts/price-oracle-proxy-interface.abi --pkg rpc --type PriceOracleProxyInterface --out ./smc_oracle_proxy.go
-//go:generate abigen --abi ./contracts/defi-token-storage.abi --pkg rpc --type DeFiTokenStorage --out ./smc_token_storage.go
-//go:generate abigen --abi ./contracts/defi-fmint-reward-distribution.abi --pkg rpc --type FMintRewardsDistribution --out ./smc_fmint_rewards.go
+//go:generate abigen --abi ./contracts/abi/price-oracle-proxy-interface.abi --pkg contracts --type PriceOracleProxyInterface --out ./contracts/oracle_proxy.go
+//go:generate abigen --abi ./contracts/abi/defi-token-storage.abi --pkg contracts --type DeFiTokenStorage --out ./contracts/token_storage.go
+//go:generate abigen --abi ./contracts/abi/defi-fmint-reward-distribution.abi --pkg contracts --type FMintRewardsDistribution --out ./contracts/fmint_rewards.go
 
 import (
 	"context"
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -59,7 +60,7 @@ func (ftm *FtmBridge) FMintAccount(owner *common.Address) (*types.FMintAccount, 
 }
 
 // FMintPoolBalance loads balance of an fMint token from the given pool contract.
-func (ftm *FtmBridge) FMintPoolBalance(pool *DeFiTokenStorage, owner *common.Address, token *common.Address) (hexutil.Big, error) {
+func (ftm *FtmBridge) FMintPoolBalance(pool *contracts.DeFiTokenStorage, owner *common.Address, token *common.Address) (hexutil.Big, error) {
 	// get the collateral token balance
 	val, err := pool.BalanceOf(nil, *owner, *token)
 	if err != nil {
@@ -79,7 +80,7 @@ func (ftm *FtmBridge) FMintPoolBalance(pool *DeFiTokenStorage, owner *common.Add
 // FMintTokenBalance loads balance of a single DeFi token in fMint contract by it's address.
 func (ftm *FtmBridge) FMintTokenBalance(owner *common.Address, token *common.Address, tp types.DefiTokenType) (hexutil.Big, error) {
 	var err error
-	var pool *DeFiTokenStorage
+	var pool *contracts.DeFiTokenStorage
 
 	// pull the right value based to token type
 	switch tp {

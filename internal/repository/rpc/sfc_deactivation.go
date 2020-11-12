@@ -14,6 +14,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 import (
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -65,7 +66,7 @@ func (ftm *FtmBridge) deactivatedDelegationList(addr *common.Address, staker *bi
 	}
 
 	// prepare to interact with the SFC contract
-	contract, err := NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
+	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %v", err)
 		return nil, err
@@ -84,8 +85,8 @@ func (ftm *FtmBridge) deactivatedDelegationList(addr *common.Address, staker *bi
 
 // createdDeactivatedDelegation pulls list of created deactivated delegation requests
 // from the SFC contract events using filter iterator.
-func (ftm *FtmBridge) createdDeactivatedDelegation(sfc *SfcContract, addr common.Address, staker *big.Int, fin []finalizedDeactivatedDelegation) ([]*types.DeactivatedDelegation, error) {
-	var it *SfcContractDeactivatedDelegationIterator
+func (ftm *FtmBridge) createdDeactivatedDelegation(sfc *contracts.SfcContract, addr common.Address, staker *big.Int, fin []finalizedDeactivatedDelegation) ([]*types.DeactivatedDelegation, error) {
+	var it *contracts.SfcContractDeactivatedDelegationIterator
 	var err error
 
 	// create event iterator for the created deactivated delegation requests
@@ -117,7 +118,7 @@ func (ftm *FtmBridge) createdDeactivatedDelegation(sfc *SfcContract, addr common
 
 // createdDeactivatedDelegationList pulls list of created deactivated delegation requests
 // from the given iterator.
-func (ftm *FtmBridge) createdDeactivatedDelegationList(it *SfcContractDeactivatedDelegationIterator, fin []finalizedDeactivatedDelegation) ([]*types.DeactivatedDelegation, error) {
+func (ftm *FtmBridge) createdDeactivatedDelegationList(it *contracts.SfcContractDeactivatedDelegationIterator, fin []finalizedDeactivatedDelegation) ([]*types.DeactivatedDelegation, error) {
 	// make the container
 	list := make([]*types.DeactivatedDelegation, 0)
 
@@ -155,8 +156,8 @@ func (ftm *FtmBridge) createdDeactivatedDelegationList(it *SfcContractDeactivate
 
 // finalizedDeactivatedDelegation extracts a list of finalized deactivated delegation requests
 // for the given address.
-func (ftm *FtmBridge) finalizedDeactivatedDelegation(sfc *SfcContract, addr common.Address, staker *big.Int) ([]finalizedDeactivatedDelegation, error) {
-	var it *SfcContractWithdrawnDelegationIterator
+func (ftm *FtmBridge) finalizedDeactivatedDelegation(sfc *contracts.SfcContract, addr common.Address, staker *big.Int) ([]finalizedDeactivatedDelegation, error) {
+	var it *contracts.SfcContractWithdrawnDelegationIterator
 	var err error
 
 	// create event iterator for the finalized deactivated delegation requests
@@ -188,7 +189,7 @@ func (ftm *FtmBridge) finalizedDeactivatedDelegation(sfc *SfcContract, addr comm
 
 // finalizedDeactivatedDelegation extracts a list of finalized deactivated delegation requests
 // for the given address.
-func (ftm *FtmBridge) finalizedDeactivatedDelegationList(it *SfcContractWithdrawnDelegationIterator) ([]finalizedDeactivatedDelegation, error) {
+func (ftm *FtmBridge) finalizedDeactivatedDelegationList(it *contracts.SfcContractWithdrawnDelegationIterator) ([]finalizedDeactivatedDelegation, error) {
 	// make the container
 	list := make([]finalizedDeactivatedDelegation, 0)
 

@@ -13,9 +13,10 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
-//go:generate abigen --abi ./contracts/defi-tokens-registry.abi --pkg rpc --type DefiFMintTokenRegistry --out ./smc_fmint_tokens.go
+//go:generate abigen --abi ./contracts/abi/defi-tokens-registry.abi --pkg contracts --type DefiFMintTokenRegistry --out ./contracts/fmint_tokens.go
 
 import (
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -89,7 +90,7 @@ func (ftm *FtmBridge) defiTokenAddressList(
 }
 
 // defiTokenDetail loads details of a token specified by the token address.
-func (ftm *FtmBridge) defiTokenDetail(contract *DefiFMintTokenRegistry, token *common.Address) (*types.DefiToken, error) {
+func (ftm *FtmBridge) defiTokenDetail(contract *contracts.DefiFMintTokenRegistry, token *common.Address) (*types.DefiToken, error) {
 	// get the token details
 	tk, err := contract.Tokens(nil, *token)
 	if err != nil {
@@ -108,7 +109,7 @@ func (ftm *FtmBridge) defiTokenDetail(contract *DefiFMintTokenRegistry, token *c
 }
 
 // defiTokensList loads list of DeFi tokens from the smart contract.
-func (ftm *FtmBridge) defiTokensList(contract *DefiFMintTokenRegistry) ([]types.DefiToken, error) {
+func (ftm *FtmBridge) defiTokensList(contract *contracts.DefiFMintTokenRegistry) ([]types.DefiToken, error) {
 	// get tge list of addresses
 	al, err := ftm.defiTokenAddressList(contract.TokensCount, contract.TokensList)
 	if err != nil {

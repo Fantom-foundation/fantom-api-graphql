@@ -13,9 +13,10 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
-//go:generate abigen --abi ./contracts/defi-fmint-minter.abi --pkg rpc --type DefiFMintMinter --out ./smc_fmint_minter.go
+//go:generate abigen --abi ./contracts/abi/defi-fmint-minter.abi --pkg contracts --type DefiFMintMinter --out ./contracts/fmint_minter.go
 
 import (
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -44,7 +45,7 @@ type fMintConfig struct {
 
 // tokenRegistryContract returns an instance of the fMint TokenRegistry
 // smart contract used to keep track of tokens available on fMint protocol.
-func (fmc *fMintConfig) tokenRegistryContract() (*DefiFMintTokenRegistry, error) {
+func (fmc *fMintConfig) tokenRegistryContract() (*contracts.DefiFMintTokenRegistry, error) {
 	// get address
 	addr, err := fmc.contractAddress(fMintAddressTokenRegistry)
 	if err != nil {
@@ -52,7 +53,7 @@ func (fmc *fMintConfig) tokenRegistryContract() (*DefiFMintTokenRegistry, error)
 	}
 
 	// connect the contract
-	contract, err := NewDefiFMintTokenRegistry(addr, fmc.bridge.eth)
+	contract, err := contracts.NewDefiFMintTokenRegistry(addr, fmc.bridge.eth)
 	if err != nil {
 		fmc.bridge.log.Errorf("can not access fMint TokenRegistry contract; %s", err.Error())
 		return nil, err
@@ -62,7 +63,7 @@ func (fmc *fMintConfig) tokenRegistryContract() (*DefiFMintTokenRegistry, error)
 }
 
 // fMintMinterContract returns an instance of the fMint Minter smart contract.
-func (fmc *fMintConfig) fMintMinterContract() (*DefiFMintMinter, error) {
+func (fmc *fMintConfig) fMintMinterContract() (*contracts.DefiFMintMinter, error) {
 	// get address
 	addr, err := fmc.contractAddress(fMintAddressMinter)
 	if err != nil {
@@ -70,7 +71,7 @@ func (fmc *fMintConfig) fMintMinterContract() (*DefiFMintMinter, error) {
 	}
 
 	// connect the contract
-	contract, err := NewDefiFMintMinter(addr, fmc.bridge.eth)
+	contract, err := contracts.NewDefiFMintMinter(addr, fmc.bridge.eth)
 	if err != nil {
 		fmc.bridge.log.Errorf("can not access fMint Minter contract; %s", err.Error())
 		return nil, err
@@ -80,7 +81,7 @@ func (fmc *fMintConfig) fMintMinterContract() (*DefiFMintMinter, error) {
 }
 
 // fMintRewardsDistribution returns an instance of the fMint Reward Distribution smart contract.
-func (fmc *fMintConfig) fMintRewardsDistribution() (*FMintRewardsDistribution, error) {
+func (fmc *fMintConfig) fMintRewardsDistribution() (*contracts.FMintRewardsDistribution, error) {
 	// get address
 	addr, err := fmc.contractAddress(fMintAddressRewardDistribution)
 	if err != nil {
@@ -88,7 +89,7 @@ func (fmc *fMintConfig) fMintRewardsDistribution() (*FMintRewardsDistribution, e
 	}
 
 	// connect the contract
-	contract, err := NewFMintRewardsDistribution(addr, fmc.bridge.eth)
+	contract, err := contracts.NewFMintRewardsDistribution(addr, fmc.bridge.eth)
 	if err != nil {
 		fmc.bridge.log.Errorf("can not access fMint Rewards Distribution contract; %s", err.Error())
 		return nil, err
@@ -98,9 +99,9 @@ func (fmc *fMintConfig) fMintRewardsDistribution() (*FMintRewardsDistribution, e
 }
 
 // fMintCollateralPool returns an instance of the fMint collateral pool contract.
-func (fmc *fMintConfig) fMintTokenStorage(addr common.Address) (*DeFiTokenStorage, error) {
+func (fmc *fMintConfig) fMintTokenStorage(addr common.Address) (*contracts.DeFiTokenStorage, error) {
 	// connect the contract
-	contract, err := NewDeFiTokenStorage(addr, fmc.bridge.eth)
+	contract, err := contracts.NewDeFiTokenStorage(addr, fmc.bridge.eth)
 	if err != nil {
 		fmc.bridge.log.Errorf("can not access fMint token pool %s; %s", addr.String(), err.Error())
 		return nil, err
@@ -110,7 +111,7 @@ func (fmc *fMintConfig) fMintTokenStorage(addr common.Address) (*DeFiTokenStorag
 }
 
 // fMintCollateralPool returns an instance of the fMint collateral pool contract.
-func (fmc *fMintConfig) fMintCollateralPool() (*DeFiTokenStorage, error) {
+func (fmc *fMintConfig) fMintCollateralPool() (*contracts.DeFiTokenStorage, error) {
 	// get address
 	addr, err := fmc.contractAddress(fMintCollateralPool)
 	if err != nil {
@@ -121,7 +122,7 @@ func (fmc *fMintConfig) fMintCollateralPool() (*DeFiTokenStorage, error) {
 }
 
 // fMintDebtPool returns an instance of the fMint debt pool contract.
-func (fmc *fMintConfig) fMintDebtPool() (*DeFiTokenStorage, error) {
+func (fmc *fMintConfig) fMintDebtPool() (*contracts.DeFiTokenStorage, error) {
 	// get address
 	addr, err := fmc.contractAddress(fMintDebtPool)
 	if err != nil {
@@ -133,7 +134,7 @@ func (fmc *fMintConfig) fMintDebtPool() (*DeFiTokenStorage, error) {
 
 // priceOracleProxyContract returns an instance of the DeFi price oracle proxy
 // interface smart contract.
-func (fmc *fMintConfig) priceOracleProxyContract() (*PriceOracleProxyInterface, error) {
+func (fmc *fMintConfig) priceOracleProxyContract() (*contracts.PriceOracleProxyInterface, error) {
 	// get address
 	addr, err := fmc.contractAddress(fMintAddressPriceOracleProxy)
 	if err != nil {
@@ -141,7 +142,7 @@ func (fmc *fMintConfig) priceOracleProxyContract() (*PriceOracleProxyInterface, 
 	}
 
 	// connect the contract
-	contract, err := NewPriceOracleProxyInterface(addr, fmc.bridge.eth)
+	contract, err := contracts.NewPriceOracleProxyInterface(addr, fmc.bridge.eth)
 	if err != nil {
 		fmc.bridge.log.Errorf("can not access DeFi PriceOracleProxy contract; %s", err.Error())
 		return nil, err
@@ -183,7 +184,7 @@ func (fmc *fMintConfig) contractAddress(name string) (common.Address, error) {
 // loadAddress loads a specified contract address from the AddressProvider.
 func (fmc *fMintConfig) loadAddress(name string) (*common.Address, error) {
 	// connect the Address Provider
-	ap, err := NewDefiFMintAddressProvider(fmc.addressProvider, fmc.bridge.eth)
+	ap, err := contracts.NewDefiFMintAddressProvider(fmc.addressProvider, fmc.bridge.eth)
 	if err != nil {
 		fmc.bridge.log.Errorf("can not access fMint AddressProvider contract; %s", err.Error())
 		return nil, err

@@ -14,6 +14,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 import (
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -21,8 +22,8 @@ import (
 	"strings"
 )
 
-//go:generate abigen --abi ./contracts/gov_governance.abi --pkg rpc --type Governance --out ./smc_governance.go
-//go:generate abigen --abi ./contracts/gov_iproposal.abi --pkg rpc --type GovernanceProposal --out ./smc_gov_iproposal.go
+//go:generate abigen --abi ./contracts/abi/gov_governance.abi --pkg contracts --type Governance --out ./contracts/governance.go
+//go:generate abigen --abi ./contracts/abi/gov_iproposal.abi --pkg contracts --type GovernanceProposal --out ./contracts/gov_iproposal.go
 
 // proposalExtended represents the extended information
 // of a governance proposal.
@@ -35,7 +36,7 @@ type govProposalExtended struct {
 // in a given Governance contract.
 func (ftm *FtmBridge) GovernanceProposalsCount(gov *common.Address) (hexutil.Big, error) {
 	// get the contract
-	gc, err := NewGovernance(*gov, ftm.eth)
+	gc, err := contracts.NewGovernance(*gov, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not access governance %s; %s", gov.String(), err.Error())
 		return hexutil.Big{}, err
@@ -55,7 +56,7 @@ func (ftm *FtmBridge) GovernanceProposalsCount(gov *common.Address) (hexutil.Big
 // specified by its id.
 func (ftm *FtmBridge) GovernanceProposal(gov *common.Address, id *hexutil.Big) (*types.GovernanceProposal, error) {
 	// get the contract
-	gc, err := NewGovernance(*gov, ftm.eth)
+	gc, err := contracts.NewGovernance(*gov, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not access governance %s; %s", gov.String(), err.Error())
 		return nil, err
@@ -73,7 +74,7 @@ func (ftm *FtmBridge) GovernanceProposal(gov *common.Address, id *hexutil.Big) (
 
 // GovernanceProposal provides a detail of Proposal of a governance contract
 // specified by its id.
-func (ftm *FtmBridge) governanceProposalDetail(gc *Governance, govId *common.Address, id *big.Int) (*types.GovernanceProposal, error) {
+func (ftm *FtmBridge) governanceProposalDetail(gc *contracts.Governance, govId *common.Address, id *big.Int) (*types.GovernanceProposal, error) {
 	// try to get proposal params
 	data, err := gc.ProposalParams(nil, id)
 	if err != nil {
@@ -109,7 +110,7 @@ func (ftm *FtmBridge) governanceProposalDetail(gc *Governance, govId *common.Add
 // specified by its id.
 func (ftm *FtmBridge) GovernanceProposalState(gov *common.Address, id *hexutil.Big) (*types.GovernanceProposalState, error) {
 	// get the contract
-	gc, err := NewGovernance(*gov, ftm.eth)
+	gc, err := contracts.NewGovernance(*gov, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not access governance %s; %s", gov.String(), err.Error())
 		return nil, err
@@ -167,7 +168,7 @@ func govConvertScales(sc []*big.Int) []hexutil.Uint64 {
 // specified by its id.
 func (ftm *FtmBridge) GovernanceProposalDetails(prop *common.Address) (*govProposalExtended, error) {
 	// get the proposal contract
-	pp, err := NewGovernanceProposal(*prop, ftm.eth)
+	pp, err := contracts.NewGovernanceProposal(*prop, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not access governance proposal %s; %s", prop.String(), err.Error())
 		return nil, err
@@ -196,7 +197,7 @@ func (ftm *FtmBridge) GovernanceProposalDetails(prop *common.Address) (*govPropo
 // GovernanceOptionState returns a state of the given option of a proposal.
 func (ftm *FtmBridge) GovernanceOptionState(gov *common.Address, propId *hexutil.Big, optId *hexutil.Big) (*types.GovernanceOptionState, error) {
 	// get the contract
-	gc, err := NewGovernance(*gov, ftm.eth)
+	gc, err := contracts.NewGovernance(*gov, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not access governance %s; %s", gov.String(), err.Error())
 		return nil, err
@@ -216,7 +217,7 @@ func (ftm *FtmBridge) GovernanceOptionState(gov *common.Address, propId *hexutil
 // GovernanceOptionStates returns a list of states of options of a proposal.
 func (ftm *FtmBridge) GovernanceOptionStates(gov *common.Address, propId *hexutil.Big) ([]*types.GovernanceOptionState, error) {
 	// get the contract
-	gc, err := NewGovernance(*gov, ftm.eth)
+	gc, err := contracts.NewGovernance(*gov, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not access governance %s; %s", gov.String(), err.Error())
 		return nil, err
@@ -252,7 +253,7 @@ func (ftm *FtmBridge) GovernanceOptionStates(gov *common.Address, propId *hexuti
 }
 
 // GovernanceOptionState returns a state of the given option of a proposal.
-func (ftm *FtmBridge) GovernanceOptionStateById(gc *Governance, propId *hexutil.Big, optId *hexutil.Big) (*types.GovernanceOptionState, error) {
+func (ftm *FtmBridge) GovernanceOptionStateById(gc *contracts.Governance, propId *hexutil.Big, optId *hexutil.Big) (*types.GovernanceOptionState, error) {
 	// get the state
 	data, err := gc.ProposalOptionState(nil, propId.ToInt(), optId.ToInt())
 	if err != nil {
@@ -275,7 +276,7 @@ func (ftm *FtmBridge) GovernanceVote(
 	from *common.Address,
 	delegatedTo *common.Address) (*types.GovernanceVote, error) {
 	// get the contract
-	gc, err := NewGovernance(*gov, ftm.eth)
+	gc, err := contracts.NewGovernance(*gov, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not access governance %s; %s", gov.String(), err.Error())
 		return nil, err
@@ -306,7 +307,7 @@ func (ftm *FtmBridge) GovernanceVote(
 // GovernanceProposalsBy loads list of proposals of the given Governance contract.
 func (ftm *FtmBridge) GovernanceProposalsBy(gov *common.Address) ([]*types.GovernanceProposal, error) {
 	// get the contract
-	gc, err := NewGovernance(*gov, ftm.eth)
+	gc, err := contracts.NewGovernance(*gov, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not access governance %s; %s", gov.String(), err.Error())
 		return nil, err
@@ -348,7 +349,7 @@ func (ftm *FtmBridge) GovernanceProposalsBy(gov *common.Address) ([]*types.Gover
 // in given Governance contract context.
 func (ftm *FtmBridge) GovernanceProposalFee(gov *common.Address) (hexutil.Big, error) {
 	// get the contract
-	gc, err := NewGovernance(*gov, ftm.eth)
+	gc, err := contracts.NewGovernance(*gov, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not access governance %s; %s", gov.String(), err.Error())
 		return hexutil.Big{}, err

@@ -14,18 +14,19 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 import (
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 )
 
-//go:generate abigen --abi ./contracts/erc20.abi --pkg rpc --type ERCTwenty --out ./smc_erc20_token.go
-//go:generate abigen --abi ./contracts/erc20detailed.abi --pkg rpc --type ERCTwentyDetailed --out ./smc_erc20detailed_token.go
+//go:generate abigen --abi ./contracts/abi/erc20.abi --pkg contracts --type ERCTwenty --out ./contracts/erc20_token.go
+//go:generate abigen --abi ./contracts/abi/erc20detailed.abi --pkg contracts --type ERCTwentyDetailed --out ./contracts/erc20detailed_token.go
 
 // Erc20Name provides information about the name of the ERC20 token.
 func (ftm *FtmBridge) Erc20Name(token *common.Address) (string, error) {
 	// connect the contract
-	contract, err := NewERCTwentyDetailed(*token, ftm.eth)
+	contract, err := contracts.NewERCTwentyDetailed(*token, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not contact ERC20Detailed contract; %s", err.Error())
 		return "", err
@@ -44,7 +45,7 @@ func (ftm *FtmBridge) Erc20Name(token *common.Address) (string, error) {
 // Erc20Symbol provides information about the symbol of the ERC20 token.
 func (ftm *FtmBridge) Erc20Symbol(token *common.Address) (string, error) {
 	// connect the contract
-	contract, err := NewERCTwentyDetailed(*token, ftm.eth)
+	contract, err := contracts.NewERCTwentyDetailed(*token, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not contact ERC20Detailed contract; %s", err.Error())
 		return "", err
@@ -63,7 +64,7 @@ func (ftm *FtmBridge) Erc20Symbol(token *common.Address) (string, error) {
 // Erc20Decimals provides information about the decimals of the ERC20 token.
 func (ftm *FtmBridge) Erc20Decimals(token *common.Address) (int32, error) {
 	// connect the contract
-	contract, err := NewERCTwentyDetailed(*token, ftm.eth)
+	contract, err := contracts.NewERCTwentyDetailed(*token, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not contact ERC20Detailed contract; %s", err.Error())
 		return 0, err
@@ -83,7 +84,7 @@ func (ftm *FtmBridge) Erc20Decimals(token *common.Address) (int32, error) {
 // contract address for an identified owner address.
 func (ftm *FtmBridge) Erc20BalanceOf(token *common.Address, owner *common.Address) (hexutil.Big, error) {
 	// connect the contract
-	contract, err := NewERCTwenty(*token, ftm.eth)
+	contract, err := contracts.NewERCTwenty(*token, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not contact ERC20 contract; %s", err.Error())
 		return hexutil.Big{}, err
@@ -112,7 +113,7 @@ func (ftm *FtmBridge) Erc20BalanceOf(token *common.Address, owner *common.Addres
 // contract by the token owner.
 func (ftm *FtmBridge) Erc20Allowance(token *common.Address, owner *common.Address, spender *common.Address) (hexutil.Big, error) {
 	// connect the contract
-	contract, err := NewERCTwenty(*token, ftm.eth)
+	contract, err := contracts.NewERCTwenty(*token, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not contact ERC20 contract; %s", err.Error())
 		return hexutil.Big{}, err
@@ -146,7 +147,7 @@ func (ftm *FtmBridge) Erc20Allowance(token *common.Address, owner *common.Addres
 // Erc20TotalSupply provides information about all available tokens
 func (ftm *FtmBridge) Erc20TotalSupply(token *common.Address) (hexutil.Big, error) {
 	// connect the contract
-	contract, err := NewERCTwenty(*token, ftm.eth)
+	contract, err := contracts.NewERCTwenty(*token, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not contact ERC20 contract; %s", err.Error())
 		return hexutil.Big{}, err
