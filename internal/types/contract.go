@@ -2,6 +2,7 @@
 package types
 
 import (
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -57,4 +58,33 @@ type Contract struct {
 	// Validated represents the unix timestamp
 	//of the contract source validation against deployed byte code.
 	Validated *hexutil.Uint64 `json:"ok"`
+}
+
+// NewGenericContract creates new generic contract record
+func NewGenericContract(addr *common.Address, block *Block, trx *Transaction) *Contract {
+	// make the contract
+	return &Contract{
+		OrdinalIndex:    TransactionIndex(block, trx),
+		Address:         *addr,
+		TransactionHash: trx.Hash,
+		TimeStamp:       block.TimeStamp,
+		Name:            "",
+		Version:         "",
+		SupportContact:  "",
+		License:         "",
+		Compiler:        "",
+		IsOptimized:     false,
+		OptimizeRuns:    0,
+		SourceCode:      "",
+		SourceCodeHash:  nil,
+		Abi:             contracts.ERCTwentyABI,
+		Validated:       nil,
+	}
+}
+
+// NewErc20Contract creates new basic ERC20 contract
+func NewErc20Contract(addr *common.Address, name string, block *Block, trx *Transaction) *Contract {
+	con := NewGenericContract(addr, block, trx)
+	con.Name = name
+	return con
 }
