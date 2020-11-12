@@ -69,6 +69,9 @@ func (aq *accountQueue) resolveAccounts() {
 	for {
 		select {
 		case req := <-aq.buffer:
+			// log what we do
+			aq.log.Debugf("account %s received for processing", req.acc.Address.String())
+
 			// process the account request into the database
 			err := aq.processAccount(req.acc, req.blk, req.trx)
 
@@ -112,6 +115,9 @@ func (aq *accountQueue) processAccount(acc *types.Account, block *types.Block, t
 
 // processAccountContract processes contract account with detection.
 func (aq *accountQueue) processAccountContract(acc *types.Account, block *types.Block, trx *types.Transaction) error {
+	// log what we do
+	aq.log.Debugf("account %s is a smart contract, analyzing", acc.Address.String())
+
 	// detect and identify contract
 	con, err := aq.detectContract(&acc.Address, &acc.Type, block, trx)
 	if err != nil {
@@ -147,6 +153,9 @@ func (aq *accountQueue) detectContract(addr *common.Address, cType *string, bloc
 		return con, nil
 	}
 
+	// log that the detection failed
+	aq.log.Debugf("unknown contract on %s", addr.String())
+
 	// set as generic contract type if no other has ben detected
 	*cType = types.AccountTypeContract
 	return types.NewGenericContract(addr, block, trx), nil
@@ -175,5 +184,7 @@ func (aq *accountQueue) detectErc20Token(addr *common.Address, block *types.Bloc
 		return nil
 	}
 
+	// log what we do
+	aq.log.Debugf("ERC20 token %s detected on %s", name, addr.String())
 	return types.NewErc20Contract(addr, name, block, trx)
 }
