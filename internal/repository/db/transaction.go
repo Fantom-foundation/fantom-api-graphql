@@ -109,6 +109,9 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		return err
 	}
 
+	// add transaction to the db
+	db.log.Infof("transaction %s added to database", trx.Hash.String())
+
 	// add the transaction to the sender's address list
 	return nil
 }
@@ -126,6 +129,8 @@ func (db *MongoDbBridge) IsTransactionKnown(col *mongo.Collection, hash *types.H
 	if sr.Err() != nil {
 		// may be ErrNoDocuments, which we seek
 		if sr.Err() == mongo.ErrNoDocuments {
+			// add transaction to the db
+			db.log.Debugf("transaction %s not found in database", hash.String())
 			return false, nil
 		}
 
@@ -134,6 +139,7 @@ func (db *MongoDbBridge) IsTransactionKnown(col *mongo.Collection, hash *types.H
 		return false, sr.Err()
 	}
 
+	// add transaction to the db
 	return true, nil
 }
 
@@ -142,7 +148,7 @@ func (db *MongoDbBridge) IsTransactionKnown(col *mongo.Collection, hash *types.H
 // AccountQueue processor call this function as a callback.
 func (db *MongoDbBridge) MarkTransactionProcessed(trx *types.Transaction) error {
 	// get the collection for contracts
-	col := db.client.Database(db.dbName).Collection(coContract)
+	col := db.client.Database(db.dbName).Collection(coTransactions)
 
 	// check if the contract already exists
 	exists, err := db.IsTransactionKnown(col, &trx.Hash)

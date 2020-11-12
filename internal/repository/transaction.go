@@ -51,8 +51,11 @@ func (p *proxy) AddTransaction(block *types.Block, trx *types.Transaction) error
 func (p *proxy) MarkTransactionProcessed(trx *types.Transaction) {
 	// mark the transaction in database
 	if err := p.db.MarkTransactionProcessed(trx); err != nil {
-		p.log.Errorf("can not finish transaction %s processing", trx.Hash.String())
+		p.log.Errorf("can not finish transaction %s processing; %s", trx.Hash.String(), err.Error())
 	}
+
+	// log what we done
+	p.log.Infof("transaction %s processing done", trx.Hash.String())
 }
 
 // propagateTrxToAccounts pushes given transaction to accounts on both sides.
