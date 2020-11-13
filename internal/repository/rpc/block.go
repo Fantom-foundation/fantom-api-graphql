@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"time"
 )
 
 // BlockTypeLatest represents the latest available block in blockchain.
@@ -65,7 +66,8 @@ func (ftm *FtmBridge) Block(numTag *string) (*types.Block, error) {
 	}
 
 	// keep track of the operation
-	ftm.log.Debugf("block found for num/tag %s", *numTag)
+	ftm.log.Debugf("block #%d found at mark %s",
+		uint64(block.Number), time.Unix(int64(block.TimeStamp), 0).String())
 	return &block, nil
 }
 
@@ -89,6 +91,7 @@ func (ftm *FtmBridge) BlockByHash(hash *string) (*types.Block, error) {
 	}
 
 	// inform and return
-	ftm.log.Debugf("block found for hash %s", *hash)
+	ftm.log.Debugf("block #%d found at mark %s by hash %s",
+		uint64(block.Number), time.Unix(int64(block.TimeStamp), 0).String(), *hash)
 	return &block, nil
 }
