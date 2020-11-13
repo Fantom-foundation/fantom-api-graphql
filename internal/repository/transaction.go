@@ -14,14 +14,19 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/rpc"
+	"go.mongodb.org/mongo-driver/bson"
 	"strings"
 )
+
+// transactionReScanDepth represents the max number of transactions we rescan
+// on contract core update
+const transactionReScanDepth = 2147483647
 
 // ErrTransactionNotFound represents an error returned if a transaction can not be found.
 var ErrTransactionNotFound = errors.New("requested transaction can not be found in Opera blockchain")
 
-// AddTransaction notifies a new incoming transaction from blockchain to the repository.
-func (p *proxy) AddTransaction(block *types.Block, trx *types.Transaction) error {
+// TransactionAdd notifies a new incoming transaction from blockchain to the repository.
+func (p *proxy) TransactionAdd(block *types.Block, trx *types.Transaction) error {
 	// simply pass the transaction to DB handler for adding to off-chain database
 	if err := p.db.AddTransaction(block, trx); err != nil {
 		return err
@@ -34,6 +39,12 @@ func (p *proxy) AddTransaction(block *types.Block, trx *types.Transaction) error
 
 	// add smart contract to the persistent storage, too
 	if trx.ContractAddress != nil {
+		// create the contract info right away even before it's sorted out
+		if err := p.ContractAdd(types.NewGenericContract(trx.ContractAddress, block, trx)); err != nil {
+			p.log.Critical(err)
+			return err
+		}
+
 		// check if the smart contract is an official ballot
 		if err := p.processBallot(block, trx); err != nil {
 			p.log.Critical(err)
@@ -45,122 +56,30 @@ func (p *proxy) AddTransaction(block *types.Block, trx *types.Transaction) error
 	return nil
 }
 
-// MarkTransactionProcessed marks given transaction as processed
+// TransactionUpdate modifies a transaction record in the repository.
+func (p *proxy) TransactionUpdate(trx *types.Transaction) error {
+	return p.db.UpdateTransaction(trx)
+}
+
+// TransactionMarkProcessed marks given transaction as processed
 // and ready to be served full to API users.
 // AccountQueue processor call this function as a callback.
-func (p *proxy) MarkTransactionProcessed(trx *types.Transaction) {
+func (p *proxy) TransactionMarkProcessed(trx *types.Transaction) {
 	// mark the transaction in database
-	if err := p.db.MarkTransactionProcessed(trx); err != nil {
+	if err := p.db.TransactionMarkProcessed(trx); err != nil {
 		p.log.Errorf("failed transaction %s processing; %s", trx.Hash.String(), err.Error())
 		return
 	}
 
 	// log what we done
 	p.log.Infof("transaction %s processing done", trx.Hash.String())
-}
 
-// propagateTrxToAccounts pushes given transaction to accounts on both sides.
-// The function is executed in a separate thread so it doesn't block
-func (p *proxy) propagateTrxToAccounts(block *types.Block, trx *types.Transaction) error {
-	// log what we do here
-	p.log.Debugf("propagating transaction %s to accounts", trx.Hash.String())
-
-	// make sure the sender address is known
-	// it's always either a regular wallet, or a contract we already know from it's creation
-	p.orc.accountQueue <- &accountQueueRequest{
-		blk:         block,
-		trx:         trx,
-		acc:         &types.Account{Address: trx.From, ContractTx: nil, Type: types.AccountTypeWallet},
-		trxCallback: nil,
+	// may this be a contract call transaction?
+	if IsLikelyAContractCall(trx) {
+		// sign this transaction for additional analysis so we can detect
+		// and sort out what type of contract call is this, if any
+		p.orc.contractCallsQueue <- trx
 	}
-
-	// log what we do here
-	p.log.Debugf("transaction %s sender %s queued", trx.Hash.String(), trx.From.String())
-
-	// do we have a receiving account?
-	if trx.To != nil {
-		// log what we do here
-		p.log.Debugf("transaction %s recipient %s queued", trx.Hash.String(), trx.To.String())
-
-		// just use the real recipient; if it's a contract we already know it and we don't have to
-		// really analyze anything here
-		p.orc.accountQueue <- &accountQueueRequest{
-			blk:         block,
-			trx:         trx,
-			acc:         &types.Account{Address: *trx.To, ContractTx: nil, Type: types.AccountTypeWallet},
-			trxCallback: p.MarkTransactionProcessed,
-		}
-		return nil
-	}
-
-	// contract address must exist
-	if trx.ContractAddress == nil {
-		p.log.Criticalf("contract creation found, but no contract address [%s]", trx.Hash.String())
-		return fmt.Errorf("invalid contract creation")
-	}
-
-	// log what we do here
-	p.log.Debugf("transaction %s contract creation %s queued", trx.Hash.String(), trx.ContractAddress.String())
-
-	// add new smart contract
-	p.orc.accountQueue <- &accountQueueRequest{
-		blk:         block,
-		trx:         trx,
-		acc:         &types.Account{Address: *trx.ContractAddress, ContractTx: &trx.Hash, Type: types.AccountTypeWallet},
-		trxCallback: p.MarkTransactionProcessed,
-	}
-	return nil
-}
-
-// isBallotContract checks if the given contract transaction is an official
-// Fantom ballot smart contract. We expect the ballots to come from configured set
-// of internal addresses.
-func (p *proxy) isBallotContract(trx *types.Transaction) bool {
-	// make sure this is a contract
-	if trx.ContractAddress == nil {
-		return false
-	}
-
-	// make sure we know any ballot sources
-	if p.ballotSources == nil {
-		return false
-	}
-
-	// loop all ballot sources known and compare
-	for _, addr := range p.ballotSources {
-		if strings.EqualFold(addr, trx.From.String()) {
-			return true
-		}
-	}
-
-	return false
-}
-
-// processBallot validates if the given transaction is an official ballot contract
-// and adds it into the list of ballots if so.
-func (p *proxy) processBallot(block *types.Block, trx *types.Transaction) error {
-	// is a ballot contract?
-	if p.isBallotContract(trx) {
-		// ballotIndex = db.transactionIndex(block, trx)
-		ballot := types.Ballot{
-			OrdinalIndex: types.TransactionIndex(block, trx),
-			Address:      *trx.ContractAddress,
-		}
-
-		// collect ballot information from the ballot contract
-		if err := p.rpc.LoadBallotDetails(&ballot); err != nil {
-			p.log.Critical(err)
-			return err
-		}
-
-		// add the ballot into the database; capture any possible error
-		if err := p.db.AddBallot(&ballot); err != nil {
-			p.log.Critical(err)
-			return err
-		}
-	}
-
-	return nil
 }
 
 // Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
@@ -262,4 +181,140 @@ func (p *proxy) TransactionsCount() (hexutil.Uint64, error) {
 	}
 
 	return hexutil.Uint64(tc), nil
+}
+
+// propagateTrxToAccounts pushes given transaction to accounts on both sides.
+// The function is executed in a separate thread so it doesn't block
+func (p *proxy) propagateTrxToAccounts(block *types.Block, trx *types.Transaction) error {
+	// log what we do here
+	p.log.Debugf("propagating transaction %s to accounts", trx.Hash.String())
+
+	// make sure the sender address is known
+	// it's always either a regular wallet, or a contract we already know from it's creation
+	p.orc.accountQueue <- &accountQueueRequest{
+		blk:         block,
+		trx:         trx,
+		acc:         &types.Account{Address: trx.From, ContractTx: nil, Type: types.AccountTypeWallet},
+		trxCallback: nil,
+	}
+
+	// log what we do here
+	p.log.Debugf("transaction %s sender %s queued", trx.Hash.String(), trx.From.String())
+
+	// do we have a receiving account?
+	if trx.To != nil {
+		// log what we do here
+		p.log.Debugf("transaction %s recipient %s queued", trx.Hash.String(), trx.To.String())
+
+		// just use the real recipient; if it's a contract we already know it and we don't have to
+		// really analyze anything here
+		p.orc.accountQueue <- &accountQueueRequest{
+			blk:         block,
+			trx:         trx,
+			acc:         &types.Account{Address: *trx.To, ContractTx: nil, Type: types.AccountTypeWallet},
+			trxCallback: p.TransactionMarkProcessed,
+		}
+		return nil
+	}
+
+	// contract address must exist
+	if trx.ContractAddress == nil {
+		p.log.Criticalf("contract creation found, but no contract address [%s]", trx.Hash.String())
+		return fmt.Errorf("invalid contract creation")
+	}
+
+	// log what we do here
+	p.log.Debugf("transaction %s contract creation %s queued", trx.Hash.String(), trx.ContractAddress.String())
+
+	// add new smart contract
+	p.orc.accountQueue <- &accountQueueRequest{
+		blk:         block,
+		trx:         trx,
+		acc:         &types.Account{Address: *trx.ContractAddress, ContractTx: &trx.Hash, Type: types.AccountTypeWallet},
+		trxCallback: p.TransactionMarkProcessed,
+	}
+	return nil
+}
+
+// isBallotContract checks if the given contract transaction is an official
+// Fantom ballot smart contract. We expect the ballots to come from configured set
+// of internal addresses.
+func (p *proxy) isBallotContract(trx *types.Transaction) bool {
+	// make sure this is a contract
+	if trx.ContractAddress == nil {
+		return false
+	}
+
+	// make sure we know any ballot sources
+	if p.ballotSources == nil {
+		return false
+	}
+
+	// loop all ballot sources known and compare
+	for _, addr := range p.ballotSources {
+		if strings.EqualFold(addr, trx.From.String()) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// processBallot validates if the given transaction is an official ballot contract
+// and adds it into the list of ballots if so.
+func (p *proxy) processBallot(block *types.Block, trx *types.Transaction) error {
+	// is a ballot contract?
+	if p.isBallotContract(trx) {
+		// ballotIndex = db.transactionIndex(block, trx)
+		ballot := types.Ballot{
+			OrdinalIndex: types.TransactionIndex(block, trx),
+			Address:      *trx.ContractAddress,
+		}
+
+		// collect ballot information from the ballot contract
+		if err := p.rpc.LoadBallotDetails(&ballot); err != nil {
+			p.log.Critical(err)
+			return err
+		}
+
+		// add the ballot into the database; capture any possible error
+		if err := p.db.AddBallot(&ballot); err != nil {
+			p.log.Critical(err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+// transactionRescanContractCalls initiates a rescan of all the contract calls to make sure
+// corresponding transactions are up-to-date with their call analysis.
+// The function is called in a separate thread to use benefit from parallel approach.
+func (p *proxy) transactionRescanContractCalls(con *types.Contract) {
+	// log what we do
+	p.log.Debugf("initiating calls re-scan for %s", con.Address.String())
+
+	// make the filter for transactions targeted to the contract
+	// we use constant for the recipient field here, see db.fiTransactionRecipient
+	filter := bson.D{{"to", con.Address.String()}}
+
+	// list all the transaction targeted on the contract so far; we ask for as many trx as we can
+	tl, err := p.db.Transactions(nil, transactionReScanDepth, &filter)
+	if err != nil {
+		p.log.Criticalf("can not pull transactions list for %s; %s", con.Address.String(), err.Error())
+		return
+	}
+
+	// loop all the transactions and schedule their re-scan
+	for _, h := range tl.Collection {
+		// pull the transaction
+		trx, err := p.Transaction(h)
+		if err != nil {
+			p.log.Criticalf("can not pull transaction %s; %s", h.String(), err.Error())
+			continue
+		}
+
+		// add the transaction to the scanner; this will pause the thread if the queue is clogged
+		p.orc.contractCallsQueue <- trx
+	}
 }
