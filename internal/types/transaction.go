@@ -57,6 +57,14 @@ type Transaction struct {
 
 	// Status represents transaction status; value is either 1 (success) or 0 (failure)
 	Status *hexutil.Uint64 `json:"status"`
+
+	// TargetContractType represents the type of the contract the transaction
+	// calls, if this is a contract call.
+	TargetContractType *string `json:"target_contract_type"`
+
+	// TargetFunctionCall represents the function the transaction addresses
+	// byt the call, if this is a contract call.
+	TargetFunctionCall *string `json:"target_function"`
 }
 
 // mustTransactionIndex always calculate the index of the current transaction
