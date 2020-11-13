@@ -55,6 +55,39 @@ const (
 	fiTransactionTargetCall = "call"
 )
 
+// initTransactionsCollection initializes the transaction collection with
+// indexes and additional parameters needed by the app.
+func (db *MongoDbBridge) initTransactionsCollection(col *mongo.Collection) {
+	if !db.initTransactions {
+		return
+	}
+
+	// prepare index models
+	ix := make([]mongo.IndexModel, 0)
+
+	// index ordinal key along with the primary key
+	unique := true
+	ix = append(ix, mongo.IndexModel{
+		Keys: bson.D{{fiTransactionPk, 1}, {fiTransactionOrdinalIndex, -1}},
+		Options: &options.IndexOptions{
+			Unique: &unique,
+		},
+	})
+
+	// index sender and recipient
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiTransactionSender, 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiTransactionRecipient, 1}}})
+
+	// create indexes
+	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
+		db.log.Panicf("can not create indexes for transaction collection; %s", err.Error())
+	}
+
+	// log we done that
+	db.initTransactions = false
+	db.log.Debugf("transactions collection initialized")
+}
+
 // shouldAddTransaction validates if the transaction should be added to the persistent storage.
 func (db *MongoDbBridge) shouldAddTransaction(col *mongo.Collection, trx *types.Transaction) bool {
 	// check if the transaction already exists
@@ -66,6 +99,26 @@ func (db *MongoDbBridge) shouldAddTransaction(col *mongo.Collection, trx *types.
 
 	// if the transaction already exists, we don't need to do anything here
 	return !exists
+}
+
+// decodeTransactionAddresses decodes recipient and contract creation addresses
+// for a contract saving process.
+func decodeTransactionAddresses(trx *types.Transaction) (*string, *string) {
+	// recipient address may not be defined so we need to do a bit more parsing
+	var rcAddress *string
+	if trx.To != nil {
+		rcp := trx.To.String()
+		rcAddress = &rcp
+	}
+
+	// smart contract address may not be defined so we need to do a bit more parsing
+	var scAddress *string
+	if trx.ContractAddress != nil {
+		sca := trx.ContractAddress.String()
+		scAddress = &sca
+	}
+
+	return rcAddress, scAddress
 }
 
 // AddTransaction stores a transaction reference in connected persistent storage.
@@ -84,22 +137,12 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		return nil
 	}
 
-	// recipient address may not be defined so we need to do a bit more parsing
-	var rcAddress *string
-	if trx.To != nil {
-		rcp := trx.To.String()
-		rcAddress = &rcp
-	}
-
-	// smart contract address may not be defined so we need to do a bit more parsing
-	var scAddress *string
-	if trx.ContractAddress != nil {
-		sca := trx.ContractAddress.String()
-		scAddress = &sca
-	}
+	// recipient and contract address may not be defined
+	// so we need to do a bit more parsing
+	rcAddress, scAddress := decodeTransactionAddresses(trx)
 
 	// try to do the insert
-	_, err := col.InsertOne(context.Background(), bson.D{
+	if _, err := col.InsertOne(context.Background(), bson.D{
 		{fiTransactionPk, trx.Hash.String()},
 		{fiTransactionOrdinalIndex, types.TransactionIndex(block, trx)},
 		{fiTransactionBlock, uint64(block.Number)},
@@ -111,10 +154,7 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		{fiTransactionProcessed, false},
 		{fiTransactionTargetContract, nil},
 		{fiTransactionTargetCall, nil},
-	})
-
-	// check for errors
-	if err != nil {
+	}); err != nil {
 		db.log.Critical(err)
 		return err
 	}
@@ -124,7 +164,8 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 
 	// should we analyze the transaction for contract call?
 
-	// add the transaction to the sender's address list
+	// check init state
+	db.initTransactionsCollection(col)
 	return nil
 }
 

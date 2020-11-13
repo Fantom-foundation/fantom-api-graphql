@@ -16,6 +16,11 @@ type MongoDbBridge struct {
 	client *mongo.Client
 	log    logger.Logger
 	dbName string
+
+	// init state marks
+	initAccounts     bool
+	initTransactions bool
+	initContracts    bool
 }
 
 // New creates a new Mongo Db connection bridge.
@@ -34,11 +39,15 @@ func New(cfg *config.Config, log logger.Logger) (*MongoDbBridge, error) {
 	log.Notice("database connection established")
 
 	// return the bridge
-	return &MongoDbBridge{
+	db := &MongoDbBridge{
 		client: con,
 		log:    log,
 		dbName: cfg.Db.DbName,
-	}, nil
+	}
+
+	// check the state
+	db.CheckDatabaseInitState()
+	return db, nil
 }
 
 // connectDb opens Mongo database connection
@@ -123,4 +132,75 @@ func (db *MongoDbBridge) getAggregateValue(col *mongo.Collection, pipeline *bson
 	}
 
 	return uint64(row.Value), nil
+}
+
+// CheckDatabaseInitState verifies if database collections have been
+// already initialized and marks the empty collections so they can be properly
+// configured when created.
+func (db *MongoDbBridge) CheckDatabaseInitState() {
+	// log what we do
+	db.log.Debugf("checking database init state")
+	db.checkAccountCollectionState()
+	db.checkTransactionCollectionState()
+	db.checkContractCollectionState()
+}
+
+// checkAccountCollectionState checks the Accounts collection state.
+func (db *MongoDbBridge) checkAccountCollectionState() {
+	// get the collection for account transactions
+	count, err := db.AccountCount()
+	if err != nil {
+		db.log.Errorf("can not check accounts collection; %s", err.Error())
+		return
+	}
+
+	// accounts already initialized
+	if 0 != uint64(count) {
+		db.log.Debugf("%d accounts in database", count)
+		return
+	}
+
+	// we have to init accounts
+	db.log.Notice("accounts collection empty")
+	db.initAccounts = true
+}
+
+// checkTransactionCollectionState checks the Transactions collection state.
+func (db *MongoDbBridge) checkTransactionCollectionState() {
+	// get the collection for account transactions
+	count, err := db.TransactionsCount()
+	if err != nil {
+		db.log.Errorf("can not check transactions collection; %s", err.Error())
+		return
+	}
+
+	// accounts already initialized
+	if 0 != count {
+		db.log.Debugf("%d transactions in database", count)
+		return
+	}
+
+	// we have to init accounts
+	db.log.Notice("transactions collection empty")
+	db.initTransactions = true
+}
+
+// checkTransactionCollectionState checks the Transactions collection state.
+func (db *MongoDbBridge) checkContractCollectionState() {
+	// get the collection for account transactions
+	count, err := db.ContractCount()
+	if err != nil {
+		db.log.Errorf("can not check contracts collection; %s", err.Error())
+		return
+	}
+
+	// accounts already initialized
+	if 0 != count {
+		db.log.Debugf("%d contracts in database", count)
+		return
+	}
+
+	// we have to init accounts
+	db.log.Notice("contracts collection empty")
+	db.initContracts = true
 }

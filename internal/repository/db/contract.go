@@ -90,6 +90,35 @@ type contractRow struct {
 	Validated      *uint64 `bson:"ok"`
 }
 
+// initContractsCollection initializes the contracts collection with
+// indexes and additional parameters needed by the app.
+func (db *MongoDbBridge) initContractsCollection(col *mongo.Collection) {
+	if !db.initContracts {
+		return
+	}
+
+	// prepare index models
+	ix := make([]mongo.IndexModel, 0)
+
+	// index ordinal key along with the primary key
+	unique := true
+	ix = append(ix, mongo.IndexModel{
+		Keys: bson.D{{fiContractPk, 1}, {fiContractOrdinalIndex, -1}},
+		Options: &options.IndexOptions{
+			Unique: &unique,
+		},
+	})
+
+	// create indexes
+	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
+		db.log.Panicf("can not create indexes for contracts collection; %s", err.Error())
+	}
+
+	// log we done that
+	db.initContracts = false
+	db.log.Debugf("contracts collection initialized")
+}
+
 // AddContract stores a smart contract reference in connected persistent storage.
 func (db *MongoDbBridge) AddContract(con *types.Contract) error {
 	// do we have all needed data?
@@ -113,7 +142,7 @@ func (db *MongoDbBridge) AddContract(con *types.Contract) error {
 	}
 
 	// try to do the insert
-	_, err = col.InsertOne(context.Background(), bson.D{
+	if _, err = col.InsertOne(context.Background(), bson.D{
 		{fiContractPk, con.Address.String()},
 		{fiContractOrdinalIndex, con.OrdinalIndex},
 		{fiContractAddress, con.Address.String()},
@@ -130,14 +159,16 @@ func (db *MongoDbBridge) AddContract(con *types.Contract) error {
 		{fiContractOptimizationRuns, 200},
 		{fiContractAbi, con.Abi},
 		{fiContractSourceValidated, con.Validated},
-	})
-	if err != nil {
+	}); err != nil {
 		db.log.Critical(err)
 		return err
 	}
 
 	// inform and quit
 	db.log.Debugf("added smart contract reference [%s]", con.Address.String())
+
+	// init the collection
+	db.initContractsCollection(col)
 	return nil
 }
 
@@ -330,6 +361,21 @@ func (db *MongoDbBridge) Contract(addr *common.Address) (*types.Contract, error)
 	}
 
 	return newContract(&row), nil
+}
+
+// ContractCount calculates total number of contracts in the database.
+func (db *MongoDbBridge) ContractCount() (uint64, error) {
+	// get the collection for transactions
+	col := db.client.Database(db.dbName).Collection(coContract)
+
+	// do the counting
+	val, err := col.CountDocuments(context.Background(), bson.D{})
+	if err != nil {
+		db.log.Errorf("can not count documents in contracts collection; %s", err.Error())
+		return 0, err
+	}
+
+	return uint64(val), nil
 }
 
 // contractListTotal find the total amount of contracts for the criteria and populates the list

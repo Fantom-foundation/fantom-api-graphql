@@ -76,6 +76,18 @@ func (db *MongoDbBridge) Account(addr *common.Address) (*types.Account, error) {
 	}, nil
 }
 
+// initAccountsCollection initializes the account collection with
+// indexes and additional parameters needed by the app.
+func (db *MongoDbBridge) initAccountsCollection() {
+	if !db.initAccounts {
+		return
+	}
+
+	// log we are done here
+	db.initAccounts = false
+	db.log.Debugf("accounts collection initialized")
+}
+
 // AddAccount stores an account in the blockchain if not exists.
 func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 	// do we have account data?
@@ -106,6 +118,8 @@ func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 		return err
 	}
 
+	// check init state
+	db.initAccountsCollection()
 	return nil
 }
 
@@ -141,7 +155,7 @@ func (db *MongoDbBridge) AccountCount() (hexutil.Uint64, error) {
 	// do the counting
 	val, err := col.CountDocuments(context.Background(), bson.D{})
 	if err != nil {
-		db.log.Errorf("can not cound documents in accounts collection; %s", err.Error())
+		db.log.Errorf("can not count documents in accounts collection; %s", err.Error())
 		return 0, err
 	}
 
