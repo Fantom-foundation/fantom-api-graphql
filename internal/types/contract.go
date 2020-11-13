@@ -78,7 +78,7 @@ func NewGenericContract(addr *common.Address, block *Block, trx *Transaction) *C
 		OptimizeRuns:    0,
 		SourceCode:      "",
 		SourceCodeHash:  nil,
-		Abi:             nil,
+		Abi:             "",
 		Validated:       nil,
 	}
 }
