@@ -55,7 +55,7 @@ func cacheConfig(cfg *config.Config, log logger.Logger) bigcache.Config {
 		MaxEntriesInWindow: 1000 * 10 * 60,
 
 		// max entry size in bytes, used only in initial memory allocation
-		MaxEntrySize: 500,
+		MaxEntrySize: 1024,
 
 		// cache will not allocate more memory than this limit, value in MB
 		// if value is reached then the oldest entries can be overridden for the new ones
