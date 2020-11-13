@@ -11,7 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"strconv"
-	"time"
 )
 
 const (
@@ -136,30 +135,23 @@ func (db *MongoDbBridge) AddContract(con *types.Contract) error {
 		return err
 	}
 
-	// if the contract already exists, we don't need to do anything here
+	// if the contract already exists, we update it to match the new content
 	if exists {
-		return nil
+		db.log.Debugf("contract %s known, updating", con.Address.String())
+		return db.UpdateContract(con)
 	}
 
-	// try to do the insert
-	if _, err = col.InsertOne(context.Background(), bson.D{
+	// get base contract data
+	base := bson.D{
 		{fiContractPk, con.Address.String()},
 		{fiContractOrdinalIndex, con.OrdinalIndex},
 		{fiContractAddress, con.Address.String()},
 		{fiContractTransaction, con.TransactionHash.String()},
 		{fiContractTimestamp, uint64(con.TimeStamp)},
-		{fiContractName, con.Name},
-		{fiContractSupport, con.SupportContact},
-		{fiContractVersion, con.Version},
-		{fiContractCompiler, con.Compiler},
-		{fiContractSource, con.SourceCode},
-		{fiContractSourceHash, con.SourceCodeHash},
-		{fiContractLicense, con.License},
-		{fiContractIsOptimized, true},
-		{fiContractOptimizationRuns, 200},
-		{fiContractAbi, con.Abi},
-		{fiContractSourceValidated, con.Validated},
-	}); err != nil {
+	}
+
+	// try to do the insert
+	if _, err = col.InsertOne(context.Background(), contractData(con, base)); err != nil {
 		db.log.Critical(err)
 		return err
 	}
@@ -175,6 +167,12 @@ func (db *MongoDbBridge) AddContract(con *types.Contract) error {
 // UpdateContract updates smart contract information in database to reflect
 // new validation or similar changes passed from repository.
 func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
+	// complain about missing contract data
+	if sc == nil {
+		db.log.Criticalf("can not update empty contract")
+		return fmt.Errorf("no contract given to update")
+	}
+
 	// get the collection for contracts
 	col := db.client.Database(db.dbName).Collection(coContract)
 
@@ -191,38 +189,65 @@ func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
 		return fmt.Errorf("contract not found")
 	}
 
-	// set the validation timestamp if needed
-	if sc.Validated == nil {
-		ts := hexutil.Uint64(time.Now().Unix())
-		sc.Validated = &ts
-	}
-
 	// update the contract details
-	_, err = col.UpdateOne(context.Background(),
+	if _, err = col.UpdateOne(context.Background(),
 		bson.D{{fiContractPk, sc.Address.String()}},
-		bson.D{
-			{"$set", bson.D{
-				{fiContractName, sc.Name},
-				{fiContractSupport, sc.SupportContact},
-				{fiContractVersion, sc.Version},
-				{fiContractCompiler, sc.Compiler},
-				{fiContractLicense, sc.License},
-				{fiContractIsOptimized, sc.IsOptimized},
-				{fiContractOptimizationRuns, sc.OptimizeRuns},
-				{fiContractSource, sc.SourceCode},
-				{fiContractSourceHash, sc.SourceCodeHash.String()},
-				{fiContractAbi, sc.Abi},
-				{fiContractSourceValidated, uint64(*sc.Validated)},
-			}},
-		})
-
-	// error on update?
-	if err != nil {
+		bson.D{{"$set", contractData(sc, nil)}}); err != nil {
+		// log the issue
 		db.log.Errorf("can not update contract details; %s", err.Error())
 		return err
 	}
 
 	return nil
+}
+
+// contractData collects the contract data into the db structure we use
+// for insert/update operations.
+func contractData(sc *types.Contract, data bson.D) bson.D {
+	// make sure we have the container
+	if data == nil {
+		data = bson.D{}
+	}
+
+	// append common data
+	data = append(data,
+		bson.E{Key: fiContractName, Value: sc.Name},
+		bson.E{Key: fiContractSupport, Value: sc.SupportContact},
+		bson.E{Key: fiContractVersion, Value: sc.Version},
+		bson.E{Key: fiContractCompiler, Value: sc.Compiler},
+		bson.E{Key: fiContractLicense, Value: sc.License},
+		bson.E{Key: fiContractIsOptimized, Value: sc.IsOptimized},
+		bson.E{Key: fiContractOptimizationRuns, Value: sc.OptimizeRuns},
+		bson.E{Key: fiContractSource, Value: sc.SourceCode},
+		bson.E{Key: fiContractAbi, Value: sc.Abi},
+	)
+
+	// do we have the source code hash?
+	if sc.SourceCodeHash != nil {
+		data = append(data, bson.E{Key: fiContractSourceHash, Value: sc.SourceCodeHash.String()})
+	} else {
+		data = append(data, bson.E{Key: fiContractSourceHash, Value: nil})
+	}
+
+	// do we have the validation mark?
+	if sc.Validated != nil {
+		data = append(data, bson.E{Key: fiContractSourceValidated, Value: uint64(*sc.Validated)})
+	} else {
+		data = append(data, bson.E{Key: fiContractSourceValidated, Value: nil})
+	}
+
+	return data
+}
+
+// IsContractKnown checks if a smart contract document already exists in the database.
+func (db *MongoDbBridge) IsContractKnown(addr *common.Address) bool {
+	// check the contract existence in the database
+	known, err := db.isContractKnown(db.client.Database(db.dbName).Collection(coContract), addr)
+	if err != nil {
+		return false
+	}
+
+	return known
 }
 
 // isContractKnown checks if a smart contract document already exists in the database.

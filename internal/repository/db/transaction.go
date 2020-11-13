@@ -152,8 +152,8 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		{fiTransactionValue, trx.Value.String()},
 		{fiTransactionTimestamp, uint64(block.TimeStamp)},
 		{fiTransactionProcessed, false},
-		{fiTransactionTargetContract, nil},
-		{fiTransactionTargetCall, nil},
+		{fiTransactionTargetContract, trx.TargetContractType},
+		{fiTransactionTargetCall, trx.TargetFunctionCall},
 	}); err != nil {
 		db.log.Critical(err)
 		return err
@@ -162,10 +162,48 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	// add transaction to the db
 	db.log.Infof("transaction %s added to database", trx.Hash.String())
 
-	// should we analyze the transaction for contract call?
-
 	// check init state
 	db.initTransactionsCollection(col)
+	return nil
+}
+
+// UpdateTransaction modifies the transaction data in the DB to match
+// the values of the record.
+func (db *MongoDbBridge) UpdateTransaction(trx *types.Transaction) error {
+	// any transaction given?
+	if trx == nil {
+		return fmt.Errorf("no transaction given")
+	}
+
+	// get the collection for transactions
+	col := db.client.Database(db.dbName).Collection(coTransactions)
+
+	// is the transaction in the database
+	known, err := db.IsTransactionKnown(col, &trx.Hash)
+	if err != nil {
+		db.log.Debugf("can not update transaction %s", trx.Hash.String())
+		return err
+	}
+
+	// the transaction must be in the database to be update-able
+	if !known {
+		db.log.Criticalf("transaction %s not in database", trx.Hash.String())
+		return nil
+	}
+
+	// update the transaction details
+	if _, err = col.UpdateOne(context.Background(),
+		bson.D{{fiTransactionPk, trx.Hash.String()}},
+		bson.D{{"$set", bson.D{
+			{fiTransactionTargetContract, trx.TargetContractType},
+			{fiTransactionTargetCall, trx.TargetFunctionCall},
+		}},
+		}); err != nil {
+		// log the issue
+		db.log.Criticalf("transaction %s can not be updated; %s", trx.Hash.String(), err.Error())
+		return err
+	}
+
 	return nil
 }
 
@@ -196,10 +234,10 @@ func (db *MongoDbBridge) IsTransactionKnown(col *mongo.Collection, hash *types.H
 	return true, nil
 }
 
-// MarkTransactionProcessed marks given transaction as processed
+// TransactionMarkProcessed marks given transaction as processed
 // and ready to be served full to API users.
 // AccountQueue processor call this function as a callback.
-func (db *MongoDbBridge) MarkTransactionProcessed(trx *types.Transaction) error {
+func (db *MongoDbBridge) TransactionMarkProcessed(trx *types.Transaction) error {
 	// get the collection for contracts
 	col := db.client.Database(db.dbName).Collection(coTransactions)
 
@@ -272,34 +310,49 @@ func (db *MongoDbBridge) LastKnownBlock() (uint64, error) {
 
 // initTrxList initializes list of transactions based on provided cursor and count.
 func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, count int32, filter *bson.D) (*types.TransactionHashList, error) {
-	// get the context
-	ctx := context.Background()
-
 	// make sure some filter is used
 	if nil == filter {
 		filter = &bson.D{}
 	}
 
 	// find how many transactions do we have in the database
-	total, err := col.CountDocuments(ctx, *filter)
+	total, err := col.CountDocuments(context.Background(), *filter)
 	if err != nil {
 		db.log.Errorf("can not count transactions")
 		return nil, err
 	}
 
-	// inform what we are about to do
-	db.log.Debugf("found %d transactions in off-chain database", total)
-
-	// init the list
+	// make the list and notify the size of it
+	db.log.Debugf("found %d filtered transactions", total)
 	list := types.TransactionHashList{
 		Collection: make([]*types.Hash, 0),
 		Total:      uint64(total),
 		First:      0,
 		Last:       0,
-		IsStart:    false,
-		IsEnd:      false,
+		IsStart:    0 >= total,
+		IsEnd:      0 >= total,
 		Filter:     *filter,
 	}
+
+	// is the list non-empty? return the list with properly calculated range marks
+	if 0 < total {
+		return db.trxListWithRangeMarks(col, &list, cursor, count, filter)
+	}
+
+	// this is an empty list
+	db.log.Debug("empty transaction list created")
+	return &list, nil
+}
+
+// trxListWithRangeMarks returns the transaction list with proper First/Last marks of the transaction range.
+func (db *MongoDbBridge) trxListWithRangeMarks(
+	col *mongo.Collection,
+	list *types.TransactionHashList,
+	cursor *string,
+	count int32,
+	filter *bson.D,
+) (*types.TransactionHashList, error) {
+	var err error
 
 	// find out the cursor ordinal index
 	if cursor == nil && count > 0 {
@@ -331,8 +384,7 @@ func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, coun
 
 	// inform what we are about to do
 	db.log.Debugf("transaction list initialized with ordinal index %d", list.First)
-
-	return &list, nil
+	return list, nil
 }
 
 // findBorderOrdinalIndex finds the highest, or lowest ordinal index in the collection.
@@ -502,16 +554,19 @@ func (db *MongoDbBridge) Transactions(cursor *string, count int32, filter *bson.
 		return nil, err
 	}
 
-	// load data
-	err = db.txListLoad(col, cursor, count, list)
-	if err != nil {
-		db.log.Errorf("can not load transactions list from database; %s", err.Error())
-		return nil, err
+	// load data if there are any
+	if list.Total > 0 {
+		err = db.txListLoad(col, cursor, count, list)
+		if err != nil {
+			db.log.Errorf("can not load transactions list from database; %s", err.Error())
+			return nil, err
+		}
+
+		// reverse on negative so new-er transaction will be on top
+		if count < 0 {
+			list.Reverse()
+		}
 	}
 
-	// reverse on negative so new-er transaction will be on top
-	if count < 0 {
-		list.Reverse()
-	}
 	return list, nil
 }
