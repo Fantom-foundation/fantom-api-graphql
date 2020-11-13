@@ -8,8 +8,16 @@ import (
 	"sync"
 )
 
-// how many accounts can be pushed into the queue for processing at once
-const accountQueueLength = 20000
+const (
+	// accountQueueLength represents how many accounts can be pushed
+	// into the queue for processing at once
+	accountQueueLength = 20000
+
+	// sfcCheckBelowBlock represents the highest block number we try to detect
+	// SFC contract, above this block the contract should already be known and we can
+	// skip the check
+	sfcCheckBelowBlock = 25000
+)
 
 // testAddress represents an address used to test an account reference
 var testAddress = common.HexToAddress("0xabc00FA001230012300aBc0012300Fa00FACE000")
@@ -99,6 +107,9 @@ func (aq *accountQueue) processAccount(acc *types.Account, block *types.Block, t
 		// notify new account detected
 		aq.log.Noticef("found new account %s", acc.Address.String())
 
+		// check if the target address is not an SFC contract
+		aq.checkSfcContract(acc, block, trx)
+
 		// add the account into the database
 		err := aq.repo.AccountAdd(acc)
 		if err != nil {
@@ -111,6 +122,28 @@ func (aq *accountQueue) processAccount(acc *types.Account, block *types.Block, t
 	}
 
 	return aq.processAccountContract(acc, block, trx)
+}
+
+// checkSfcContract verifies if the target account is the SFC contract
+// and if so, it adds the SFC target with a different type.
+func (aq *accountQueue) checkSfcContract(acc *types.Account, block *types.Block, trx *types.Transaction) {
+	// act on SFC detection
+	if uint64(block.Number) < sfcCheckBelowBlock && aq.repo.IsSfcContract(&acc.Address) {
+		// change the type to SFC contract
+		acc.Type = types.AccountTypeSFC
+
+		// get the SFC version
+		ver, err := aq.repo.SfcVersion()
+		if err == nil {
+			// log what we found
+			aq.log.Debugf("detected SFC contract %d.%d.%d", byte((ver>>16)&255), byte((ver>>8)&255), byte(ver&255))
+
+			// add the contract
+			if err := aq.repo.ContractAdd(types.NewSfcContract(&acc.Address, uint64(ver), block, trx)); err != nil {
+				aq.log.Errorf("can not add the SFC contract at %s; %s", acc.Address.String(), err.Error())
+			}
+		}
+	}
 }
 
 // processAccountContract processes contract account with detection.

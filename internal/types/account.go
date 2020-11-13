@@ -13,6 +13,9 @@ const (
 	// AccountTypeContract identifies a generic contract type
 	AccountTypeContract = "contract"
 
+	// AccountTypeSFC identifies the Special Function Contract
+	AccountTypeSFC = "SFC"
+
 	// AccountTypeERC20Token identifies a contract of type ERC20 token
 	AccountTypeERC20Token = "ERC20"
 )

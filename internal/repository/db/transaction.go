@@ -45,6 +45,14 @@ const (
 
 	// fiTransactionProcessed is the name of the field indicating processed transaction.
 	fiTransactionProcessed = "ok"
+
+	// fiTransactionTargetContract is the name of the field of target smart contract type
+	// this transaction addressed. If undetected, or not a contract address, the field is empty.
+	fiTransactionTargetContract = "tc"
+
+	// fiTransactionTargetCall is the name of the field of target smart contract function name.
+	// If the function has not been detected yet, the field is empty.
+	fiTransactionTargetCall = "call"
 )
 
 // shouldAddTransaction validates if the transaction should be added to the persistent storage.
@@ -101,6 +109,8 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		{fiTransactionValue, trx.Value.String()},
 		{fiTransactionTimestamp, uint64(block.TimeStamp)},
 		{fiTransactionProcessed, false},
+		{fiTransactionTargetContract, nil},
+		{fiTransactionTargetCall, nil},
 	})
 
 	// check for errors
@@ -111,6 +121,8 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 
 	// add transaction to the db
 	db.log.Infof("transaction %s added to database", trx.Hash.String())
+
+	// should we analyze the transaction for contract call?
 
 	// add the transaction to the sender's address list
 	return nil

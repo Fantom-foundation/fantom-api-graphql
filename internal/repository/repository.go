@@ -9,6 +9,7 @@ results. BigCache for in-memory object storage to speed up loading of frequently
 package repository
 
 import (
+	"bytes"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository/cache"
@@ -74,6 +75,9 @@ type Repository interface {
 
 	// LastKnownBlock returns number of the last block known to the repository.
 	LastKnownBlock() (uint64, error)
+
+	// IsSfcContract returns true if the given address points to the SFC contract.
+	IsSfcContract(*common.Address) bool
 
 	// CurrentEpoch returns the id of the current epoch.
 	CurrentEpoch() (hexutil.Uint64, error)
@@ -388,6 +392,7 @@ type proxy struct {
 	db    *db.MongoDbBridge
 	rpc   *rpc.FtmBridge
 	log   logger.Logger
+	cfg   *config.Config
 
 	// governance contracts reference
 	govContracts []config.GovernanceContract
@@ -417,6 +422,7 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 		db:    dbBridge,
 		rpc:   rpcBridge,
 		log:   log,
+		cfg:   cfg,
 
 		govContracts: cfg.Governance.Contracts,
 
@@ -500,4 +506,9 @@ func (p *proxy) SetBlockChannel(ch chan *types.Block) {
 // SetTrxChannel registers a channel for notifying new transactions events.
 func (p *proxy) SetTrxChannel(ch chan *types.Transaction) {
 	p.orc.setTrxChannel(ch)
+}
+
+// IsSfcContract returns true if the given address points to the SFC contract.
+func (p *proxy) IsSfcContract(addr *common.Address) bool {
+	return bytes.Equal(addr.Bytes(), p.cfg.Staking.SFCContract.Bytes())
 }

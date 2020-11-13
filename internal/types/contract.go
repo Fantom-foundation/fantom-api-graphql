@@ -3,6 +3,7 @@ package types
 
 import (
 	"fantom-api-graphql/internal/repository/rpc/contracts"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -77,14 +78,35 @@ func NewGenericContract(addr *common.Address, block *Block, trx *Transaction) *C
 		OptimizeRuns:    0,
 		SourceCode:      "",
 		SourceCodeHash:  nil,
-		Abi:             contracts.ERCTwentyABI,
+		Abi:             nil,
 		Validated:       nil,
 	}
 }
 
 // NewErc20Contract creates new basic ERC20 contract
 func NewErc20Contract(addr *common.Address, name string, block *Block, trx *Transaction) *Contract {
+	// make the contract
 	con := NewGenericContract(addr, block, trx)
+
+	// set additional details
 	con.Name = name
+	con.Abi = contracts.ERCTwentyABI
+	return con
+}
+
+// NewSfcContract creates new Special Purpose Contract reference
+func NewSfcContract(addr *common.Address, ver uint64, block *Block, trx *Transaction) *Contract {
+	// make the contract
+	con := NewGenericContract(addr, block, trx)
+
+	// set additional details
+	con.Name = "SFC Contract"
+	con.Version = fmt.Sprintf("%d.%d.%d", byte((ver>>16)&255), byte((ver>>8)&255), byte(ver&255))
+	con.SupportContact = "https://fantom.foundation"
+	con.License = "MIT"
+	con.Compiler = "Solidity"
+	con.SourceCode = "https://github.com/Fantom-foundation/fantom-sfc"
+	con.Abi = contracts.SfcContractABI
+	con.Validated = &block.TimeStamp
 	return con
 }
