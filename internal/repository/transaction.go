@@ -51,7 +51,8 @@ func (p *proxy) AddTransaction(block *types.Block, trx *types.Transaction) error
 func (p *proxy) MarkTransactionProcessed(trx *types.Transaction) {
 	// mark the transaction in database
 	if err := p.db.MarkTransactionProcessed(trx); err != nil {
-		p.log.Errorf("can not finish transaction %s processing; %s", trx.Hash.String(), err.Error())
+		p.log.Errorf("failed transaction %s processing; %s", trx.Hash.String(), err.Error())
+		return
 	}
 
 	// log what we done
@@ -74,12 +75,12 @@ func (p *proxy) propagateTrxToAccounts(block *types.Block, trx *types.Transactio
 	}
 
 	// log what we do here
-	p.log.Debugf("transaction %s sender %s submitted", trx.Hash.String(), trx.From.String())
+	p.log.Debugf("transaction %s sender %s queued", trx.Hash.String(), trx.From.String())
 
 	// do we have a receiving account?
 	if trx.To != nil {
 		// log what we do here
-		p.log.Debugf("transaction %s recipient %s submitted", trx.Hash.String(), trx.To.String())
+		p.log.Debugf("transaction %s recipient %s queued", trx.Hash.String(), trx.To.String())
 
 		// just use the real recipient; if it's a contract we already know it and we don't have to
 		// really analyze anything here
@@ -99,7 +100,7 @@ func (p *proxy) propagateTrxToAccounts(block *types.Block, trx *types.Transactio
 	}
 
 	// log what we do here
-	p.log.Debugf("transaction %s contract creation %s submitted", trx.Hash.String(), trx.ContractAddress.String())
+	p.log.Debugf("transaction %s contract creation %s queued", trx.Hash.String(), trx.ContractAddress.String())
 
 	// add new smart contract
 	p.orc.accountQueue <- &accountQueueRequest{
