@@ -46,7 +46,7 @@ const (
 	defApiStateOrigin = "https://localhost"
 
 	// defSfcContract is the default address of the SFC contract
-	defSfcContract = "0xfc00face00000000000000000000000000000000"
+	defSfcContract = "0xFC00FACE00000000000000000000000000000000"
 
 	// defDefiFMintAddressProvider represents the address of the fMintAddressProvider
 	defDefiFMintAddressProvider = "0x730e27f6c52d07b1a6ab39b639b617dc566c91af"
