@@ -24,11 +24,12 @@ type orchestrator struct {
 	service
 
 	// orchestrator managed channels
-	trxBuffer        chan *evtTransaction
-	accountQueue     chan *accountQueueRequest
-	sysDone          chan bool
-	reScan           chan bool
-	sigKillScheduler chan bool
+	trxBuffer          chan *evtTransaction
+	accountQueue       chan *accountQueueRequest
+	contractCallsQueue chan *types.Transaction
+	sysDone            chan bool
+	reScan             chan bool
+	sigKillScheduler   chan bool
 
 	// count re-scans
 	reScanCounter uint
@@ -39,6 +40,7 @@ type orchestrator struct {
 	mon *blockMonitor
 	sti *stiMonitor
 	acq *accountQueue
+	ccq *contractCallQueue
 }
 
 // NewOrchestrator creates a new instance of repository orchestrator.
@@ -84,25 +86,20 @@ func (or *orchestrator) close() {
 
 // closeServices signals services of the orchestrator to close
 func (or *orchestrator) closeServices() {
-	// signal the service to close
+	// signal the orchestrator to close
 	or.service.close()
 
-	// signal scanner
+	// signal the services to close
 	or.sys.close()
-
-	// signal monitor
 	or.mon.close()
-
-	// signal tx dispatcher
 	or.txd.close()
+	or.acq.close()
+	or.ccq.close()
 
-	// signal sti monitor
+	// signal sti monitor if it exists
 	if or.sti != nil {
 		or.sti.close()
 	}
-
-	// signal account queue
-	or.acq.close()
 }
 
 // setBlockChannel registers a channel for notifying new block events.
@@ -120,12 +117,16 @@ func (or *orchestrator) init(cfg *config.Repository) {
 	// create a channel for transaction dispatcher
 	or.trxBuffer = make(chan *evtTransaction, trxDispatchBufferCapacity)
 	or.accountQueue = make(chan *accountQueueRequest, accountQueueLength)
+	or.contractCallsQueue = make(chan *types.Transaction, contractCallQueueLength)
 
 	// make the transaction dispatcher; it starts dispatching immediately
 	or.txd = newTrxDispatcher(or.trxBuffer, or.repo, or.log, or.wg)
 
-	// make the account queue; it starts processing immediately
+	// make the account queue handler; it starts processing immediately
 	or.acq = newAccountQueue(or.accountQueue, or.repo, or.log, or.wg)
+
+	// make the contract call analyzer queue handler; it starts processing immediately
+	or.ccq = newContractCallQueue(or.contractCallsQueue, or.repo, or.log, or.wg)
 
 	// create sync scanner; it starts scanning immediately
 	or.sysDone = make(chan bool, 1)
