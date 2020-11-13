@@ -53,6 +53,8 @@ func (sys *scanner) run() {
 	go sys.scan(lnb)
 }
 
+// scan performs the actual scanner operation on the missing blocks starting
+// from the identified last known block id/number.
 func (sys *scanner) scan(lnb uint64) {
 	// don't forget to sign off after we are done
 	defer func() {

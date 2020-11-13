@@ -1,4 +1,11 @@
-// Package db implements bridge to persistent storage represented by Mongo database.
+/*
+Package repository implements repository for handling fast and efficient access to data required
+by the resolvers of the API server.
+
+Internally it utilizes RPC to access Opera/Lachesis full node for blockchain interaction. Mongo database
+for fast, robust and scalable off-chain data storage, especially for aggregated and pre-calculated data mining
+results. BigCache for in-memory object storage to speed up loading of frequently accessed entities.
+*/
 package repository
 
 import (
@@ -32,15 +39,15 @@ type accountQueueRequest struct {
 	trxCallback func(*types.Transaction)
 }
 
-// scanner implements blockchain scanner used to extract blockchain data to off-chain storage.
+// accountQueue implements account analyzer queue
 type accountQueue struct {
 	service
 	buffer chan *accountQueueRequest
 }
 
-// newScanner creates new blockchain scanner service.
+// newAccountQueue creates new blockchain account analyzer queue service.
 func newAccountQueue(buffer chan *accountQueueRequest, repo Repository, log logger.Logger, wg *sync.WaitGroup) *accountQueue {
-	// create new scanner instance
+	// create new instance
 	aq := accountQueue{
 		service: newService("account queue", repo, log, wg),
 		buffer:  buffer,
@@ -55,19 +62,19 @@ func newAccountQueue(buffer chan *accountQueueRequest, repo Repository, log logg
 func (aq *accountQueue) run() {
 	// start scanner
 	aq.wg.Add(1)
-	go aq.resolveAccounts()
+	go aq.monitorAccounts()
 }
 
-// resolveAccounts runs the main account requests resolver
+// monitorAccounts runs the main account requests resolver
 // loop in a separate thread.
-func (aq *accountQueue) resolveAccounts() {
+func (aq *accountQueue) monitorAccounts() {
 	// log action
-	aq.log.Notice("account processing queue is running")
+	aq.log.Notice("account queue processing is running")
 
 	// don't forget to sign off after we are done
 	defer func() {
 		// log finish
-		aq.log.Notice("account processing queue is closing")
+		aq.log.Notice("account queue processing is closing")
 
 		// signal to wait group we are done
 		aq.wg.Done()

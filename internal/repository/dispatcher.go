@@ -68,7 +68,7 @@ func (td *trxDispatcher) dispatch() {
 			}
 
 			// dispatch the received
-			err := td.repo.AddTransaction(toDispatch.block, toDispatch.trx)
+			err := td.repo.TransactionAdd(toDispatch.block, toDispatch.trx)
 			if err != nil {
 				td.log.Error("could not dispatch transaction")
 				td.log.Error(err)

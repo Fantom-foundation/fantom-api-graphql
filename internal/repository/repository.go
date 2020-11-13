@@ -93,8 +93,11 @@ type Repository interface {
 	// If the block is not found, ErrBlockNotFound error is returned.
 	BlockByHash(*types.Hash) (*types.Block, error)
 
-	// AddTransaction notifies a new incoming transaction from blockchain to the repository.
-	AddTransaction(*types.Block, *types.Transaction) error
+	// AddTransaction adds a new incoming transaction from blockchain to the repository.
+	TransactionAdd(*types.Block, *types.Transaction) error
+
+	// TransactionUpdate modifies a transaction record in the repository.
+	TransactionUpdate(*types.Transaction) error
 
 	// Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
 	Transaction(*types.Hash) (*types.Transaction, error)
