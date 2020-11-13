@@ -21,7 +21,26 @@ import (
 
 // Contract extract a smart contract information by account address, if available.
 func (p *proxy) Contract(addr *common.Address) (*types.Contract, error) {
-	return p.db.Contract(addr)
+	// try cache first
+	sc := p.cache.PullContract(addr)
+
+	// we still don't know the contract? call the db for that
+	if sc == nil {
+		var err error
+		sc, err = p.db.Contract(addr)
+		if err != nil {
+			return nil, err
+		}
+
+		// found the contract? push to cache for future use
+		if sc != nil {
+			if err = p.cache.PushContract(sc); err != nil {
+				p.log.Criticalf("can not cache contract %s; %s", addr.String(), err.Error())
+			}
+		}
+	}
+
+	return sc, nil
 }
 
 // Contracts returns list of smart contracts at Opera blockchain.
@@ -142,6 +161,10 @@ func (p *proxy) ValidateContract(sc *types.Contract) error {
 			// inform about success
 			p.log.Debugf("contract %s [%s] validated", sc.Address.String(), name)
 
+			// re-scan contract transactions so they are up-to-date with their calls analysis
+			p.cache.EvictContract(&sc.Address)
+			go p.transactionRescanContractCalls(sc)
+
 			// inform the upper instance we have a winner
 			return nil
 		}
@@ -153,5 +176,19 @@ func (p *proxy) ValidateContract(sc *types.Contract) error {
 
 // ContractAdd adds new contract into the repository.
 func (p *proxy) ContractAdd(con *types.Contract) error {
-	return p.db.AddContract(con)
+	// is the a known contract which will be updated?
+	isUpdate := p.db.IsContractKnown(&con.Address)
+
+	// do the add/update op
+	if err := p.db.AddContract(con); err != nil {
+		p.log.Errorf("contract %s store failed; %s", con.Address.String(), err.Error())
+		return err
+	}
+
+	// re-scan transactions of the contract so they are up-to-date with their calls analysis
+	if isUpdate {
+		p.cache.EvictContract(&con.Address)
+		go p.transactionRescanContractCalls(con)
+	}
+	return nil
 }
