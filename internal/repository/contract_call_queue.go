@@ -10,6 +10,7 @@ package repository
 
 import (
 	"fantom-api-graphql/internal/logger"
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"strings"
@@ -98,7 +99,7 @@ func IsLikelyAContractCall(trx *types.Transaction) bool {
 func (cq *contractCallQueue) analyzeCall(trx *types.Transaction) {
 	// check if the transaction is likely to be a contract call
 	if !IsLikelyAContractCall(trx) {
-		cq.log.Error("analyzer received an invalid transaction")
+		cq.log.Error("analyzer received a non-call transaction")
 		return
 	}
 
@@ -131,13 +132,16 @@ func (cq *contractCallQueue) analyzeCall(trx *types.Transaction) {
 // the transaction contract target type to match the account.
 // The account is expected to be already in the database since the transaction
 // is pushed for call analysis only after the transaction has been marked
-// as processed on the accounts queue (check proxy.TransactionMarkProcessed).
+// as processed in the accounts queue (check proxy.TransactionMarkProcessed).
 func (cq *contractCallQueue) updateTargetContractType(trx *types.Transaction) {
 	// pull the account
 	acc, err := cq.repo.Account(trx.To)
 	if err != nil {
-		// notify critical issue with the account
-		cq.log.Criticalf("contract %s account not found on %s; %s", trx.To.String(), trx.Hash.String(), err.Error())
+		// notify critical issue with the account; it should exist at this point
+		cq.log.Criticalf("contract %s account not found on %s; %s",
+			trx.To.String(),
+			trx.Hash.String(),
+			err.Error())
 
 		// assign general type so we know it's still a contract call
 		cType := types.AccountTypeContract
@@ -152,40 +156,52 @@ func (cq *contractCallQueue) updateTargetContractType(trx *types.Transaction) {
 // updateTargetFunctionSignature detects and decodes the target function signature
 // if possible.
 func (cq *contractCallQueue) updateTargetFunctionSignature(trx *types.Transaction, sc *types.Contract) {
-	// do we have the contract abi?
+	// do we have the contract abi? try to use it to find match
 	if sc.Abi != "" {
-		// try to parse the ABI so we can match function for the call
-		parsed, err := abi.JSON(strings.NewReader(sc.Abi))
-		if err == nil {
-			// try to match the trx call with a contract method
-			cq.matchCallMethod(trx, &parsed)
-		} else {
-			// log the issue
-			cq.log.Debugf("failed to parse contract %s ABI", sc.Address.String())
-		}
+		cq.tryMatchWithAbi(trx, &sc.Abi)
 	}
 
-	// do we already have the call signature?
+	// if we don't have a match and it's the SFC, try previous version of the contract
+	if trx.TargetFunctionCall == nil && cq.repo.IsSfcContract(trx.To) {
+		v1Abi := contracts.SfcV1ContractABI
+		cq.tryMatchWithAbi(trx, &v1Abi)
+	}
+
+	// do we have the call signature?
 	if trx.TargetFunctionCall == nil {
 		// log the issue
 		cq.log.Debugf("transaction %s call undefined, generic function sig used", trx.Hash.String())
 
-		// decode the call function signature
+		// use the raw call function signature
 		fc := trx.InputData.String()[:8]
 		trx.TargetFunctionCall = &fc
 	}
 }
 
+// tryToMatchAbi tries the given ABI to match and update the contract call.
+func (cq *contractCallQueue) tryMatchWithAbi(trx *types.Transaction, inAbi *string) {
+	// try to parse the ABI from JSON so we can match function for the call
+	parsed, err := abi.JSON(strings.NewReader(*inAbi))
+	if err != nil {
+		cq.log.Debugf("failed to parse ABI; %s", err.Error())
+		return
+	}
+
+	// try to match the trx call with a contract method
+	cq.matchCallMethod(trx, &parsed)
+}
+
 // matchCallMethod tries to match call method from the call data and parsed ABI
 // of the addressed contract.
-func (cq *contractCallQueue) matchCallMethod(trx *types.Transaction, contractAbi *abi.ABI) {
-	// try to find the method
-	m, err := contractAbi.MethodById(trx.InputData)
+func (cq *contractCallQueue) matchCallMethod(trx *types.Transaction, inAbi *abi.ABI) {
+	// try to find the method; returns error if not found
+	m, err := inAbi.MethodById(trx.InputData)
 	if err != nil {
 		cq.log.Errorf("%s method signature not found; %s", trx.Hash.String(), err.Error())
 		return
 	}
 
+	// if this is a SFC call, it could
 	// set the method into the trx
-	trx.TargetFunctionCall = &m.RawName
+	trx.TargetFunctionCall = &m.Name
 }
