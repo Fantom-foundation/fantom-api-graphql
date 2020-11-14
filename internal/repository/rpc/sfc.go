@@ -13,7 +13,8 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
-//go:generate abigen --abi ./contracts/abi/sfc-2.0.2-rc2.abi --pkg contracts --type SfcContract --out ./contracts/sfc.go
+//go:generate abigen --abi ./contracts/abi/sfc-1.1.abi --pkg contracts --type SfcV1Contract --out ./contracts/sfc-v1.go
+//go:generate abigen --abi ./contracts/abi/sfc-2.0.2-rc2.abi --pkg contracts --type SfcContract --out ./contracts/sfc-v2.go
 //go:generate abigen --abi ./contracts/abi/sfc-tokenizer.abi --pkg contracts --type SfcTokenizer --out ./contracts/sfc_tokenizer.go
 
 import (
