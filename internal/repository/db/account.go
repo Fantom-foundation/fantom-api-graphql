@@ -195,7 +195,7 @@ func (db *MongoDbBridge) AccountTransactions(acc *types.Account, cursor *string,
 	db.log.Debugf("loading transactions of %s", acc.Address.String())
 
 	// make the filter for [(from = Account) OR (to = Account)]
-	filter := bson.D{{"$or", bson.D{{"from", acc.Address.String()}, {"to", acc.Address.String()}}}}
+	filter := bson.D{{"$or", bson.A{bson.D{{"from", acc.Address.String()}}, bson.D{{"to", acc.Address.String()}}}}}
 
 	// return list of transactions filtered by the account
 	return db.Transactions(cursor, count, &filter)
