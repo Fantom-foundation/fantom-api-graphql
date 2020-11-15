@@ -339,6 +339,9 @@ type Repository interface {
 	// NativeTokenAddress returns address of the native token wrapper, if available.
 	NativeTokenAddress() (*common.Address, error)
 
+	// Erc20TokensList returns a list of known ERC20 tokens ordered by their activity.
+	Erc20TokensList(int32) ([]common.Address, error)
+
 	// Erc20BalanceOf load the current available balance of and ERC20 token identified by the token
 	// contract address for an identified owner address.
 	Erc20BalanceOf(*common.Address, *common.Address) (hexutil.Big, error)

@@ -27,16 +27,24 @@ const (
 	// fiAccountLastActivity is the name of the field of the account last activity time stamp.
 	fiAccountLastActivity = "ats"
 
+	// fiAccountTransactionCounter is the name of the field of the account transaction counter.
+	fiAccountTransactionCounter = "atc"
+
 	// fiScCreationTx is the name of the field of the transaction hash
 	// which created the contract, if the account is a contract.
 	fiScCreationTx = "sc"
+
+	// defaultERC20ListLength is the number of ERC20 tokens pulled by default on negative count
+	defaultERC20ListLength = 25
 )
 
 // the account base row
 type AccountRow struct {
+	Address  string      `bson:"_id"`
 	Type     string      `bson:"type"`
 	Sc       *string     `bson:"sc"`
 	Activity uint64      `bson:"ats"`
+	Counter  uint64      `bson:"atc"`
 	ScHash   *types.Hash `bson:"-"`
 }
 
@@ -79,6 +87,7 @@ func (db *MongoDbBridge) Account(addr *common.Address) (*types.Account, error) {
 		ContractTx:   row.ScHash,
 		Type:         row.Type,
 		LastActivity: hexutil.Uint64(row.Activity),
+		TrxCounter:   hexutil.Uint64(row.Counter),
 	}, nil
 }
 
@@ -117,6 +126,7 @@ func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 		{fiScCreationTx, conTx},
 		{fiAccountType, acc.Type},
 		{fiAccountLastActivity, uint64(acc.LastActivity)},
+		{fiAccountTransactionCounter, uint64(acc.TrxCounter)},
 	})
 
 	// error on lookup?
@@ -202,11 +212,71 @@ func (db *MongoDbBridge) AccountMarkActivity(acc *types.Account, ts uint64) erro
 	// update the contract details
 	if _, err := col.UpdateOne(context.Background(),
 		bson.D{{fiAccountPk, acc.Address.String()}},
-		bson.D{{"$set", bson.D{{fiAccountLastActivity, ts}}}}); err != nil {
+		bson.D{
+			{"$set", bson.D{{fiAccountLastActivity, ts}}},
+			{"$inc", bson.D{{fiAccountTransactionCounter, 1}}},
+		}); err != nil {
 		// log the issue
 		db.log.Errorf("can not update account %s details; %s", acc.Address.String(), err.Error())
 		return err
 	}
 
 	return nil
+}
+
+// Erc20TokensList returns a list of known ERC20 tokens ordered by their activity.
+func (db *MongoDbBridge) Erc20TokensList(count int32) ([]common.Address, error) {
+	// make sure the count is positive; use default size if not
+	if count <= 0 {
+		count = defaultERC20ListLength
+	}
+
+	// log what we do
+	db.log.Debugf("loading %d most active ERC20 token accounts", count)
+
+	// get the collection for contracts
+	col := db.client.Database(db.dbName).Collection(coAccounts)
+
+	// make the filter for ERC20 tokens only and pull them ordered by activity
+	filter := bson.D{{"type", types.AccountTypeERC20Token}}
+	opt := options.Find().SetSort(bson.D{
+		{fiAccountTransactionCounter, -1},
+		{fiAccountLastActivity, -1},
+	}).SetLimit(int64(count))
+
+	// load the data
+	cursor, err := col.Find(context.Background(), filter, opt)
+	if err != nil {
+		db.log.Errorf("error loading ERC20 tokens list; %s", err.Error())
+		return nil, err
+	}
+
+	return db.loadErc20TokensList(cursor)
+}
+
+// Erc20TokensList returns a list of known ERC20 tokens ordered by their activity.
+func (db *MongoDbBridge) loadErc20TokensList(cursor *mongo.Cursor) ([]common.Address, error) {
+	// close the cursor as we leave
+	defer func() {
+		err := cursor.Close(context.Background())
+		if err != nil {
+			db.log.Errorf("error closing ERC20 list cursor; %s", err.Error())
+		}
+	}()
+
+	// loop and load
+	list := make([]common.Address, 0)
+	var row AccountRow
+	for cursor.Next(context.Background()) {
+		// try to decode the next row
+		if err := cursor.Decode(&row); err != nil {
+			db.log.Errorf("can not decodeERC20 list row; %s", err.Error())
+			return nil, err
+		}
+
+		// decode the value
+		list = append(list, common.HexToAddress(row.Address))
+	}
+
+	return list, nil
 }

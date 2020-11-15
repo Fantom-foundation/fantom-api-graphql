@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-11-14 21:00
+// Auto generated GraphQL schema bundle; created 2020-11-15 13:48
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -1515,6 +1515,10 @@ type Query {
     # erc20Token provides the information about an ERC20 token specified by it's
     # address, if available. The resolver returns NULL if the token does not exist.
     erc20Token(token: Address!):ERC20Token
+
+    # erc20TokenList provides list of the most active ERC20 tokens
+    # deployed on the block chain.
+    erc20TokenList(count: Int = 50):[ERC20Token!]!
 
     # ercTotalSupply provides the current total supply amount of a specified ERC20 token
     # identified by it's ERC20 contract address.

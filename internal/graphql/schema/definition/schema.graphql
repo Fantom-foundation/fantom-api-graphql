@@ -165,8 +165,9 @@ type Query {
     # address, if available. The resolver returns NULL if the token does not exist.
     erc20Token(token: Address!):ERC20Token
 
-    # erc20TokenList
-    erc20TokenList(count: Int = 30):[ERC20Token!]!
+    # erc20TokenList provides list of the most active ERC20 tokens
+    # deployed on the block chain.
+    erc20TokenList(count: Int = 50):[ERC20Token!]!
 
     # ercTotalSupply provides the current total supply amount of a specified ERC20 token
     # identified by it's ERC20 contract address.

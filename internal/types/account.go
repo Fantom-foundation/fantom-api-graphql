@@ -27,6 +27,7 @@ type Account struct {
 	ContractTx   *Hash          `json:"contract"`
 	Type         string         `json:"type"`
 	LastActivity hexutil.Uint64 `json:"ats"`
+	TrxCounter   hexutil.Uint64 `json:"trc"`
 }
 
 // UnmarshalAccount parses the JSON-encoded account data.
