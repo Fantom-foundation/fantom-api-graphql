@@ -33,6 +33,11 @@ func (p *proxy) Account(addr *common.Address) (*types.Account, error) {
 	return acc, nil
 }
 
+// AccountMarkActivity marks the latest account activity in the repository.
+func (p *proxy) AccountMarkActivity(acc *types.Account, ts uint64) error {
+	return p.db.AccountMarkActivity(acc, ts)
+}
+
 // getAccount builds the account representation after validating it against Lachesis node.
 func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 	// try to get the account from database first

@@ -176,21 +176,8 @@ func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
 	// get the collection for contracts
 	col := db.client.Database(db.dbName).Collection(coContract)
 
-	// check if the contract already exists
-	exists, err := db.isContractKnown(col, &sc.Address)
-	if err != nil {
-		db.log.Critical(err)
-		return err
-	}
-
-	// if contract can not be found, we can update
-	if !exists {
-		db.log.Errorf("can not find contract %s for update", sc.Address.String())
-		return fmt.Errorf("contract not found")
-	}
-
 	// update the contract details
-	if _, err = col.UpdateOne(context.Background(),
+	if _, err := col.UpdateOne(context.Background(),
 		bson.D{{fiContractPk, sc.Address.String()}},
 		bson.D{{"$set", contractData(sc, nil)}}); err != nil {
 		// log the issue

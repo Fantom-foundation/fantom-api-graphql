@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 const (
@@ -23,6 +24,9 @@ const (
 	// fiAccountType is the name of the field of the account contract type.
 	fiAccountType = "type"
 
+	// fiAccountLastActivity is the name of the field of the account last activity time stamp.
+	fiAccountLastActivity = "ats"
+
 	// fiScCreationTx is the name of the field of the transaction hash
 	// which created the contract, if the account is a contract.
 	fiScCreationTx = "sc"
@@ -30,9 +34,10 @@ const (
 
 // the account base row
 type AccountRow struct {
-	Type   string      `bson:"type"`
-	Sc     *string     `bson:"sc"`
-	ScHash *types.Hash `bson:"-"`
+	Type     string      `bson:"type"`
+	Sc       *string     `bson:"sc"`
+	Activity uint64      `bson:"ats"`
+	ScHash   *types.Hash `bson:"-"`
 }
 
 // Account tries to load an account identified by the address given from
@@ -70,9 +75,10 @@ func (db *MongoDbBridge) Account(addr *common.Address) (*types.Account, error) {
 	}
 
 	return &types.Account{
-		Address:    *addr,
-		ContractTx: row.ScHash,
-		Type:       row.Type,
+		Address:      *addr,
+		ContractTx:   row.ScHash,
+		Type:         row.Type,
+		LastActivity: hexutil.Uint64(row.Activity),
 	}, nil
 }
 
@@ -110,6 +116,7 @@ func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 		{fiAccountPk, acc.Address.String()},
 		{fiScCreationTx, conTx},
 		{fiAccountType, acc.Type},
+		{fiAccountLastActivity, uint64(acc.LastActivity)},
 	})
 
 	// error on lookup?
@@ -182,4 +189,24 @@ func (db *MongoDbBridge) AccountTransactions(acc *types.Account, cursor *string,
 
 	// return list of transactions filtered by the account
 	return db.Transactions(cursor, count, &filter)
+}
+
+// AccountMarkActivity marks the latest account activity in the repository.
+func (db *MongoDbBridge) AccountMarkActivity(acc *types.Account, ts uint64) error {
+	// log what we do
+	db.log.Debugf("account %s activity at %s", acc.Address.String(), time.Unix(int64(ts), 0).String())
+
+	// get the collection for contracts
+	col := db.client.Database(db.dbName).Collection(coAccounts)
+
+	// update the contract details
+	if _, err := col.UpdateOne(context.Background(),
+		bson.D{{fiAccountPk, acc.Address.String()}},
+		bson.D{{"$set", bson.D{{fiAccountLastActivity, ts}}}}); err != nil {
+		// log the issue
+		db.log.Errorf("can not update account %s details; %s", acc.Address.String(), err.Error())
+		return err
+	}
+
+	return nil
 }

@@ -4,6 +4,7 @@ package types
 import (
 	"encoding/json"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 const (
@@ -22,9 +23,10 @@ const (
 
 // Account represents an Opera account at the blockchain.
 type Account struct {
-	Address    common.Address `json:"address"`
-	ContractTx *Hash          `json:"contract"`
-	Type       string         `json:"type"`
+	Address      common.Address `json:"address"`
+	ContractTx   *Hash          `json:"contract"`
+	Type         string         `json:"type"`
+	LastActivity hexutil.Uint64 `json:"ats"`
 }
 
 // UnmarshalAccount parses the JSON-encoded account data.

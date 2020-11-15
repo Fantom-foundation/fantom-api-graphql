@@ -65,6 +65,9 @@ type Repository interface {
 	// AccountAdd adds specified account detail into the repository.
 	AccountAdd(*types.Account) error
 
+	// AccountMarkActivity marks the latest account activity in the repository.
+	AccountMarkActivity(*types.Account, uint64) error
+
 	// Block returns a block at Opera blockchain represented by a number.
 	// Top block is returned if the number is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.

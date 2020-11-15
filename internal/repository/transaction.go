@@ -194,7 +194,7 @@ func (p *proxy) propagateTrxToAccounts(block *types.Block, trx *types.Transactio
 	p.orc.accountQueue <- &accountQueueRequest{
 		blk:         block,
 		trx:         trx,
-		acc:         &types.Account{Address: trx.From, ContractTx: nil, Type: types.AccountTypeWallet},
+		acc:         &types.Account{Address: trx.From, ContractTx: nil, Type: types.AccountTypeWallet, LastActivity: block.TimeStamp},
 		trxCallback: nil,
 	}
 
@@ -211,7 +211,7 @@ func (p *proxy) propagateTrxToAccounts(block *types.Block, trx *types.Transactio
 		p.orc.accountQueue <- &accountQueueRequest{
 			blk:         block,
 			trx:         trx,
-			acc:         &types.Account{Address: *trx.To, ContractTx: nil, Type: types.AccountTypeWallet},
+			acc:         &types.Account{Address: *trx.To, ContractTx: nil, Type: types.AccountTypeWallet, LastActivity: block.TimeStamp},
 			trxCallback: p.TransactionMarkProcessed,
 		}
 		return nil
@@ -230,7 +230,7 @@ func (p *proxy) propagateTrxToAccounts(block *types.Block, trx *types.Transactio
 	p.orc.accountQueue <- &accountQueueRequest{
 		blk:         block,
 		trx:         trx,
-		acc:         &types.Account{Address: *trx.ContractAddress, ContractTx: &trx.Hash, Type: types.AccountTypeWallet},
+		acc:         &types.Account{Address: *trx.ContractAddress, ContractTx: &trx.Hash, Type: types.AccountTypeWallet, LastActivity: block.TimeStamp},
 		trxCallback: p.TransactionMarkProcessed,
 	}
 	return nil

@@ -106,7 +106,7 @@ func (aq *accountQueue) monitorAccounts() {
 func (aq *accountQueue) processAccount(acc *types.Account, block *types.Block, trx *types.Transaction) error {
 	// check if the account is new; if we already know it, we are done
 	if aq.repo.AccountIsKnown(&acc.Address) {
-		return nil
+		return aq.repo.AccountMarkActivity(acc, uint64(block.TimeStamp))
 	}
 
 	// simple account; just push it into the database
