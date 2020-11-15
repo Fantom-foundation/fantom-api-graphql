@@ -14,7 +14,7 @@ func (rs *rootResolver) Erc20TokenList(args struct{ Count int32 }) ([]*ERC20Toke
 	}
 
 	// make the container
-	list := make([]*ERC20Token, 0)
+	list := make([]*ERC20Token, len(al))
 
 	// loop all the
 	for i, adr := range al {
