@@ -228,3 +228,13 @@ func (aq *accountQueue) detectErc20Token(addr *common.Address, block *types.Bloc
 	aq.log.Noticef("ERC20 token %s detected on %s", name, addr.String())
 	return types.NewErc20Contract(addr, name, block, trx)
 }
+
+// detectStiContract identifies Staker Information contract by checking interface.
+func (aq *accountQueue) detectStiContract(addr *common.Address, block *types.Block, trx *types.Transaction) *types.Contract {
+	// detect the STI contract
+	if aq.repo.IsStiContract(addr) {
+		return types.NewStiContract(addr, block, trx)
+	}
+
+	return nil
+}

@@ -89,6 +89,7 @@ type Repository struct {
 // Staking represents the PoS Staking module configuration.
 type Staking struct {
 	SFCContract         common.Address `mapstructure:"sfc"`
+	StiContract         common.Address `mapstructure:"sti"`
 	TokenizerContract   common.Address `mapstructure:"tokenizer"`
 	TokenizedStakeToken common.Address `mapstructure:"token"`
 }

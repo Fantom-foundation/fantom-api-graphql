@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"io/ioutil"
 	"math/big"
@@ -30,16 +29,13 @@ import (
 // stiRequestTimeout is number of seconds we wait for the staker information request to finish.
 const stiRequestTimeout = 15
 
-// stiContractAddress holds deployment address of the Staker info smart contract.
-var stiContractAddress = common.HexToAddress("0x92ffad75b8a942d149621a39502cdd8ad1dd57b4")
-
 // StakerInfo extracts an extended staker information from smart contact by their id.
 func (ftm *FtmBridge) StakerInfo(id hexutil.Uint64) (*types.StakerInfo, error) {
 	// keep track of the operation
 	ftm.log.Debugf("loading staker information for staker #%d", id)
 
 	// instantiate the contract and display its name
-	contract, err := contracts.NewStakerInfoContract(stiContractAddress, ftm.eth)
+	contract, err := contracts.NewStakerInfoContract(ftm.sfcConfig.StiContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate STI contract: %v", err)
 		return nil, err

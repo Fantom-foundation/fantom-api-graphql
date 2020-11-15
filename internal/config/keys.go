@@ -24,6 +24,7 @@ const (
 
 	// PoS staking configuration
 	keyStakingSfcContract       = "staking.sfc"
+	keyStakingStiContract       = "staking.sti"
 	keyStakingTokenizerContract = "staking.tokenizer"
 	keyStakingERC20Token        = "staking.token"
 

@@ -79,6 +79,9 @@ type Repository interface {
 	// IsSfcContract returns true if the given address points to the SFC contract.
 	IsSfcContract(*common.Address) bool
 
+	// IsStiContract returns true if the given address points to the STI contract.
+	IsStiContract(*common.Address) bool
+
 	// CurrentEpoch returns the id of the current epoch.
 	CurrentEpoch() (hexutil.Uint64, error)
 

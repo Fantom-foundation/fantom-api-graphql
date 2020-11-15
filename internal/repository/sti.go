@@ -9,16 +9,18 @@ results. BigCache for in-memory object storage to speed up loading of frequently
 package repository
 
 import (
+	"bytes"
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"sync"
 	"time"
 )
 
 // how much time to wait between calls
-var stiInitDelay = time.Duration(100 * time.Millisecond)
-var stiIdleDelay = time.Duration(10 * time.Second)
+var stiInitDelay = 100 * time.Millisecond
+var stiIdleDelay = 10 * time.Second
 
 // stiMonitor implements staker information monitoring service.
 type stiMonitor struct {
@@ -146,4 +148,9 @@ func (p *proxy) StoreStakerInfo(id hexutil.Uint64, sti types.StakerInfo) error {
 // RetrieveStakerInfo gets staker information from in-memory if available.
 func (p *proxy) RetrieveStakerInfo(id hexutil.Uint64) *types.StakerInfo {
 	return p.cache.PullStakerInfo(id)
+}
+
+// IsStiContract returns true if the given address points to the STI contract.
+func (p *proxy) IsStiContract(addr *common.Address) bool {
+	return bytes.Equal(addr.Bytes(), p.cfg.Staking.StiContract.Bytes())
 }
