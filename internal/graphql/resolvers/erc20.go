@@ -3,15 +3,15 @@ package resolvers
 
 import (
 	"fantom-api-graphql/internal/repository"
+	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // ERC20Token represents a generic ERC20 token
 type ERC20Token struct {
-	repo        repository.Repository
-	Address     common.Address
-	TotalSupply hexutil.Big
+	repo repository.Repository
+	types.Erc20Token
 }
 
 // NewErc20Token creates a new instance of resolvable ERC20 token, it also validates
@@ -19,16 +19,15 @@ type ERC20Token struct {
 // before making a resolvable instance.
 func NewErc20Token(adr *common.Address, repo repository.Repository) *ERC20Token {
 	// get the total supply of the token and validate the token existence
-	ts, err := repo.Erc20TotalSupply(adr)
+	erc20, err := repo.Erc20Token(adr)
 	if err != nil {
 		return nil
 	}
 
 	// make the instance of the token
 	return &ERC20Token{
-		repo:        repo,
-		Address:     *adr,
-		TotalSupply: ts,
+		repo:       repo,
+		Erc20Token: *erc20,
 	}
 }
 
@@ -71,36 +70,8 @@ func (rs *rootResolver) ErcTokenAllowance(args *struct {
 }
 
 // Name resolves the name of the given ERC20 token.
-func (token *ERC20Token) Name() string {
-	// get the token name, if available
-	name, err := token.repo.Erc20Name(&token.Address)
-	if err != nil {
-		return ""
-	}
-
-	return name
-}
-
-// Symbol resolves the symbol of the given ERC20 token.
-func (token *ERC20Token) Symbol() string {
-	// get the token symbol, if available
-	symbol, err := token.repo.Erc20Symbol(&token.Address)
-	if err != nil {
-		return ""
-	}
-
-	return symbol
-}
-
-// Decimals resolves the number of decimals of the given ERC20 token.
-func (token *ERC20Token) Decimals() int32 {
-	// get the number of decimals, if available
-	deci, err := token.repo.Erc20Decimals(&token.Address)
-	if err != nil {
-		return 0
-	}
-
-	return deci
+func (token *ERC20Token) TotalSupply() (hexutil.Big, error) {
+	return token.repo.Erc20TotalSupply(&token.Address)
 }
 
 // BalanceOf resolves the available balance of the given ERC20 token to a user.
