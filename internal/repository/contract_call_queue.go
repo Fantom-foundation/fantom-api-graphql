@@ -74,7 +74,7 @@ func (cq *contractCallQueue) monitorContractCalls() {
 		select {
 		case trx := <-cq.buffer:
 			// log what we do
-			cq.log.Debugf("checking transaction %s call", trx.Hash.String())
+			cq.log.Debugf("analyzing transaction %s call", trx.Hash.String())
 
 			// check the call
 			cq.analyzeCall(trx)
@@ -106,7 +106,7 @@ func (cq *contractCallQueue) analyzeCall(trx *types.Transaction) {
 	// do we know the contract the transaction points to?
 	sc, err := cq.repo.Contract(trx.To)
 	if err != nil {
-		cq.log.Errorf("can not analyze call %s; %s", trx.Hash.String(), err.Error())
+		cq.log.Errorf("can not analyze call at %s; %s", trx.Hash.String(), err.Error())
 	}
 
 	// unknown contract? probably not a call
@@ -138,7 +138,7 @@ func (cq *contractCallQueue) updateTargetContractType(trx *types.Transaction) {
 	acc, err := cq.repo.Account(trx.To)
 	if err != nil {
 		// notify critical issue with the account; it should exist at this point
-		cq.log.Criticalf("contract %s account not found on %s; %s",
+		cq.log.Criticalf("contract %s account not found at %s; %s",
 			trx.To.String(),
 			trx.Hash.String(),
 			err.Error())
@@ -158,7 +158,11 @@ func (cq *contractCallQueue) updateTargetContractType(trx *types.Transaction) {
 func (cq *contractCallQueue) updateTargetFunctionSignature(trx *types.Transaction, sc *types.Contract) {
 	// do we have the contract abi? try to use it to find match
 	if sc.Abi != "" {
+		// match the ABI
 		cq.tryMatchWithAbi(trx, &sc.Abi)
+
+		// is this an ERC20 call?
+		trx.IsErc20Call = strings.EqualFold(sc.Type, types.AccountTypeERC20Token)
 	}
 
 	// if we don't have a match and it's the SFC, try previous version of the contract
@@ -170,7 +174,7 @@ func (cq *contractCallQueue) updateTargetFunctionSignature(trx *types.Transactio
 	// do we have the call signature?
 	if trx.TargetFunctionCall == nil {
 		// log the issue
-		cq.log.Debugf("transaction %s call undefined, generic function sig used", trx.Hash.String())
+		cq.log.Debugf("transaction %s call undefined, generic signature used", trx.Hash.String())
 
 		// use the raw call function signature
 		fc := trx.InputData.String()[:8]
@@ -197,7 +201,7 @@ func (cq *contractCallQueue) matchCallMethod(trx *types.Transaction, inAbi *abi.
 	// try to find the method; returns error if not found
 	m, err := inAbi.MethodById(trx.InputData)
 	if err != nil {
-		cq.log.Errorf("%s method signature not found; %s", trx.Hash.String(), err.Error())
+		cq.log.Errorf("method signature not found at %s; %s", trx.Hash.String(), err.Error())
 		return
 	}
 

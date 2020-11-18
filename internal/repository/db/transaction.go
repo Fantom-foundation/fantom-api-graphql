@@ -5,6 +5,7 @@ import (
 	"context"
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -24,11 +25,11 @@ const (
 	// fiTransactionBlock is the name of the block number field of the transaction.
 	fiTransactionBlock = "blk"
 
-	// fiTransactionSender is the name of the address field of the sender's account.
+	// fiTransactionSender is the name of the address field of the sender account.
 	// db.transaction.createIndex({from:1}).
 	fiTransactionSender = "from"
 
-	// fiTransactionRecipient is the name of the address field of the recipients's account.
+	// fiTransactionRecipient is the name of the address field of the recipient account.
 	// null for contract creation.
 	// db.transaction.createIndex({to:1}).
 	fiTransactionRecipient = "to"
@@ -44,7 +45,10 @@ const (
 	fiTransactionTimestamp = "ts"
 
 	// fiTransactionProcessed is the name of the field indicating processed transaction.
-	fiTransactionProcessed = "ok"
+	fiTransactionProcessed = "isok"
+
+	// fiTransactionIsERC20Call is the name of the field indicating an ERC20 call.
+	fiTransactionIsERC20Call = "iserc"
 
 	// fiTransactionTargetContract is the name of the field of target smart contract type
 	// this transaction addressed. If undetected, or not a contract address, the field is empty.
@@ -101,24 +105,60 @@ func (db *MongoDbBridge) shouldAddTransaction(col *mongo.Collection, trx *types.
 	return !exists
 }
 
-// decodeTransactionAddresses decodes recipient and contract creation addresses
-// for a contract saving process.
-func decodeTransactionAddresses(trx *types.Transaction) (*string, *string) {
-	// recipient address may not be defined so we need to do a bit more parsing
-	var rcAddress *string
-	if trx.To != nil {
-		rcp := trx.To.String()
-		rcAddress = &rcp
+// decodeOptAddresses decodes an options address for transaction saving process.
+func decodeOptAddresses(adr *common.Address) *string {
+	var result *string
+	if adr != nil {
+		val := adr.String()
+		result = &val
+	}
+	return result
+}
+
+// TransactionDetails extends the transaction detail with additional information
+// collected from the off-chain database if available.
+func (db *MongoDbBridge) TransactionDetails(trx *types.Transaction) error {
+	// missing the actual transaction base
+	if trx == nil {
+		return fmt.Errorf("can not extend empty transaction")
 	}
 
-	// smart contract address may not be defined so we need to do a bit more parsing
-	var scAddress *string
-	if trx.ContractAddress != nil {
-		sca := trx.ContractAddress.String()
-		scAddress = &sca
+	// get the collection for transactions
+	col := db.client.Database(db.dbName).Collection(coTransactions)
+
+	// try to find the result
+	sr := col.FindOne(context.Background(),
+		bson.D{{fiTransactionPk, trx.Hash.String()}},
+		options.FindOne().SetProjection(bson.D{
+			{fiTransactionOrdinalIndex, true},
+			{fiTransactionTargetCall, true},
+			{fiTransactionTargetContract, true},
+			{fiTransactionProcessed, true},
+			{fiTransactionIsERC20Call, true},
+		}))
+	if sr.Err() != nil {
+		// may be ErrNoDocuments, which we seek
+		if sr.Err() == mongo.ErrNoDocuments {
+			db.log.Debugf("transaction %s not stored in db yet", trx.Hash.String())
+			return nil
+		}
+
+		// log issue here
+		db.log.Error("can not get transaction data from DB; %s", sr.Err().Error())
+		return sr.Err()
 	}
 
-	return rcAddress, scAddress
+	// try to decode the extended data
+	db.log.Debugf("decoding extended information for %s", trx.Hash.String())
+	if err := sr.Decode(trx); err != nil {
+		// log issue here
+		db.log.Error("can not decode transaction data from DB; %s", sr.Err().Error())
+		return sr.Err()
+	}
+
+	// log the ordinal index of the found transaction
+	db.log.Debugf("transaction %s stored as #%d", trx.Hash.String(), trx.OrdinalIndex)
+	return nil
 }
 
 // AddTransaction stores a transaction reference in connected persistent storage.
@@ -137,24 +177,17 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		return nil
 	}
 
-	// recipient and contract address may not be defined
-	// so we need to do a bit more parsing
-	rcAddress, scAddress := decodeTransactionAddresses(trx)
+	// calculate the ordinal index of the transaction
+	trx.OrdinalIndex = types.TransactionIndex(block, trx)
 
 	// try to do the insert
-	if _, err := col.InsertOne(context.Background(), bson.D{
-		{fiTransactionPk, trx.Hash.String()},
-		{fiTransactionOrdinalIndex, types.TransactionIndex(block, trx)},
-		{fiTransactionBlock, uint64(block.Number)},
-		{fiTransactionSender, trx.From.String()},
-		{fiTransactionRecipient, rcAddress},
-		{fiTransactionContract, scAddress},
-		{fiTransactionValue, trx.Value.String()},
-		{fiTransactionTimestamp, uint64(block.TimeStamp)},
-		{fiTransactionProcessed, false},
-		{fiTransactionTargetContract, trx.TargetContractType},
-		{fiTransactionTargetCall, trx.TargetFunctionCall},
-	}); err != nil {
+	if _, err := col.InsertOne(context.Background(),
+		transactionData(&bson.D{
+			{fiTransactionPk, trx.Hash.String()},
+			{fiTransactionOrdinalIndex, trx.OrdinalIndex},
+			{fiTransactionBlock, uint64(block.Number)},
+			{fiTransactionTimestamp, uint64(block.TimeStamp)},
+		}, trx)); err != nil {
 		db.log.Critical(err)
 		return err
 	}
@@ -178,33 +211,37 @@ func (db *MongoDbBridge) UpdateTransaction(trx *types.Transaction) error {
 	// get the collection for transactions
 	col := db.client.Database(db.dbName).Collection(coTransactions)
 
-	// is the transaction in the database
-	known, err := db.IsTransactionKnown(col, &trx.Hash)
-	if err != nil {
-		db.log.Debugf("can not update transaction %s", trx.Hash.String())
-		return err
-	}
-
-	// the transaction must be in the database to be update-able
-	if !known {
-		db.log.Criticalf("transaction %s not in database", trx.Hash.String())
-		return nil
-	}
-
 	// update the transaction details
-	if _, err = col.UpdateOne(context.Background(),
+	if _, err := col.UpdateOne(context.Background(),
 		bson.D{{fiTransactionPk, trx.Hash.String()}},
-		bson.D{{"$set", bson.D{
-			{fiTransactionTargetContract, trx.TargetContractType},
-			{fiTransactionTargetCall, trx.TargetFunctionCall},
-		}},
-		}); err != nil {
+		bson.D{{"$set", transactionData(nil, trx)}}); err != nil {
 		// log the issue
 		db.log.Criticalf("transaction %s can not be updated; %s", trx.Hash.String(), err.Error())
 		return err
 	}
 
 	return nil
+}
+
+// transactionData collects the data for the given transaction.
+func transactionData(base *bson.D, trx *types.Transaction) bson.D {
+	// make a new instance if needed
+	if base == nil {
+		base = &bson.D{}
+	}
+
+	// add the extended data
+	*base = append(*base,
+		bson.E{Key: fiTransactionSender, Value: trx.From.String()},
+		bson.E{Key: fiTransactionRecipient, Value: decodeOptAddresses(trx.To)},
+		bson.E{Key: fiTransactionContract, Value: decodeOptAddresses(trx.ContractAddress)},
+		bson.E{Key: fiTransactionValue, Value: trx.Value.String()},
+		bson.E{Key: fiTransactionTargetContract, Value: trx.TargetContractType},
+		bson.E{Key: fiTransactionTargetCall, Value: trx.TargetFunctionCall},
+		bson.E{Key: fiTransactionProcessed, Value: trx.IsProcessed},
+		bson.E{Key: fiTransactionIsERC20Call, Value: trx.IsErc20Call},
+	)
+	return *base
 }
 
 // isTransactionKnown checks if a transaction document already exists in the database.
@@ -238,36 +275,20 @@ func (db *MongoDbBridge) IsTransactionKnown(col *mongo.Collection, hash *types.H
 // and ready to be served full to API users.
 // AccountQueue processor call this function as a callback.
 func (db *MongoDbBridge) TransactionMarkProcessed(trx *types.Transaction) error {
-	// get the collection for contracts
+	// get the collection for transactions
 	col := db.client.Database(db.dbName).Collection(coTransactions)
 
-	// check if the contract already exists
-	exists, err := db.IsTransactionKnown(col, &trx.Hash)
-	if err != nil {
-		db.log.Critical(err)
-		return err
-	}
-
-	// do we know it at all?
-	if !exists {
-		return fmt.Errorf("transaction %s not found", trx.Hash.String())
-	}
-
-	// update the contract details
-	_, err = col.UpdateOne(context.Background(),
+	// update the transaction details
+	if _, err := col.UpdateOne(context.Background(),
 		bson.D{{fiTransactionPk, trx.Hash.String()}},
-		bson.D{
-			{"$set", bson.D{
-				{fiTransactionProcessed, true},
-			}},
-		})
-
-	// error on update?
-	if err != nil {
-		db.log.Errorf("can not update transaction %s status; %s", trx.Hash.String(), err.Error())
+		bson.D{{"$set", bson.D{{fiTransactionProcessed, true}}}}); err != nil {
+		// log the issue
+		db.log.Criticalf("transaction %s can not be updated; %s", trx.Hash.String(), err.Error())
 		return err
 	}
 
+	// log we are done with the trx
+	db.log.Debugf("transaction %s processed", trx.Hash.String())
 	return nil
 }
 

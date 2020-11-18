@@ -8,7 +8,7 @@ import (
 // Default values of configuration options
 const (
 	// this defines default application name
-	defApplicationName = "GraphQL API Server (unspecified)"
+	defApplicationName = "Fantom GraphQL API Server (custom)"
 
 	// this defines empty address
 	defNoAddress = "0x0000000000000000000000000000000000000000"

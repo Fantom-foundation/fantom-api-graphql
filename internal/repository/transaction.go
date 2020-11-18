@@ -95,36 +95,55 @@ func (p *proxy) Transaction(hash *types.Hash) (*types.Transaction, error) {
 		return trx, nil
 	}
 
+	// return the value
+	return p.loadTransaction(hash)
+}
+
+// loadTransaction loads the transaction hard way using RPC and DB.
+func (p *proxy) loadTransaction(hash *types.Hash) (*types.Transaction, error) {
 	// we need to go to RPC
 	trx, err := p.rpc.Transaction(hash)
 	if err != nil {
-		// transaction simply not found?
-		if err == eth.ErrNoResult {
-			p.log.Warning("transaction not found in the blockchain")
-			return nil, ErrTransactionNotFound
-		}
-
-		// something went wrong
 		return nil, err
 	}
-
-	// log and return
-	p.log.Debugf("transaction %s loaded from rpc", hash.String())
 
 	// push the transaction to the cache to speed things up next time
 	// we don't cache pending transactions since it would cause issues
 	// when re-loading data of such transactions on the client side
-	if trx.BlockHash != nil {
-		err = p.cache.PushTransaction(trx)
-		if err != nil {
-			p.log.Errorf("can not store transaction in cache; %s", err.Error())
-		}
-	} else {
-		// inform about non-cached trx
-		p.log.Debugf("pending transaction [%s] not cached yet", trx.Hash)
+	if trx.BlockHash == nil {
+		p.log.Debugf("pending transaction %s loaded", trx.Hash)
+		return trx, nil
 	}
 
-	// return the value
+	return p.confirmedTransaction(trx)
+}
+
+// extendConfirmedTransaction loads additional transaction information if available for transaction
+// confirmed inside the blockchain.
+func (p *proxy) confirmedTransaction(trx *types.Transaction) (*types.Transaction, error) {
+	// do we have the transaction at all?
+	if trx == nil {
+		p.log.Criticalf("invalid transaction reference received")
+		return nil, fmt.Errorf("nil transaction received")
+	}
+
+	// pull details of the transaction if available
+	err := p.db.TransactionDetails(trx)
+	if err != nil {
+		p.log.Errorf("can not get transaction %s details from database; %s", trx.Hash.String(), err.Error())
+		return trx, err
+	}
+
+	// cache the transaction if it has been found in the db already
+	if trx.OrdinalIndex > 0 {
+		err = p.cache.PushTransaction(trx)
+		if err != nil {
+			p.log.Errorf("can not store transaction %s in cache; %s", trx.Hash.String(), err.Error())
+		}
+	}
+
+	// log and return
+	p.log.Debugf("transaction %s loaded", trx.Hash.String())
 	return trx, nil
 }
 

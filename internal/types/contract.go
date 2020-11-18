@@ -11,6 +11,9 @@ import (
 
 // Contract represents an Opera smart contract at the blockchain.
 type Contract struct {
+	// Type represents a general type of the contract.
+	Type string `json:"type"`
+
 	// OrdinalIndex is the ordinal contract index in the database.
 	OrdinalIndex uint64 `json:"index"`
 
@@ -78,6 +81,7 @@ func (sc *Contract) Marshal() ([]byte, error) {
 func NewGenericContract(addr *common.Address, block *Block, trx *Transaction) *Contract {
 	// make the contract
 	return &Contract{
+		Type:            AccountTypeContract,
 		OrdinalIndex:    TransactionIndex(block, trx),
 		Address:         *addr,
 		TransactionHash: trx.Hash,
@@ -104,6 +108,7 @@ func NewErc20Contract(addr *common.Address, name string, block *Block, trx *Tran
 	// set additional details
 	con.Name = name
 	con.Abi = contracts.ERCTwentyABI
+	con.Type = AccountTypeERC20Token
 	return con
 }
 
@@ -113,6 +118,7 @@ func NewSfcContract(addr *common.Address, ver uint64, block *Block, trx *Transac
 	con := NewGenericContract(addr, block, trx)
 
 	// set additional details
+	con.Type = AccountTypeSFC
 	con.Name = "SFC Contract"
 	con.Version = fmt.Sprintf("%s.%s.%s",
 		string([]byte{byte((ver >> 16) & 255)}),

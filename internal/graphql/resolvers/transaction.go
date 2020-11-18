@@ -87,3 +87,13 @@ func (trx *Transaction) Block() (*Block, error) {
 
 	return NewBlock(blk, trx.repo), nil
 }
+
+// RelayToken resolves the ERC20 token addressed by this transaction.
+func (trx *Transaction) RelayToken() (*ERC20Token, error) {
+	// not the ERC20 call?
+	if !trx.IsErc20Call {
+		return nil, nil
+	}
+
+	return NewErc20Token(trx.To, trx.repo), nil
+}

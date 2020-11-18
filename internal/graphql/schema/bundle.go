@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-11-15 13:48
+// Auto generated GraphQL schema bundle; created 2020-11-18 14:44
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -199,7 +199,8 @@ type Transaction {
     # This is null for contract creating transactions.
     to: Address
 
-    # contractAddress represents the address of smart contract deployed by this transaction;
+    # contractAddress represents the address of smart contract
+    # deployed by this transaction;
     # null if the transaction is not contract creation
     contractAddress: Address
 
@@ -243,6 +244,14 @@ type Transaction {
     # running out of gas). If the transaction has not yet been processed, this
     # field will be null.
     status: Long
+
+    # isErc20Call indicates if this is an ERC20 call.
+    isErc20Call: Boolean!
+
+    # relayToken represents the reference of the token being referenced
+    # by the relay call. It's null if the transaction is actually not a relay
+    # call.
+    relayToken: ERC20Token
 }
 
 # Block is an Opera block chain block.

@@ -7,6 +7,10 @@
         "url": "http://localhost:16761/api",
         "introspect": false
       },
+      "Dev GraphQL Endpoint": {
+        "url": "http://192.168.3.5:16761/api",
+        "introspect": false
+      },
       "XAPI1 Fantom.Network": {
         "url": "https://xapi1.fantom.network/graphql",
         "introspect": false

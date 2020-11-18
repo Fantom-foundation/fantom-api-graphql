@@ -120,7 +120,7 @@ func (aq *accountQueue) processAccount(acc *types.Account, block *types.Block, t
 		// add the account into the database
 		err := aq.repo.AccountAdd(acc)
 		if err != nil {
-			aq.log.Errorf("can not add the account %s; %s", acc.Address.String(), err.Error())
+			aq.log.Errorf("can not add account %s; %s", acc.Address.String(), err.Error())
 			return err
 		}
 
@@ -161,7 +161,7 @@ func (aq *accountQueue) processAccountContract(acc *types.Account, block *types.
 	// detect and identify contract
 	con, err := aq.detectContract(&acc.Address, &acc.Type, block, trx)
 	if err != nil {
-		aq.log.Errorf("can not identify the contract at %s; %s", acc.Address.String(), err.Error())
+		aq.log.Errorf("can not identify contract at %s; %s", acc.Address.String(), err.Error())
 		return err
 	}
 
@@ -169,15 +169,15 @@ func (aq *accountQueue) processAccountContract(acc *types.Account, block *types.
 	if con != nil {
 		err = aq.repo.ContractAdd(con)
 		if err != nil {
-			aq.log.Errorf("can not add the contract at %s; %s", acc.Address.String(), err.Error())
+			aq.log.Errorf("can not add contract at %s; %s", acc.Address.String(), err.Error())
 			return err
 		}
 	}
 
-	// add the account identified into teh database
+	// add the account identified into the database
 	err = aq.repo.AccountAdd(acc)
 	if err != nil {
-		aq.log.Errorf("can not add the account %s; %s", acc.Address.String(), err.Error())
+		aq.log.Errorf("can not add account %s; %s", acc.Address.String(), err.Error())
 		return err
 	}
 
@@ -194,7 +194,7 @@ func (aq *accountQueue) detectContract(addr *common.Address, cType *string, bloc
 	}
 
 	// log that the detection failed
-	aq.log.Noticef("unknown contract on %s", addr.String())
+	aq.log.Noticef("unknown contract at %s", addr.String())
 
 	// set as generic contract type if no other has ben detected
 	*cType = types.AccountTypeContract
@@ -225,7 +225,7 @@ func (aq *accountQueue) detectErc20Token(addr *common.Address, block *types.Bloc
 	}
 
 	// log what we do
-	aq.log.Noticef("ERC20 token %s detected on %s", name, addr.String())
+	aq.log.Noticef("ERC20 token %s detected at %s", name, addr.String())
 	return types.NewErc20Contract(addr, name, block, trx)
 }
 

@@ -427,7 +427,7 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 	// create new in-memory cache bridge
 	caBridge, dbBridge, rpcBridge, err := connect(cfg, log)
 	if err != nil {
-		log.Criticalf("can not create in-memory cache bridge, %s", err.Error())
+		log.Criticalf("repository init failed")
 		return nil, err
 	}
 
@@ -481,7 +481,7 @@ func connect(cfg *config.Config, log logger.Logger) (*cache.MemBridge, *db.Mongo
 	// try to validate the solidity compiler by asking for it's version
 	if _, err := compiler.SolidityVersion(cfg.Compiler.DefaultSolCompilerPath); err != nil {
 		log.Criticalf("can not invoke the Solidity compiler, %s", err.Error())
-		return nil, nil, nil, err
+		// return nil, nil, nil, err
 	}
 
 	return caBridge, dbBridge, rpcBridge, nil

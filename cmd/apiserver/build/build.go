@@ -36,7 +36,6 @@ func PrintVersion(cfg *config.Config) {
 	fmt.Printf("%sCommit Time:%s\t%s\n", Blue, Reset, CommitTime)
 	fmt.Printf("%sBuild Time:%s\t%s\n", Blue, Reset, Time)
 	fmt.Printf("%sBuild By:%s\t%s\n", Blue, Reset, Compiler)
-	fmt.Printf("%sIdentity:%s\t%s\n", Blue, Reset, Short(cfg))
 }
 
 // Short returns a short, single line version of the app.

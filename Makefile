@@ -13,7 +13,7 @@ GO_BASE := $(shell pwd)
 GO_BIN := $(CURDIR)/build
 
 # compile time variables will be injected into the app
-APP_VERSION := 0.1.1
+APP_VERSION := 0.1.2
 BUILD_DATE := $(shell date)
 BUILD_COMPILER := $(shell go version)
 BUILD_COMMIT := $(shell git show --format="%H" --no-patch)
