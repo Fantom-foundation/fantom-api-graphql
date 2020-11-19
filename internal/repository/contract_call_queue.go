@@ -74,7 +74,7 @@ func (cq *contractCallQueue) monitorContractCalls() {
 		select {
 		case trx := <-cq.buffer:
 			// log what we do
-			cq.log.Debugf("analyzing transaction %s call", trx.Hash.String())
+			cq.log.Debugf("analyzing contract call at %s", trx.Hash.String())
 
 			// check the call
 			cq.analyzeCall(trx)
@@ -116,7 +116,7 @@ func (cq *contractCallQueue) analyzeCall(trx *types.Transaction) {
 	}
 
 	// assign transaction target contract type
-	cq.updateTargetContractType(trx)
+	cq.updateTargetContractType(trx, sc)
 
 	// decode function of the call
 	cq.updateTargetFunctionSignature(trx, sc)
@@ -128,29 +128,12 @@ func (cq *contractCallQueue) analyzeCall(trx *types.Transaction) {
 	}
 }
 
-// updateTargetContractType pulls the transaction target account and updates
-// the transaction contract target type to match the account.
-// The account is expected to be already in the database since the transaction
-// is pushed for call analysis only after the transaction has been marked
-// as processed in the accounts queue (check proxy.TransactionMarkProcessed).
-func (cq *contractCallQueue) updateTargetContractType(trx *types.Transaction) {
-	// pull the account
-	acc, err := cq.repo.Account(trx.To)
-	if err != nil {
-		// notify critical issue with the account; it should exist at this point
-		cq.log.Criticalf("contract %s account not found at %s; %s",
-			trx.To.String(),
-			trx.Hash.String(),
-			err.Error())
-
-		// assign general type so we know it's still a contract call
-		cType := types.AccountTypeContract
-		trx.TargetContractType = &cType
-		return
-	}
-
-	// update the type to match the account
-	trx.TargetContractType = &acc.Type
+// updateTargetContractType updates the transaction target contract types
+// based on the associated contract.
+func (cq *contractCallQueue) updateTargetContractType(trx *types.Transaction, sc *types.Contract) {
+	// do the update
+	trx.TargetContractType = &sc.Type
+	trx.IsErc20Call = strings.EqualFold(sc.Type, types.AccountTypeERC20Token)
 }
 
 // updateTargetFunctionSignature detects and decodes the target function signature
@@ -158,11 +141,11 @@ func (cq *contractCallQueue) updateTargetContractType(trx *types.Transaction) {
 func (cq *contractCallQueue) updateTargetFunctionSignature(trx *types.Transaction, sc *types.Contract) {
 	// do we have the contract abi? try to use it to find match
 	if sc.Abi != "" {
+		// mark the ABI parser use
+		cq.log.Debugf("ABI found for contract %s, decoding %s", sc.Address.String(), trx.Hash.String())
+
 		// match the ABI
 		cq.tryMatchWithAbi(trx, &sc.Abi)
-
-		// is this an ERC20 call?
-		trx.IsErc20Call = strings.EqualFold(sc.Type, types.AccountTypeERC20Token)
 	}
 
 	// if we don't have a match and it's the SFC, try previous version of the contract
@@ -205,7 +188,7 @@ func (cq *contractCallQueue) matchCallMethod(trx *types.Transaction, inAbi *abi.
 		return
 	}
 
-	// if this is a SFC call, it could
-	// set the method into the trx
+	// keep the function name for the reference
 	trx.TargetFunctionCall = &m.Name
+	cq.log.Debugf("found %s() call at %s", m.Name, trx.Hash.String())
 }

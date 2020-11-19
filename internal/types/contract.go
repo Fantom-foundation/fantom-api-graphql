@@ -12,57 +12,57 @@ import (
 // Contract represents an Opera smart contract at the blockchain.
 type Contract struct {
 	// Type represents a general type of the contract.
-	Type string `json:"type"`
+	Type string `json:"type" bson:"type"`
 
 	// OrdinalIndex is the ordinal contract index in the database.
-	OrdinalIndex uint64 `json:"index"`
+	OrdinalIndex uint64 `json:"index" bson:"orx"`
 
 	// Address represents the address of the contract
-	Address common.Address `json:"address"`
+	Address Address `json:"address" bson:"adr"`
 
 	// TransactionHash represents the hash of the contract deployment transaction.
-	TransactionHash Hash `json:"tx"`
+	TransactionHash Hash `json:"tx" bson:"trx"`
 
 	// TimeStamp represents the unix timestamp of the contract deployment.
-	TimeStamp hexutil.Uint64 `json:"timestamp"`
+	TimeStamp hexutil.Uint64 `json:"timestamp" bson:"ts"`
 
 	// Name of the smart contract, if available.
-	Name string `json:"name"`
+	Name string `json:"name" bson:"name,omitempty"`
 
 	// Smart contract version identifier, if available.
-	Version string `json:"ver,omitempty"`
+	Version string `json:"ver,omitempty" bson:"ver,omitempty"`
 
 	// SupportContact represents a contact to the smart contract support, if available.
-	SupportContact string `json:"contact,omitempty"`
+	SupportContact string `json:"contact,omitempty" bson:"url,omitempty"`
 
 	// License represents an optional contact open source license
 	// being used.
-	License string `json:"license,omitempty"`
+	License string `json:"license,omitempty" bson:"lic,omitempty"`
 
 	// Smart contract compiler identifier, if available.
-	Compiler string `json:"cv,omitempty"`
+	Compiler string `json:"cv,omitempty" bson:"comp,omitempty"`
 
 	// IsOptimized signals that the contract byte code was optimized
 	// during compilation.
-	IsOptimized bool `json:"optimized"`
+	IsOptimized bool `json:"optimized" bson:"is_opt"`
 
 	// OptimizeRuns represents number of optimization runs used
 	// during the contract compilation.
-	OptimizeRuns int32 `json:"optimizeRuns"`
+	OptimizeRuns int32 `json:"optimizeRuns" bson:"opt_run,omitempty"`
 
 	// SourceCode is the smart contract source code, if available.
-	SourceCode string `json:"sol,omitempty"`
+	SourceCode string `json:"sol,omitempty" bson:"src,omitempty"`
 
 	// SourceCodeHash represents a hash code of the stored contract
 	// source code. Is nil if the source code is not available.
-	SourceCodeHash *Hash `json:"soh,omitempty"`
+	SourceCodeHash *Hash `json:"soh,omitempty" bson:"src_hash,omitempty"`
 
 	// ABI definition of the smart contract, if available.
-	Abi string `json:"abi,omitempty"`
+	Abi string `json:"abi,omitempty" bson:"abi,omitempty"`
 
 	// Validated represents the unix timestamp
 	//of the contract source validation against deployed byte code.
-	Validated *hexutil.Uint64 `json:"ok,omitempty"`
+	Validated *hexutil.Uint64 `json:"ok,omitempty" bson:"is_ok,omitempty"`
 }
 
 // UnmarshalContract parses the JSON-encoded smart contract data.
@@ -83,7 +83,7 @@ func NewGenericContract(addr *common.Address, block *Block, trx *Transaction) *C
 	return &Contract{
 		Type:            AccountTypeContract,
 		OrdinalIndex:    TransactionIndex(block, trx),
-		Address:         *addr,
+		Address:         Address(*addr),
 		TransactionHash: trx.Hash,
 		TimeStamp:       block.TimeStamp,
 		Name:            "",
@@ -106,9 +106,9 @@ func NewErc20Contract(addr *common.Address, name string, block *Block, trx *Tran
 	con := NewGenericContract(addr, block, trx)
 
 	// set additional details
-	con.Name = name
-	con.Abi = contracts.ERCTwentyABI
 	con.Type = AccountTypeERC20Token
+	con.Abi = contracts.ERCTwentyABI
+	con.Name = name
 	return con
 }
 

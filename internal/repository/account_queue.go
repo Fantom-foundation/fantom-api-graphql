@@ -81,6 +81,7 @@ func (aq *accountQueue) monitorAccounts() {
 	}()
 
 	// wait for either stop signal, or an account request
+	var err error
 	for {
 		select {
 		case req := <-aq.buffer:
@@ -88,10 +89,11 @@ func (aq *accountQueue) monitorAccounts() {
 			aq.log.Debugf("account %s received for processing", req.acc.Address.String())
 
 			// process the account request into the database
-			err := aq.processAccount(req.acc, req.blk, req.trx)
+			err = aq.processAccount(req.acc, req.blk, req.trx)
 
 			// any callback? notify the transaction to be done
 			if err == nil && req.trxCallback != nil {
+				aq.log.Debugf("account %s callback for trx %s", req.acc.Address.String(), req.trx.Hash.String())
 				req.trxCallback(req.trx)
 			}
 		case <-aq.sigStop:

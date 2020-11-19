@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common"
 	"net/http"
 	"sync"
 	"time"
@@ -27,7 +28,7 @@ const (
 func contractSyncInput(con *types.Contract) ContractValidationInput {
 	// prep the validation input to be synced
 	var cInput = ContractValidationInput{
-		Address:      con.Address,
+		Address:      common.Address(con.Address),
 		Name:         &con.Name,
 		SourceCode:   con.SourceCode,
 		OptimizeRuns: con.OptimizeRuns,

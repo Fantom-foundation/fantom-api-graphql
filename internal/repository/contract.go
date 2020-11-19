@@ -187,8 +187,13 @@ func (p *proxy) ContractAdd(con *types.Contract) error {
 
 	// re-scan transactions of the contract so they are up-to-date with their calls analysis
 	if isUpdate {
+		// log what we have done here
+		p.log.Debugf("updated known contract at %s", con.Address.String())
+
+		// initiate re-scan
 		p.cache.EvictContract(&con.Address)
 		go p.transactionRescanContractCalls(con)
 	}
+
 	return nil
 }

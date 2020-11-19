@@ -2,6 +2,7 @@
 package types
 
 import (
+	"bytes"
 	"database/sql/driver"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -50,6 +51,29 @@ func (h *Hash) UnmarshalText(input []byte) error {
 // UnmarshalJSON parses a hash in hex syntax from JSON input.
 func (h *Hash) UnmarshalJSON(input []byte) error {
 	return hexutil.UnmarshalFixedJSON(hashT, input, h[:])
+}
+
+// UnmarshalText parses a hash in hex syntax.
+func (h *Hash) UnmarshalBSON(input []byte) error {
+	// make sure to skip any MongoDB prefix for the address
+	if len(input) > 1 && input[0] != '0' {
+		// find the expected prefix position
+		pos := bytes.Index(input, hexPrefix)
+		if pos < 0 {
+			return fmt.Errorf("unknown hash format")
+		}
+
+		// log and convert
+		*h = Hash(common.HexToHash(string(input[pos:])))
+		return nil
+	}
+
+	// any data here
+	if 2 < len(input) {
+		return hexutil.UnmarshalFixedText("Hash", input, h[:])
+	}
+
+	return nil
 }
 
 // MarshalText returns the hex representation of Hash.

@@ -137,6 +137,9 @@ func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 
 	// check init state
 	db.initAccountsCollection()
+
+	// log what we have done
+	db.log.Debugf("added account at %s", acc.Address.String())
 	return nil
 }
 

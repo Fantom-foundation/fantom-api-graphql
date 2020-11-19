@@ -6,7 +6,6 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -20,6 +19,9 @@ const (
 	// fiContractPk is the name of the primary key field of the contract collection.
 	fiContractPk = "_id"
 
+	// fiContractType is the name of the field of the contract type.
+	fiContractType = "type"
+
 	// fiContractOrdinalIndex is the name of the contract ordinal index in the blockchain.
 	// db.contract.createIndex({_id:1,orx:-1},{unique:true})
 	fiContractOrdinalIndex = "orx"
@@ -29,7 +31,7 @@ const (
 
 	// fiContractTransaction is the name of the contract creation transaction
 	// field of the sender's account.
-	fiContractTransaction = "tx"
+	fiContractTransaction = "trx"
 
 	// fiContractTimestamp is the name of the contract time stamp field.
 	fiContractTimestamp = "ts"
@@ -38,56 +40,36 @@ const (
 	fiContractName = "name"
 
 	// fiContractSupport is the name of the contract support contact field.
-	fiContractSupport = "sup"
+	fiContractSupport = "url"
 
 	// fiContractVersion is the name of the contract version id field.
 	fiContractVersion = "ver"
 
 	// fiContractCompiler is the name of the contract compiler id field.
-	fiContractCompiler = "cv"
+	fiContractCompiler = "comp"
 
 	// fiContractLicense is the name of the contract open source license field.
 	fiContractLicense = "lic"
 
 	// fiContractIsOptimized is the name of the contract compiler optimizer enabled field.
-	fiContractIsOptimized = "isOpt"
+	fiContractIsOptimized = "is_opt"
 
 	// fiContractOptimizationRuns is the name of the contract compiler optimization runs field.
-	fiContractOptimizationRuns = "runs"
+	fiContractOptimizationRuns = "opt_run"
 
 	// fiContractSource is the name of the contract source code field.
-	fiContractSource = "sol"
+	fiContractSource = "src"
 
 	// fiContractSourceHash is the name of the contract source code hash field.
-	fiContractSourceHash = "soh"
+	fiContractSourceHash = "src_hash"
 
 	// fiContractAbi is the name of the contract ABI field.
 	fiContractAbi = "abi"
 
 	// fiContractSourceValidated is the name of the contract source code
 	// validation timestamp field.
-	fiContractSourceValidated = "ok"
+	fiContractSourceValidated = "is_ok"
 )
-
-// ContractRow defines a row in the Contract collection.
-type contractRow struct {
-	Id             string  `bson:"_id"`
-	Orx            uint64  `bson:"orx"`
-	Address        string  `bson:"adr"`
-	Transaction    string  `bson:"tx"`
-	TimeStamp      uint64  `bson:"ts"`
-	Name           *string `bson:"name"`
-	Support        *string `bson:"sup"`
-	Version        *string `bson:"ver"`
-	Compiler       *string `bson:"cv"`
-	License        *string `bson:"lic"`
-	IsOptimized    bool    `bson:"isOpt"`
-	OptimizerRuns  uint64  `bson:"runs"`
-	SourceCode     *string `bson:"sol"`
-	SourceCodeHash *string `bson:"soh"`
-	Abi            *string `bson:"abi"`
-	Validated      *uint64 `bson:"ok"`
-}
 
 // initContractsCollection initializes the contracts collection with
 // indexes and additional parameters needed by the app.
@@ -151,16 +133,15 @@ func (db *MongoDbBridge) AddContract(con *types.Contract) error {
 	}
 
 	// try to do the insert
-	if _, err = col.InsertOne(context.Background(), contractData(con, base)); err != nil {
+	if _, err = col.InsertOne(context.Background(), contractData(con, &base)); err != nil {
 		db.log.Critical(err)
 		return err
 	}
 
-	// inform and quit
-	db.log.Debugf("added smart contract reference [%s]", con.Address.String())
-
 	// init the collection
 	db.initContractsCollection(col)
+
+	db.log.Debugf("added smart contract at %s", con.Address.String())
 	return nil
 }
 
@@ -181,7 +162,7 @@ func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
 		bson.D{{fiContractPk, sc.Address.String()}},
 		bson.D{{"$set", contractData(sc, nil)}}); err != nil {
 		// log the issue
-		db.log.Errorf("can not update contract details; %s", err.Error())
+		db.log.Errorf("can not update contract details at %s; %s", sc.Address.String(), err.Error())
 		return err
 	}
 
@@ -190,14 +171,15 @@ func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
 
 // contractData collects the contract data into the db structure we use
 // for insert/update operations.
-func contractData(sc *types.Contract, data bson.D) bson.D {
+func contractData(sc *types.Contract, data *bson.D) bson.D {
 	// make sure we have the container
 	if data == nil {
-		data = bson.D{}
+		data = &bson.D{}
 	}
 
 	// append common data
-	data = append(data,
+	*data = append(*data,
+		bson.E{Key: fiContractType, Value: sc.Type},
 		bson.E{Key: fiContractName, Value: sc.Name},
 		bson.E{Key: fiContractSupport, Value: sc.SupportContact},
 		bson.E{Key: fiContractVersion, Value: sc.Version},
@@ -211,23 +193,23 @@ func contractData(sc *types.Contract, data bson.D) bson.D {
 
 	// do we have the source code hash?
 	if sc.SourceCodeHash != nil {
-		data = append(data, bson.E{Key: fiContractSourceHash, Value: sc.SourceCodeHash.String()})
+		*data = append(*data, bson.E{Key: fiContractSourceHash, Value: sc.SourceCodeHash.String()})
 	} else {
-		data = append(data, bson.E{Key: fiContractSourceHash, Value: nil})
+		*data = append(*data, bson.E{Key: fiContractSourceHash, Value: nil})
 	}
 
 	// do we have the validation mark?
 	if sc.Validated != nil {
-		data = append(data, bson.E{Key: fiContractSourceValidated, Value: uint64(*sc.Validated)})
+		*data = append(*data, bson.E{Key: fiContractSourceValidated, Value: uint64(*sc.Validated)})
 	} else {
-		data = append(data, bson.E{Key: fiContractSourceValidated, Value: nil})
+		*data = append(*data, bson.E{Key: fiContractSourceValidated, Value: nil})
 	}
 
-	return data
+	return *data
 }
 
 // IsContractKnown checks if a smart contract document already exists in the database.
-func (db *MongoDbBridge) IsContractKnown(addr *common.Address) bool {
+func (db *MongoDbBridge) IsContractKnown(addr *types.Address) bool {
 	// check the contract existence in the database
 	known, err := db.isContractKnown(db.client.Database(db.dbName).Collection(coContract), addr)
 	if err != nil {
@@ -238,7 +220,7 @@ func (db *MongoDbBridge) IsContractKnown(addr *common.Address) bool {
 }
 
 // isContractKnown checks if a smart contract document already exists in the database.
-func (db *MongoDbBridge) isContractKnown(col *mongo.Collection, addr *common.Address) (bool, error) {
+func (db *MongoDbBridge) isContractKnown(col *mongo.Collection, addr *types.Address) (bool, error) {
 	// try to find the contract in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
 		{fiContractPk, addr.String()},
@@ -279,68 +261,6 @@ func (db *MongoDbBridge) ContractTransaction(addr *common.Address) (*types.Hash,
 	return &c.TransactionHash, nil
 }
 
-// newContract creates a new contract structure from provided DB row record
-func newContract(row *contractRow) *types.Contract {
-	// prep the contract
-	con := types.Contract{
-		OrdinalIndex:    row.Orx,
-		Address:         common.HexToAddress(row.Address),
-		TransactionHash: types.HexToHash(row.Transaction),
-		TimeStamp:       (hexutil.Uint64)(row.TimeStamp),
-		IsOptimized:     row.IsOptimized,
-		OptimizeRuns:    int32(row.OptimizerRuns),
-	}
-
-	// do we have the source code?
-	if row.SourceCode != nil {
-		con.SourceCode = *row.SourceCode
-	}
-
-	// do we have the source code hash?
-	if row.SourceCodeHash != nil {
-		hash := types.HexToHash(*row.SourceCodeHash)
-		con.SourceCodeHash = &hash
-	}
-
-	// do we have the ABI definition?
-	if row.Abi != nil {
-		con.Abi = *row.Abi
-	}
-
-	// do we have the contract name?
-	if row.Name != nil {
-		con.Name = *row.Name
-	}
-
-	// do we have the support contact name?
-	if row.Support != nil {
-		con.SupportContact = *row.Support
-	}
-
-	// do we have the contract version?
-	if row.Version != nil {
-		con.Version = *row.Version
-	}
-
-	// do we have the contract License?
-	if row.License != nil {
-		con.License = *row.License
-	}
-
-	// do we have the contract compiler?
-	if row.Compiler != nil {
-		con.Compiler = *row.Compiler
-	}
-
-	// do we have the validation time stamp?
-	if row.Validated != nil {
-		val := *row.Validated
-		con.Validated = (*hexutil.Uint64)(&val)
-	}
-
-	return &con
-}
-
 // Contract returns details of a smart contract stored in the Mongo database
 // if available, or nil if contract does not exist.
 func (db *MongoDbBridge) Contract(addr *common.Address) (*types.Contract, error) {
@@ -358,21 +278,27 @@ func (db *MongoDbBridge) Contract(addr *common.Address) (*types.Contract, error)
 		}
 
 		// inform that we can not get the PK; should not happen
-		db.log.Errorf("can not get contract details; %s", sr.Err().Error())
+		db.log.Errorf("can not get contract %s details; %s", addr.String(), sr.Err().Error())
 		return nil, sr.Err()
 	}
 
-	// prep container
-	var row contractRow
-
-	// try to decode
-	err := sr.Decode(&row)
+	// try to decode the contract data
+	var con types.Contract
+	err := sr.Decode(&con)
 	if err != nil {
-		db.log.Errorf("can not get contract details; %s", err.Error())
+		db.log.Errorf("can not decode contract %s details; %s", addr.String(), err.Error())
 		return nil, err
 	}
 
-	return newContract(&row), nil
+	// reset some pre-initialized and empty data
+	if nil != con.Validated && 0 == *con.Validated {
+		con.Validated = nil
+		con.SourceCodeHash = nil
+	}
+
+	// inform
+	db.log.Debugf("loaded contract %s", addr.String())
+	return &con, nil
 }
 
 // ContractCount calculates total number of contracts in the database.
@@ -614,17 +540,15 @@ func (db *MongoDbBridge) contractListLoad(col *mongo.Collection, validatedOnly b
 			list.Last = contract.OrdinalIndex
 		}
 
-		// get the next hash
-		var row contractRow
-
 		// try to decode the next row
-		if err := ld.Decode(&row); err != nil {
+		var con types.Contract
+		if err := ld.Decode(&con); err != nil {
 			db.log.Errorf("can not decode contract the list row; %s", err.Error())
 			return err
 		}
 
-		// decode the value
-		contract = newContract(&row)
+		// keep this one
+		contract = &con
 	}
 
 	// we should have all the items already; we may just need to check if a boundary was reached
