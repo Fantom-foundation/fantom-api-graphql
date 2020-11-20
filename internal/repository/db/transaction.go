@@ -156,8 +156,14 @@ func (db *MongoDbBridge) TransactionDetails(trx *types.Transaction) error {
 		return sr.Err()
 	}
 
+	// reset the target call
+	if trx.TargetContractType != nil && *trx.TargetContractType == "" {
+		trx.TargetContractType = nil
+		trx.TargetFunctionCall = nil
+	}
+
 	// log the ordinal index of the found transaction
-	db.log.Debugf("transaction %s stored as #%d", trx.Hash.String(), trx.OrdinalIndex)
+	db.log.Debugf("found transaction %s as #%d", trx.Hash.String(), trx.OrdinalIndex)
 	return nil
 }
 
@@ -287,8 +293,9 @@ func (db *MongoDbBridge) TransactionMarkPropagated(trx *types.Transaction) error
 		return err
 	}
 
-	// log we are done with the trx
-	db.log.Debugf("transaction %s processed", trx.Hash.String())
+	// update local state and log we are done with the trx
+	trx.IsProcessed = true
+	db.log.Debugf("transaction %s state changed", trx.Hash.String())
 	return nil
 }
 
