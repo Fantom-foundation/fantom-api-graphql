@@ -78,6 +78,7 @@ type Cache struct {
 
 // Compiler represents the contract compilers configuration.
 type Compiler struct {
+	CompilerTempPath       string `mapstructure:"temp"`
 	DefaultSolCompilerPath string `mapstructure:"sol"`
 }
 
