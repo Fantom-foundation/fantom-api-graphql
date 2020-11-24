@@ -60,7 +60,7 @@ func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 		p.log.Debugf("unknown address %s detected", addr.String())
 
 		// at least we know the account existed
-		acc := &types.Account{Address: *addr, Type: types.AccountTypeWallet}
+		acc = &types.Account{Address: *addr, Type: types.AccountTypeWallet}
 
 		// check if this is a smart contract account; we log the error on the call
 		acc.ContractTx, _ = p.db.ContractTransaction(addr)
