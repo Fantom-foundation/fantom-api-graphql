@@ -40,6 +40,13 @@ func (p *proxy) AccountMarkActivity(acc *types.Account, ts uint64) error {
 
 // getAccount builds the account representation after validating it against Lachesis node.
 func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
+	// any address given?
+	if addr == nil {
+		// log an unknown address
+		p.log.Error("no address given")
+		return nil, fmt.Errorf("no address given")
+	}
+
 	// try to get the account from database first
 	acc, err := p.db.Account(addr)
 	if err != nil {
@@ -49,6 +56,9 @@ func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 
 	// found the account in database?
 	if acc == nil {
+		// log an unknown address
+		p.log.Debugf("unknown address %s detected", addr.String())
+
 		// at least we know the account existed
 		acc := &types.Account{Address: *addr, Type: types.AccountTypeWallet}
 
