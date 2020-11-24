@@ -6,6 +6,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/k0kubun/pp"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -456,6 +457,8 @@ func (db *MongoDbBridge) txListFilter(cursor *string, count int32, list *types.T
 		}
 	}
 
+	// log the filter
+	db.log.Debugf("filtering with %s", pp.Sprint(list.Filter))
 	return &list.Filter
 }
 

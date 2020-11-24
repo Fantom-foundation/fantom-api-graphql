@@ -20,6 +20,7 @@ require (
 	github.com/graph-gophers/graphql-go v0.0.0-20201113091052-beb923fada29
 	github.com/graph-gophers/graphql-transport-ws v0.0.0-20200904065757-c681d7e1b135
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
+	github.com/k0kubun/pp v3.0.1+incompatible // indirect
 	github.com/karalabe/usb v0.0.0-20191104083709-911d15fe12a9 // indirect
 	github.com/klauspost/compress v1.11.3 // indirect
 	github.com/magiconair/properties v1.8.4 // indirect
