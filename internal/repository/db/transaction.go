@@ -6,7 +6,6 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/k0kubun/pp"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -358,8 +357,8 @@ func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, coun
 		Total:      uint64(total),
 		First:      0,
 		Last:       0,
-		IsStart:    0 >= total,
-		IsEnd:      0 >= total,
+		IsStart:    total == 0,
+		IsEnd:      total == 0,
 		Filter:     *filter,
 	}
 
@@ -458,7 +457,6 @@ func (db *MongoDbBridge) txListFilter(cursor *string, count int32, list *types.T
 	}
 
 	// log the filter
-	db.log.Debugf("filtering with %s", pp.Sprint(list.Filter))
 	return &list.Filter
 }
 
@@ -483,12 +481,9 @@ func (db *MongoDbBridge) txListOptions(count int32) *options.FindOptions {
 		limit = -limit
 	}
 
-	// try to get one more
-	limit++
-
-	// apply the limit
-	opt.SetLimit(limit)
-
+	// apply the limit, try to get one more transaction
+	// so we can detect list end
+	opt.SetLimit(limit + 1)
 	return opt
 }
 
@@ -538,16 +533,13 @@ func (db *MongoDbBridge) txListLoad(col *mongo.Collection, cursor *string, count
 	}
 
 	// we should have all the items already; we may just need to check if a boundary was reached
-	if cursor != nil {
-		list.IsEnd = count > 0 && int32(len(list.Collection)) < count
-		list.IsStart = count < 0 && int32(len(list.Collection)) < -count
+	list.IsEnd = (cursor == nil && count < 0) || (count > 0 && int32(len(list.Collection)) < count)
+	list.IsStart = (cursor == nil && count > 0) || (count < 0 && int32(len(list.Collection)) < -count)
 
-		// add the last item as well
-		if (list.IsStart || list.IsEnd) && hash != nil {
-			list.Collection = append(list.Collection, hash)
-		}
+	// add the last item as well if we hit the boundary
+	if (list.IsStart || list.IsEnd) && hash != nil {
+		list.Collection = append(list.Collection, hash)
 	}
-
 	return nil
 }
 
