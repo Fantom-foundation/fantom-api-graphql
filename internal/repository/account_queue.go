@@ -18,7 +18,7 @@ import (
 const (
 	// accountQueueLength represents how many accounts can be pushed
 	// into the queue for processing at once
-	accountQueueLength = 20000
+	accountQueueLength = 50000
 
 	// sfcCheckBelowBlock represents the highest block number we try to detect
 	// SFC contract, above this block the contract should already be known and we can
