@@ -23,7 +23,7 @@ const (
 	// sfcCheckBelowBlock represents the highest block number we try to detect
 	// SFC contract, above this block the contract should already be known and we can
 	// skip the check
-	sfcCheckBelowBlock = 25000
+	sfcCheckBelowBlock = 100000
 )
 
 // testAddress represents an address used to test an account reference
