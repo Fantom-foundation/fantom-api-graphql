@@ -84,7 +84,7 @@ func (p *proxy) Transaction(hash *types.Hash) (*types.Transaction, error) {
 	// try to use the in-memory cache
 	if trx := p.cache.PullTransaction(hash); trx != nil {
 		// log and return
-		p.log.Infof("transaction %s loaded from cache", hash.String())
+		p.log.Debugf("transaction %s loaded from cache", hash.String())
 		return trx, nil
 	}
 
