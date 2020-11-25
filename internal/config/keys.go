@@ -21,6 +21,7 @@ const (
 	keyCacheEvictionTime = "cache.eviction"
 	keySolCompilerPath   = "compiler.sol"
 	keyVotingSources     = "voting.sources"
+	keyErc20Logos        = "erc20_logos"
 
 	// PoS staking configuration
 	keyStakingSfcContract       = "staking.sfc"

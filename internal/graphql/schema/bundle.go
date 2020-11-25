@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-11-20 12:57
+// Auto generated GraphQL schema bundle; created 2020-11-25 17:37
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -302,6 +302,10 @@ type ERC20Token {
 
     # totalSupply represents total amount of tokens across all accounts
     totalSupply: BigInt!
+
+    # logoURL represents a URL address of a logo of the token. It's always
+    # provided, but unknown tokens have this set to a generic logo file.
+    logoURL: String!
 
     # balanceOf represents the total available balance of the token
     # on the account regardless of the DeFi usage of the token.

@@ -43,6 +43,10 @@ type Config struct {
 
 	// Governance configuration
 	Governance Governance `mapstructure:"governance"`
+
+	// KnownTokens is a list of known ERC20 tokens
+	// mapped to URL addresses of their logos.
+	TokenLogo map[common.Address]string `mapstructure:"erc20_logos"`
 }
 
 // Server represents the GraphQL server configuration

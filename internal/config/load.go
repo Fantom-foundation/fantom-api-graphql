@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fantom-api-graphql/internal/types"
 	"flag"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/mitchellh/mapstructure"
@@ -62,19 +63,36 @@ func StringToAddressHookFunc() mapstructure.DecodeHookFuncType {
 		}
 
 		// make sure the output is expected common.Address
-		if t != reflect.TypeOf(common.Address{}) {
-			return data, nil
+		if t == reflect.TypeOf(common.Address{}) {
+			raw := data.(string)
+			if raw == "" {
+				return common.HexToAddress(EmptyAddress), nil
+			}
+			return stringToCommonAddress(raw)
 		}
 
-		// empty address
-		raw := data.(string)
-		if raw == "" {
-			return common.HexToAddress(defNoAddress), nil
+		// typed address is expected here?
+		if t == reflect.TypeOf(types.Address{}) {
+			raw := data.(string)
+			if raw == "" {
+				return stringToAddress(EmptyAddress)
+			}
+			return stringToAddress(raw)
 		}
 
-		// convert it by parsing
-		return common.HexToAddress(data.(string)), nil
+		// anything found else?
+		return data, nil
 	}
+}
+
+// stringToCommonAddress converts the given String to common Address.
+func stringToCommonAddress(str string) (interface{}, error) {
+	return common.HexToAddress(str), nil
+}
+
+// stringToAddress converts the given String to typed Address.
+func stringToAddress(str string) (interface{}, error) {
+	return types.Address(common.HexToAddress(str)), nil
 }
 
 // reader provides instance of the config reader.

@@ -365,6 +365,9 @@ type Repository interface {
 	// Erc20Decimals provides information about the decimals of the ERC20 token.
 	Erc20Decimals(*common.Address) (int32, error)
 
+	// Erc20LogoURL provides URL address of a logo of the ERC20 token.
+	Erc20LogoURL(*common.Address) string
+
 	// GovernanceContractBy provides governance contract details by its address.
 	GovernanceContractBy(*common.Address) (*config.GovernanceContract, error)
 

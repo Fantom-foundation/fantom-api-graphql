@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/viper"
 	"time"
 )
@@ -11,7 +12,7 @@ const (
 	defApplicationName = "Fantom GraphQL API Server (custom)"
 
 	// this defines empty address
-	defNoAddress = "0x0000000000000000000000000000000000000000"
+	EmptyAddress = "0x0000000000000000000000000000000000000000"
 
 	// defServerBind holds default API server binding address
 	defServerBind = "localhost:16761"
@@ -55,10 +56,10 @@ const (
 	defDefiFMintAddressProvider = "0x730e27f6c52d07b1a6ab39b639b617dc566c91af"
 
 	// defDefiFMintAddressProvider represents the address of the fMintAddressProvider
-	defDefiUniswapCore = defNoAddress
+	defDefiUniswapCore = EmptyAddress
 
 	// defDefiFMintAddressProvider represents the address of the fMintAddressProvider
-	defDefiUniswapRouter = defNoAddress
+	defDefiUniswapRouter = EmptyAddress
 )
 
 // default list of API peers
@@ -69,6 +70,11 @@ var defCorsAllowOrigins = []string{"*"}
 
 // default list of API peers
 var defVotingSources = make([]string, 0)
+
+// defERC20Logo defines default no-URL value for ERC20 logo list
+var defERC20Logo = map[common.Address]string{
+	common.HexToAddress(EmptyAddress): "https://repository.fantom.network/logos/erc20.svg",
+}
 
 // applyDefaults sets default values for configuration options.
 func applyDefaults(cfg *viper.Viper) {
@@ -85,6 +91,7 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keySolCompilerPath, defSolCompilerPath)
 	cfg.SetDefault(keyApiPeers, defApiPeers)
 	cfg.SetDefault(keyApiStateOrigin, defApiStateOrigin)
+	cfg.SetDefault(keyErc20Logos, defERC20Logo)
 
 	// no voting sources by default
 	cfg.SetDefault(keyVotingSources, defVotingSources)
@@ -95,8 +102,8 @@ func applyDefaults(cfg *viper.Viper) {
 	// staking configuration defaults
 	cfg.SetDefault(keyStakingSfcContract, defSfcContract)
 	cfg.SetDefault(keyStakingStiContract, defStiContract)
-	cfg.SetDefault(keyStakingTokenizerContract, defNoAddress)
-	cfg.SetDefault(keyStakingERC20Token, defNoAddress)
+	cfg.SetDefault(keyStakingTokenizerContract, EmptyAddress)
+	cfg.SetDefault(keyStakingERC20Token, EmptyAddress)
 
 	// DeFi configuration
 	cfg.SetDefault(keyDefiFMintAddressProvider, defDefiFMintAddressProvider)

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -97,4 +98,14 @@ func (p *proxy) Erc20TotalSupply(token *common.Address) (hexutil.Big, error) {
 // Erc20TokensList returns a list of known ERC20 tokens ordered by their activity.
 func (p *proxy) Erc20TokensList(count int32) ([]common.Address, error) {
 	return p.db.Erc20TokensList(count)
+}
+
+// Erc20LogoURL provides URL address of a logo of the ERC20 token.
+func (p *proxy) Erc20LogoURL(addr *common.Address) string {
+	// do we know the token?
+	logo, ok := p.cfg.TokenLogo[*addr]
+	if !ok {
+		logo = p.cfg.TokenLogo[common.HexToAddress(config.EmptyAddress)]
+	}
+	return logo
 }

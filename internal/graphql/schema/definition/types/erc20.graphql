@@ -16,6 +16,10 @@ type ERC20Token {
     # totalSupply represents total amount of tokens across all accounts
     totalSupply: BigInt!
 
+    # logoURL represents a URL address of a logo of the token. It's always
+    # provided, but unknown tokens have this set to a generic logo file.
+    logoURL: String!
+
     # balanceOf represents the total available balance of the token
     # on the account regardless of the DeFi usage of the token.
     # It's effectively the amount available held by the ERC20 token
