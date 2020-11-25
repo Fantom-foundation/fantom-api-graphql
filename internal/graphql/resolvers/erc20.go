@@ -86,3 +86,8 @@ func (token *ERC20Token) Allowance(args *struct {
 }) (hexutil.Big, error) {
 	return token.repo.Erc20Allowance(&token.Address, &args.Owner, &args.Spender)
 }
+
+// LogoURL resolves an URL of the token logo.
+func (token *ERC20Token) LogoURL() string {
+	return token.repo.Erc20LogoURL(&token.Address)
+}
