@@ -369,7 +369,7 @@ func (ftm *FtmBridge) DelegationRewards(addr string, staker hexutil.Uint64) (typ
 	// get the rewards amount
 	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(nil, common.HexToAddress(addr), big.NewInt(int64(staker)), big.NewInt(0), epoch)
 	if err != nil {
-		ftm.log.Errorf("failed to get the delegation rewards: %s", err.Error())
+		ftm.log.Errorf("no delegation rewards for %s -> %d; %s", addr, uint64(staker), err.Error())
 		return types.PendingRewards{}, nil
 	}
 
