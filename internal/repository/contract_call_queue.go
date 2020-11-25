@@ -20,7 +20,7 @@ import (
 const (
 	// contractCallQueueLength represents how many smart contract calls can be pushed
 	// into the queue for processing at once
-	contractCallQueueLength = 50000
+	contractCallQueueLength = 75000
 )
 
 // contractCallQueue implements blockchain smart contract calls analyzer queue.
