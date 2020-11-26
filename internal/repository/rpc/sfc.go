@@ -364,10 +364,10 @@ func (ftm *FtmBridge) DelegationRewards(addr string, staker hexutil.Uint64) (typ
 	}
 
 	// get the rewards amount
-	ftm.log.Debugf("loading delegation rewards for %s -> %d [0, %d]", addr, uint64(staker))
+	ftm.log.Debugf("loading delegation rewards for %s → %d between epochs [0, %d]", addr, uint64(staker), epoch.Uint64())
 	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(ftm.DefaultCallOpts(), common.HexToAddress(addr), new(big.Int).SetUint64(uint64(staker)), big.NewInt(0), epoch)
 	if err != nil {
-		ftm.log.Errorf("no delegation rewards for %s -> %d; %s", addr, uint64(staker), err.Error())
+		ftm.log.Errorf("no delegation rewards for %s → %d; %s", addr, uint64(staker), err.Error())
 		return types.PendingRewards{}, nil
 	}
 
