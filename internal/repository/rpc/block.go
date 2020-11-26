@@ -32,7 +32,7 @@ const (
 func (ftm *FtmBridge) MustBlockHeight() *big.Int {
 	var val big.Int
 	if err := ftm.rpc.Call(&val, "ftm_blockNumber"); err != nil {
-		ftm.log.Error("failed block height check")
+		ftm.log.Errorf("failed block height check; %s", err.Error())
 		return nil
 	}
 	return &val
