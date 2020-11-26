@@ -27,6 +27,17 @@ const (
 	BlockTypeEarliest = "earliest"
 )
 
+// MustBlockHeight returns the current block height
+// of the block chain. It returns nil if the block height can not be pulled.
+func (ftm *FtmBridge) MustBlockHeight() *big.Int {
+	var val big.Int
+	if err := ftm.rpc.Call(&val, "ftm_blockNumber"); err != nil {
+		ftm.log.Error("failed block height check")
+		return nil
+	}
+	return &val
+}
+
 // BlockHeight returns the current block height of the Opera blockchain.
 func (ftm *FtmBridge) BlockHeight() (*hexutil.Big, error) {
 	// keep track of the operation

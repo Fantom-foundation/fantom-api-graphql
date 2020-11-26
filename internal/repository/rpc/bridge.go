@@ -14,8 +14,10 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 import (
+	"context"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	eth "github.com/ethereum/go-ethereum/ethclient"
 	ftm "github.com/ethereum/go-ethereum/rpc"
 )
@@ -27,6 +29,7 @@ type FtmBridge struct {
 	log logger.Logger
 
 	// fMintCfg represents the configuration of the fMint protocol
+	sigConfig     *config.ServerSignature
 	sfcConfig     *config.Staking
 	uniswapConfig *config.DeFiUniswap
 
@@ -66,6 +69,7 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 		log: log,
 
 		// special configuration options below this line
+		sigConfig:     &cfg.MySignature,
 		sfcConfig:     &cfg.Staking,
 		uniswapConfig: &cfg.DeFi.Uniswap,
 		fMintCfg: fMintConfig{
@@ -91,4 +95,14 @@ func (ftm *FtmBridge) Close() {
 // Connection returns open Opera/Lachesis connection.
 func (ftm *FtmBridge) Connection() *ftm.Client {
 	return ftm.rpc
+}
+
+// DefaultCallOpts creates a default record for call options.
+func (ftm *FtmBridge) DefaultCallOpts() *bind.CallOpts {
+	return &bind.CallOpts{
+		Pending:     false,
+		From:        ftm.sigConfig.Address,
+		BlockNumber: ftm.MustBlockHeight(),
+		Context:     context.Background(),
+	}
 }
