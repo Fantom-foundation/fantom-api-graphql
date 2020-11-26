@@ -231,7 +231,6 @@ func (ftm *FtmBridge) GovernanceOptionStates(gov *common.Address, propId *hexuti
 	}
 
 	// make the container and collect the states
-	zero := new(big.Int)
 	res := make([]*types.GovernanceOptionState, 0)
 
 	// loop over all possible states and check them one by one
@@ -244,9 +243,7 @@ func (ftm *FtmBridge) GovernanceOptionStates(gov *common.Address, propId *hexuti
 		}
 
 		// is this a state we would like to keep? e.g. any votes?
-		if 0 < zero.Cmp(gs.Votes.ToInt()) {
-			res = append(res, gs)
-		}
+		res = append(res, gs)
 	}
 
 	return res, nil
