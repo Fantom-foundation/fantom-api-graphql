@@ -2,6 +2,7 @@
 package config
 
 import (
+	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/common"
 	"time"
 )
@@ -10,6 +11,9 @@ import (
 type Config struct {
 	// AppName holds the name of the application
 	AppName string `mapstructure:"app_name"`
+
+	// MySignature represents a signature of the server on block chain.
+	MySignature ServerSignature `mapstructure:"me"`
 
 	// Server configuration
 	Server Server `mapstructure:"server"`
@@ -56,6 +60,13 @@ type Server struct {
 	Origin        string   `mapstructure:"origin"`
 	Peers         []string `mapstructure:"peers"`
 	CorsOrigin    []string `mapstructure:"cors_origins"`
+}
+
+// ServerSignature represents the signature used by this server
+// on sending requests to the block chain, especially signed requests.
+type ServerSignature struct {
+	Address    common.Address   `mapstructure:"address"`
+	PrivateKey ecdsa.PrivateKey `mapstructure:"pkey"`
 }
 
 // Log represents the logger configuration

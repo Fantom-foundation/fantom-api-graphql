@@ -6,22 +6,40 @@ const (
 	configFileName = "apiserver"
 
 	// configuration options
-	keyAppName           = "app_name"
-	keyConfigFilePath    = "cfg"
-	keyBindAddress       = "server.bind"
-	keyDomainAddress     = "server.domain"
-	keyApiPeers          = "server.peers"
-	keyApiStateOrigin    = "server.origin"
-	keyCorsAllowOrigins  = "server.cors_origins"
-	keyLoggingLevel      = "log.level"
-	keyLoggingFormat     = "log.format"
-	keyLachesisUrl       = "lachesis.url"
-	keyMongoUrl          = "db.url"
-	keyMongoDatabase     = "db.db"
+	keyAppName        = "app_name"
+	keyConfigFilePath = "cfg"
+
+	// server related keys
+	keyBindAddress      = "server.bind"
+	keyDomainAddress    = "server.domain"
+	keyApiPeers         = "server.peers"
+	keyApiStateOrigin   = "server.origin"
+	keyCorsAllowOrigins = "server.cors_origins"
+
+	// API server signature related keys
+	keySignatureAddress    = "me.address"
+	keySignaturePrivateKey = "me.pkey"
+
+	// logging related options
+	keyLoggingLevel  = "log.level"
+	keyLoggingFormat = "log.format"
+
+	// node connection related options
+	keyLachesisUrl = "lachesis.url"
+
+	// off-chain database related options
+	keyMongoUrl      = "db.url"
+	keyMongoDatabase = "db.db"
+
+	// cache related options
 	keyCacheEvictionTime = "cache.eviction"
-	keySolCompilerPath   = "compiler.sol"
-	keyVotingSources     = "voting.sources"
-	keyErc20Logos        = "erc20_logos"
+
+	// contract validation related
+	keySolCompilerPath = "compiler.sol"
+
+	// utility options
+	keyVotingSources = "voting.sources"
+	keyErc20Logos    = "erc20_logos"
 
 	// PoS staking configuration
 	keyStakingSfcContract       = "staking.sfc"

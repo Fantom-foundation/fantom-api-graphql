@@ -1,9 +1,12 @@
 package config
 
 import (
+	"crypto/ecdsa"
 	"fantom-api-graphql/internal/types"
 	"flag"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 	"log"
@@ -49,7 +52,38 @@ func setupConfigUnmarshaler(cfg *mapstructure.DecoderConfig) {
 	// add the decoders missing here
 	cfg.DecodeHook = mapstructure.ComposeDecodeHookFunc(
 		StringToAddressHookFunc(),
+		StringToPrivateKeyHookFunc(),
 		cfg.DecodeHook)
+}
+
+// StringToPrivateKeyHookFunc returns a DecodeHookFunc that converts
+// strings to ecdsa.PrivateKey type on config loading.
+func StringToPrivateKeyHookFunc() mapstructure.DecodeHookFuncType {
+	// return the decoder function
+	return func(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+		// make sure the input is expected String
+		if f.Kind() != reflect.String {
+			return data, nil
+		}
+
+		// make sure the output is expected to be ecdsa.PrivateKey
+		if t != reflect.TypeOf(ecdsa.PrivateKey{}) {
+			return data, nil
+		}
+
+		// convert input to string
+		raw := data.(string)
+		if raw == "" {
+			return nil, fmt.Errorf("empty private key content")
+		}
+
+		// try to decode the key
+		key, err := crypto.ToECDSA(common.FromHex(raw))
+		if err != nil {
+			return nil, err
+		}
+		return *key, nil
+	}
 }
 
 // StringToAddressHookFunc returns a DecodeHookFunc that converts

@@ -11,6 +11,12 @@ const (
 	// this defines default application name
 	defApplicationName = "Fantom GraphQL API Server (custom)"
 
+	// defSelfAddress is a default address used as a placeholder
+	// for actual API server identification.
+	// Please make sure to configure your real key for your API server on the wild.
+	defSelfAddress    = "0xE8E2ab527D1fDbCe570B221977BB5c3f12dFa1DA"
+	defSelfPrivateKey = "0xaa682338447d15ac4462d938716c120d085a0db81d3945b18017ae0788a121a7"
+
 	// this defines empty address
 	EmptyAddress = "0x0000000000000000000000000000000000000000"
 
@@ -82,6 +88,8 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyAppName, defApplicationName)
 	cfg.SetDefault(keyBindAddress, defServerBind)
 	cfg.SetDefault(keyDomainAddress, defServerDomain)
+	cfg.SetDefault(keySignatureAddress, defSelfAddress)
+	cfg.SetDefault(keySignaturePrivateKey, defSelfPrivateKey)
 	cfg.SetDefault(keyLoggingLevel, defLoggingLevel)
 	cfg.SetDefault(keyLoggingFormat, defLoggingFormat)
 	cfg.SetDefault(keyLachesisUrl, defLachesisUrl)
