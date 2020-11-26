@@ -40,7 +40,7 @@ type FtmBridge struct {
 // New creates new Lachesis RPC connection bridge.
 func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 	// log what we do
-	log.Debugf("connecting node at %s", cfg.Lachesis.Url)
+	log.Debugf("connecting block chain node at %s", cfg.Lachesis.Url)
 
 	// try to establish a connection
 	client, err := ftm.Dial(cfg.Lachesis.Url)
@@ -50,7 +50,7 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 	}
 
 	// log
-	log.Notice("node connection established")
+	log.Notice("block chain node online")
 
 	// try to establish a for smart contract interaction
 	con, err := eth.Dial(cfg.Lachesis.Url)
@@ -60,7 +60,7 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 	}
 
 	// log
-	log.Notice("smart contact connection established")
+	log.Notice("smart contact connection open")
 
 	// return the Bridge
 	br := &FtmBridge{
@@ -76,6 +76,9 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 			addressProvider: cfg.DeFi.FMint.AddressProvider,
 		},
 	}
+
+	// inform about the local address of the API node
+	log.Noticef("using signature address %s", br.sigConfig.Address.String())
 
 	// add the bridge ref to the fMintCfg and return the instance
 	br.fMintCfg.bridge = br
