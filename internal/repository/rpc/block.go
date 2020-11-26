@@ -30,12 +30,12 @@ const (
 // MustBlockHeight returns the current block height
 // of the block chain. It returns nil if the block height can not be pulled.
 func (ftm *FtmBridge) MustBlockHeight() *big.Int {
-	var val big.Int
+	var val hexutil.Big
 	if err := ftm.rpc.Call(&val, "ftm_blockNumber"); err != nil {
 		ftm.log.Errorf("failed block height check; %s", err.Error())
 		return nil
 	}
-	return &val
+	return val.ToInt()
 }
 
 // BlockHeight returns the current block height of the Opera blockchain.
