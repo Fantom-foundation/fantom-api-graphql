@@ -343,9 +343,6 @@ func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (types.Epoch, error) {
 
 // DelegationRewards returns a detail of delegation rewards for the given address.
 func (ftm *FtmBridge) DelegationRewards(addr string, staker hexutil.Uint64) (types.PendingRewards, error) {
-	// log action
-	ftm.log.Debugf("loading delegation rewards for account %s", addr)
-
 	// instantiate the contract and display its name
 	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
@@ -367,7 +364,8 @@ func (ftm *FtmBridge) DelegationRewards(addr string, staker hexutil.Uint64) (typ
 	}
 
 	// get the rewards amount
-	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(nil, common.HexToAddress(addr), big.NewInt(int64(staker)), big.NewInt(0), epoch)
+	ftm.log.Debugf("loading delegation rewards for %s -> %d [0, %d]", addr, uint64(staker))
+	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(ftm.DefaultCallOpts(), common.HexToAddress(addr), new(big.Int).SetUint64(uint64(staker)), big.NewInt(0), epoch)
 	if err != nil {
 		ftm.log.Errorf("no delegation rewards for %s -> %d; %s", addr, uint64(staker), err.Error())
 		return types.PendingRewards{}, nil
