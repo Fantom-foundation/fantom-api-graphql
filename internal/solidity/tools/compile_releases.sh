@@ -36,7 +36,7 @@ OUT_FILE="$(dirname "$0")/../releases.go"
   echo "var solidityReleases = [...]string{"
 
   # list those version from the GIT repo
-  for x in $(git -C "$1" tag -l --sort=-version:refname "v*"); do echo "    \"$x\","; done
+  for x in $(git -C "$1" tag -l --sort=-version:refname "v[01].[4-9].*"); do echo "    \"$x\","; done
 
   # close the variable
   echo "}"
