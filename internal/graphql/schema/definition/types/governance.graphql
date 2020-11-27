@@ -169,14 +169,21 @@ type OptionState {
     # effectively option index in the options array
     optionId: BigInt!
 
-    # votes is the number of votes received on the option.
+    # votes is the weight of all votes received across all votes;
+    # the projection of the votes to this state uses it to calculate
+    # actual agreement.
     votes: BigInt!
 
-    # agreementRatio represents the ratio of the option agreement across votes.
-    agreementRatio: BigInt!
-
-    # agreement represents the absolute value of the agreement across votes.
+    # agreement represents the rated weight of all the votes towards this option
+    # based on the opinion scale of the proposal and selected opinion scale level of
+    # each vote.
+    # this effectively reflects the absolute weight of affection of all voters
+    # towards this option.
     agreement: BigInt!
+
+    # agreementRatio represents the relative ratio of the option agreement
+    # to the total weight of all votes in 18 digits.
+    agreementRatio: BigInt!
 }
 
 # GovernanceVote is the vote in the context of the given Governance Proposal.
