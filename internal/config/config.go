@@ -139,7 +139,9 @@ type Governance struct {
 
 // GovernanceContract represents a single Governance contract configuration.
 type GovernanceContract struct {
-	Address common.Address `mapstructure:"address"`
-	Name    string         `mapstructure:"name"`
-	Type    string         `mapstructure:"type"`
+	Address    common.Address `mapstructure:"address"`
+	Governable common.Address `mapstructure:"governable"`
+	Templates  common.Address `mapstructure:"templates"`
+	Name       string         `mapstructure:"name"`
+	Type       string         `mapstructure:"type"`
 }
