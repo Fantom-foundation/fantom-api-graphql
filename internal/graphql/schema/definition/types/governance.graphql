@@ -35,6 +35,11 @@ type GovernanceContract {
     # to accept proposals. The fee is never refunded,
     # even if a Proposal is canceled.
     proposalFee: BigInt!
+
+    # totalVotingPower represents the total voting power available
+    # on the Governance contract in the form of votes
+    # weight.
+    totalVotingPower: BigInt!
 }
 
 # GovernanceProposalList is a list of governance proposal edges
@@ -96,16 +101,29 @@ type GovernanceProposal {
     # by executing a finalizing code.
     isExecutable: Boolean!
 
-    # minVotes corresponds with the minimal number of votes
+    # minVotes corresponds with the minimal weight of votes
     # required by the Proposal to be settled in any way
     # other than REJECTED.
     minVotes: BigInt!
 
-    # minAgreement represents the minimal agreement ratio
+    # minAgreement represents the minimal agreement weight
     # required to be reached on any of the Proposal options
     # so the Proposal could be settled in any way
     # other than REJECTED.
     minAgreement: BigInt!
+
+    # totalWeight represents the total voting weight
+    # of all voters allwed on the proposal. This is effectively
+    # the maximum weight an option can gain if all the voters
+    # would favor it with the top value of the scale.
+    totalWeight: BigInt!
+
+    # votedWeightRatio represents the percentage of the total voting weight
+    # already counted towards the proposal options. The ratio increases
+    # as more voters place their votes. If no vote was placed the value is zero,
+    # if all the voters placed their votes aither directly, or over a delegation,
+    # the value is 100.
+    votedWeightRatio: Int!
 
     # opinionScales is the scale of opinions on available options.
     # A voter provides a single opinion picked from the scale

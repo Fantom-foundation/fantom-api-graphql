@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-11-26 14:07
+// Auto generated GraphQL schema bundle
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -1116,6 +1116,11 @@ type GovernanceContract {
     # to accept proposals. The fee is never refunded,
     # even if a Proposal is canceled.
     proposalFee: BigInt!
+
+    # totalVotingPower represents the total voting power available
+    # on the Governance contract in the form of votes
+    # weight.
+    totalVotingPower: BigInt!
 }
 
 # GovernanceProposalList is a list of governance proposal edges
@@ -1177,16 +1182,29 @@ type GovernanceProposal {
     # by executing a finalizing code.
     isExecutable: Boolean!
 
-    # minVotes corresponds with the minimal number of votes
+    # minVotes corresponds with the minimal weight of votes
     # required by the Proposal to be settled in any way
     # other than REJECTED.
     minVotes: BigInt!
 
-    # minAgreement represents the minimal agreement ratio
+    # minAgreement represents the minimal agreement weight
     # required to be reached on any of the Proposal options
     # so the Proposal could be settled in any way
     # other than REJECTED.
     minAgreement: BigInt!
+
+    # totalWeight represents the total voting weight
+    # of all voters allwed on the proposal. This is effectively
+    # the maximum weight an option can gain if all the voters
+    # would favor it with the top value of the scale.
+    totalWeight: BigInt!
+
+    # votedWeightRatio represents the percentage of the total voting weight
+    # already counted towards the proposal options. The ratio increases
+    # as more voters place their votes. If no vote was placed the value is zero,
+    # if all the voters placed their votes aither directly, or over a delegation,
+    # the value is 100.
+    votedWeightRatio: Int!
 
     # opinionScales is the scale of opinions on available options.
     # A voter provides a single opinion picked from the scale
@@ -1250,14 +1268,21 @@ type OptionState {
     # effectively option index in the options array
     optionId: BigInt!
 
-    # votes is the number of votes received on the option.
+    # votes is the weight of all votes received across all votes;
+    # the projection of the votes to this state uses it to calculate
+    # actual agreement.
     votes: BigInt!
 
-    # agreementRatio represents the ratio of the option agreement across votes.
-    agreementRatio: BigInt!
-
-    # agreement represents the absolute value of the agreement across votes.
+    # agreement represents the rated weight of all the votes towards this option
+    # based on the opinion scale of the proposal and selected opinion scale level of
+    # each vote.
+    # this effectively reflects the absolute weight of affection of all voters
+    # towards this option.
     agreement: BigInt!
+
+    # agreementRatio represents the relative ratio of the option agreement
+    # to the total weight of all votes in 18 digits.
+    agreementRatio: BigInt!
 }
 
 # GovernanceVote is the vote in the context of the given Governance Proposal.
@@ -1480,7 +1505,7 @@ type Query {
     # for the given list of ballots identified by an array of ballot
     # addresses.
     votes(voter:Address!, ballots:[Address!]!):[Vote!]!
-
+    
     # defiConfiguration exposes the current DeFi contract setup.
     defiConfiguration:DefiSettings!
 
