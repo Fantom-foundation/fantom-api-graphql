@@ -44,7 +44,7 @@ const (
 	defMongoDatabase = "fantom"
 
 	// defCacheEvictionTime holds default time for in-memory eviction periods
-	defCacheEvictionTime = 60 * time.Minute
+	defCacheEvictionTime = 15 * time.Minute
 
 	// defSolCompilerPath represents the default SOL compiler path
 	defSolCompilerPath = "/usr/bin/solc"
