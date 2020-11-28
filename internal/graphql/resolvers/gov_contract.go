@@ -197,6 +197,6 @@ func (gc *GovernanceContract) ProposalFee() (hexutil.Big, error) {
 }
 
 // totalVotingPower resolves the total available voting power.
-func (gc *GovernanceContract) totalVotingPower() (hexutil.Big, error) {
+func (gc *GovernanceContract) TotalVotingPower() (hexutil.Big, error) {
 	return gc.repo.GovernanceTotalWeight(&gc.Address)
 }
