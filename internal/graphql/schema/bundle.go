@@ -1,6 +1,6 @@
 package gqlschema
 
-// Auto generated GraphQL schema bundle; created 2020-11-27 11:09
+// Auto generated GraphQL schema bundle
 const schema = `
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
@@ -1505,7 +1505,7 @@ type Query {
     # for the given list of ballots identified by an array of ballot
     # addresses.
     votes(voter:Address!, ballots:[Address!]!):[Vote!]!
-
+    
     # defiConfiguration exposes the current DeFi contract setup.
     defiConfiguration:DefiSettings!
 
