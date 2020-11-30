@@ -98,5 +98,5 @@ func (gp *GovernanceProposal) VotedWeightRatio() int32 {
 	}
 
 	// calculate the rate
-	return int32(new(big.Int).Div(new(big.Int).Mul(big.NewInt(100), state.Votes.ToInt()), total.ToInt()).Int64())
+	return int32(new(big.Int).Div(new(big.Int).Mul(big.NewInt(1000000), state.Votes.ToInt()), total.ToInt()).Int64())
 }
