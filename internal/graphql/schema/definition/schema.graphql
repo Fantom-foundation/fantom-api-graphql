@@ -116,7 +116,7 @@ type Query {
     # for the given list of ballots identified by an array of ballot
     # addresses.
     votes(voter:Address!, ballots:[Address!]!):[Vote!]!
-
+    
     # defiConfiguration exposes the current DeFi contract setup.
     defiConfiguration:DefiSettings!
 

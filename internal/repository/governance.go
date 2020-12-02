@@ -14,7 +14,6 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"strings"
 )
 
 // GovernanceProposalsCount provides the total number of proposals
@@ -56,11 +55,9 @@ func (p *proxy) GovernanceVote(
 
 // GovernanceContractBy provides governance contract details by its address.
 func (p *proxy) GovernanceContractBy(addr *common.Address) (*config.GovernanceContract, error) {
-	// loop all contracts
-	for _, gc := range p.govContracts {
-		if strings.EqualFold(gc.Address.String(), addr.String()) {
-			return &gc, nil
-		}
+	// try to pull the config from the map
+	if gc, ok := p.govContracts[addr.String()]; ok {
+		return gc, nil
 	}
 
 	// contract not found
@@ -71,4 +68,33 @@ func (p *proxy) GovernanceContractBy(addr *common.Address) (*config.GovernanceCo
 // in given Governance contract context.
 func (p *proxy) GovernanceProposalFee(gov *common.Address) (hexutil.Big, error) {
 	return p.rpc.GovernanceProposalFee(gov)
+}
+
+// GovernanceTotalWeight provides the total weight of all available votes
+// in the governance contract identified by the address.
+func (p *proxy) GovernanceTotalWeight(gov *common.Address) (hexutil.Big, error) {
+	// try cache
+	we := p.cache.PullGovernanceTotalWeight(gov)
+	if we == nil {
+		// get the governance config
+		cfg, ok := p.govContracts[gov.String()]
+		if !ok {
+			return hexutil.Big{}, fmt.Errorf("unknown governance %s", gov.String())
+		}
+
+		// do it slow way
+		var err error
+		we, err = p.rpc.GovernanceTotalWeight(&cfg.Governable)
+		if err != nil {
+			p.log.Errorf("can not pull governance total weight for %s; %s", gov.String(), err.Error())
+			return hexutil.Big{}, err
+		}
+
+		// store the weight into cache
+		if err = p.cache.PushGovernanceTotalWeight(gov, we); err != nil {
+			p.log.Errorf("can not cache governance total weight for %s; %s", gov.String(), err.Error())
+		}
+	}
+
+	return *we, nil
 }

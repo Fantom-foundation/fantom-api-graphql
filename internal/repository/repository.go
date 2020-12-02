@@ -399,6 +399,10 @@ type Repository interface {
 	// in given Governance contract context.
 	GovernanceProposalFee(*common.Address) (hexutil.Big, error)
 
+	// GovernanceTotalWeight provides the total weight of all available votes
+	// in the governance contract identified by the address.
+	GovernanceTotalWeight(*common.Address) (hexutil.Big, error)
+
 	// Close and cleanup the repository.
 	Close()
 }
@@ -413,7 +417,7 @@ type proxy struct {
 	cfg   *config.Config
 
 	// governance contracts reference
-	govContracts []config.GovernanceContract
+	govContracts map[string]*config.GovernanceContract
 
 	// smart contract compilers
 	solCompiler string
@@ -442,7 +446,7 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 		log:   log,
 		cfg:   cfg,
 
-		govContracts: cfg.Governance.Contracts,
+		govContracts: governanceContractsMap(&cfg.Governance),
 
 		// keep reference to the SOL compiler
 		solCompiler: cfg.Compiler.DefaultSolCompilerPath,
@@ -456,6 +460,19 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 
 	// return the proxy
 	return &p, nil
+}
+
+// governanceContractsMap creates map of governance contracts keyed
+// by the contract address.
+func governanceContractsMap(cfg *config.Governance) map[string]*config.GovernanceContract {
+	// prep the result set
+	res := make(map[string]*config.GovernanceContract)
+
+	// collect all the configured governance contracts into the map
+	for _, gv := range cfg.Contracts {
+		res[gv.Address.String()] = &gv
+	}
+	return res
 }
 
 // connect opens connections to the external sources we need.

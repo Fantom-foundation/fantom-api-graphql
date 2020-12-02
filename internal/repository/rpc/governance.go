@@ -24,6 +24,7 @@ import (
 
 //go:generate abigen --abi ./contracts/abi/gov_governance.abi --pkg contracts --type Governance --out ./contracts/governance.go
 //go:generate abigen --abi ./contracts/abi/gov_iproposal.abi --pkg contracts --type GovernanceProposal --out ./contracts/gov_iproposal.go
+//go:generate abigen --abi ./contracts/abi/gov_governable.abi --pkg contracts --type Governable --out ./contracts/gov_governable.go
 
 // proposalExtended represents the extended information
 // of a governance proposal.
@@ -363,4 +364,25 @@ func (ftm *FtmBridge) GovernanceProposalFee(gov *common.Address) (hexutil.Big, e
 	}
 
 	return hexutil.Big(*fee), nil
+}
+
+// GovernanceTotalWeight returns the total available voting weight for all proposals
+// of a governance contract. The address given must be the Governable contract linked
+// to the core Governance.
+func (ftm *FtmBridge) GovernanceTotalWeight(ge *common.Address) (*hexutil.Big, error) {
+	// get the contract
+	goe, err := contracts.NewGovernable(*ge, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("can not access governable adapter %s; %s", ge.String(), err.Error())
+		return nil, err
+	}
+
+	// get the total available voting weight
+	w, err := goe.GetTotalWeight(ftm.DefaultCallOpts())
+	if err != nil {
+		ftm.log.Errorf("total weight not available on adapter %s; %s", ge.String(), err.Error())
+		return nil, err
+	}
+
+	return (*hexutil.Big)(w), nil
 }

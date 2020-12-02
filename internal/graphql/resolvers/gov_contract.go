@@ -190,7 +190,13 @@ func (gc *GovernanceContract) sfcCanVote(addr common.Address) (bool, error) {
 	return isDelegation, nil
 }
 
-// sfcCanVote resolves if a given address can vote in SFC governance context.
+// ProposalFee resolves the fee required by the Governance contract to allow
+// new proposal to be placed.
 func (gc *GovernanceContract) ProposalFee() (hexutil.Big, error) {
 	return gc.repo.GovernanceProposalFee(&gc.Address)
+}
+
+// totalVotingPower resolves the total available voting power.
+func (gc *GovernanceContract) TotalVotingPower() (hexutil.Big, error) {
+	return gc.repo.GovernanceTotalWeight(&gc.Address)
 }
