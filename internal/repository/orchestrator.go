@@ -18,6 +18,7 @@ import (
 
 // trxDispatchBufferCapacity is the number of transactions kept in the dispatch buffer.
 const trxDispatchBufferCapacity = 20000
+const swapDispatchBufferCapacity = 20000
 
 // Orchestrator implements repository synchronization and monitoring control
 type orchestrator struct {
@@ -25,9 +26,11 @@ type orchestrator struct {
 
 	// orchestrator managed channels
 	trxBuffer          chan *evtTransaction
+	swapBuffer         chan *evtSwap
 	accountQueue       chan *accountQueueRequest
 	contractCallsQueue chan *types.Transaction
 	sysDone            chan bool
+	swsDone            chan bool
 	reScan             chan bool
 	sigKillScheduler   chan bool
 
@@ -37,6 +40,8 @@ type orchestrator struct {
 	// services being orchestrated
 	txd *trxDispatcher
 	sys *scanner
+	sws *uniswapScanner
+	swd *swapDispatcher
 	mon *blockMonitor
 	sti *stiMonitor
 	acq *accountQueue
@@ -77,6 +82,8 @@ func (or *orchestrator) close() {
 
 	// close owned channels
 	close(or.trxBuffer)
+	close(or.swapBuffer)
+	close(or.swsDone)
 	close(or.sysDone)
 	close(or.sigKillScheduler)
 
@@ -91,6 +98,8 @@ func (or *orchestrator) closeServices() {
 
 	// signal the services to close
 	or.sys.close()
+	or.sws.close()
+	or.swd.close()
 	or.mon.close()
 	or.txd.close()
 	or.acq.close()
@@ -114,13 +123,17 @@ func (or *orchestrator) setTrxChannel(ch chan *types.Transaction) {
 
 // init initiates the orchestrator work.
 func (or *orchestrator) init(cfg *config.Repository) {
-	// create a channel for transaction dispatcher
+	// create a channel for transaction and swap dispatcher
 	or.trxBuffer = make(chan *evtTransaction, trxDispatchBufferCapacity)
+	or.swapBuffer = make(chan *evtSwap, swapDispatchBufferCapacity)
 	or.accountQueue = make(chan *accountQueueRequest, accountQueueLength)
 	or.contractCallsQueue = make(chan *types.Transaction, contractCallQueueLength)
 
 	// make the transaction dispatcher; it starts dispatching immediately
 	or.txd = newTrxDispatcher(or.trxBuffer, or.repo, or.log, or.wg)
+
+	// make the swap dispatcher; it starts dispatching immediately
+	or.swd = newSwapDispatcher(or.swapBuffer, or.repo, or.log, or.wg)
 
 	// make the account queue handler; it starts processing immediately
 	or.acq = newAccountQueue(or.accountQueue, or.repo, or.log, or.wg)
@@ -131,6 +144,10 @@ func (or *orchestrator) init(cfg *config.Repository) {
 	// create sync scanner; it starts scanning immediately
 	or.sysDone = make(chan bool, 1)
 	or.sys = newScanner(or.trxBuffer, or.sysDone, or.repo, or.log, or.wg)
+
+	// create swap scanner, which loads uniswaps to local db immediately
+	or.swsDone = make(chan bool, 1)
+	or.sws = newUniswapScanner(or.swapBuffer, or.swsDone, or.repo, or.log, or.wg)
 
 	// create block monitor; it waits for sync scanner to finish
 	or.reScan = make(chan bool, 1)
@@ -156,6 +173,8 @@ func (or *orchestrator) orchestrate() {
 		or.wg.Done()
 	}()
 
+	var blokSync, swapSync bool
+
 	// wait for either stop signal, or scanner to finish
 	for {
 		select {
@@ -163,11 +182,9 @@ func (or *orchestrator) orchestrate() {
 			// stop signal received?
 			return
 		case <-or.sysDone:
-			// log action
-			or.log.Notice("synchronization finished")
-
-			// scanner is done, start monitoring
-			or.mon.run()
+			blokSync = true
+		case <-or.swsDone:
+			swapSync = true
 		case <-or.reScan:
 			// advance counter
 			or.reScanCounter++
@@ -178,6 +195,13 @@ func (or *orchestrator) orchestrate() {
 			// start re-scan scheduler
 			or.wg.Add(1)
 			go or.scheduleRescan()
+		}
+		if blokSync && swapSync {
+			// log action
+			or.log.Notice("synchronization finished")
+
+			// scanner is done, start monitoring
+			or.mon.run()
 		}
 	}
 }

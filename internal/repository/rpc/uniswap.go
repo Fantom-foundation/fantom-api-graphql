@@ -15,10 +15,11 @@ package rpc
 
 import (
 	"fantom-api-graphql/internal/repository/rpc/contracts"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"math/big"
 )
 
 //go:generate abigen --abi ./contracts/abi/uniswap-factory.abi --pkg contracts --type UniswapFactory --out ./contracts/uniswap_factory.go
@@ -300,4 +301,14 @@ func (ftm *FtmBridge) UniswapLastKValue(pair *common.Address) (hexutil.Big, erro
 	}
 
 	return hexutil.Big(*k), nil
+}
+
+// UniswapPairContract returns instance of this contract according to given pair address
+func (ftm *FtmBridge) UniswapPairContract(pairAddres *common.Address) (*contracts.UniswapPair, error) {
+	contract, err := contracts.NewUniswapPair(*pairAddres, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("Uniswap pair contract %s not found; %s", pairAddres.String(), err.Error())
+		return nil, err
+	}
+	return contract, nil
 }

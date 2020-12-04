@@ -1,6 +1,9 @@
 package repository
 
 import (
+	"fantom-api-graphql/internal/repository/rpc/contracts"
+	"fantom-api-graphql/internal/types"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -65,4 +68,19 @@ func (p *proxy) UniswapCumulativePrices(pair *common.Address) ([]hexutil.Big, er
 // UniswapLastKValue returns the last value of the pool control coefficient.
 func (p *proxy) UniswapLastKValue(pair *common.Address) (hexutil.Big, error) {
 	return p.rpc.UniswapLastKValue(pair)
+}
+
+// UniswapPairContract returns instance of this contract according to given pair address
+func (p *proxy) UniswapPairContract(pairAddres *common.Address) (*contracts.UniswapPair, error) {
+	return p.rpc.UniswapPairContract(pairAddres)
+}
+
+// UniswapAdd notifies a new incoming swap from blockchain to the repository.
+func (p *proxy) UniswapAdd(swap *types.Swap) error {
+	return p.db.UniswapAdd(swap)
+}
+
+// LastKnownSwapBlock returns number of the last block known to the repository with the swap event.
+func (p *proxy) LastKnownSwapBlock() (uint64, error) {
+	return p.db.LastKnownSwapBlock()
 }
