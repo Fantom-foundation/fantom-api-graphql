@@ -138,7 +138,7 @@ func (ftm *FtmBridge) FMintTokenPrice(token *common.Address) (hexutil.Big, error
 	val, err := oracle.GetPrice(nil, *token)
 	if err != nil {
 		ftm.log.Errorf("price not available for token %s; %s", token.String(), err.Error())
-		return hexutil.Big{}, err
+		return hexutil.Big{}, nil
 	}
 
 	// do we have the value?
