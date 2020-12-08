@@ -106,14 +106,14 @@ func (sws *uniswapScanner) scan(lnb uint64) {
 		}
 
 		// process swaps
-		processSwaps(sws, contract, &pair, &opts)
+		sws.processSwaps(contract, &pair, &opts)
 
 		// here will proccess also Burn, Mint events
 	}
 }
 
 // processSwaps loops thru filtered swaps and adds them into the chanel for processing
-func processSwaps(sws *uniswapScanner, contract *contracts.UniswapPair, pair *common.Address, filter *bind.FilterOpts) {
+func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *common.Address, filter *bind.FilterOpts) {
 
 	var (
 		toSend *evtSwap
