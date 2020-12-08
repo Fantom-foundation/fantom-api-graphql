@@ -84,3 +84,8 @@ func (p *proxy) UniswapAdd(swap *types.Swap) error {
 func (p *proxy) LastKnownSwapBlock() (uint64, error) {
 	return p.db.LastKnownSwapBlock()
 }
+
+// UniswapFactoryContract returns an instance of an Uniswap factory
+func (p *proxy) UniswapFactoryContract() (*contracts.UniswapFactory, error) {
+	return p.rpc.UniswapFactoryContract()
+}

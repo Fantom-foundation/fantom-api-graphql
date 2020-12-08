@@ -347,6 +347,9 @@ type Repository interface {
 	// LastKnownSwapBlock returns number of the last block known to the repository with swap event.
 	LastKnownSwapBlock() (uint64, error)
 
+	// UniswapFactoryContract returns an instance of an Uniswap factory
+	UniswapFactoryContract() (*contracts.UniswapFactory, error)
+
 	// NativeTokenAddress returns address of the native token wrapper, if available.
 	NativeTokenAddress() (*common.Address, error)
 

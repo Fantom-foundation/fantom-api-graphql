@@ -312,3 +312,14 @@ func (ftm *FtmBridge) UniswapPairContract(pairAddres *common.Address) (*contract
 	}
 	return contract, nil
 }
+
+// UniswapFactoryContract returns an instance of an Uniswap factory
+func (ftm *FtmBridge) UniswapFactoryContract() (*contracts.UniswapFactory, error) {
+	// get the router contract if possible
+	contract, err := contracts.NewUniswapFactory(ftm.uniswapConfig.Core, ftm.eth)
+	if err != nil {
+		ftm.log.Errorf("Uniswap factory contract not found; %s", err.Error())
+		return nil, err
+	}
+	return contract, nil
+}
