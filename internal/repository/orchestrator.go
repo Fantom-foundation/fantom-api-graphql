@@ -42,6 +42,7 @@ type orchestrator struct {
 	sys *scanner
 	sws *uniswapScanner
 	swd *swapDispatcher
+	smo *UniswapMonitor
 	mon *blockMonitor
 	sti *stiMonitor
 	acq *accountQueue
@@ -100,6 +101,7 @@ func (or *orchestrator) closeServices() {
 	or.sys.close()
 	or.sws.close()
 	or.swd.close()
+	or.smo.close()
 	or.mon.close()
 	or.txd.close()
 	or.acq.close()
@@ -153,6 +155,8 @@ func (or *orchestrator) init(cfg *config.Repository) {
 	or.reScan = make(chan bool, 1)
 	or.mon = NewBlockMonitor(or.repo.FtmConnection(), or.trxBuffer, or.reScan, or.repo, or.log, or.wg)
 
+	or.smo = NewUniswapMonitor(or.repo.FtmConnection(), or.swapBuffer, or.repo, or.log, or.wg)
+
 	// create staker information monitor; it starts right away on slow peace
 	if cfg.MonitorStakers {
 		or.sti = newStiMonitor(or.repo, or.log, or.wg)
@@ -202,6 +206,7 @@ func (or *orchestrator) orchestrate() {
 
 			// scanner is done, start monitoring
 			or.mon.run()
+			or.smo.run()
 		}
 	}
 }
@@ -230,6 +235,7 @@ func (or *orchestrator) scheduleRescan() {
 			return
 		case <-time.After(dur):
 			or.sys.run()
+			or.sws.run()
 			return
 		}
 	}
