@@ -30,7 +30,9 @@ func init() {
 // PrintVersion prints the version information
 // into the std output.
 func PrintVersion(cfg *config.Config) {
-	fmt.Printf("%sApp Name:%s\t%s\n", Blue, Reset, cfg.AppName)
+	if cfg != nil {
+		fmt.Printf("%sApp Name:%s\t%s\n", Blue, Reset, cfg.AppName)
+	}
 	fmt.Printf("%sApp Version:%s\t%s\n", Blue, Reset, Version)
 	fmt.Printf("%sCommit Hash:%s\t%s\n", Blue, Reset, Commit)
 	fmt.Printf("%sCommit Time:%s\t%s\n", Blue, Reset, CommitTime)
@@ -40,5 +42,8 @@ func PrintVersion(cfg *config.Config) {
 
 // Short returns a short, single line version of the app.
 func Short(cfg *config.Config) string {
+	if cfg == nil {
+		return fmt.Sprintf("v%s, commit:%s, build:%s", Version, Commit, Time)
+	}
 	return fmt.Sprintf("%s v%s, commit:%s, build:%s", cfg.AppName, Version, Commit, Time)
 }

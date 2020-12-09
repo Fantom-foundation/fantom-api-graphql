@@ -5,14 +5,11 @@ import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/graphql/resolvers"
 	"fantom-api-graphql/internal/handlers"
-	"flag"
-	"net/http"
-
-	/* "fantom-api-graphql/internal/handlers" */
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository"
+	"flag"
 	"log"
-	/* "net/http" */
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
