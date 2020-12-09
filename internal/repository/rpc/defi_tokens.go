@@ -118,7 +118,7 @@ func (ftm *FtmBridge) defiTokensList(contract *contracts.DefiFMintTokenRegistry)
 	}
 
 	// make a container for tokens
-	list := make([]types.DefiToken, len(al))
+	list := make([]types.DefiToken, 0)
 
 	// load all the tokens in the contract
 	for i, addr := range al {
@@ -129,8 +129,10 @@ func (ftm *FtmBridge) defiTokensList(contract *contracts.DefiFMintTokenRegistry)
 			return nil, err
 		}
 
-		// add the token
-		list[i] = *tk
+		// add the token if it's still active
+		if tk.IsActive {
+			list = append(list, *tk)
+		}
 	}
 
 	return list, nil
