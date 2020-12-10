@@ -120,8 +120,8 @@ func (um *UniswapMonitor) monitorUniswapFactoryPairCreation() {
 	}
 
 	// create channel for capturing event for new pair creation
-	newPairEvtChannel := make(chan *contracts.UniswapFactoryPairCreated)
-	newPairEvtSubscription, err := uniswapFactory.WatchPairCreated(&bind.WatchOpts{}, newPairEvtChannel, nil, nil)
+	um.newPairEvtCh = make(chan *contracts.UniswapFactoryPairCreated)
+	newPairEvtSubscription, err := uniswapFactory.WatchPairCreated(&bind.WatchOpts{}, um.newPairEvtCh, nil, nil)
 	if err != nil {
 		um.log.Errorf("Cannot subscribe to Uniswap Factory Contract for tracking new pair creation; %s", err.Error())
 		return
@@ -133,7 +133,7 @@ func (um *UniswapMonitor) monitorUniswapFactoryPairCreation() {
 	um.log.Noticef("Starting Uniswap factory monitor for new pairs.")
 
 	// listen on subscribed channel for newly created pairs and create monitor for them afterwards
-	for val := range newPairEvtChannel {
+	for val := range um.newPairEvtCh {
 		um.startPairMonitor(&val.Pair)
 	}
 }
