@@ -13,7 +13,10 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
-import "github.com/ethereum/go-ethereum/common/hexutil"
+import (
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+)
 
 // GasPrice resolves the current amount of WEI for single Gas.
 func (ftm *FtmBridge) GasPrice() (hexutil.Uint64, error) {
@@ -37,4 +40,25 @@ func (ftm *FtmBridge) GasPrice() (hexutil.Uint64, error) {
 	// inform and return
 	ftm.log.Debugf("current gas price is %d", uint64(price.ToInt().Uint64()))
 	return hexutil.Uint64(price.ToInt().Uint64()), nil
+}
+
+// GasEstimate calculates the estimated amount of Gas required to perform
+// transaction described by the input params.
+func (ftm *FtmBridge) GasEstimate(trx *struct {
+	From  *common.Address
+	To    *common.Address
+	Value *hexutil.Big
+	Data  *string
+}) *hexutil.Uint64 {
+	// keep track of the operation
+	ftm.log.Debugf("calling for gas amount estimation")
+
+	var val hexutil.Uint64
+	err := ftm.rpc.Call(&val, "ftm_estimateGas", trx)
+	if err != nil {
+		ftm.log.Errorf("can not estimate gas; %s", err.Error())
+		return nil
+	}
+
+	return &val
 }

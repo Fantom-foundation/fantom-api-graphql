@@ -1473,6 +1473,10 @@ type Query {
     # Returns the current price per gas in WEI units.
     gasPrice: Long!
 
+    # estimateGas returns the estimated amount of gas required
+    # for the transaction described by the parameters of the call.
+    estimateGas(from: Address, to: Address, value: BigInt, data: String): Long
+
     # Get price details of the Opera blockchain token for the given target symbols.
     price(to:String!):Price!
 
@@ -1505,7 +1509,7 @@ type Query {
     # for the given list of ballots identified by an array of ballot
     # addresses.
     votes(voter:Address!, ballots:[Address!]!):[Vote!]!
-    
+
     # defiConfiguration exposes the current DeFi contract setup.
     defiConfiguration:DefiSettings!
 

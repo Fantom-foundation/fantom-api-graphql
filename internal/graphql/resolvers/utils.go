@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"io"
 )
@@ -17,6 +18,17 @@ func (rs *rootResolver) Price(args *struct{ To string }) (types.Price, error) {
 // GasPrice resolves the current amount of WEI for single Gas.
 func (rs *rootResolver) GasPrice() (hexutil.Uint64, error) {
 	return rs.repo.GasPrice()
+}
+
+// EstimateGas resolves the estimated amount of Gas required to perform
+// transaction described by the input params.
+func (rs *rootResolver) EstimateGas(args struct {
+	From  *common.Address
+	To    *common.Address
+	Value *hexutil.Big
+	Data  *string
+}) *hexutil.Uint64 {
+	return rs.repo.GasEstimate(&args)
 }
 
 // uuid generates new random subscription UUID
