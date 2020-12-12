@@ -16,6 +16,7 @@ package rpc
 import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"strings"
 )
 
 // GasPrice resolves the current amount of WEI for single Gas.
@@ -38,7 +39,7 @@ func (ftm *FtmBridge) GasPrice() (hexutil.Uint64, error) {
 	}
 
 	// inform and return
-	ftm.log.Debugf("current gas price is %d", uint64(price.ToInt().Uint64()))
+	ftm.log.Debugf("current gas price is %d", price.ToInt().Uint64())
 	return hexutil.Uint64(price.ToInt().Uint64()), nil
 }
 
@@ -56,6 +57,36 @@ func (ftm *FtmBridge) GasEstimate(trx *struct {
 	var val hexutil.Uint64
 	err := ftm.rpc.Call(&val, "ftm_estimateGas", trx)
 	if err != nil {
+		// missing required argument? incompatibility between old and new RPC API
+		if strings.Contains(err.Error(), "missing value") {
+			return ftm.GasEstimateWithBlock(trx)
+		}
+
+		// return error
+		ftm.log.Errorf("can not estimate gas; %s", err.Error())
+		return nil
+	}
+
+	return &val
+}
+
+// GasEstimateWithBlock calculates the estimated amount of Gas required to perform
+// transaction described by the input params with specifying the block on which the calculation
+// should happen (new RPC API compatibility).
+// @TODO Replace the old gas estimate call once the API gets upgraded on all nodes.
+func (ftm *FtmBridge) GasEstimateWithBlock(trx *struct {
+	From  *common.Address
+	To    *common.Address
+	Value *hexutil.Big
+	Data  *string
+}) *hexutil.Uint64 {
+	// keep track of the operation
+	ftm.log.Debugf("calling for gas amount estimation with block details")
+
+	var val hexutil.Uint64
+	err := ftm.rpc.Call(&val, "ftm_estimateGas", trx, BlockTypeLatest)
+	if err != nil {
+		// return error
 		ftm.log.Errorf("can not estimate gas; %s", err.Error())
 		return nil
 	}
