@@ -290,6 +290,14 @@ func (db *MongoDbBridge) Contract(addr *common.Address) (*types.Contract, error)
 		return nil, err
 	}
 
+	// decode special data
+	con.Address = types.Address(common.HexToAddress(con.RawAddress))
+	con.TransactionHash = types.Hash(common.HexToHash(con.RawTransactionHash))
+	if nil != con.RawSourceCodeHash {
+		hs := types.HexToHash(*con.RawSourceCodeHash)
+		con.SourceCodeHash = &hs
+	}
+
 	// reset some pre-initialized and empty data
 	if nil != con.Validated && 0 == *con.Validated {
 		con.Validated = nil
@@ -545,6 +553,14 @@ func (db *MongoDbBridge) contractListLoad(col *mongo.Collection, validatedOnly b
 		if err := ld.Decode(&con); err != nil {
 			db.log.Errorf("can not decode contract the list row; %s", err.Error())
 			return err
+		}
+
+		// decode special data
+		con.Address = types.Address(common.HexToAddress(con.RawAddress))
+		con.TransactionHash = types.Hash(common.HexToHash(con.RawTransactionHash))
+		if nil != con.RawSourceCodeHash {
+			hs := types.HexToHash(*con.RawSourceCodeHash)
+			con.SourceCodeHash = &hs
 		}
 
 		// keep this one

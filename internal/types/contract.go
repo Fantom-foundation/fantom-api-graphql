@@ -18,10 +18,12 @@ type Contract struct {
 	OrdinalIndex uint64 `json:"index" bson:"orx"`
 
 	// Address represents the address of the contract
-	Address Address `json:"address" bson:"adr"`
+	Address    Address `json:"address"`
+	RawAddress string  `bson:"adr"`
 
 	// TransactionHash represents the hash of the contract deployment transaction.
-	TransactionHash Hash `json:"tx" bson:"trx"`
+	TransactionHash    Hash   `json:"tx"`
+	RawTransactionHash string `bson:"trx"`
 
 	// TimeStamp represents the unix timestamp of the contract deployment.
 	TimeStamp hexutil.Uint64 `json:"timestamp" bson:"ts"`
@@ -55,7 +57,8 @@ type Contract struct {
 
 	// SourceCodeHash represents a hash code of the stored contract
 	// source code. Is nil if the source code is not available.
-	SourceCodeHash *Hash `json:"soh,omitempty" bson:"src_hash,omitempty"`
+	SourceCodeHash    *Hash   `json:"soh,omitempty"`
+	RawSourceCodeHash *string `bson:"src_hash,omitempty"`
 
 	// ABI definition of the smart contract, if available.
 	Abi string `json:"abi,omitempty" bson:"abi,omitempty"`
