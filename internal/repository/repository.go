@@ -214,6 +214,15 @@ type Repository interface {
 	// GasPrice resolves the current amount of WEI for single Gas.
 	GasPrice() (hexutil.Uint64, error)
 
+	// GasEstimate calculates the estimated amount of Gas required to perform
+	// transaction described by the input params.
+	GasEstimate(*struct {
+		From  *common.Address
+		To    *common.Address
+		Value *hexutil.Big
+		Data  *string
+	}) *hexutil.Uint64
+
 	// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
 	SendTransaction(hexutil.Bytes) (*types.Transaction, error)
 

@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"io/ioutil"
 	"net/http"
@@ -28,6 +29,17 @@ const (
 // GasPrice resolves the current amount of WEI for single Gas.
 func (p *proxy) GasPrice() (hexutil.Uint64, error) {
 	return p.rpc.GasPrice()
+}
+
+// GasEstimate calculates the estimated amount of Gas required to perform
+// transaction described by the input params.
+func (p *proxy) GasEstimate(trx *struct {
+	From  *common.Address
+	To    *common.Address
+	Value *hexutil.Big
+	Data  *string
+}) *hexutil.Uint64 {
+	return p.rpc.GasEstimate(trx)
 }
 
 // Price returns a price information for the given target symbol.
