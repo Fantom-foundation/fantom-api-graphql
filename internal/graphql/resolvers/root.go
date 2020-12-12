@@ -150,6 +150,15 @@ type ApiResolver interface {
 	// GasPrice resolves the current amount of WEI for single Gas.
 	GasPrice() (hexutil.Uint64, error)
 
+	// EstimateGas resolves the estimated amount of Gas required to perform
+	// transaction described by the input params.
+	EstimateGas(struct {
+		From  *common.Address
+		To    *common.Address
+		Value *hexutil.Big
+		Data  *string
+	}) *hexutil.Uint64
+
 	// EstimateRewards resolves reward estimation for the given address or amount staked.
 	EstimateRewards(*struct {
 		Address *common.Address
