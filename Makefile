@@ -26,8 +26,18 @@ server:
 	-o $(GO_BIN)/apiserver \
 	./cmd/apiserver
 
+governance:
+	go build \
+	-o $(GO_BIN)/gvclear \
+	./cmd/gvclear
+
 .PHONY: help
+
+clean:
+	rm -rf $(GO_BIN)/*
+
 all: help
+
 help: Makefile
 	@echo
 	@echo "Choose a make command in "$(PROJECT)":"

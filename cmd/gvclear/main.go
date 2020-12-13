@@ -13,34 +13,22 @@ func main() {
 	// attach the node and prepare to process tasks
 	con, err := attach(cfg)
 	if err != nil {
-		fmt.Printf("Cleanup failed!")
+		fmt.Println("Cleanup failed!")
 		return
 	}
 
 	// process tasks
-	if err := processTasks(con); err != nil {
-		fmt.Printf("Cleanup failed!")
+	if err := handleTasks(con); err != nil {
+		fmt.Println("Cleanup failed!")
 		return
 	}
 
 	// cleanup tasks
-
-	// close connection
-
-	// we are done here
-	fmt.Printf("Done.")
-}
-
-// processTasks processes the pending tasks on Governance contract.
-func processTasks(con *connector) error {
-	// get the number of tasks
-	tasks, err := con.gov.TasksCount(defaultCallOpts(&con.key.From, con.client))
-	if err != nil {
-		fmt.Printf("Can not count pending tasks!\n%s", err.Error())
-		return err
+	if err := cleanupTasks(con); err != nil {
+		fmt.Println("Cleanup failed!")
+		return
 	}
 
-	// log what we have
-	fmt.Printf("Found %d pending tasks.", tasks.Uint64())
-	return nil
+	// we are done here
+	fmt.Println("Done.")
 }

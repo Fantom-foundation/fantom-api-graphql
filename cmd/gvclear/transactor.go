@@ -25,7 +25,7 @@ func mustBlockHeight(con *ethclient.Client) *big.Int {
 	// get the current block number
 	blk, err := con.BlockNumber(context.Background())
 	if err != nil {
-		fmt.Printf("Con not get the current block height!\n%s", err.Error())
+		fmt.Printf("Can not get the current block height!\n%s\n", err.Error())
 		return nil
 	}
 
