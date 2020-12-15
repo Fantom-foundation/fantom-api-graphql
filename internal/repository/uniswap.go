@@ -89,3 +89,15 @@ func (p *proxy) LastKnownSwapBlock() (uint64, error) {
 func (p *proxy) UniswapFactoryContract() (*contracts.UniswapFactory, error) {
 	return p.rpc.UniswapFactoryContract()
 }
+
+// UniswapVolume returns swap volume for specified uniswap pair
+// If toTime = 0, then it resolves volumes till now
+func (p *proxy) UniswapVolume(pairAddress *common.Address, fromTime int64, toTime int64) (types.DefiSwapVolume, error) {
+	return p.db.UniswapVolume(pairAddress, fromTime, toTime)
+}
+
+// UniswapTimeVolumes returns daily swap volume for specified uniswap pair and period of time
+// If toTime = 0, then it resolves volumes till now
+func (p *proxy) UniswapTimeVolumes(pairAddress *common.Address, fromTime int64, toTime int64) ([]types.DefiSwapVolume, error) {
+	return p.db.UniswapTimeVolumes(pairAddress, fromTime, toTime)
+}

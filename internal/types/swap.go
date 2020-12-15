@@ -54,3 +54,19 @@ func UnmarshalSwap(data []byte) (*Swap, error) {
 func (swap *Swap) Marshal() ([]byte, error) {
 	return json.Marshal(swap)
 }
+
+// DefiSwapVolume represents a calculated volume for swap pairs in history
+type DefiSwapVolume struct {
+
+	// PairAddress is an address of the listed pair
+	PairAddress *common.Address
+
+	// Volume is a swap voolume for specified period
+	Volume *big.Int
+
+	// IsInFUSD true if volumes can be denominated to fUSD
+	IsInFUSD bool
+
+	// DateString represents time tag for this volume
+	DateString string
+}
