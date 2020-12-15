@@ -161,6 +161,13 @@ type Query {
     # Please note "amountsIn" must be in the same order as are the tokens.
     defiUniswapQuoteLiquidity(tokens:[Address!]!, amountsIn:[BigInt!]!): [BigInt!]!
 
+    # defiUniswapVolumes represents a list of pairs and their historical values
+    # of traded volumes
+    defiUniswapVolumes:[DefiUniswapVolume!]!
+
+    # defiTimeVolumes returns daily volumes for specified pair and time
+    defiTimeVolumes(address:Address!, fromDate:Int, toDate:Int):[DefiTimeVolume!]!
+
     # erc20Token provides the information about an ERC20 token specified by it's
     # address, if available. The resolver returns NULL if the token does not exist.
     erc20Token(token: Address!):ERC20Token
