@@ -42,3 +42,44 @@ type UniswapPair {
     shareOf(user: Address!): BigInt!
 }
 
+
+# DefiUniswapVolume represents a calculated volume for swap pairs in history 
+type DefiUniswapVolume {
+
+    # UniswapPair represents the information about single
+    # Uniswap pair managed by the Uniswap Core.
+    uniswapPair: UniswapPair!
+
+    # pairAddress represents the Address of the Pair
+    pairAddress: Address!
+
+    # dailyVolume returns swap volume for last 24 hours
+    dailyVolume: BigInt!
+
+    # weeklyVolume returns swap volume for last 7 days
+    weeklyVolume: BigInt!
+
+    # monthlyVolume returns swap volume for last month
+    monthlyVolume: BigInt!
+
+    # YearlyVolume returns swap volume for last year
+    yearlyVolume: BigInt!
+
+    # IsInFUSD indicates if TokenA from the pair has a price value to be able
+    # to calculate value in fUSD
+    isInFUSD: Boolean!
+    
+}
+
+# DefiSwaps represents swap volume for given pair and time interval
+type DefiTimeVolume {
+
+    # pairAddress represents the Address of the Pair
+    pairAddress: Address!
+
+    # time indicates a period for this volume
+    time: String!
+
+    # value represents amount of the volume
+    value: BigInt!
+}
