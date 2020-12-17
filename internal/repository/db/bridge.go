@@ -6,6 +6,7 @@ import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
 	"fmt"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -21,6 +22,7 @@ type MongoDbBridge struct {
 	initAccounts     bool
 	initTransactions bool
 	initContracts    bool
+	initSwaps        bool
 }
 
 // New creates a new Mongo Db connection bridge.
@@ -143,6 +145,7 @@ func (db *MongoDbBridge) CheckDatabaseInitState() {
 	db.checkAccountCollectionState()
 	db.checkTransactionCollectionState()
 	db.checkContractCollectionState()
+	db.checkUniswapCollectionState()
 }
 
 // checkAccountCollectionState checks the Accounts collection state.
@@ -183,6 +186,26 @@ func (db *MongoDbBridge) checkTransactionCollectionState() {
 	// we have to init accounts
 	db.log.Notice("transactions collection empty")
 	db.initTransactions = true
+}
+
+// checkUniswapCollectionState checks the uniswap collection state.
+func (db *MongoDbBridge) checkUniswapCollectionState() {
+	// get the collection for uniswap swaps
+	count, err := db.SwapCount()
+	if err != nil {
+		db.log.Errorf("can not check uniswap collection; %s", err.Error())
+		return
+	}
+
+	// swaps already initialized
+	if 0 != count {
+		db.log.Debugf("%d swaps in database", count)
+		return
+	}
+
+	// we have to init swaps
+	db.log.Notice("swaps collection empty")
+	db.initSwaps = true
 }
 
 // checkTransactionCollectionState checks the Transactions collection state.

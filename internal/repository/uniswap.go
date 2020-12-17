@@ -1,6 +1,9 @@
 package repository
 
 import (
+	"fantom-api-graphql/internal/repository/rpc/contracts"
+	"fantom-api-graphql/internal/types"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -65,4 +68,36 @@ func (p *proxy) UniswapCumulativePrices(pair *common.Address) ([]hexutil.Big, er
 // UniswapLastKValue returns the last value of the pool control coefficient.
 func (p *proxy) UniswapLastKValue(pair *common.Address) (hexutil.Big, error) {
 	return p.rpc.UniswapLastKValue(pair)
+}
+
+// UniswapPairContract returns instance of this contract according to given pair address
+func (p *proxy) UniswapPairContract(pairAddres *common.Address) (*contracts.UniswapPair, error) {
+	return p.rpc.UniswapPairContract(pairAddres)
+}
+
+// UniswapAdd notifies a new incoming swap from blockchain to the repository.
+func (p *proxy) UniswapAdd(swap *types.Swap) error {
+	return p.db.UniswapAdd(swap)
+}
+
+// LastKnownSwapBlock returns number of the last block known to the repository with the swap event.
+func (p *proxy) LastKnownSwapBlock() (uint64, error) {
+	return p.db.LastKnownSwapBlock()
+}
+
+// UniswapFactoryContract returns an instance of an Uniswap factory
+func (p *proxy) UniswapFactoryContract() (*contracts.UniswapFactory, error) {
+	return p.rpc.UniswapFactoryContract()
+}
+
+// UniswapVolume returns swap volume for specified uniswap pair
+// If toTime = 0, then it resolves volumes till now
+func (p *proxy) UniswapVolume(pairAddress *common.Address, fromTime int64, toTime int64) (types.DefiSwapVolume, error) {
+	return p.db.UniswapVolume(pairAddress, fromTime, toTime)
+}
+
+// UniswapTimeVolumes returns daily swap volume for specified uniswap pair and period of time
+// If toTime = 0, then it resolves volumes till now
+func (p *proxy) UniswapTimeVolumes(pairAddress *common.Address, resolution string, fromTime int64, toTime int64) ([]types.DefiSwapVolume, error) {
+	return p.db.UniswapTimeVolumes(pairAddress, resolution, fromTime, toTime)
 }

@@ -3,15 +3,32 @@ package resolvers
 import (
 	"fantom-api-graphql/internal/repository"
 	"fmt"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"math/big"
 )
 
 // UniswapPair represents a pair of tokens in Uniswap protocol.
 type UniswapPair struct {
 	repo        repository.Repository
 	PairAddress common.Address
+}
+
+// UniswapPairVolume represents swap volume data
+type UniswapPairVolume struct {
+	*UniswapPair
+	PairAddress common.Address
+	InFUSD      bool
+	TokenPrice  hexutil.Big
+}
+
+// DefiTimeVolume represents swap volume for given pair and time interval
+type DefiTimeVolume struct {
+	PairAddress common.Address
+	Time        string
+	Value       hexutil.Big
 }
 
 // NewUniswapPair creates a new instance of resolvable UniswapPair token.
@@ -176,6 +193,123 @@ func (up *UniswapPair) Tokens() ([]*ERC20Token, error) {
 	}
 
 	return list, nil
+}
+
+// DefiUniswapVolumes returns all swap pairs and their informations for swap volumes
+func (rs *rootResolver) DefiUniswapVolumes() []*UniswapPairVolume {
+
+	// create empty list as a result object
+	list := make([]*UniswapPairVolume, 0)
+
+	// iterate thru all Uniswap pairs
+	for _, pair := range rs.DefiUniswapPairs() {
+
+		tok, err := pair.Tokens()
+		if err != nil {
+			rs.repo.Log().Debugf("Cannot resolve tokens for pair %s : %v", pair.PairAddress.String(), err.Error())
+			return list
+		}
+
+		// get token price for denomination
+		isDenominated := true
+		tokenAPrice, err := rs.repo.DefiTokenPrice(&tok[0].Address)
+		if err != nil {
+			tokenAPrice = hexutil.Big{}
+			isDenominated = false
+		}
+
+		// fill result list
+		list = append(list, &UniswapPairVolume{
+			UniswapPair: pair,
+			PairAddress: pair.PairAddress,
+			TokenPrice:  tokenAPrice,
+			InFUSD:      isDenominated,
+		})
+	}
+
+	return list
+}
+
+func (upv *UniswapPairVolume) getVolumeTillNow(fromTime int64) (hexutil.Big, error) {
+	toTime := time.Now().UTC().Unix()
+	swapVolume, err := upv.repo.UniswapVolume(&upv.PairAddress, fromTime, toTime)
+	if err != nil {
+		return hexutil.Big{}, err
+	}
+	return hexutil.Big(*swapVolume.Volume), nil
+}
+
+// DailyVolume returns swap volume for last 24 hours
+func (upv *UniswapPairVolume) DailyVolume() (hexutil.Big, error) {
+	fromTime := time.Now().UTC().AddDate(0, 0, -1).Unix()
+	return upv.getVolumeTillNow(fromTime)
+}
+
+// WeeklyVolume returns swap volume for last 7 days
+func (upv *UniswapPairVolume) WeeklyVolume() (hexutil.Big, error) {
+	fromTime := time.Now().UTC().AddDate(0, 0, -7).Unix()
+	return upv.getVolumeTillNow(fromTime)
+}
+
+// MonthlyVolume returns swap volume for last month
+func (upv *UniswapPairVolume) MonthlyVolume() (hexutil.Big, error) {
+	fromTime := time.Now().UTC().AddDate(0, -1, 0).Unix()
+	return upv.getVolumeTillNow(fromTime)
+}
+
+// YearlyVolume returns swap volume for last year
+func (upv *UniswapPairVolume) YearlyVolume() (hexutil.Big, error) {
+	fromTime := time.Now().UTC().AddDate(-1, 0, 0).Unix()
+	return upv.getVolumeTillNow(fromTime)
+}
+
+// IsInFUSD indicates if TokenA from the pair has a price value to be able
+// to calculate value in fUSD
+func (upv *UniswapPairVolume) IsInFUSD() (bool, error) {
+	return upv.InFUSD, nil
+}
+
+// DefiTimeVolumes resolves daily swap volumes for given pair
+// If dates are not given, then it returns last month values
+func (rs *rootResolver) DefiTimeVolumes(args *struct {
+	Address    common.Address
+	Resolution *string
+	FromDate   *int32
+	ToDate     *int32
+}) []*DefiTimeVolume {
+
+	// create empty list as return value
+	list := make([]*DefiTimeVolume, 0)
+
+	var fDate, tDate int64
+	if args.FromDate != nil {
+		fDate = (int64)(*args.FromDate)
+	} else {
+		fDate = time.Now().UTC().AddDate(0, -1, 0).Unix()
+	}
+
+	resolution := ""
+	if args.Resolution != nil {
+		resolution = *args.Resolution
+	}
+	// get volumes from DB repository
+	swapVolumes, err := rs.repo.UniswapTimeVolumes(&args.Address, resolution, fDate, tDate)
+	if err != nil {
+		rs.log.Errorf("Can not get daily swap volumes from DB repository: %s", err.Error())
+		return list
+	}
+
+	// iterate thru results and build final list
+	for _, volume := range swapVolumes {
+
+		list = append(list, &DefiTimeVolume{
+			PairAddress: *volume.PairAddress,
+			Time:        volume.DateString,
+			Value:       hexutil.Big(*volume.Volume),
+		})
+	}
+
+	return list
 }
 
 // Reserves resolves a list of token reserves of the given Uniswap pair.

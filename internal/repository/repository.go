@@ -15,12 +15,14 @@ import (
 	"fantom-api-graphql/internal/repository/cache"
 	"fantom-api-graphql/internal/repository/db"
 	"fantom-api-graphql/internal/repository/rpc"
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ftm "github.com/ethereum/go-ethereum/rpc"
-	"math/big"
 )
 
 // Repository interface defines functions the underlying implementation provides to API resolvers.
@@ -344,6 +346,23 @@ type Repository interface {
 
 	// UniswapLastKValue returns the last value of the pool control coefficient.
 	UniswapLastKValue(*common.Address) (hexutil.Big, error)
+
+	// UniswapPairContract returns instance of this contract according to given pair address
+	UniswapPairContract(*common.Address) (*contracts.UniswapPair, error)
+
+	// UniswapAdd adds a new incoming swap from blockchain to the repository.
+	UniswapAdd(*types.Swap) error
+
+	// LastKnownSwapBlock returns number of the last block known to the repository with swap event.
+	LastKnownSwapBlock() (uint64, error)
+
+	// UniswapFactoryContract returns an instance of an Uniswap factory
+	UniswapFactoryContract() (*contracts.UniswapFactory, error)
+
+	// UniswapVolume returns swap volume for specified uniswap pair
+	UniswapVolume(*common.Address, int64, int64) (types.DefiSwapVolume, error)
+
+	UniswapTimeVolumes(*common.Address, string, int64, int64) ([]types.DefiSwapVolume, error)
 
 	// NativeTokenAddress returns address of the native token wrapper, if available.
 	NativeTokenAddress() (*common.Address, error)
