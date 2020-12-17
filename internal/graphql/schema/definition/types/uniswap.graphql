@@ -46,6 +46,10 @@ type UniswapPair {
 # DefiUniswapVolume represents a calculated volume for swap pairs in history 
 type DefiUniswapVolume {
 
+    # UniswapPair represents the information about single
+    # Uniswap pair managed by the Uniswap Core.
+    uniswapPair: UniswapPair!
+
     # pairAddress represents the Address of the Pair
     pairAddress: Address!
 

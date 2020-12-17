@@ -98,6 +98,6 @@ func (p *proxy) UniswapVolume(pairAddress *common.Address, fromTime int64, toTim
 
 // UniswapTimeVolumes returns daily swap volume for specified uniswap pair and period of time
 // If toTime = 0, then it resolves volumes till now
-func (p *proxy) UniswapTimeVolumes(pairAddress *common.Address, fromTime int64, toTime int64) ([]types.DefiSwapVolume, error) {
-	return p.db.UniswapTimeVolumes(pairAddress, fromTime, toTime)
+func (p *proxy) UniswapTimeVolumes(pairAddress *common.Address, resolution string, fromTime int64, toTime int64) ([]types.DefiSwapVolume, error) {
+	return p.db.UniswapTimeVolumes(pairAddress, resolution, fromTime, toTime)
 }

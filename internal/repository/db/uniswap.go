@@ -7,7 +7,6 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"math/big"
-	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -123,7 +122,7 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 		swapData(&bson.D{
 			{Key: fiSwapPk, Value: swapHash.String()},
 			{Key: fiSwapBlock, Value: uint64(*swap.BlockNumber)},
-			{Key: fiSwapDate, Value: primitive.NewDateTimeFromTime(time.Unix((int64)(*swap.TimeStamp), 0))},
+			{Key: fiSwapDate, Value: primitive.NewDateTimeFromTime(time.Unix((int64)(*swap.TimeStamp), 0).UTC())},
 		}, swap)); err != nil {
 
 		db.log.Critical(err)
@@ -318,7 +317,7 @@ func (db *MongoDbBridge) UniswapVolume(pairAddress *common.Address, fromTime int
 
 // UniswapTimeVolumes resolves volumes of swap trades for specified pair grouped by date interval.
 // If toTime is 0, then it calculates volumes till now
-func (db *MongoDbBridge) UniswapTimeVolumes(pairAddress *common.Address, fromTime int64, toTime int64) ([]types.DefiSwapVolume, error) {
+func (db *MongoDbBridge) UniswapTimeVolumes(pairAddress *common.Address, resolution string, fromTime int64, toTime int64) ([]types.DefiSwapVolume, error) {
 
 	fTime := primitive.NewDateTimeFromTime(time.Unix(fromTime, 0))
 
@@ -331,6 +330,51 @@ func (db *MongoDbBridge) UniswapTimeVolumes(pairAddress *common.Address, fromTim
 		dt = bson.D{{Key: "$gte", Value: fTime}}
 	}
 
+	// initial value set to 1 minute
+	mul := 60 * 1000
+
+	switch resolution {
+	case "month":
+		mul *= 30 * 24 * 60
+	case "day":
+		mul *= 24 * 60
+	case "4h":
+		mul *= 4 * 60
+	case "1h":
+		mul *= 60
+	case "30m":
+		mul *= 30
+	case "15m":
+		mul *= 15
+	case "5m":
+		mul *= 5
+	case "1m":
+		mul *= 1
+	default:
+		mul *= 24 * 60
+	}
+
+	format := "%Y-%m-%dT%H:%M:%S.000Z"
+
+	/*
+		// Idea behing grouping ios from this calculation of date
+			{ "$group": {
+		        "_id": {
+		            "$add": [
+		                { "$subtract": [
+		                    { "$subtract": [ "$current_date", new Date(0) ] },
+		                    { "$mod": [
+		                        { "$subtract": [ "$current_date", new Date(0) ] },
+		                        1000 * 60 * 15
+		                    ]}
+		                ] },
+		                new Date(0)
+		            ]
+		        },
+		        "count": { "$sum": 1 }
+			}}
+	*/
+
 	// create query pipeline
 	pipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{
@@ -338,19 +382,27 @@ func (db *MongoDbBridge) UniswapTimeVolumes(pairAddress *common.Address, fromTim
 			{Key: "pair", Value: pairAddress.String()}}}},
 		{{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: bson.D{
-				{Key: "year", Value: bson.D{
-					{Key: "$year", Value: "$date"}}},
-				{Key: "month", Value: bson.D{
-					{Key: "$month", Value: "$date"}}},
-				{Key: "day", Value: bson.D{
-					{Key: "$dayOfMonth", Value: "$date"}}}}},
+				{Key: "$dateToString", Value: bson.D{
+					{Key: "format", Value: format},
+					{Key: "date", Value: bson.D{
+						{Key: "$add", Value: bson.A{bson.D{
+							{Key: "$subtract", Value: bson.A{
+								bson.D{{Key: "$subtract", Value: bson.A{"$date", 0}}},
+								bson.D{{Key: "$mod", Value: bson.A{bson.D{
+									{Key: "$toLong", Value: bson.D{
+										{Key: "$subtract", Value: bson.A{"$date", 0}}}}},
+									mul}},
+								},
+							}}},
+							0}},
+					},
+					}}},
+			}},
 			{Key: "total", Value: bson.M{"$sum": bson.D{
 				{Key: "$add", Value: bson.A{"$am0in", "$am0out"}}}}},
 		}}},
 		{{Key: "$sort", Value: bson.D{
-			{Key: "_id.year", Value: -1},
-			{Key: "_id.month", Value: -1},
-			{Key: "_id.day", Value: -1},
+			{Key: "_id", Value: 1},
 		}}},
 	}
 
@@ -364,41 +416,19 @@ func (db *MongoDbBridge) UniswapTimeVolumes(pairAddress *common.Address, fromTim
 		fmt.Println(err.Error())
 		return list, nil
 	} else {
-
 		defer cursor.Close(context.Background())
-
-		// structure for maping data from db
-		type myDate struct {
-			Year  int `bson:"year"`
-			Month int `bson:"month"`
-			Day   int `bson:"day"`
-		}
-		// represents one single sum of volumes for specified pair
-		type volumeData struct {
-			ID    myDate `bson:"_id"`
-			Total int64  `bson:"total"`
-		}
 
 		// iterate thru results and construct data
 		for cursor.Next(context.Background()) {
-			var val volumeData
+			var val Volume
 			err := cursor.Decode(&val)
 			if err != nil {
 				fmt.Println(err.Error())
 			}
-			// adding first 0 for numbers 0..9 to have it in the string
-			day := strconv.Itoa(val.ID.Day)
-			if val.ID.Day < 10 {
-				day = "0" + day
-			}
-			mnt := strconv.Itoa(val.ID.Month)
-			if val.ID.Month < 10 {
-				mnt = "0" + mnt
-			}
 			def := types.DefiSwapVolume{
 				PairAddress: pairAddress,
 				Volume:      returnDecimals(big.NewInt(val.Total)),
-				DateString:  strconv.Itoa(val.ID.Year) + "-" + mnt + "-" + day,
+				DateString:  val.ID,
 			}
 			list = append(list, def)
 		}

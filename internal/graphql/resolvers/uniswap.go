@@ -18,9 +18,10 @@ type UniswapPair struct {
 
 // UniswapPairVolume represents swap volume data
 type UniswapPairVolume struct {
-	UniswapPair
-	InFUSD     bool
-	TokenPrice hexutil.Big
+	*UniswapPair
+	PairAddress common.Address
+	InFUSD      bool
+	TokenPrice  hexutil.Big
 }
 
 // DefiTimeVolume represents swap volume for given pair and time interval
@@ -219,7 +220,8 @@ func (rs *rootResolver) DefiUniswapVolumes() []*UniswapPairVolume {
 
 		// fill result list
 		list = append(list, &UniswapPairVolume{
-			UniswapPair: *pair,
+			UniswapPair: pair,
+			PairAddress: pair.PairAddress,
 			TokenPrice:  tokenAPrice,
 			InFUSD:      isDenominated,
 		})
@@ -270,9 +272,10 @@ func (upv *UniswapPairVolume) IsInFUSD() (bool, error) {
 // DefiTimeVolumes resolves daily swap volumes for given pair
 // If dates are not given, then it returns last month values
 func (rs *rootResolver) DefiTimeVolumes(args *struct {
-	Address  common.Address
-	FromDate *int32
-	ToDate   *int32
+	Address    common.Address
+	Resolution *string
+	FromDate   *int32
+	ToDate     *int32
 }) []*DefiTimeVolume {
 
 	// create empty list as return value
@@ -285,8 +288,12 @@ func (rs *rootResolver) DefiTimeVolumes(args *struct {
 		fDate = time.Now().UTC().AddDate(0, -1, 0).Unix()
 	}
 
+	resolution := ""
+	if args.Resolution != nil {
+		resolution = *args.Resolution
+	}
 	// get volumes from DB repository
-	swapVolumes, err := rs.repo.UniswapTimeVolumes(&args.Address, fDate, tDate)
+	swapVolumes, err := rs.repo.UniswapTimeVolumes(&args.Address, resolution, fDate, tDate)
 	if err != nil {
 		rs.log.Errorf("Can not get daily swap volumes from DB repository: %s", err.Error())
 		return list

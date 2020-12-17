@@ -353,7 +353,7 @@ type Repository interface {
 	// UniswapVolume returns swap volume for specified uniswap pair
 	UniswapVolume(*common.Address, int64, int64) (types.DefiSwapVolume, error)
 
-	UniswapTimeVolumes(*common.Address, int64, int64) ([]types.DefiSwapVolume, error)
+	UniswapTimeVolumes(*common.Address, string, int64, int64) ([]types.DefiSwapVolume, error)
 
 	// NativeTokenAddress returns address of the native token wrapper, if available.
 	NativeTokenAddress() (*common.Address, error)
