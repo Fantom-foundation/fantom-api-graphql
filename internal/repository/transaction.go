@@ -233,6 +233,18 @@ func (p *proxy) queueAccount(
 	ccHash *types.Hash,
 	callback func(*types.Transaction),
 ) {
+	// make sure the data is valid
+	if block == nil || trx == nil {
+		p.log.Error("unknown block or transaction")
+		return
+	}
+
+	// make sure we do have the queue to push to
+	if p.orc.accountQueue == nil {
+		p.log.Critical("account queue not available")
+		return
+	}
+
 	// what account type is this
 	t := types.AccountTypeWallet
 	if ccHash != nil {

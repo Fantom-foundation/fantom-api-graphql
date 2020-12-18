@@ -75,6 +75,7 @@ func (td *trxDispatcher) dispatch() {
 			}
 		case <-td.sigStop:
 			// stop the routine
+			td.log.Info("trx dispatcher received stop signal")
 			return
 		}
 	}
