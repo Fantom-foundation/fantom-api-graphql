@@ -38,15 +38,12 @@ type blockMonitor struct {
 // NewBlockMonitor creates a new block monitor instance.
 func NewBlockMonitor(con *ftm.Client, buffer chan *evtTransaction, rescan chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *blockMonitor {
 	// create new scanner instance
-	mo := blockMonitor{
+	return &blockMonitor{
 		service: newService("block monitor", repo, log, wg),
 		txChan:  buffer,
 		reScan:  rescan,
 		con:     con,
 	}
-
-	// start the scanner job
-	return &mo
 }
 
 // run starts monitoring for new transaction

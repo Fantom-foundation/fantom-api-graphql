@@ -25,15 +25,11 @@ type scanner struct {
 // newScanner creates new blockchain scanner service.
 func newScanner(buffer chan *evtTransaction, isDone chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *scanner {
 	// create new scanner instance
-	sc := scanner{
+	return &scanner{
 		service: newService("scanner", repo, log, wg),
 		buffer:  buffer,
 		isDone:  isDone,
 	}
-
-	// start the scanner job
-	sc.run()
-	return &sc
 }
 
 // scan initializes the scanner and starts scanning

@@ -37,18 +37,17 @@ func newContractCallQueue(
 	wg *sync.WaitGroup,
 ) *contractCallQueue {
 	// create new instance
-	cq := contractCallQueue{
+	return &contractCallQueue{
 		service: newService("contract calls queue", repo, log, wg),
 		buffer:  buffer,
 	}
-
-	// start the scanner job
-	cq.run()
-	return &cq
 }
 
 // run starts the account queue to life.
 func (cq *contractCallQueue) run() {
+	// log the action
+	cq.log.Notice("starting contract queue dispatcher")
+
 	// start scanner
 	cq.wg.Add(1)
 	go cq.monitorContractCalls()

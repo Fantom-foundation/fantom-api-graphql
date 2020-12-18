@@ -30,20 +30,15 @@ type uniswapScanner struct {
 // newUniswapScanner creates new blockchain scanner service.
 func newUniswapScanner(buffer chan *evtSwap, isDone chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *uniswapScanner {
 	// create new scanner instance
-	sc := uniswapScanner{
+	return &uniswapScanner{
 		service: newService("uniswap scanner", repo, log, wg),
 		buffer:  buffer,
 		isDone:  isDone,
 	}
-
-	// start the scanner job
-	sc.run()
-	return &sc
 }
 
 // scan initializes the scanner and starts scanning
 func (sws *uniswapScanner) run() {
-
 	// get the newest known swap block number
 	lnb, err := sws.repo.LastKnownSwapBlock()
 	if err != nil {

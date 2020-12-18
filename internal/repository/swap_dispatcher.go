@@ -28,19 +28,20 @@ type evtSwap struct {
 // newSwapDispatcher creates a new swap dispatcher instance.
 func newSwapDispatcher(buffer chan *evtSwap, repo Repository, log logger.Logger, wg *sync.WaitGroup) *swapDispatcher {
 	// create new dispatcher
-	sd := swapDispatcher{
+	return &swapDispatcher{
 		service: newService("swapDispatcher", repo, log, wg),
 		buffer:  buffer,
 	}
+}
 
+// run starts the transaction dispatcher job
+func (sd *swapDispatcher) run() {
 	// inform about the action
-	sd.log.Notice("starting swap dispatcher")
+	sd.log.Notice("starting uniswap dispatcher")
 
 	// add self to the wait group and run the dispatch routine
-	wg.Add(1)
+	sd.wg.Add(1)
 	go sd.dispatch()
-
-	return &sd
 }
 
 // dispatch implements the dispatcher reader and router routine.

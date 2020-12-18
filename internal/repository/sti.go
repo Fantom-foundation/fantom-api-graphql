@@ -33,14 +33,10 @@ type stiMonitor struct {
 // newScanner creates new blockchain scanner service.
 func newStiMonitor(repo Repository, log logger.Logger, wg *sync.WaitGroup) *stiMonitor {
 	// create new scanner instance
-	sti := stiMonitor{
+	return &stiMonitor{
 		service: newService("sti monitor", repo, log, wg),
 		onInit:  true,
 	}
-
-	// start the scanner job
-	sti.run()
-	return &sti
 }
 
 // run initializes and starts the staker information monitor.

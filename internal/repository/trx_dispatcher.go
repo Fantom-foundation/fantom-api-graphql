@@ -29,19 +29,20 @@ type evtTransaction struct {
 // NewTrxDispatcher creates a new transaction dispatcher instance.
 func newTrxDispatcher(buffer chan *evtTransaction, repo Repository, log logger.Logger, wg *sync.WaitGroup) *trxDispatcher {
 	// create new dispatcher
-	td := trxDispatcher{
+	return &trxDispatcher{
 		service: newService("dispatcher", repo, log, wg),
 		buffer:  buffer,
 	}
+}
 
+// run starts the transaction dispatcher job
+func (td *trxDispatcher) run() {
 	// inform about the action
-	td.log.Notice("starting dispatcher")
+	td.log.Notice("starting transaction dispatcher")
 
 	// add self to the wait group and run the dispatch routine
-	wg.Add(1)
+	td.wg.Add(1)
 	go td.dispatch()
-
-	return &td
 }
 
 // Dispatch implements the dispatcher reader and router routine.

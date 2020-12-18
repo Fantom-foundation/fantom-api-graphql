@@ -48,18 +48,17 @@ type accountQueue struct {
 // newAccountQueue creates new blockchain account analyzer queue service.
 func newAccountQueue(buffer chan *accountQueueRequest, repo Repository, log logger.Logger, wg *sync.WaitGroup) *accountQueue {
 	// create new instance
-	aq := accountQueue{
+	return &accountQueue{
 		service: newService("account queue", repo, log, wg),
 		buffer:  buffer,
 	}
-
-	// start the scanner job
-	aq.run()
-	return &aq
 }
 
 // run starts the account queue to life.
 func (aq *accountQueue) run() {
+	// log the action
+	aq.log.Notice("starting account queue dispatcher")
+
 	// start scanner
 	aq.wg.Add(1)
 	go aq.monitorAccounts()

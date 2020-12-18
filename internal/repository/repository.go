@@ -483,8 +483,9 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 		ballotSources: cfg.Voting.Sources,
 	}
 
-	// make the service orchestrator
+	// make the service orchestrator and start it's job
 	p.orc = newOrchestrator(&p, log, &cfg.Repository)
+	p.orc.run()
 
 	// return the proxy
 	return &p, nil
