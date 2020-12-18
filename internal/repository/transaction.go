@@ -239,6 +239,12 @@ func (p *proxy) queueAccount(
 		return
 	}
 
+	// do we have the orchestrator?
+	if p.orc == nil {
+		p.log.Critical("orchestrator not available")
+		return
+	}
+
 	// make sure we do have the queue to push to
 	if p.orc.accountQueue == nil {
 		p.log.Critical("account queue not available")
