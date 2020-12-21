@@ -193,7 +193,8 @@ func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *types.Hash) (b
 		return false, sr.Err()
 	}
 
-	// add swap to the db
+	// swap is known, jus log and return true
+	db.log.Debugf("Swap %s is already in database.", hash.String())
 	return true, nil
 }
 
@@ -209,6 +210,11 @@ func (db *MongoDbBridge) SwapCount() (uint64, error) {
 		return 0, err
 	}
 
+	// -1 is for confuiguration document with last correct swap block number
+	if total > 1 {
+		total--
+	}
+
 	// inform what we are about to do
 	db.log.Debugf("found %d swaps in off-chain database", total)
 	return uint64(total), nil
@@ -216,39 +222,74 @@ func (db *MongoDbBridge) SwapCount() (uint64, error) {
 
 // LastKnownSwapBlock returns number of the last known block stored in the database.
 func (db *MongoDbBridge) LastKnownSwapBlock() (uint64, error) {
-	// prep search options
-	opt := options.FindOne()
-	opt.SetSort(bson.D{{Key: fiSwapBlock, Value: -1}})
-	opt.SetProjection(bson.D{{Key: fiSwapBlock, Value: true}})
+
+	// search for document with last swap block number
+	query := bson.D{
+		{Key: "lastSwapSyncBlk", Value: bson.D{
+			{Key: "$exists", Value: "true"}}},
+	}
 
 	// get the swaps collection
 	col := db.client.Database(db.dbName).Collection(coUniswap)
-	res := col.FindOne(context.Background(), bson.D{}, opt)
+	res := col.FindOne(context.Background(), query)
 	if res.Err() != nil {
 		// may be no block at all
 		if res.Err() == mongo.ErrNoDocuments {
-			db.log.Info("no blocks found in database")
+			db.log.Info("No document with last swap block number in database starting from 0.")
 			return 0, nil
 		}
 
 		// log issue
-		db.log.Error("can not get the top block")
+		db.log.Error("Can not get the last correct swap block number, starting from 0.")
 		return 0, res.Err()
 	}
 
 	// get the actual value
 	var swap struct {
-		Block uint64 `bson:"blk"`
+		Block uint64 `bson:"lastSwapSyncBlk"`
 	}
 
 	// get the data
 	err := res.Decode(&swap)
 	if err != nil {
-		db.log.Error("can not decode the top block")
+		db.log.Error("Can not resolve id of the last correct swap block in db. Starting from 0.")
 		return 0, res.Err()
 	}
 
 	return swap.Block, nil
+}
+
+// UniswapUpdateLastKnownSwapBlock stores a last correctly saved swap block number into persistent storage.
+func (db *MongoDbBridge) UniswapUpdateLastKnownSwapBlock(blkNumber uint64) error {
+
+	// is valid block number
+	if blkNumber == 0 {
+		return fmt.Errorf("No need to store zero value, will start from 0 next time")
+	}
+
+	// document for update with last swap block number
+	query := bson.D{
+		{Key: "lastSwapSyncBlk", Value: bson.D{
+			{Key: "$exists", Value: "true"}}},
+	}
+
+	data := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "lastSwapSyncBlk", Value: blkNumber}}},
+	}
+
+	// get the collection for transactions and insert data
+	col := db.client.Database(db.dbName).Collection(coUniswap)
+	if _, err := col.UpdateOne(context.Background(),
+		query, data, options.Update().SetUpsert(true)); err != nil {
+
+		db.log.Critical(err)
+		return err
+	}
+
+	// log
+	db.log.Debugf("Block %d was set as a last correct uniswap block into database", blkNumber)
+	return nil
 }
 
 // Volume represents one single sum of volumes for specified pair

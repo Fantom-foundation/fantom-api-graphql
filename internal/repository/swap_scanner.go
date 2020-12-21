@@ -68,7 +68,7 @@ func (sws *uniswapScanner) scan(lnb uint64) {
 		sws.isDone <- true
 
 		// log finish
-		sws.log.Notice("blockchain scanner done")
+		sws.log.Notice("blockchain swap scanner done")
 
 		// signal to wait group we are done
 		sws.wg.Done()
@@ -93,6 +93,9 @@ func (sws *uniswapScanner) scan(lnb uint64) {
 		Context: context.Background(),
 	}
 
+	// variable for last known swap block number
+	var lastBlkNr uint64
+
 	// get filter for all pairs
 	for _, pair := range pairs {
 
@@ -106,73 +109,74 @@ func (sws *uniswapScanner) scan(lnb uint64) {
 		}
 
 		// process swaps
-		sws.processSwaps(contract, &pair, &opts)
-
-		// here will proccess also Burn, Mint events
+		blkNr := sws.processSwaps(contract, &pair, &opts)
+		if lastBlkNr < blkNr {
+			lastBlkNr = blkNr
+		}
 	}
+
+	// store/update last processed swap block number into db
+	sws.repo.UniswapUpdateLastKnownSwapBlock(lastBlkNr)
 }
 
 // processSwaps loops thru filtered swaps and adds them into the chanel for processing
-func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *common.Address, filter *bind.FilterOpts) {
+func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *common.Address, filter *bind.FilterOpts) uint64 {
 
 	var (
-		toSend *evtSwap
-		swap   *types.Swap
+		swap      *types.Swap
+		lastBlkNr uint64
 	)
 
 	// get the iterator if all swaps according to provided filter
 	it, err := contract.FilterSwap(filter, nil, nil)
 	if err != nil {
 		sws.log.Errorf("Cannot get swap iterator: %s", err)
-		return
+		return 0
 	}
 
 	// loop thru all swaps
 
-	for {
+	for it.Next() {
+		blkNumber := hexutil.Uint64(it.Event.Raw.BlockNumber)
 
-		if toSend == nil {
-			if it.Next() {
-				blkNumber := hexutil.Uint64(it.Event.Raw.BlockNumber)
-
-				blk, err := sws.repo.BlockByNumber(&blkNumber)
-				if err != nil {
-					sws.log.Errorf("Block was not found for pair %s; %s", pair.String(), err.Error())
-					return
-				}
-
-				// log action
-				sws.log.Debugf("Loading swap from block nr# %d, tx: %s", it.Event.Raw.BlockNumber, it.Event.Raw.TxHash.String())
-
-				// prep sending struct and advance transaction index
-				swap = &types.Swap{
-					BlockNumber: &blk.Number,
-					TimeStamp:   &blk.TimeStamp,
-					Pair:        *pair,
-					Sender:      it.Event.Sender,
-					To:          it.Event.To,
-					Hash:        types.BytesToHash(it.Event.Raw.TxHash.Bytes()),
-					Amount0In:   it.Event.Amount0In,
-					Amount0Out:  it.Event.Amount0Out,
-					Amount1In:   it.Event.Amount1In,
-					Amount1Out:  it.Event.Amount1Out,
-				}
-				toSend = &evtSwap{swp: swap}
-			} else {
-				return
-			}
+		blk, err := sws.repo.BlockByNumber(&blkNumber)
+		if err != nil {
+			sws.log.Errorf("Block was not found for pair %s; %s", pair.String(), err.Error())
+			return lastBlkNr
 		}
 
-		// try to send
+		// log action
+		sws.log.Debugf("Loading swap from block nr# %d, tx: %s", it.Event.Raw.BlockNumber, it.Event.Raw.TxHash.String())
+
+		// prep sending struct and advance transaction index
+		swap = &types.Swap{
+			BlockNumber: &blk.Number,
+			TimeStamp:   &blk.TimeStamp,
+			Pair:        *pair,
+			Sender:      it.Event.Sender,
+			To:          it.Event.To,
+			Hash:        types.BytesToHash(it.Event.Raw.TxHash.Bytes()),
+			Amount0In:   it.Event.Amount0In,
+			Amount0Out:  it.Event.Amount0Out,
+			Amount1In:   it.Event.Amount1In,
+			Amount1Out:  it.Event.Amount1Out,
+		}
+
+		if lastBlkNr < uint64(blk.Number) {
+			lastBlkNr = uint64(blk.Number)
+		}
+
+		sws.buffer <- &evtSwap{swp: swap}
+
+		// check for sigStop
 		select {
 		case <-sws.sigStop:
 			// stop signal received?
-			return
-		case sws.buffer <- toSend:
-			// we did send it and now we need next one
-			toSend = nil
+			return 0
 		default:
 		}
 	}
+
+	return lastBlkNr
 
 }

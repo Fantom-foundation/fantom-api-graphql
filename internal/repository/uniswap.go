@@ -85,6 +85,11 @@ func (p *proxy) LastKnownSwapBlock() (uint64, error) {
 	return p.db.LastKnownSwapBlock()
 }
 
+// UniswapUpdateLastKnownSwapBlock stores a last correctly saved swap block number into persistent storage.
+func (p *proxy) UniswapUpdateLastKnownSwapBlock(blkNumber uint64) error {
+	return p.db.UniswapUpdateLastKnownSwapBlock(blkNumber)
+}
+
 // UniswapFactoryContract returns an instance of an Uniswap factory
 func (p *proxy) UniswapFactoryContract() (*contracts.UniswapFactory, error) {
 	return p.rpc.UniswapFactoryContract()

@@ -347,6 +347,9 @@ type Repository interface {
 	// LastKnownSwapBlock returns number of the last block known to the repository with swap event.
 	LastKnownSwapBlock() (uint64, error)
 
+	// UniswapUpdateLastKnownSwapBlock stores a last correctly saved swap block number into persistent storage.
+	UniswapUpdateLastKnownSwapBlock(blkNumber uint64) error
+
 	// UniswapFactoryContract returns an instance of an Uniswap factory
 	UniswapFactoryContract() (*contracts.UniswapFactory, error)
 
