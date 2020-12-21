@@ -479,6 +479,7 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 
 	// make the service orchestrator
 	p.orc = newOrchestrator(&p, log, &cfg.Repository)
+	p.orc.run()
 
 	// return the proxy
 	return &p, nil

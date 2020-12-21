@@ -113,6 +113,11 @@ func (or *orchestrator) closeServices() {
 	}
 }
 
+// run starts the orchestrator work
+func (or *orchestrator) run() {
+	or.smo.run()
+}
+
 // setBlockChannel registers a channel for notifying new block events.
 func (or *orchestrator) setBlockChannel(ch chan *types.Block) {
 	or.mon.onBlock = ch
@@ -155,6 +160,7 @@ func (or *orchestrator) init(cfg *config.Repository) {
 	or.reScan = make(chan bool, 1)
 	or.mon = NewBlockMonitor(or.repo.FtmConnection(), or.trxBuffer, or.reScan, or.repo, or.log, or.wg)
 
+	// create uniswap monitor for new created swaps and uniswap pairs
 	or.smo = NewUniswapMonitor(or.repo.FtmConnection(), or.swapBuffer, or.repo, or.log, or.wg)
 
 	// create staker information monitor; it starts right away on slow peace
@@ -177,8 +183,6 @@ func (or *orchestrator) orchestrate() {
 		or.wg.Done()
 	}()
 
-	var blokSync, swapSync bool
-
 	// wait for either stop signal, or scanner to finish
 	for {
 		select {
@@ -186,9 +190,12 @@ func (or *orchestrator) orchestrate() {
 			// stop signal received?
 			return
 		case <-or.sysDone:
-			blokSync = true
+			// log action
+			or.log.Notice("blocks synchronization finished")
+			// scanner is done, start monitoring
+			or.mon.run()
 		case <-or.swsDone:
-			swapSync = true
+			or.log.Notice("swaps synchronization finished")
 		case <-or.reScan:
 			// advance counter
 			or.reScanCounter++
@@ -199,14 +206,6 @@ func (or *orchestrator) orchestrate() {
 			// start re-scan scheduler
 			or.wg.Add(1)
 			go or.scheduleRescan()
-		}
-		if blokSync && swapSync {
-			// log action
-			or.log.Notice("synchronization finished")
-
-			// scanner is done, start monitoring
-			or.mon.run()
-			or.smo.run()
 		}
 	}
 }
