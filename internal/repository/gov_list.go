@@ -138,10 +138,20 @@ func filterGovernanceProposals(list []*types.GovernanceProposal, cursor *string,
 		list = filterActiveGovernanceProposals(list)
 	}
 
+	// an empty list?
+	if 0 == len(list) {
+		return &types.GovernanceProposalList{
+			Collection: list,
+			Total:      0,
+			First:      common.Address{},
+			Last:       common.Address{},
+			IsStart:    true,
+			IsEnd:      true,
+		}
+	}
+
 	// calculate the start and count
 	startAt, down := governanceProposalsListStart(list, cursor, count)
-
-	// calculate the bounds of the subset requested
 	endAt := startAt + int64(count)
 	if down {
 		if endAt > int64(len(list)) {
