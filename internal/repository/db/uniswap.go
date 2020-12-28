@@ -371,6 +371,55 @@ func (db *MongoDbBridge) UniswapTimeVolumes(pairAddress *common.Address, resolut
 		dt = bson.D{{Key: "$gte", Value: fTime}}
 	}
 
+	// create query pipeline
+	pipe := mongo.Pipeline{
+		{{Key: "$match", Value: bson.D{
+			{Key: "date", Value: dt},
+			{Key: "pair", Value: pairAddress.String()}}}},
+		{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: getGroupBsonD(resolution)},
+			{Key: "total", Value: bson.M{"$sum": bson.D{
+				{Key: "$add", Value: bson.A{"$am0in", "$am0out"}}}}},
+		}}},
+		{{Key: "$sort", Value: bson.D{
+			{Key: "_id", Value: 1},
+		}}},
+	}
+
+	list := make([]types.DefiSwapVolume, 0)
+
+	// execute query
+	col := db.client.Database(db.dbName).Collection(coUniswap)
+	cursor, err := col.Aggregate(context.Background(), pipe)
+
+	if err != nil {
+		db.log.Errorf(err.Error())
+		return list, nil
+	} else {
+		defer cursor.Close(context.Background())
+
+		// iterate thru results and construct data
+		for cursor.Next(context.Background()) {
+			var val Volume
+			err := cursor.Decode(&val)
+			if err != nil {
+				db.log.Errorf(err.Error())
+			}
+			def := types.DefiSwapVolume{
+				PairAddress: pairAddress,
+				Volume:      returnDecimals(big.NewInt(val.Total)),
+				DateString:  val.ID,
+			}
+			list = append(list, def)
+		}
+	}
+
+	return list, nil
+}
+
+// getGroupBsonD is a helper function for constructing group db request
+func getGroupBsonD(resolution string) bson.D {
+
 	// initial value set to 1 minute
 	mul := 60 * 1000
 
@@ -396,82 +445,103 @@ func (db *MongoDbBridge) UniswapTimeVolumes(pairAddress *common.Address, resolut
 	}
 
 	format := "%Y-%m-%dT%H:%M:%S.000Z"
+	groupBson := bson.D{
+		{Key: "$dateToString", Value: bson.D{
+			{Key: "format", Value: format},
+			{Key: "date", Value: bson.D{
+				{Key: "$add", Value: bson.A{bson.D{
+					{Key: "$subtract", Value: bson.A{
+						bson.D{{Key: "$subtract", Value: bson.A{"$date", 0}}},
+						bson.D{{Key: "$mod", Value: bson.A{bson.D{
+							{Key: "$toLong", Value: bson.D{
+								{Key: "$subtract", Value: bson.A{"$date", 0}}}}},
+							mul}},
+						},
+					}}},
+					0}},
+			},
+			}}},
+	}
+	return groupBson
+}
 
-	/*
-		// Idea behing grouping ios from this calculation of date
-			{ "$group": {
-		        "_id": {
-		            "$add": [
-		                { "$subtract": [
-		                    { "$subtract": [ "$current_date", new Date(0) ] },
-		                    { "$mod": [
-		                        { "$subtract": [ "$current_date", new Date(0) ] },
-		                        1000 * 60 * 15
-		                    ]}
-		                ] },
-		                new Date(0)
-		            ]
-		        },
-		        "count": { "$sum": 1 }
-			}}
-	*/
+// getDateBsonD is a helper function for constructing date db request
+func getDateBsonD(fromTime int64, toTime int64) bson.D {
+	fTime := primitive.NewDateTimeFromTime(time.Unix(fromTime, 0))
+
+	var dt bson.D
+
+	if toTime != 0 {
+		tTime := primitive.NewDateTimeFromTime(time.Unix(toTime, 0))
+		dt = bson.D{{Key: "$gte", Value: fTime}, {Key: "$lte", Value: tTime}}
+	} else {
+		dt = bson.D{{Key: "$gte", Value: fTime}}
+	}
+
+	return dt
+}
+
+// UniswapTimePrices resolves price of swap trades for specified pair grouped by date interval.
+// If toTime is 0, then it calculates prices till now
+func (db *MongoDbBridge) UniswapTimePrices(pairAddress *common.Address, resolution string, fromTime int64, toTime int64, direction int32) ([]types.DefiTimePrice, error) {
+
+	tokenASum := bson.D{{Key: "$add", Value: bson.A{"$am0in", "$am0out"}}}
+	tokenBSum := bson.D{{Key: "$add", Value: bson.A{"$am1in", "$am1out"}}}
+
+	// creating priceBsonD bson request object
+	var priceBsonD bson.D
+	if direction == 0 {
+		priceBsonD = bson.D{{Key: "$divide", Value: bson.A{tokenASum, tokenBSum}}}
+	} else {
+		priceBsonD = bson.D{{Key: "$divide", Value: bson.A{tokenBSum, tokenASum}}}
+	}
 
 	// create query pipeline
 	pipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{
-			{Key: "date", Value: dt},
+			{Key: "date", Value: getDateBsonD(fromTime, toTime)},
 			{Key: "pair", Value: pairAddress.String()}}}},
+		{{Key: "$sort", Value: bson.D{
+			{Key: "date", Value: 1},
+		}}},
 		{{Key: "$group", Value: bson.D{
-			{Key: "_id", Value: bson.D{
-				{Key: "$dateToString", Value: bson.D{
-					{Key: "format", Value: format},
-					{Key: "date", Value: bson.D{
-						{Key: "$add", Value: bson.A{bson.D{
-							{Key: "$subtract", Value: bson.A{
-								bson.D{{Key: "$subtract", Value: bson.A{"$date", 0}}},
-								bson.D{{Key: "$mod", Value: bson.A{bson.D{
-									{Key: "$toLong", Value: bson.D{
-										{Key: "$subtract", Value: bson.A{"$date", 0}}}}},
-									mul}},
-								},
-							}}},
-							0}},
-					},
-					}}},
-			}},
-			{Key: "total", Value: bson.M{"$sum": bson.D{
-				{Key: "$add", Value: bson.A{"$am0in", "$am0out"}}}}},
+			{Key: "_id", Value: getGroupBsonD(resolution)},
+			{Key: "low", Value: bson.D{
+				{Key: "$min", Value: priceBsonD}}},
+			{Key: "high", Value: bson.D{
+				{Key: "$max", Value: priceBsonD}}},
+			{Key: "open", Value: bson.D{
+				{Key: "$first", Value: priceBsonD}}},
+			{Key: "close", Value: bson.D{
+				{Key: "$last", Value: priceBsonD}}},
+			{Key: "avg", Value: bson.D{
+				{Key: "$avg", Value: priceBsonD}}},
 		}}},
 		{{Key: "$sort", Value: bson.D{
 			{Key: "_id", Value: 1},
 		}}},
 	}
 
-	list := make([]types.DefiSwapVolume, 0)
+	list := make([]types.DefiTimePrice, 0)
 
 	// execute query
 	col := db.client.Database(db.dbName).Collection(coUniswap)
 	cursor, err := col.Aggregate(context.Background(), pipe)
-
 	if err != nil {
-		fmt.Println(err.Error())
+		db.log.Errorf(err.Error())
 		return list, nil
 	} else {
 		defer cursor.Close(context.Background())
 
 		// iterate thru results and construct data
 		for cursor.Next(context.Background()) {
-			var val Volume
-			err := cursor.Decode(&val)
+			var priceVal types.DefiTimePrice
+			err := cursor.Decode(&priceVal)
 			if err != nil {
-				fmt.Println(err.Error())
+				db.log.Errorf(err.Error())
 			}
-			def := types.DefiSwapVolume{
-				PairAddress: pairAddress,
-				Volume:      returnDecimals(big.NewInt(val.Total)),
-				DateString:  val.ID,
-			}
-			list = append(list, def)
+			priceVal.PairAddress = *pairAddress
+			list = append(list, priceVal)
 		}
 	}
 
