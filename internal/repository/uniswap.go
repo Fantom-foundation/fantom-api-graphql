@@ -106,3 +106,9 @@ func (p *proxy) UniswapVolume(pairAddress *common.Address, fromTime int64, toTim
 func (p *proxy) UniswapTimeVolumes(pairAddress *common.Address, resolution string, fromTime int64, toTime int64) ([]types.DefiSwapVolume, error) {
 	return p.db.UniswapTimeVolumes(pairAddress, resolution, fromTime, toTime)
 }
+
+// UniswapTimePrices resolves price of swap trades for specified pair grouped by date interval.
+// If toTime is 0, then it calculates prices till now
+func (p *proxy) UniswapTimePrices(pairAddress *common.Address, resolution string, fromTime int64, toTime int64, direction int32) ([]types.DefiTimePrice, error) {
+	return p.db.UniswapTimePrices(pairAddress, resolution, fromTime, toTime, direction)
+}

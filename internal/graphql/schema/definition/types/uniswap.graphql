@@ -83,3 +83,28 @@ type DefiTimeVolume {
     # value represents amount of the volume
     value: BigInt!
 }
+
+# DefiTimePrice represents a calculated price for swap pairs in history
+type DefiTimePrice {
+
+	# pairAddress represents the Address of the Pair
+    pairAddress: Address!
+
+    # time indicates a period for this price
+    time: String!
+
+    # opening price for this time period
+	open: Float! 
+
+    # closing price for this time period
+	close: Float!
+
+    # lowest price for this time period
+	low: Float!
+
+    # highest price for this time period
+	high: Float!
+
+    # average price for this time period
+    average: Float! 
+}

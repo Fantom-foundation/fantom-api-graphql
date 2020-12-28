@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"fantom-api-graphql/internal/repository"
+	"fantom-api-graphql/internal/types"
 	"fmt"
 	"math/big"
 	"time"
@@ -269,7 +270,7 @@ func (upv *UniswapPairVolume) IsInFUSD() (bool, error) {
 	return upv.InFUSD, nil
 }
 
-// DefiTimeVolumes resolves daily swap volumes for given pair
+// DefiTimeVolumes resolves swap volumes for given pair
 // If dates are not given, then it returns last month values
 func (rs *rootResolver) DefiTimeVolumes(args *struct {
 	Address    common.Address
@@ -310,6 +311,49 @@ func (rs *rootResolver) DefiTimeVolumes(args *struct {
 	}
 
 	return list
+}
+
+// DefiTimePrices resolves swap prices for given pair
+// If dates are not given, then it returns last month values
+func (rs *rootResolver) DefiTimePrices(args *struct {
+	Address    common.Address
+	Resolution *string
+	FromDate   *int32
+	ToDate     *int32
+	Direction  *int32
+}) []types.DefiTimePrice {
+
+	// create empty list as return value
+	list := make([]types.DefiTimePrice, 0)
+
+	//check date values
+	var fDate, tDate int64
+	if args.FromDate != nil {
+		fDate = (int64)(*args.FromDate)
+	} else {
+		fDate = time.Now().UTC().AddDate(0, -1, 0).Unix()
+	}
+
+	//check resolution value
+	resolution := ""
+	if args.Resolution != nil {
+		resolution = *args.Resolution
+	}
+
+	// check direction value
+	var dir int32
+	if args.Direction != nil {
+		dir = *args.Direction
+	}
+
+	// get prices from DB repository
+	swapPrices, err := rs.repo.UniswapTimePrices(&args.Address, resolution, fDate, tDate, dir)
+	if err != nil {
+		rs.log.Errorf("Can not get daily swap volumes from DB repository: %s", err.Error())
+		return list
+	}
+
+	return swapPrices
 }
 
 // Reserves resolves a list of token reserves of the given Uniswap pair.

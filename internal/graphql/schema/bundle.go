@@ -192,6 +192,31 @@ type DefiTimeVolume {
     # value represents amount of the volume
     value: BigInt!
 }
+
+# DefiTimePrice represents a calculated price for swap pairs in history
+type DefiTimePrice {
+
+	# pairAddress represents the Address of the Pair
+    pairAddress: Address!
+
+    # time indicates a period for this price
+    time: String!
+
+    # opening price for this time period
+	open: Float! 
+
+    # closing price for this time period
+	close: Float!
+
+    # lowest price for this time period
+	low: Float!
+
+    # highest price for this time period
+	high: Float!
+
+    # average price for this time period
+    average: Float! 
+}
 # TransactionList is a list of transaction edges provided by sequential access request.
 type TransactionList {
     # Edges contains provided edges of the sequential list.
@@ -1601,6 +1626,14 @@ type Query {
     # then it takes period for last month till now.
     defiTimeVolumes(address:Address!, resolution:String, fromDate:Int, toDate:Int):[DefiTimeVolume!]!
 
+    # defiTimePrices returns prices for specified pair, time resolution and interval.
+    # Address is pair address and is mandatory.
+    # Resolution can be {month, day, 4h, 1h, 30m 15m, 5m, 1m}, is optional, default is a day.
+    # Direction specifies price calculation, default 0 is for TokenA/TokenB otherwise TokenB/TokenA 
+    # Dates are in unix UTC number and are optional. When not provided
+    # then it takes period for last month till now.
+    defiTimePrices(address:Address!, resolution:String, fromDate:Int, toDate:Int, direction:Int):[DefiTimePrice!]!
+    
     # erc20Token provides the information about an ERC20 token specified by it's
     # address, if available. The resolver returns NULL if the token does not exist.
     erc20Token(token: Address!):ERC20Token

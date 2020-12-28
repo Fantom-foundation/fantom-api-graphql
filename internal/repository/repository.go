@@ -356,7 +356,11 @@ type Repository interface {
 	// UniswapVolume returns swap volume for specified uniswap pair
 	UniswapVolume(*common.Address, int64, int64) (types.DefiSwapVolume, error)
 
+	// UniswapTimeVolumes returns grouped volumes for specified pair, time and resolution
 	UniswapTimeVolumes(*common.Address, string, int64, int64) ([]types.DefiSwapVolume, error)
+
+	// UniswapTimePrices returns grouped prices for specified pair, time and resolution
+	UniswapTimePrices(*common.Address, string, int64, int64, int32) ([]types.DefiTimePrice, error)
 
 	// NativeTokenAddress returns address of the native token wrapper, if available.
 	NativeTokenAddress() (*common.Address, error)
