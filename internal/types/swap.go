@@ -70,3 +70,28 @@ type DefiSwapVolume struct {
 	// DateString represents time tag for this volume
 	DateString string
 }
+
+// DefiTimePrice represents a calculated price for swap pairs in history
+type DefiTimePrice struct {
+
+	// PairAddress is an address of the listed pair
+	PairAddress common.Address `json:"address" bson:"pair"`
+
+	// Time represents ISO time tag for this price
+	Time string `json:"time" bson:"_id"`
+
+	// opening price for this time period
+	Open float64 `json:"open" bson:"open"`
+
+	// closing price for this time period
+	Close float64 `json:"close" bson:"close"`
+
+	// lowest price for this time period
+	Low float64 `json:"low" bson:"low"`
+
+	// highest price for this time period
+	High float64 `json:"high" bson:"high"`
+
+	// average price for this time period
+	Average float64 `json:"average" bson:"avg"`
+}

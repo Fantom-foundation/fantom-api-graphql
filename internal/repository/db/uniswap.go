@@ -193,7 +193,8 @@ func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *types.Hash) (b
 		return false, sr.Err()
 	}
 
-	// add swap to the db
+	// swap is known, jus log and return true
+	db.log.Debugf("Swap %s is already in database.", hash.String())
 	return true, nil
 }
 
@@ -209,6 +210,11 @@ func (db *MongoDbBridge) SwapCount() (uint64, error) {
 		return 0, err
 	}
 
+	// -1 is for confuiguration document with last correct swap block number
+	if total > 1 {
+		total--
+	}
+
 	// inform what we are about to do
 	db.log.Debugf("found %d swaps in off-chain database", total)
 	return uint64(total), nil
@@ -216,39 +222,74 @@ func (db *MongoDbBridge) SwapCount() (uint64, error) {
 
 // LastKnownSwapBlock returns number of the last known block stored in the database.
 func (db *MongoDbBridge) LastKnownSwapBlock() (uint64, error) {
-	// prep search options
-	opt := options.FindOne()
-	opt.SetSort(bson.D{{Key: fiSwapBlock, Value: -1}})
-	opt.SetProjection(bson.D{{Key: fiSwapBlock, Value: true}})
+
+	// search for document with last swap block number
+	query := bson.D{
+		{Key: "lastSwapSyncBlk", Value: bson.D{
+			{Key: "$exists", Value: "true"}}},
+	}
 
 	// get the swaps collection
 	col := db.client.Database(db.dbName).Collection(coUniswap)
-	res := col.FindOne(context.Background(), bson.D{}, opt)
+	res := col.FindOne(context.Background(), query)
 	if res.Err() != nil {
 		// may be no block at all
 		if res.Err() == mongo.ErrNoDocuments {
-			db.log.Info("no blocks found in database")
+			db.log.Info("No document with last swap block number in database starting from 0.")
 			return 0, nil
 		}
 
 		// log issue
-		db.log.Error("can not get the top block")
+		db.log.Error("Can not get the last correct swap block number, starting from 0.")
 		return 0, res.Err()
 	}
 
 	// get the actual value
 	var swap struct {
-		Block uint64 `bson:"blk"`
+		Block uint64 `bson:"lastSwapSyncBlk"`
 	}
 
 	// get the data
 	err := res.Decode(&swap)
 	if err != nil {
-		db.log.Error("can not decode the top block")
+		db.log.Error("Can not resolve id of the last correct swap block in db. Starting from 0.")
 		return 0, res.Err()
 	}
 
 	return swap.Block, nil
+}
+
+// UniswapUpdateLastKnownSwapBlock stores a last correctly saved swap block number into persistent storage.
+func (db *MongoDbBridge) UniswapUpdateLastKnownSwapBlock(blkNumber uint64) error {
+
+	// is valid block number
+	if blkNumber == 0 {
+		return fmt.Errorf("No need to store zero value, will start from 0 next time")
+	}
+
+	// document for update with last swap block number
+	query := bson.D{
+		{Key: "lastSwapSyncBlk", Value: bson.D{
+			{Key: "$exists", Value: "true"}}},
+	}
+
+	data := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "lastSwapSyncBlk", Value: blkNumber}}},
+	}
+
+	// get the collection for transactions and insert data
+	col := db.client.Database(db.dbName).Collection(coUniswap)
+	if _, err := col.UpdateOne(context.Background(),
+		query, data, options.Update().SetUpsert(true)); err != nil {
+
+		db.log.Critical(err)
+		return err
+	}
+
+	// log
+	db.log.Debugf("Block %d was set as a last correct uniswap block into database", blkNumber)
+	return nil
 }
 
 // Volume represents one single sum of volumes for specified pair
@@ -330,6 +371,55 @@ func (db *MongoDbBridge) UniswapTimeVolumes(pairAddress *common.Address, resolut
 		dt = bson.D{{Key: "$gte", Value: fTime}}
 	}
 
+	// create query pipeline
+	pipe := mongo.Pipeline{
+		{{Key: "$match", Value: bson.D{
+			{Key: "date", Value: dt},
+			{Key: "pair", Value: pairAddress.String()}}}},
+		{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: getGroupBsonD(resolution)},
+			{Key: "total", Value: bson.M{"$sum": bson.D{
+				{Key: "$add", Value: bson.A{"$am0in", "$am0out"}}}}},
+		}}},
+		{{Key: "$sort", Value: bson.D{
+			{Key: "_id", Value: 1},
+		}}},
+	}
+
+	list := make([]types.DefiSwapVolume, 0)
+
+	// execute query
+	col := db.client.Database(db.dbName).Collection(coUniswap)
+	cursor, err := col.Aggregate(context.Background(), pipe)
+
+	if err != nil {
+		db.log.Errorf(err.Error())
+		return list, nil
+	} else {
+		defer cursor.Close(context.Background())
+
+		// iterate thru results and construct data
+		for cursor.Next(context.Background()) {
+			var val Volume
+			err := cursor.Decode(&val)
+			if err != nil {
+				db.log.Errorf(err.Error())
+			}
+			def := types.DefiSwapVolume{
+				PairAddress: pairAddress,
+				Volume:      returnDecimals(big.NewInt(val.Total)),
+				DateString:  val.ID,
+			}
+			list = append(list, def)
+		}
+	}
+
+	return list, nil
+}
+
+// getGroupBsonD is a helper function for constructing group db request
+func getGroupBsonD(resolution string) bson.D {
+
 	// initial value set to 1 minute
 	mul := 60 * 1000
 
@@ -355,82 +445,103 @@ func (db *MongoDbBridge) UniswapTimeVolumes(pairAddress *common.Address, resolut
 	}
 
 	format := "%Y-%m-%dT%H:%M:%S.000Z"
+	groupBson := bson.D{
+		{Key: "$dateToString", Value: bson.D{
+			{Key: "format", Value: format},
+			{Key: "date", Value: bson.D{
+				{Key: "$add", Value: bson.A{bson.D{
+					{Key: "$subtract", Value: bson.A{
+						bson.D{{Key: "$subtract", Value: bson.A{"$date", 0}}},
+						bson.D{{Key: "$mod", Value: bson.A{bson.D{
+							{Key: "$toLong", Value: bson.D{
+								{Key: "$subtract", Value: bson.A{"$date", 0}}}}},
+							mul}},
+						},
+					}}},
+					0}},
+			},
+			}}},
+	}
+	return groupBson
+}
 
-	/*
-		// Idea behing grouping ios from this calculation of date
-			{ "$group": {
-		        "_id": {
-		            "$add": [
-		                { "$subtract": [
-		                    { "$subtract": [ "$current_date", new Date(0) ] },
-		                    { "$mod": [
-		                        { "$subtract": [ "$current_date", new Date(0) ] },
-		                        1000 * 60 * 15
-		                    ]}
-		                ] },
-		                new Date(0)
-		            ]
-		        },
-		        "count": { "$sum": 1 }
-			}}
-	*/
+// getDateBsonD is a helper function for constructing date db request
+func getDateBsonD(fromTime int64, toTime int64) bson.D {
+	fTime := primitive.NewDateTimeFromTime(time.Unix(fromTime, 0))
+
+	var dt bson.D
+
+	if toTime != 0 {
+		tTime := primitive.NewDateTimeFromTime(time.Unix(toTime, 0))
+		dt = bson.D{{Key: "$gte", Value: fTime}, {Key: "$lte", Value: tTime}}
+	} else {
+		dt = bson.D{{Key: "$gte", Value: fTime}}
+	}
+
+	return dt
+}
+
+// UniswapTimePrices resolves price of swap trades for specified pair grouped by date interval.
+// If toTime is 0, then it calculates prices till now
+func (db *MongoDbBridge) UniswapTimePrices(pairAddress *common.Address, resolution string, fromTime int64, toTime int64, direction int32) ([]types.DefiTimePrice, error) {
+
+	tokenASum := bson.D{{Key: "$add", Value: bson.A{"$am0in", "$am0out"}}}
+	tokenBSum := bson.D{{Key: "$add", Value: bson.A{"$am1in", "$am1out"}}}
+
+	// creating priceBsonD bson request object
+	var priceBsonD bson.D
+	if direction == 0 {
+		priceBsonD = bson.D{{Key: "$divide", Value: bson.A{tokenASum, tokenBSum}}}
+	} else {
+		priceBsonD = bson.D{{Key: "$divide", Value: bson.A{tokenBSum, tokenASum}}}
+	}
 
 	// create query pipeline
 	pipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{
-			{Key: "date", Value: dt},
+			{Key: "date", Value: getDateBsonD(fromTime, toTime)},
 			{Key: "pair", Value: pairAddress.String()}}}},
+		{{Key: "$sort", Value: bson.D{
+			{Key: "date", Value: 1},
+		}}},
 		{{Key: "$group", Value: bson.D{
-			{Key: "_id", Value: bson.D{
-				{Key: "$dateToString", Value: bson.D{
-					{Key: "format", Value: format},
-					{Key: "date", Value: bson.D{
-						{Key: "$add", Value: bson.A{bson.D{
-							{Key: "$subtract", Value: bson.A{
-								bson.D{{Key: "$subtract", Value: bson.A{"$date", 0}}},
-								bson.D{{Key: "$mod", Value: bson.A{bson.D{
-									{Key: "$toLong", Value: bson.D{
-										{Key: "$subtract", Value: bson.A{"$date", 0}}}}},
-									mul}},
-								},
-							}}},
-							0}},
-					},
-					}}},
-			}},
-			{Key: "total", Value: bson.M{"$sum": bson.D{
-				{Key: "$add", Value: bson.A{"$am0in", "$am0out"}}}}},
+			{Key: "_id", Value: getGroupBsonD(resolution)},
+			{Key: "low", Value: bson.D{
+				{Key: "$min", Value: priceBsonD}}},
+			{Key: "high", Value: bson.D{
+				{Key: "$max", Value: priceBsonD}}},
+			{Key: "open", Value: bson.D{
+				{Key: "$first", Value: priceBsonD}}},
+			{Key: "close", Value: bson.D{
+				{Key: "$last", Value: priceBsonD}}},
+			{Key: "avg", Value: bson.D{
+				{Key: "$avg", Value: priceBsonD}}},
 		}}},
 		{{Key: "$sort", Value: bson.D{
 			{Key: "_id", Value: 1},
 		}}},
 	}
 
-	list := make([]types.DefiSwapVolume, 0)
+	list := make([]types.DefiTimePrice, 0)
 
 	// execute query
 	col := db.client.Database(db.dbName).Collection(coUniswap)
 	cursor, err := col.Aggregate(context.Background(), pipe)
-
 	if err != nil {
-		fmt.Println(err.Error())
+		db.log.Errorf(err.Error())
 		return list, nil
 	} else {
 		defer cursor.Close(context.Background())
 
 		// iterate thru results and construct data
 		for cursor.Next(context.Background()) {
-			var val Volume
-			err := cursor.Decode(&val)
+			var priceVal types.DefiTimePrice
+			err := cursor.Decode(&priceVal)
 			if err != nil {
-				fmt.Println(err.Error())
+				db.log.Errorf(err.Error())
 			}
-			def := types.DefiSwapVolume{
-				PairAddress: pairAddress,
-				Volume:      returnDecimals(big.NewInt(val.Total)),
-				DateString:  val.ID,
-			}
-			list = append(list, def)
+			priceVal.PairAddress = *pairAddress
+			list = append(list, priceVal)
 		}
 	}
 

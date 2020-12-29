@@ -112,6 +112,47 @@ type Price {
     lastUpdate: Long!
 }
 
+
+# DefiUniswapVolume represents a calculated volume for swap pairs in history 
+type DefiUniswapVolume {
+
+    # UniswapPair represents the information about single
+    # Uniswap pair managed by the Uniswap Core.
+    uniswapPair: UniswapPair!
+
+    # pairAddress represents the Address of the Pair
+    pairAddress: Address!
+
+    # dailyVolume returns swap volume for last 24 hours
+    dailyVolume: BigInt!
+
+    # weeklyVolume returns swap volume for last 7 days
+    weeklyVolume: BigInt!
+
+    # monthlyVolume returns swap volume for last month
+    monthlyVolume: BigInt!
+
+    # YearlyVolume returns swap volume for last year
+    yearlyVolume: BigInt!
+
+    # IsInFUSD indicates if TokenA from the pair has a price value to be able
+    # to calculate value in fUSD
+    isInFUSD: Boolean!
+    
+}
+
+# DefiSwaps represents swap volume for given pair and time interval
+type DefiTimeVolume {
+
+    # pairAddress represents the Address of the Pair
+    pairAddress: Address!
+
+    # time indicates a period for this volume
+    time: String!
+
+    # value represents amount of the volume
+    value: BigInt!
+}
 # TransactionList is a list of transaction edges provided by sequential access request.
 type TransactionList {
     # Edges contains provided edges of the sequential list.
@@ -1605,6 +1646,14 @@ type Query {
     # then it takes period for last month till now.
     defiTimeVolumes(address:Address!, resolution:String, fromDate:Int, toDate:Int):[DefiTimeVolume!]!
 
+    # defiTimePrices returns prices for specified pair, time resolution and interval.
+    # Address is pair address and is mandatory.
+    # Resolution can be {month, day, 4h, 1h, 30m 15m, 5m, 1m}, is optional, default is a day.
+    # Direction specifies price calculation, default 0 is for TokenA/TokenB otherwise TokenB/TokenA 
+    # Dates are in unix UTC number and are optional. When not provided
+    # then it takes period for last month till now.
+    defiTimePrices(address:Address!, resolution:String, fromDate:Int, toDate:Int, direction:Int):[DefiTimePrice!]!
+    
     # erc20Token provides the information about an ERC20 token specified by it's
     # address, if available. The resolver returns NULL if the token does not exist.
     erc20Token(token: Address!):ERC20Token

@@ -356,13 +356,20 @@ type Repository interface {
 	// LastKnownSwapBlock returns number of the last block known to the repository with swap event.
 	LastKnownSwapBlock() (uint64, error)
 
+	// UniswapUpdateLastKnownSwapBlock stores a last correctly saved swap block number into persistent storage.
+	UniswapUpdateLastKnownSwapBlock(blkNumber uint64) error
+
 	// UniswapFactoryContract returns an instance of an Uniswap factory
 	UniswapFactoryContract() (*contracts.UniswapFactory, error)
 
 	// UniswapVolume returns swap volume for specified uniswap pair
 	UniswapVolume(*common.Address, int64, int64) (types.DefiSwapVolume, error)
 
+	// UniswapTimeVolumes returns grouped volumes for specified pair, time and resolution
 	UniswapTimeVolumes(*common.Address, string, int64, int64) ([]types.DefiSwapVolume, error)
+
+	// UniswapTimePrices returns grouped prices for specified pair, time and resolution
+	UniswapTimePrices(*common.Address, string, int64, int64, int32) ([]types.DefiTimePrice, error)
 
 	// NativeTokenAddress returns address of the native token wrapper, if available.
 	NativeTokenAddress() (*common.Address, error)
