@@ -22,7 +22,7 @@ type Config struct {
 	Log Log `mapstructure:"log"`
 
 	// Lachesis represents the node structure
-	Lachesis Lachesis `mapstructure:"node"`
+	Lachesis Lachesis `mapstructure:"lachesis"`
 
 	// Database configuration
 	Db Database `mapstructure:"db"`
