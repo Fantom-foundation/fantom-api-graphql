@@ -15,7 +15,10 @@ type Swap struct {
 	// BlockNumber represents number of the block where this transaction was in. nil when its pending.
 	BlockNumber *hexutil.Uint64 `json:"blockNumber" bson:"blk"`
 
-	// Pair represents address of the swapped pair.
+	// Type represents type of event: swap, mint, burn, sync
+	Type int `json:"type" bson:"type"`
+
+	// TimeStamp represents time of the swap.
 	TimeStamp *hexutil.Uint64 `json:"timestamp" bson:"timestamp"`
 
 	// Pair represents address of the swapped pair.
@@ -23,9 +26,6 @@ type Swap struct {
 
 	// Sender represents address of the sender.
 	Sender common.Address `json:"sender" bson:"sender"`
-
-	// To represents address of the receiver.
-	To common.Address `json:"to" bson:"to"`
 
 	// Hash represents 32 bytes hash of the transaction.
 	Hash Hash `json:"tx" bson:"tx"`
@@ -41,6 +41,12 @@ type Swap struct {
 
 	// Amount1Out represents integer of the swap amount.
 	Amount1Out *big.Int `json:"amount1Out" bson:"am1out"`
+
+	// Reserve0 is a total reserve in time of this event for Token A
+	Reserve0 *big.Int `json:"reserve0" bson:"reserve0"`
+
+	// Reserve1 is a total reserve in time of this event for Token B
+	Reserve1 *big.Int `json:"reserve1" bson:"reserve1"`
 }
 
 // UnmarshalSwap parses the JSON-encoded block data.
@@ -95,3 +101,11 @@ type DefiTimePrice struct {
 	// average price for this time period
 	Average float64 `json:"average" bson:"avg"`
 }
+
+// Swap types
+const (
+	SwapNormal = iota
+	SwapMint
+	SwapBurn
+	SwapSync
+)

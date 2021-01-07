@@ -18,21 +18,23 @@ import (
 
 const (
 
-	// coUniswap is the name of the off-chain database collection storing transaction details.
+	// coUniswap is the name of the off-chain database collection storing Uniswap swap details.
 	coUniswap = "uniswap"
 
 	// fiSwapPk is the name of the primary key field of the swap collection.
 	fiSwapPk         = "_id"
+	fiSwapType       = "type"
 	fiSwapBlock      = "blk"
 	fiSwapTxHash     = "tx"
 	fiSwapPair       = "pair"
 	fiSwapDate       = "date"
 	fiSwapSender     = "sender"
-	fiSwapTo         = "to"
 	fiSwapAmount0in  = "am0in"
 	fiSwapAmount0out = "am0out"
 	fiSwapAmount1in  = "am1in"
 	fiSwapAmount1out = "am1out"
+	fiSwapReserve0   = "reserve0"
+	fiSwapReserve1   = "reserve1"
 )
 
 // decChange holds information, how many decimals will be added/removed
@@ -62,7 +64,7 @@ func (db *MongoDbBridge) initUniswapCollection(col *mongo.Collection) {
 		Keys: bson.D{{Key: fiSwapPk, Value: 1}},
 	})
 
-	// index sender and recipient
+	// index date and sender
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiSwapDate, Value: 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiSwapSender, Value: 1}}})
 
@@ -80,7 +82,7 @@ func (db *MongoDbBridge) initUniswapCollection(col *mongo.Collection) {
 func (db *MongoDbBridge) shouldAddSwap(col *mongo.Collection, swap *types.Swap) bool {
 	// check if swap already exists
 	swapHash := getHash(swap)
-	exists, err := db.IsSwapKnown(col, swapHash)
+	exists, err := db.IsSwapKnown(col, swapHash, swap)
 	if err != nil {
 		db.log.Critical(err)
 		return false
@@ -88,6 +90,21 @@ func (db *MongoDbBridge) shouldAddSwap(col *mongo.Collection, swap *types.Swap) 
 
 	// if the transaction already exists, we don't need to do anything here
 	return !exists
+}
+
+// isZeroSwap checks if amounts are not zero to avoid divide by 0 during calculations in db
+func isZeroSwap(swap *types.Swap) bool {
+	if swap.Type == types.SwapSync {
+		return false
+	}
+	am := big.Int{}
+	am0small := removeDecimals(am.Add(swap.Amount0In, swap.Amount0Out))
+	am1small := removeDecimals(am.Add(swap.Amount1In, swap.Amount1Out))
+
+	if am0small == 0 || am1small == 0 {
+		return true
+	}
+	return false
 }
 
 // UniswapAdd stores a swap reference in connected persistent storage.
@@ -99,6 +116,12 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 
 	// get the collection for transactions
 	col := db.client.Database(db.dbName).Collection(coUniswap)
+
+	// check for zero amounts in the swap, because of future div by 0 during agregation in db
+	if isZeroSwap(swap) {
+		db.log.Debugf("Swap from block %v will not be added, because swap amount is 0 ater removing decimals", uint64(*swap.BlockNumber))
+		return nil
+	}
 
 	// if the swap already exists, we don't need to add it
 	// just make sure the transaction accounts were processed
@@ -158,26 +181,25 @@ func swapData(base *bson.D, swap *types.Swap) bson.D {
 
 	// add the extended data
 	*base = append(*base,
+		bson.E{Key: fiSwapType, Value: swap.Type},
 		bson.E{Key: fiSwapTxHash, Value: swap.Hash.String()},
 		bson.E{Key: fiSwapPair, Value: swap.Pair.String()},
 		bson.E{Key: fiSwapSender, Value: swap.Sender.String()},
-		bson.E{Key: fiSwapTo, Value: swap.To.String()},
 		bson.E{Key: fiSwapAmount0in, Value: removeDecimals(swap.Amount0In)},
 		bson.E{Key: fiSwapAmount0out, Value: removeDecimals(swap.Amount0Out)},
 		bson.E{Key: fiSwapAmount1in, Value: removeDecimals(swap.Amount1In)},
 		bson.E{Key: fiSwapAmount1out, Value: removeDecimals(swap.Amount1Out)},
+		bson.E{Key: fiSwapReserve0, Value: removeDecimals(swap.Reserve0)},
+		bson.E{Key: fiSwapReserve1, Value: removeDecimals(swap.Reserve1)},
 	)
 	return *base
 }
 
 // IsSwapKnown checks if swap document already exists in the database.
-func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *types.Hash) (bool, error) {
+func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *types.Hash, swap *types.Swap) (bool, error) {
 	// try to find swap in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
-		{Key: fiSwapPk, Value: hash.String()},
-	}, options.FindOne().SetProjection(bson.D{
-		{Key: fiSwapPk, Value: true},
-	}))
+		{Key: fiSwapPk, Value: hash.String()}})
 
 	// error on lookup?
 	if sr.Err() != nil {
@@ -195,6 +217,39 @@ func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *types.Hash) (b
 
 	// swap is known, jus log and return true
 	db.log.Debugf("Swap %s is already in database.", hash.String())
+
+	// if swap is sync type, then update reserves
+	if swap.Type == types.SwapSync {
+		db.log.Debugf("Updating reserves for Swap %s", hash.String())
+		_, err := col.UpdateOne(context.Background(),
+			bson.M{fiSwapPk: hash.String()},
+			bson.D{
+				{Key: "$set", Value: bson.M{fiSwapReserve0: removeDecimals(swap.Reserve0)}},
+				{Key: "$set", Value: bson.M{fiSwapReserve1: removeDecimals(swap.Reserve1)}}})
+		if err != nil {
+			db.log.Errorf("Unable to update reserves for Swap %s", hash.String())
+		}
+	} else {
+
+		// in case the sync event was recorded first, update reserves into actual swap
+		// and delete sync record.
+		type Values struct {
+			Type     int   `bson:"type"`
+			Reserve0 int64 `bson:"reserve0"`
+			Reserve1 int64 `bson:"reserve1"`
+		}
+		var values Values
+		sr.Decode(&values)
+
+		if types.SwapSync == values.Type {
+			db.log.Debugf("Updating reserve for swap: %s, reserve0: %v, reserve1: %v", hash.String(), values.Reserve0, values.Reserve1)
+			col.DeleteOne(context.Background(), bson.D{{Key: fiSwapPk, Value: hash.String()}})
+			swap.Reserve0 = returnDecimals(big.NewInt(values.Reserve0))
+			swap.Reserve1 = returnDecimals(big.NewInt(values.Reserve1))
+			return false, nil
+		}
+	}
+	// no need to change data
 	return true, nil
 }
 

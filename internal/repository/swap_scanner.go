@@ -13,6 +13,7 @@ import (
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
+	"math/big"
 	"sync"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -114,6 +115,22 @@ func (sws *uniswapScanner) scan(lnb uint64) {
 	sws.repo.UniswapUpdateLastKnownSwapBlock(lastBlkNr)
 }
 
+// getUniswapBlock returns block with given number or the actual block if the number os same
+func (sws *uniswapScanner) getUniswapBlock(blockNr uint64, actualBlock *types.Block) *types.Block {
+
+	if actualBlock != nil && blockNr == uint64(actualBlock.Number) {
+		return actualBlock
+	}
+
+	blkNumber := hexutil.Uint64(blockNr)
+	blk, err := sws.repo.BlockByNumber(&blkNumber)
+	if err != nil {
+		sws.log.Errorf("Uniswap block number %i was not found: %s", blockNr, err.Error())
+		return nil
+	}
+	return blk
+}
+
 // processSwaps loops thru filtered swaps and adds them into the chanel for processing
 func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *common.Address, filter *bind.FilterOpts) uint64 {
 
@@ -121,57 +138,146 @@ func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *c
 		swap      *types.Swap
 		lastBlkNr uint64
 	)
-
-	// get the iterator if all swaps according to provided filter
-	it, err := contract.FilterSwap(filter, nil, nil)
+	// get the iterator for uniswap swap event according to provided filter
+	itSwap, err := contract.FilterSwap(filter, nil, nil)
 	if err != nil {
 		sws.log.Errorf("Cannot get swap iterator: %s", err)
 		return 0
 	}
+	zero := new(big.Int).SetInt64(0)
 
-	// loop thru all swaps
-
-	for it.Next() {
-		blkNumber := hexutil.Uint64(it.Event.Raw.BlockNumber)
-
-		blk, err := sws.repo.BlockByNumber(&blkNumber)
-		if err != nil {
-			sws.log.Errorf("Block was not found for pair %s; %s", pair.String(), err.Error())
-			return lastBlkNr
-		}
-
-		// log action
-		sws.log.Debugf("Loading swap from block nr# %d, tx: %s", it.Event.Raw.BlockNumber, it.Event.Raw.TxHash.String())
-
-		// prep sending struct and advance transaction index
-		swap = &types.Swap{
-			BlockNumber: &blk.Number,
-			TimeStamp:   &blk.TimeStamp,
-			Pair:        *pair,
-			Sender:      it.Event.Sender,
-			To:          it.Event.To,
-			Hash:        types.BytesToHash(it.Event.Raw.TxHash.Bytes()),
-			Amount0In:   it.Event.Amount0In,
-			Amount0Out:  it.Event.Amount0Out,
-			Amount1In:   it.Event.Amount1In,
-			Amount1Out:  it.Event.Amount1Out,
-		}
+	for itSwap.Next() {
+		blk := sws.getUniswapBlock(itSwap.Event.Raw.BlockNumber, nil)
+		sws.log.Debugf("Loading uniswap swap event from block nr# %d, tx: %s, time: %s", itSwap.Event.Raw.BlockNumber, itSwap.Event.Raw.TxHash.String(), blk.TimeStamp.String())
+		swap = newSwap(*blk, pair)
+		swap.Type = types.SwapNormal
+		swap.Sender = itSwap.Event.To
+		swap.Hash = types.BytesToHash(itSwap.Event.Raw.TxHash.Bytes())
+		swap.Amount0In = itSwap.Event.Amount0In
+		swap.Amount0Out = itSwap.Event.Amount0Out
+		swap.Amount1In = itSwap.Event.Amount1In
+		swap.Amount1Out = itSwap.Event.Amount1Out
+		swap.Reserve0 = zero
+		swap.Reserve1 = zero
 
 		if lastBlkNr < uint64(blk.Number) {
 			lastBlkNr = uint64(blk.Number)
 		}
-
-		sws.buffer <- &evtSwap{swp: swap}
-
-		// check for sigStop
-		select {
-		case <-sws.sigStop:
-			// stop signal received?
+		if sws.isStopSignal() {
 			return 0
-		default:
 		}
+		sws.buffer <- &evtSwap{swp: swap}
 	}
 
-	return lastBlkNr
+	// get the iterator for uniswap mint event according to provided filter
+	itMint, err := contract.FilterMint(filter, nil)
+	if err != nil {
+		sws.log.Errorf("Cannot get uniswap mint iterator: %s", err)
+		return 0
+	}
 
+	for itMint.Next() {
+		blk := sws.getUniswapBlock(itMint.Event.Raw.BlockNumber, nil)
+		txhash := types.BytesToHash(itMint.Event.Raw.TxHash.Bytes())
+		tx, _ := sws.repo.Transaction(&txhash)
+		sws.log.Debugf("Loading uniswap mint event from block nr# %d, tx: %s, time: %s", itMint.Event.Raw.BlockNumber, itMint.Event.Raw.TxHash.String(), blk.TimeStamp.String())
+		swap = newSwap(*blk, pair)
+		swap.Type = types.SwapMint
+		swap.Sender = tx.From
+		swap.Hash = types.BytesToHash(itMint.Event.Raw.TxHash.Bytes())
+		swap.Amount0In = itMint.Event.Amount0
+		swap.Amount0Out = zero
+		swap.Amount1In = itMint.Event.Amount1
+		swap.Amount1Out = zero
+		swap.Reserve0 = zero
+		swap.Reserve1 = zero
+
+		if lastBlkNr < uint64(blk.Number) {
+			lastBlkNr = uint64(blk.Number)
+		}
+		if sws.isStopSignal() {
+			return 0
+		}
+		sws.buffer <- &evtSwap{swp: swap}
+	}
+
+	// get the iterator for uniswap burn event according to provided filter
+	itBurn, err := contract.FilterBurn(filter, nil, nil)
+	if err != nil {
+		sws.log.Errorf("Cannot get uniswap burn iterator: %s", err)
+		return 0
+	}
+
+	for itBurn.Next() {
+		blk := sws.getUniswapBlock(itBurn.Event.Raw.BlockNumber, nil)
+		txhash := types.BytesToHash(itBurn.Event.Raw.TxHash.Bytes())
+		tx, _ := sws.repo.Transaction(&txhash)
+		sws.log.Debugf("Loading uniswap burn event from block nr# %d, tx: %s, time: %s", itBurn.Event.Raw.BlockNumber, itBurn.Event.Raw.TxHash.String(), blk.TimeStamp.String())
+		swap = newSwap(*blk, pair)
+		swap.Type = types.SwapBurn
+		swap.Sender = tx.From
+		swap.Hash = types.BytesToHash(itBurn.Event.Raw.TxHash.Bytes())
+		swap.Amount0In = zero
+		swap.Amount0Out = itBurn.Event.Amount0
+		swap.Amount1In = zero
+		swap.Amount1Out = itBurn.Event.Amount1
+		swap.Reserve0 = zero
+		swap.Reserve1 = zero
+
+		if lastBlkNr < uint64(blk.Number) {
+			lastBlkNr = uint64(blk.Number)
+		}
+		if sws.isStopSignal() {
+			return 0
+		}
+		sws.buffer <- &evtSwap{swp: swap}
+	}
+
+	// get the iterator for uniswap sync event according to provided filter
+	itSync, err := contract.FilterSync(filter)
+	if err != nil {
+		sws.log.Errorf("Cannot get uniswap sync iterator: %s", err)
+		return 0
+	}
+
+	for itSync.Next() {
+		blk := sws.getUniswapBlock(itSync.Event.Raw.BlockNumber, nil)
+		sws.log.Debugf("Loading uniswap sync event from block nr# %d, tx: %s, time: %s", itSync.Event.Raw.BlockNumber, itSync.Event.Raw.TxHash.String(), blk.TimeStamp.String())
+		swap = newSwap(*blk, pair)
+		swap.Type = types.SwapSync
+		swap.Hash = types.BytesToHash(itSync.Event.Raw.TxHash.Bytes())
+		swap.Amount0In = zero
+		swap.Amount0Out = zero
+		swap.Amount1In = zero
+		swap.Amount1Out = zero
+		swap.Reserve0 = itSync.Event.Reserve0
+		swap.Reserve1 = itSync.Event.Reserve1
+
+		if lastBlkNr < uint64(blk.Number) {
+			lastBlkNr = uint64(blk.Number)
+		}
+		if sws.isStopSignal() {
+			return 0
+		}
+		sws.buffer <- &evtSwap{swp: swap}
+	}
+	return lastBlkNr
+}
+
+func (sws *uniswapScanner) isStopSignal() bool {
+	select {
+	case <-sws.sigStop:
+		// stop signal received?
+		return true
+	default:
+	}
+	return false
+}
+
+func newSwap(block types.Block, pair *common.Address) *types.Swap {
+	return &types.Swap{
+		BlockNumber: &block.Number,
+		TimeStamp:   &block.TimeStamp,
+		Pair:        *pair,
+	}
 }
