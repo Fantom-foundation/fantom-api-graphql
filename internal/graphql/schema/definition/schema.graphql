@@ -184,6 +184,13 @@ type Query {
     # then it takes period for last month till now.
     defiTimePrices(address:Address!, resolution:String, fromDate:Int, toDate:Int, direction:Int):[DefiTimePrice!]!
     
+    # defiTimeReserves returns reserves for specified pair, time resolution and interval.
+    # Address is pair address and is mandatory.
+    # Resolution can be {month, day, 4h, 1h, 30m 15m, 5m, 1m}, is optional, default is a day.
+    # Dates are in unix UTC number and are optional. When not provided
+    # then it takes period for last month till now.
+    defiTimeReserves(address:Address!, resolution:String, fromDate:Int, toDate:Int):[DefiTimeReserve!]!
+
     # erc20Token provides the information about an ERC20 token specified by it's
     # address, if available. The resolver returns NULL if the token does not exist.
     erc20Token(token: Address!):ERC20Token

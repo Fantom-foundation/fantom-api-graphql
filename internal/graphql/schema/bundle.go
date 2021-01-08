@@ -76,40 +76,79 @@ enum DefiTokenBalanceType {
     DEBT
 }
 
-# Price represents price information of core Opera token
-type Price {
-    "Source unit symbol."
-    fromSymbol: String!
+# CurrentState represents the current active state
+# of the chain information condensed on one place.
+type CurrentState {
+    # epoch is the last sealed Epoch structure
+    sealedEpoch: Epoch!
 
-    "Target unit symbol."
-    toSymbol: String!
+    # blocks represents number of blocks in the chain.
+    blocks: Long!
 
-    "Price of the source symbol unit in target symbol unit."
-    price: Float!
+    # transactions represents number of transactions in the chain.
+    transactions: Long!
 
-    "Price change in last 24h."
-    change24: Float!
+    # validators represents number of validators in the network.
+    validators: Long!
 
-    "Price change in percent in last 24h."
-    changePct24: Float!
+    # accounts represents number of accounts participating on transactions.
+    accounts: Long!
 
-    "Open 24h price."
-    open24: Float!
+    # sfcContractAddress is the address of the SFC contract
+    # used for PoS staking control.
+    sfcContractAddress: Address!
 
-    "Highest 24h price."
-    high24: Float!
+    # sfcLockingEnabled indicates if the SFC locking feature is enabled.
+    sfcLockingEnabled: Boolean!
 
-    "Lowest 24h price."
-    low24: Float!
+    # sfcVersion indicates the current version of the SFC contract.
+    # The version is encoded into 3 bytes representing ASCII version numbers
+    # with the most significant byte first [<8bit major><8bit minor><8bit revision>].
+    # I.e. Version 1.0.2 = "102" = 0x313032
+    sfcVersion: Long!
+}
+# UniswapPair represents the information about single
+# Uniswap pair managed by the Uniswap Core.
+type UniswapPair {
+    # pairAddress represents the Address of the Pair
+    # and also the address of the ERC20 token
+    # managing the share of each liquidity participant.
+    pairAddress: Address!
 
-    "Volume exchanged in last 24h price."
-    volume24: Float!
+    # tokens represent the list of tokens in the pair.
+    # The array always contain two tokens, their order
+    # is irrelevant from the Uniswap perspective, but
+    # we always return them in the same order.
+    tokens: [ERC20Token!]!
 
-    "Market cap of the source unit."
-    marketCap: Float!
+    # reserves of the tokens of the pair.
+    # The reserve index inside the array corresponds
+    # with the token position.
+    reserves: [BigInt!]!
 
-    "Timestamp of the last update of this price value."
-    lastUpdate: Long!
+    # The timestamp of the block
+    # in which this reserves state was reached.
+    reservesTimeStamp: Long!
+
+    # cumulative prices of the tokens of the pair.
+    # The price index inside the array corresponds
+    # with the token position.
+    cumulativePrices: [BigInt!]!
+
+    # lastKValue represents the last coeficient
+    # of reserves multiplied. It's the value Uniswap protocol
+    # uses to control reserves growth on both sides of the pool.
+    lastKValue: BigInt!
+
+    # totalSupply represents the total amount
+    # of the pair tokens in circulation and represents
+    # the total share pool of all the participants.
+    totalSupply: BigInt!
+
+    # share represents the share of the given user/participant on the pair.
+    # To get the share percentage, divide this value by the total supply
+    # of the pair.
+    shareOf(user: Address!): BigInt!
 }
 
 
@@ -153,6 +192,47 @@ type DefiTimeVolume {
     # value represents amount of the volume
     value: BigInt!
 }
+
+# DefiTimePrice represents a calculated price for swap pairs in history
+type DefiTimePrice {
+
+	# pairAddress represents the Address of the Pair
+    pairAddress: Address!
+
+    # time indicates a period for this price
+    time: String!
+
+    # opening price for this time period
+	open: Float! 
+
+    # closing price for this time period
+	close: Float!
+
+    # lowest price for this time period
+	low: Float!
+
+    # highest price for this time period
+	high: Float!
+
+    # average price for this time period
+    average: Float! 
+}
+
+# DefiTimeReserve represents a Uniswap pair reserve in history
+type DefiTimeReserve {
+
+    # UniswapPair represents the information about single
+    # Uniswap pair managed by the Uniswap Core.
+    uniswapPair: UniswapPair!
+
+    # Time represents UTC ISO time tag for this reserve values
+    time: String!
+
+    # ReserveClose is close reserve for this time period
+	# for both tokens. Index inside the array corresponds
+    # with the token position.
+    reserveClose: [BigInt!]!
+}
 # TransactionList is a list of transaction edges provided by sequential access request.
 type TransactionList {
     # Edges contains provided edges of the sequential list.
@@ -172,52 +252,6 @@ type TransactionListEdge {
 }
 
 
-# BlockList is a list of block edges provided by sequential access request.
-type BlockList {
-    # Edges contains provided edges of the sequential list.
-    edges: [BlockListEdge!]!
-
-    # TotalCount is the maximum number of blocks available for sequential access.
-    totalCount: BigInt!
-
-    # PageInfo is an information about the current page of block edges.
-    pageInfo: ListPageInfo!
-}
-
-# BlockListEdge is a single edge in a sequential list of blocks.
-type BlockListEdge {
-    cursor: Cursor!
-    block: Block!
-}
-
-# StakerInfo represents extended staker information from smart contract.
-type StakerInfo {
-    "Name represents the name of the staker."
-    name: String
-
-    "LogoUrl represents staker logo URL."
-    logoUrl: String
-
-    "Website represents a link to stakers website."
-    website: String
-
-    "Contact represents a link to contact to the staker."
-    contact: String
-}
-# ListPageInfo contains information about a sequential access list page.
-type ListPageInfo {
-    # First is the cursor of the first edge of the edges list. null for empty list.
-    first: Cursor
-
-    # Last if the cursor of the last edge of the edges list. null for empty list.
-    last: Cursor
-
-    # HasNext specifies if there is another edge after the last one.
-    hasNext: Boolean!
-
-    # HasNext specifies if there is another edge before the first one.
-    hasPrevious: Boolean!
-}
 # Transaction is an Opera block chain transaction.
 type Transaction {
     # Hash is the unique hash of this transaction.
@@ -295,94 +329,6 @@ type Transaction {
     relayToken: ERC20Token
 }
 
-# Block is an Opera block chain block.
-type Block {
-    # Number is the number of this block, starting at 0 for the genesis block.
-    number: Long!
-
-    # Hash is the unique block hash of this block.
-    hash: Hash!
-
-    # Parent is the parent block of this block.
-    parent: Block
-
-    # TransactionCount is the number of transactions in this block.
-    transactionCount: Int
-
-    # Timestamp is the unix timestamp at which this block was mined.
-    timestamp: Long!
-
-    # GasLimit represents the maximum gas allowed in this block.
-    gasLimit: Long!
-
-    # GasUsed represents the actual total used gas by all transactions in this block.
-    gasUsed: Long!
-
-    # txHashList is the list of unique hash values of transaction
-    # assigned to the block.
-    txHashList: [Hash!]!
-
-    # txList is a list of transactions assigned to the block.
-    txList: [Transaction!]!
-}
-
-# ERC20Token represents a generic ERC20 token.
-type ERC20Token {
-    # address of the token is used as the token's unique identifier.
-    address: Address!
-
-    # name of the token.
-    name: String!
-
-    # symbol used as an abbreviation for the token.
-    symbol: String!
-
-    # decimals is the number of decimals the token supports.
-    # The most common value is 18 to mimic the ETH to WEI relationship.
-    decimals: Int!
-
-    # totalSupply represents total amount of tokens across all accounts
-    totalSupply: BigInt!
-
-    # logoURL represents a URL address of a logo of the token. It's always
-    # provided, but unknown tokens have this set to a generic logo file.
-    logoURL: String!
-
-    # balanceOf represents the total available balance of the token
-    # on the account regardless of the DeFi usage of the token.
-    # It's effectively the amount available held by the ERC20 token
-    # on the account behalf.
-    balanceOf(owner: Address!): BigInt!
-
-    # allowance represents the amount of ERC20 tokens unlocked
-    # by the owner / token holder to be accessible for the given spender.
-    allowance(owner: Address!, spender: Address!): BigInt!
-}
-
-# DelegationList is a list of delegations edges provided by sequential access request.
-type DelegationList {
-    "Edges contains provided edges of the sequential list."
-    edges: [DelegationListEdge!]!
-
-    """
-    TotalCount is the maximum number of delegations
-    available for sequential access.
-    """
-    totalCount: BigInt!
-
-    "PageInfo is an information about the current page of delegation edges."
-    pageInfo: ListPageInfo!
-}
-
-# DelegationListEdge is a single edge in a sequential list of delegations.
-type DelegationListEdge {
-    "Cursor defines a scroll key to this edge."
-    cursor: Cursor!
-
-    "Delegator represents the delegator provided by this list edge."
-    delegation: Delegation!
-}
-
 # Delegation represents a delegation on Opera blockchain.
 type Delegation {
     "Address of the delegator account."
@@ -453,6 +399,114 @@ type Delegation {
     tokenizerAllowedToWithdraw: Boolean!
 }
 
+# WithdrawRequest represents a request for partial stake withdraw.
+type WithdrawRequest {
+    "Address of the authorized request."
+    address: Address!
+
+    "Address of the receiving account."
+    receiver: Address!
+
+    "Account receiving the withdraw request."
+    account: Account!
+
+    "Staker Id of the staker involved in the withdraw request."
+    stakerID: Long!
+
+    "Details of the staker involved in the withdraw request."
+    staker: Staker!
+
+    "Unique withdraw request identifier."
+    withdrawRequestID: BigInt!
+
+    "Is this a partial delegation withdraw, or staker withdraw?"
+    isDelegation: Boolean!
+
+    "Amount of WEI requested to be withdrawn."
+    amount: BigInt!
+
+    "Block in which the withdraw request was registered."
+    requestBlock: Block!
+
+    """
+    Block in which the withdraw request was finalized.
+    The value is NULL for pending request.
+    """
+    withdrawBlock: Block
+
+    """
+    Amount of WEI slashed as a penalty for cheating.
+    The penalty is applied not only to staker withdraw,
+    but also to delegations of a cheating staker.
+    The value is NULL for pending requests.
+    """
+    withdrawPenalty: BigInt
+}
+
+# DeactivatedDelegation represents a prepared delegation full withdraw.
+# Fully withdrawn delegations must be prepared first and finalized
+# only after the lock down period passes.
+type DeactivatedDelegation {
+    "Address of the delegator."
+    address: Address!
+
+    "Staker Id of the staker involved in the withdraw request."
+    stakerID: Long!
+
+    "Details of the staker involved in the withdraw request."
+    staker: Staker!
+
+    "Block in which the delegation deactivation was registered."
+    requestBlock: Block!
+
+    """
+    Block in which the delegation was withdrawn.
+    The value is NULL for pending request.
+    """
+    withdrawBlock: Block
+
+    """
+    Amount of WEI slashed as a penalty for cheating.
+    The penalty is applied to delegators' rewards
+    in case their staker is flagged.
+    The value is NULL for pending requests.
+    """
+    withdrawPenalty: BigInt
+}
+
+# ERC20Token represents a generic ERC20 token.
+type ERC20Token {
+    # address of the token is used as the token's unique identifier.
+    address: Address!
+
+    # name of the token.
+    name: String!
+
+    # symbol used as an abbreviation for the token.
+    symbol: String!
+
+    # decimals is the number of decimals the token supports.
+    # The most common value is 18 to mimic the ETH to WEI relationship.
+    decimals: Int!
+
+    # totalSupply represents total amount of tokens across all accounts
+    totalSupply: BigInt!
+
+    # logoURL represents a URL address of a logo of the token. It's always
+    # provided, but unknown tokens have this set to a generic logo file.
+    logoURL: String!
+
+    # balanceOf represents the total available balance of the token
+    # on the account regardless of the DeFi usage of the token.
+    # It's effectively the amount available held by the ERC20 token
+    # on the account behalf.
+    balanceOf(owner: Address!): BigInt!
+
+    # allowance represents the amount of ERC20 tokens unlocked
+    # by the owner / token holder to be accessible for the given spender.
+    allowance(owner: Address!, spender: Address!): BigInt!
+}
+
 # PendingRewards represents a detail of pending rewards for staking and delegations
 type PendingRewards {
     "Staker the pending reward relates to."
@@ -468,187 +522,62 @@ type PendingRewards {
     toEpoch: Long!
 }
 
-# Represents epoch information.
-type Epoch {
-    "Number the epoch end."
-    id: Long!
-
-    "Timestamp of the epoch end."
-    endTime: BigInt!
-
-    "Epoch duration in seconds."
-    duration: BigInt!
-
-    "Fee at the epoch."
-    epochFee: BigInt!
-
-    "Total base reward weight on epoch."
-    totalBaseRewardWeight: BigInt!
-
-    "Total transaction reward weight on epoch."
-    totalTxRewardWeight: BigInt!
-
-    "Base reward per second of epoch."
-    baseRewardPerSecond: BigInt!
-
-    "Total amount staked."
-    stakeTotalAmount: BigInt!
-
-    "Total amount delegated."
-    delegationsTotalAmount: BigInt!
-
-    "Total supply amount."
-    totalSupply: BigInt!
-}
-
-# Contract defines block-chain smart contract information container
-type Contract {
-    "Address represents the contract address."
-    address: Address!
-
-    "DeployedBy represents the smart contract deployment transaction reference."
-    deployedBy: Transaction!
-
-    "transactionHash represents the smart contract deployment transaction hash."
-    transactionHash: Hash!
-
-    "Smart contract name. Empty if not available."
-    name: String!
-
-    "Smart contract version identifier. Empty if not available."
-    version: String!
-
-    """
-    License specifies an open source license the contract was published with.
-    Empty if not specified.
-    """
-    license: String!
-
-    "Smart contract author contact. Empty if not available."
-    supportContact: String!
-
-    "Smart contract compiler identifier. Empty if not available."
-    compiler: String!
-
-    "Smart contract source code. Empty if not available."
-    sourceCode: String!
-
-    "Smart contract ABI definition. Empty if not available."
-    abi: String!
-
-    """
-    Validated is the unix timestamp at which the source code was validated
-    against the deployed byte code. Null if not validated yet.
-    """
-    validated: Long
-
-    "Timestamp is the unix timestamp at which this smart contract was deployed."
-    timestamp: Long!
-}
-
-# ContractValidationInput represents a set of data sent from client
-# to validate deployed contract with the provided source code.
-input ContractValidationInput {
-    "Address of the contract being validated."
-    address: Address!
-
-    "Optional smart contract name. Maximum allowed length is 64 characters."
+# StakerInfo represents extended staker information from smart contract.
+type StakerInfo {
+    "Name represents the name of the staker."
     name: String
 
-    "Optional smart contract version identifier. Maximum allowed length is 14 characters."
-    version: String
+    "LogoUrl represents staker logo URL."
+    logoUrl: String
 
-    "Optional smart contract author contact. Maximum allowed length is 64 characters."
-    supportContact: String
+    "Website represents a link to stakers website."
+    website: String
 
-    """
-    License specifies an open source license the contract was published with.
-    Empty if not specified.
-    """
-    license: String
-
-    "Optimized specifies if the compiler was set to optimize the byte code."
-    optimized: Boolean = true
-
-    """
-    OptimizeRuns specifies number of optimization runs the compiler was set
-    to execute during the byte code optimizing.
-    """
-    optimizeRuns: Int = 200
-
-    "Smart contract source code."
-    sourceCode: String!
+    "Contact represents a link to contact to the staker."
+    contact: String
 }
-
-# ContractList is a list of smart contract edges provided by sequential access request.
-type ContractList {
+# BlockList is a list of block edges provided by sequential access request.
+type BlockList {
     # Edges contains provided edges of the sequential list.
-    edges: [ContractListEdge!]!
+    edges: [BlockListEdge!]!
 
-    # TotalCount is the maximum number of contracts available for sequential access.
+    # TotalCount is the maximum number of blocks available for sequential access.
     totalCount: BigInt!
 
-    # PageInfo is an information about the current page of contract edges.
+    # PageInfo is an information about the current page of block edges.
     pageInfo: ListPageInfo!
 }
 
-# TransactionListEdge is a single edge in a sequential list of transactions.
-type ContractListEdge {
+# BlockListEdge is a single edge in a sequential list of blocks.
+type BlockListEdge {
     cursor: Cursor!
-    contract: Contract!
+    block: Block!
 }
 
-# Hash is a 32 byte binary string, represented by 0x prefixed hexadecimal.
-scalar Hash
+# DelegationList is a list of delegations edges provided by sequential access request.
+type DelegationList {
+    "Edges contains provided edges of the sequential list."
+    edges: [DelegationListEdge!]!
 
-# Address is a 20 byte Opera address, represented as 0x prefixed hexadecimal number.
-scalar Address
+    """
+    TotalCount is the maximum number of delegations
+    available for sequential access.
+    """
+    totalCount: BigInt!
 
-# BigInt is a large integer value. Input is accepted as either a JSON number,
-# or a hexadecimal string alternatively prefixed with 0x. Output is 0x prefixed hexadecimal.
-scalar BigInt
-
-# Long is a 64 bit unsigned integer value.
-scalar Long
-
-# Bytes is an arbitrary length binary string, represented as 0x-prefixed hexadecimal.
-# An empty byte string is represented as '0x'.
-scalar Bytes
-
-# Cursor is a string representing position in a sequential list of edges.
-scalar Cursor
-
-# CurrentState represents the current active state
-# of the chain information condensed on one place.
-type CurrentState {
-    # epoch is the last sealed Epoch structure
-    sealedEpoch: Epoch!
-
-    # blocks represents number of blocks in the chain.
-    blocks: Long!
-
-    # transactions represents number of transactions in the chain.
-    transactions: Long!
-
-    # validators represents number of validators in the network.
-    validators: Long!
-
-    # accounts represents number of accounts participating on transactions.
-    accounts: Long!
-
-    # sfcContractAddress is the address of the SFC contract
-    # used for PoS staking control.
-    sfcContractAddress: Address!
-
-    # sfcLockingEnabled indicates if the SFC locking feature is enabled.
-    sfcLockingEnabled: Boolean!
-
-    # sfcVersion indicates the current version of the SFC contract.
-    # The version is encoded into 3 bytes representing ASCII version numbers
-    # with the most significant byte first [<8bit major><8bit minor><8bit revision>].
-    # I.e. Version 1.0.2 = "102" = 0x313032
-    sfcVersion: Long!
+    "PageInfo is an information about the current page of delegation edges."
+    pageInfo: ListPageInfo!
 }
+
+# DelegationListEdge is a single edge in a sequential list of delegations.
+type DelegationListEdge {
+    "Cursor defines a scroll key to this edge."
+    cursor: Cursor!
+
+    "Delegator represents the delegator provided by this list edge."
+    delegation: Delegation!
+}
+
 # Represents staker information.
 type Staker {
     "Id number the staker."
@@ -764,400 +693,117 @@ type Staker {
     withdrawRequests: [WithdrawRequest!]!
 }
 
-# FMintAccount represents an informastion about account details
-# in DeFi/fMint protocol.
-type FMintAccount {
-    # address of the DeFi account.
+# ListPageInfo contains information about a sequential access list page.
+type ListPageInfo {
+    # First is the cursor of the first edge of the edges list. null for empty list.
+    first: Cursor
+
+    # Last if the cursor of the last edge of the edges list. null for empty list.
+    last: Cursor
+
+    # HasNext specifies if there is another edge after the last one.
+    hasNext: Boolean!
+
+    # HasNext specifies if there is another edge before the first one.
+    hasPrevious: Boolean!
+}
+# Ballot represents an official deployed ballot contract
+# used for Fantom Opera related voting poll.
+type Ballot {
+    # Address of the ballot, correspond with the smart contract address.
     address: Address!
 
-    # collateralList represents a list of all collateral tokens
-    # linked with the account.
-    collateralList: [Address!]!
+    # Deployed smart contract handling the ballot voting.
+    contract: Contract!
 
-    # collaterals represents a list of all collateral assets.
-    collateral: [FMintTokenBalance!]!
+    # Short name of the ballot.
+    name: String!
 
-    # collateralValue represents the current collateral value
-    # in ref. denomination (fUSD).
-    collateralValue: BigInt!
+    # URL of the ballot detailed information page.
+    detailsUrl: String!
 
-    # debtList represents a list of all debt tokens linked with the account.
-    debtList: [Address!]!
+    # An approximate timestamp after which the ballot opens for voting.
+    start: Long!
 
-    # debts represents the list of all the current borrowed tokens.
-    debt: [FMintTokenBalance!]!
+    # An approximate timestamp after which the ballot
+    # is closed and no longer accepts votes.
+    end: Long!
 
-    # debtValue represents the current debt value
-    # in ref. denomination (fUSD).
-    debtValue: BigInt!
+    # Informs if the ballot is open for voting.
+    isOpen: Boolean!
 
-    # rewardsEarned represents accumulated rewards
-    # earned on the DeFi / fMint account for the excessive
-    # collateral value. Please note that the rewards could still
-    # be burned, if the account is not eligible to claim the reward.
-    rewardsEarned: BigInt!
+    # Informs if the ballot has already been finalized
+    # and the winning proposal is available.
+    isFinalized: Boolean!
 
-    # rewardsStashed represents accumulated rewards
-    # earned on the DeFi / fMint account for the excessive
-    # collateral value and stored into the stash for future
-    # claim.
-    rewardsStashed: BigInt!
+    # List of proposals of the ballot.
+    proposals: [BallotProposal!]!
 
-    # canClaimRewards informs if the fMint account collateral
-    # to debt is high enough to allow earned rewards claiming.
-    canClaimRewards: Boolean!
-
-    # canReceiveRewards informs if the fMint account collateral
-    # to debt is high enough to receive earned rewards. If the ratio
-    # is below configured one, earned rewards are burned.
-    canReceiveRewards: Boolean!
-
-    # canPushNewRewards indicates if new rewards are unlocked
-    # inside the reward distribution and can be pushed into
-    # the system to distribute them among eligible accounts.
-    canPushNewRewards: Boolean!
+    # Index of the winning proposal.
+    # Is NULL if the ballot has not been finalized yet.
+    winner: Int
 }
 
-# FMintTokenBalance represents a balance of a specific DeFi token
-# on an fMint protocol account.
-# The balance is used for both collateral deposits and minting debt.
-type FMintTokenBalance {
-    # type represents the type of the balance record.
-    type: DefiTokenBalanceType!
+# BallotProposal represents a proposal in the ballot.
+type BallotProposal {
+    # id is the ballot proposal identifier.
+    id: Int!
 
-    # tokenAddress represents unique identifier of the token.
-    tokenAddress: Address!
-
-    # token represents the detail of the token
-    token: DefiToken!
-
-    # current balance of the token on the account.
-    balance: BigInt!
-
-    # value of the current balance of the token on the account
-    # in ref. denomination (fUSD).
-    value: BigInt!
+    # name is the name of the proposal option.
+    name: String!
 }
 
-# DefiSettings represents the set of current settings and limits
-# applied to DeFi operations.
-type DefiSettings {
-    # mintFee4 is the current fee applied to all minting operations on fMint protocol.
-    # Value is represented in 4 digits, e.g. value 25 = 0.0025 => 0.25% fee.
-    mintFee4: BigInt!
+# Vote represents a selected vote in a ballot.
+type Vote {
+    # Address of the ballot the Vote relates to.
+    ballot: Address!
 
-    # minCollateralRatio4 is the minimal allowed ratio between
-    # collateral and debt values in ref. denomination (fUSD)
-    # on which the borrow trade is allowed.
-    # Value is represented in 4 digits,
-    # e.g. value 25000 = 3.0x => (debt x 3.0 <= collateral)
-    minCollateralRatio4: BigInt!
+    # Address of the voter who placed the vote.
+    voter: Address!
 
-    # rewardCollateralRatio4 is the minimal ratio between
-    # collateral and debt values in ref. denomination (fUSD)
-    # on which the account is eligible for rewards distribution.
-    # Collateral below this ratio means all the pending rewards
-    # will be burnt and lost.
-    rewardCollateralRatio4: BigInt!
-
-    # decimals represents the decimals / digits correction
-    # applied to the fees and ratios internally to correctly represent
-    # fraction numbers. E.g. correction value 4 => ratio/fee x 10000.
-    decimals: Int!
-
-    # priceOracleAggregate is the address of the current price oracle
-    # aggregate used by the DeFi to obtain USD price of tokens managed.
-    priceOracleAggregate: Address!
-
-    # StakeTokenizerContract is the address of the Stake Tokenizer contract.
-    StakeTokenizerContract: Address!
-
-    # StakeTokenizedERC20Token is the address of the Tokenized Stake ERC20 contract.
-    StakeTokenizedERC20Token: Address!
-
-    # fMintAddress is the address of the fMint contract.
-    fMintContract: Address!
-
-	# fMintAddressProvider represents the address of the fMint address provider.
-	fMintAddressProvider: Address!
-
-    # tokenRegistryContract is the address of the fMint token registry.
-    fMintTokenRegistry: Address!
-
-    # fMintRewardDistribution is the address of the DeFi fMint
-    # reward distribution contract.
-    fMintRewardDistribution: Address!
-
-    # fMintCollateralPool is the address of the fMint collateral pool.
-    fMintCollateralPool: Address!
-
-    # fMintDebtPool is the address of the fMint debt pool.
-    fMintDebtPool: Address!
-
-    # uniswapCoreFactory is the address of the Uniswap Core Factory contract.
-    uniswapCoreFactory: Address!
-
-    # uniswapRouter is the address of the Uniswap Router contract.
-    uniswapRouter: Address!
-}
-
-# EstimatedRewards represents a calculated rewards estimation for an account or amount staked
-type EstimatedRewards {
-    "Amount of FTM tokens expected to be staked for the calculation."
-    staked: Long!
-
-    """
-    dailyReward represents amount of FTM tokens estimated
-    to be rewarded for staked amount in average per day.
-    """
-    dailyReward: BigInt!
-
-    """
-    weeklyReward represents amount of FTM tokens estimated
-    to be rewarded for staked amount in average per week.
-    """
-    weeklyReward: BigInt!
-
-    """
-    monthlyReward represents amount of FTM tokens estimated
-    to be rewarded for staked amount in average per month.
-    """
-    monthlyReward: BigInt!
-
-    """
-    yearlyReward represents amount of FTM tokens estimated
-    to be rewarded for staked amount in average per year.
-    """
-    yearlyReward: BigInt!
-
-    """
-    currentRewardYearRate represents average reward rate
-    for any staked amount in average per year.
-    The value is calculated as linear gross proceeds for staked amount
-    of tokens yearly.
-    """
-    currentRewardRateYearly: Int!
-
-    """
-    Total amount of staked FTM tokens used for the calculation in WEI units.
-    The estimation uses total staked amount, not the effective amount provided
-    by the last epoch. The effective amount does include current
-    un-delegations and also skips offline self-staking and flagged staking.
-    """
-    totalStaked: BigInt!
-
-    """
-    Information about the last sealed epoch of the Opera blockchain.
-    The epoch provides useful information about total FTM supply,
-    total amount staked, rewards rate and weight, fee, etc.
-    """
-    lastEpoch: Epoch!
-}
-# WithdrawRequest represents a request for partial stake withdraw.
-type WithdrawRequest {
-    "Address of the authorized request."
-    address: Address!
-
-    "Address of the receiving account."
-    receiver: Address!
-
-    "Account receiving the withdraw request."
+    # Account of the voter who placed the vote.
     account: Account!
 
-    "Staker Id of the staker involved in the withdraw request."
-    stakerID: Long!
-
-    "Details of the staker involved in the withdraw request."
-    staker: Staker!
-
-    "Unique withdraw request identifier."
-    withdrawRequestID: BigInt!
-
-    "Is this a partial delegation withdraw, or staker withdraw?"
-    isDelegation: Boolean!
-
-    "Amount of WEI requested to be withdrawn."
-    amount: BigInt!
-
-    "Block in which the withdraw request was registered."
-    requestBlock: Block!
-
-    """
-    Block in which the withdraw request was finalized.
-    The value is NULL for pending request.
-    """
-    withdrawBlock: Block
-
-    """
-    Amount of WEI slashed as a penalty for cheating.
-    The penalty is applied not only to staker withdraw,
-    but also to delegations of a cheating staker.
-    The value is NULL for pending requests.
-    """
-    withdrawPenalty: BigInt
+    # The selected proposal index the voter chose.
+    vote: Int
 }
 
-# DeactivatedDelegation represents a prepared delegation full withdraw.
-# Fully withdrawn delegations must be prepared first and finalized
-# only after the lock down period passes.
-type DeactivatedDelegation {
-    "Address of the delegator."
-    address: Address!
+# BallotList is a list of ballot edges provided by sequential access request.
+type BallotList {
+    # Edges contains provided edges of the sequential list.
+    edges: [BallotListEdge!]!
 
-    "Staker Id of the staker involved in the withdraw request."
-    stakerID: Long!
+    # TotalCount is the maximum number of ballots available
+    # for sequential access.
+    totalCount: BigInt!
 
-    "Details of the staker involved in the withdraw request."
-    staker: Staker!
-
-    "Block in which the delegation deactivation was registered."
-    requestBlock: Block!
-
-    """
-    Block in which the delegation was withdrawn.
-    The value is NULL for pending request.
-    """
-    withdrawBlock: Block
-
-    """
-    Amount of WEI slashed as a penalty for cheating.
-    The penalty is applied to delegators' rewards
-    in case their staker is flagged.
-    The value is NULL for pending requests.
-    """
-    withdrawPenalty: BigInt
+    # PageInfo is an information about the current page
+    # of ballot edges.
+    pageInfo: ListPageInfo!
 }
 
-# UniswapPair represents the information about single
-# Uniswap pair managed by the Uniswap Core.
-type UniswapPair {
-    # pairAddress represents the Address of the Pair
-    # and also the address of the ERC20 token
-    # managing the share of each liquidity participant.
-    pairAddress: Address!
-
-    # tokens represent the list of tokens in the pair.
-    # The array always contain two tokens, their order
-    # is irrelevant from the Uniswap perspective, but
-    # we always return them in the same order.
-    tokens: [ERC20Token!]!
-
-    # reserves of the tokens of the pair.
-    # The reserve index inside the array corresponds
-    # with the token position.
-    reserves: [BigInt!]!
-
-    # The timestamp of the block
-    # in which this reserves state was reached.
-    reservesTimeStamp: Long!
-
-    # cumulative prices of the tokens of the pair.
-    # The price index inside the array corresponds
-    # with the token position.
-    cumulativePrices: [BigInt!]!
-
-    # lastKValue represents the last coeficient
-    # of reserves multiplied. It's the value Uniswap protocol
-    # uses to control reserves growth on both sides of the pool.
-    lastKValue: BigInt!
-
-    # totalSupply represents the total amount
-    # of the pair tokens in circulation and represents
-    # the total share pool of all the participants.
-    totalSupply: BigInt!
-
-    # share represents the share of the given user/participant on the pair.
-    # To get the share percentage, divide this value by the total supply
-    # of the pair.
-    shareOf(user: Address!): BigInt!
+# BallotListEdge is a single edge in a sequential list of ballots.
+type BallotListEdge {
+    cursor: Cursor!
+    ballot: Ballot!
 }
 
+# ContractList is a list of smart contract edges provided by sequential access request.
+type ContractList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ContractListEdge!]!
 
-# DefiUniswapVolume represents a calculated volume for swap pairs in history 
-type DefiUniswapVolume {
+    # TotalCount is the maximum number of contracts available for sequential access.
+    totalCount: BigInt!
 
-    # UniswapPair represents the information about single
-    # Uniswap pair managed by the Uniswap Core.
-    uniswapPair: UniswapPair!
-
-    # pairAddress represents the Address of the Pair
-    pairAddress: Address!
-
-    # dailyVolume returns swap volume for last 24 hours
-    dailyVolume: BigInt!
-
-    # weeklyVolume returns swap volume for last 7 days
-    weeklyVolume: BigInt!
-
-    # monthlyVolume returns swap volume for last month
-    monthlyVolume: BigInt!
-
-    # YearlyVolume returns swap volume for last year
-    yearlyVolume: BigInt!
-
-    # IsInFUSD indicates if TokenA from the pair has a price value to be able
-    # to calculate value in fUSD
-    isInFUSD: Boolean!
-    
+    # PageInfo is an information about the current page of contract edges.
+    pageInfo: ListPageInfo!
 }
 
-# DefiSwaps represents swap volume for given pair and time interval
-type DefiTimeVolume {
-
-    # pairAddress represents the Address of the Pair
-    pairAddress: Address!
-
-    # time indicates a period for this volume
-    time: String!
-
-    # value represents amount of the volume
-    value: BigInt!
-}
-# Account defines block-chain account information container
-type Account {
-    "Address is the address of the account."
-    address: Address!
-
-    "Balance is the current balance of the Account in WEI."
-    balance: BigInt!
-
-    """
-    TotalValue is the current total value fo the account in WEI.
-    It includes available balance,
-    delegated amount and pending staking rewards.
-    """
-    totalValue: BigInt!
-
-    """
-    Stashed represents the amount of WEI stashed
-    on this account, if any. Stashed amount comes from
-    the delegation and validation rewards.
-    """
-    stashed: BigInt!
-
-    """
-    canUnStash informs if there is a stash which can be claimed.
-    Please note that stash claiming can be locked inside SFC.
-    """
-    canUnStash: Boolean!
-
-    "txCount represents number of transaction sent from the account."
-    txCount: Long!
-
-    """
-    txList represents list of transactions of the account
-    in form of TransactionList.
-    """
-    txList (cursor:Cursor, count:Int!): TransactionList!
-
-    "Details of a staker, if the account is a staker."
-    staker: Staker
-
-    "List of delegations of the account, if the account is a delegator."
-    delegations(cursor:Cursor, count:Int = 25): DelegationList!
-
-    "Details about smart contract, if the account is a smart contract."
-    contract: Contract
+# TransactionListEdge is a single edge in a sequential list of transactions.
+type ContractListEdge {
+    cursor: Cursor!
+    contract: Contract!
 }
 
 # GovernanceContract represents basic information
@@ -1387,87 +1033,441 @@ type GovernanceVote {
     # presented.
     choices: [Long!]!
 }
-# Ballot represents an official deployed ballot contract
-# used for Fantom Opera related voting poll.
-type Ballot {
-    # Address of the ballot, correspond with the smart contract address.
+# Contract defines block-chain smart contract information container
+type Contract {
+    "Address represents the contract address."
     address: Address!
 
-    # Deployed smart contract handling the ballot voting.
-    contract: Contract!
+    "DeployedBy represents the smart contract deployment transaction reference."
+    deployedBy: Transaction!
 
-    # Short name of the ballot.
+    "transactionHash represents the smart contract deployment transaction hash."
+    transactionHash: Hash!
+
+    "Smart contract name. Empty if not available."
     name: String!
 
-    # URL of the ballot detailed information page.
-    detailsUrl: String!
+    "Smart contract version identifier. Empty if not available."
+    version: String!
 
-    # An approximate timestamp after which the ballot opens for voting.
-    start: Long!
+    """
+    License specifies an open source license the contract was published with.
+    Empty if not specified.
+    """
+    license: String!
 
-    # An approximate timestamp after which the ballot
-    # is closed and no longer accepts votes.
-    end: Long!
+    "Smart contract author contact. Empty if not available."
+    supportContact: String!
 
-    # Informs if the ballot is open for voting.
-    isOpen: Boolean!
+    "Smart contract compiler identifier. Empty if not available."
+    compiler: String!
 
-    # Informs if the ballot has already been finalized
-    # and the winning proposal is available.
-    isFinalized: Boolean!
+    "Smart contract source code. Empty if not available."
+    sourceCode: String!
 
-    # List of proposals of the ballot.
-    proposals: [BallotProposal!]!
+    "Smart contract ABI definition. Empty if not available."
+    abi: String!
 
-    # Index of the winning proposal.
-    # Is NULL if the ballot has not been finalized yet.
-    winner: Int
+    """
+    Validated is the unix timestamp at which the source code was validated
+    against the deployed byte code. Null if not validated yet.
+    """
+    validated: Long
+
+    "Timestamp is the unix timestamp at which this smart contract was deployed."
+    timestamp: Long!
 }
 
-# BallotProposal represents a proposal in the ballot.
-type BallotProposal {
-    # id is the ballot proposal identifier.
-    id: Int!
+# ContractValidationInput represents a set of data sent from client
+# to validate deployed contract with the provided source code.
+input ContractValidationInput {
+    "Address of the contract being validated."
+    address: Address!
 
-    # name is the name of the proposal option.
-    name: String!
+    "Optional smart contract name. Maximum allowed length is 64 characters."
+    name: String
+
+    "Optional smart contract version identifier. Maximum allowed length is 14 characters."
+    version: String
+
+    "Optional smart contract author contact. Maximum allowed length is 64 characters."
+    supportContact: String
+
+    """
+    License specifies an open source license the contract was published with.
+    Empty if not specified.
+    """
+    license: String
+
+    "Optimized specifies if the compiler was set to optimize the byte code."
+    optimized: Boolean = true
+
+    """
+    OptimizeRuns specifies number of optimization runs the compiler was set
+    to execute during the byte code optimizing.
+    """
+    optimizeRuns: Int = 200
+
+    "Smart contract source code."
+    sourceCode: String!
 }
 
-# Vote represents a selected vote in a ballot.
-type Vote {
-    # Address of the ballot the Vote relates to.
-    ballot: Address!
+# DefiSettings represents the set of current settings and limits
+# applied to DeFi operations.
+type DefiSettings {
+    # mintFee4 is the current fee applied to all minting operations on fMint protocol.
+    # Value is represented in 4 digits, e.g. value 25 = 0.0025 => 0.25% fee.
+    mintFee4: BigInt!
 
-    # Address of the voter who placed the vote.
-    voter: Address!
+    # minCollateralRatio4 is the minimal allowed ratio between
+    # collateral and debt values in ref. denomination (fUSD)
+    # on which the borrow trade is allowed.
+    # Value is represented in 4 digits,
+    # e.g. value 25000 = 3.0x => (debt x 3.0 <= collateral)
+    minCollateralRatio4: BigInt!
 
-    # Account of the voter who placed the vote.
-    account: Account!
+    # rewardCollateralRatio4 is the minimal ratio between
+    # collateral and debt values in ref. denomination (fUSD)
+    # on which the account is eligible for rewards distribution.
+    # Collateral below this ratio means all the pending rewards
+    # will be burnt and lost.
+    rewardCollateralRatio4: BigInt!
 
-    # The selected proposal index the voter chose.
-    vote: Int
+    # decimals represents the decimals / digits correction
+    # applied to the fees and ratios internally to correctly represent
+    # fraction numbers. E.g. correction value 4 => ratio/fee x 10000.
+    decimals: Int!
+
+    # priceOracleAggregate is the address of the current price oracle
+    # aggregate used by the DeFi to obtain USD price of tokens managed.
+    priceOracleAggregate: Address!
+
+    # StakeTokenizerContract is the address of the Stake Tokenizer contract.
+    StakeTokenizerContract: Address!
+
+    # StakeTokenizedERC20Token is the address of the Tokenized Stake ERC20 contract.
+    StakeTokenizedERC20Token: Address!
+
+    # fMintAddress is the address of the fMint contract.
+    fMintContract: Address!
+
+	# fMintAddressProvider represents the address of the fMint address provider.
+	fMintAddressProvider: Address!
+
+    # tokenRegistryContract is the address of the fMint token registry.
+    fMintTokenRegistry: Address!
+
+    # fMintRewardDistribution is the address of the DeFi fMint
+    # reward distribution contract.
+    fMintRewardDistribution: Address!
+
+    # fMintCollateralPool is the address of the fMint collateral pool.
+    fMintCollateralPool: Address!
+
+    # fMintDebtPool is the address of the fMint debt pool.
+    fMintDebtPool: Address!
+
+    # uniswapCoreFactory is the address of the Uniswap Core Factory contract.
+    uniswapCoreFactory: Address!
+
+    # uniswapRouter is the address of the Uniswap Router contract.
+    uniswapRouter: Address!
 }
 
-# BallotList is a list of ballot edges provided by sequential access request.
-type BallotList {
-    # Edges contains provided edges of the sequential list.
-    edges: [BallotListEdge!]!
+# Block is an Opera block chain block.
+type Block {
+    # Number is the number of this block, starting at 0 for the genesis block.
+    number: Long!
 
-    # TotalCount is the maximum number of ballots available
-    # for sequential access.
-    totalCount: BigInt!
+    # Hash is the unique block hash of this block.
+    hash: Hash!
 
-    # PageInfo is an information about the current page
-    # of ballot edges.
-    pageInfo: ListPageInfo!
+    # Parent is the parent block of this block.
+    parent: Block
+
+    # TransactionCount is the number of transactions in this block.
+    transactionCount: Int
+
+    # Timestamp is the unix timestamp at which this block was mined.
+    timestamp: Long!
+
+    # GasLimit represents the maximum gas allowed in this block.
+    gasLimit: Long!
+
+    # GasUsed represents the actual total used gas by all transactions in this block.
+    gasUsed: Long!
+
+    # txHashList is the list of unique hash values of transaction
+    # assigned to the block.
+    txHashList: [Hash!]!
+
+    # txList is a list of transactions assigned to the block.
+    txList: [Transaction!]!
 }
 
-# BallotListEdge is a single edge in a sequential list of ballots.
-type BallotListEdge {
-    cursor: Cursor!
-    ballot: Ballot!
+# FMintAccount represents an informastion about account details
+# in DeFi/fMint protocol.
+type FMintAccount {
+    # address of the DeFi account.
+    address: Address!
+
+    # collateralList represents a list of all collateral tokens
+    # linked with the account.
+    collateralList: [Address!]!
+
+    # collaterals represents a list of all collateral assets.
+    collateral: [FMintTokenBalance!]!
+
+    # collateralValue represents the current collateral value
+    # in ref. denomination (fUSD).
+    collateralValue: BigInt!
+
+    # debtList represents a list of all debt tokens linked with the account.
+    debtList: [Address!]!
+
+    # debts represents the list of all the current borrowed tokens.
+    debt: [FMintTokenBalance!]!
+
+    # debtValue represents the current debt value
+    # in ref. denomination (fUSD).
+    debtValue: BigInt!
+
+    # rewardsEarned represents accumulated rewards
+    # earned on the DeFi / fMint account for the excessive
+    # collateral value. Please note that the rewards could still
+    # be burned, if the account is not eligible to claim the reward.
+    rewardsEarned: BigInt!
+
+    # rewardsStashed represents accumulated rewards
+    # earned on the DeFi / fMint account for the excessive
+    # collateral value and stored into the stash for future
+    # claim.
+    rewardsStashed: BigInt!
+
+    # canClaimRewards informs if the fMint account collateral
+    # to debt is high enough to allow earned rewards claiming.
+    canClaimRewards: Boolean!
+
+    # canReceiveRewards informs if the fMint account collateral
+    # to debt is high enough to receive earned rewards. If the ratio
+    # is below configured one, earned rewards are burned.
+    canReceiveRewards: Boolean!
+
+    # canPushNewRewards indicates if new rewards are unlocked
+    # inside the reward distribution and can be pushed into
+    # the system to distribute them among eligible accounts.
+    canPushNewRewards: Boolean!
 }
 
+# FMintTokenBalance represents a balance of a specific DeFi token
+# on an fMint protocol account.
+# The balance is used for both collateral deposits and minting debt.
+type FMintTokenBalance {
+    # type represents the type of the balance record.
+    type: DefiTokenBalanceType!
+
+    # tokenAddress represents unique identifier of the token.
+    tokenAddress: Address!
+
+    # token represents the detail of the token
+    token: DefiToken!
+
+    # current balance of the token on the account.
+    balance: BigInt!
+
+    # value of the current balance of the token on the account
+    # in ref. denomination (fUSD).
+    value: BigInt!
+}
+
+# Represents epoch information.
+type Epoch {
+    "Number the epoch end."
+    id: Long!
+
+    "Timestamp of the epoch end."
+    endTime: BigInt!
+
+    "Epoch duration in seconds."
+    duration: BigInt!
+
+    "Fee at the epoch."
+    epochFee: BigInt!
+
+    "Total base reward weight on epoch."
+    totalBaseRewardWeight: BigInt!
+
+    "Total transaction reward weight on epoch."
+    totalTxRewardWeight: BigInt!
+
+    "Base reward per second of epoch."
+    baseRewardPerSecond: BigInt!
+
+    "Total amount staked."
+    stakeTotalAmount: BigInt!
+
+    "Total amount delegated."
+    delegationsTotalAmount: BigInt!
+
+    "Total supply amount."
+    totalSupply: BigInt!
+}
+
+# Price represents price information of core Opera token
+type Price {
+    "Source unit symbol."
+    fromSymbol: String!
+
+    "Target unit symbol."
+    toSymbol: String!
+
+    "Price of the source symbol unit in target symbol unit."
+    price: Float!
+
+    "Price change in last 24h."
+    change24: Float!
+
+    "Price change in percent in last 24h."
+    changePct24: Float!
+
+    "Open 24h price."
+    open24: Float!
+
+    "Highest 24h price."
+    high24: Float!
+
+    "Lowest 24h price."
+    low24: Float!
+
+    "Volume exchanged in last 24h price."
+    volume24: Float!
+
+    "Market cap of the source unit."
+    marketCap: Float!
+
+    "Timestamp of the last update of this price value."
+    lastUpdate: Long!
+}
+
+# Hash is a 32 byte binary string, represented by 0x prefixed hexadecimal.
+scalar Hash
+
+# Address is a 20 byte Opera address, represented as 0x prefixed hexadecimal number.
+scalar Address
+
+# BigInt is a large integer value. Input is accepted as either a JSON number,
+# or a hexadecimal string alternatively prefixed with 0x. Output is 0x prefixed hexadecimal.
+scalar BigInt
+
+# Long is a 64 bit unsigned integer value.
+scalar Long
+
+# Bytes is an arbitrary length binary string, represented as 0x-prefixed hexadecimal.
+# An empty byte string is represented as '0x'.
+scalar Bytes
+
+# Cursor is a string representing position in a sequential list of edges.
+scalar Cursor
+
+# Account defines block-chain account information container
+type Account {
+    "Address is the address of the account."
+    address: Address!
+
+    "Balance is the current balance of the Account in WEI."
+    balance: BigInt!
+
+    """
+    TotalValue is the current total value fo the account in WEI.
+    It includes available balance,
+    delegated amount and pending staking rewards.
+    """
+    totalValue: BigInt!
+
+    """
+    Stashed represents the amount of WEI stashed
+    on this account, if any. Stashed amount comes from
+    the delegation and validation rewards.
+    """
+    stashed: BigInt!
+
+    """
+    canUnStash informs if there is a stash which can be claimed.
+    Please note that stash claiming can be locked inside SFC.
+    """
+    canUnStash: Boolean!
+
+    "txCount represents number of transaction sent from the account."
+    txCount: Long!
+
+    """
+    txList represents list of transactions of the account
+    in form of TransactionList.
+    """
+    txList (cursor:Cursor, count:Int!): TransactionList!
+
+    "Details of a staker, if the account is a staker."
+    staker: Staker
+
+    "List of delegations of the account, if the account is a delegator."
+    delegations(cursor:Cursor, count:Int = 25): DelegationList!
+
+    "Details about smart contract, if the account is a smart contract."
+    contract: Contract
+}
+
+# EstimatedRewards represents a calculated rewards estimation for an account or amount staked
+type EstimatedRewards {
+    "Amount of FTM tokens expected to be staked for the calculation."
+    staked: Long!
+
+    """
+    dailyReward represents amount of FTM tokens estimated
+    to be rewarded for staked amount in average per day.
+    """
+    dailyReward: BigInt!
+
+    """
+    weeklyReward represents amount of FTM tokens estimated
+    to be rewarded for staked amount in average per week.
+    """
+    weeklyReward: BigInt!
+
+    """
+    monthlyReward represents amount of FTM tokens estimated
+    to be rewarded for staked amount in average per month.
+    """
+    monthlyReward: BigInt!
+
+    """
+    yearlyReward represents amount of FTM tokens estimated
+    to be rewarded for staked amount in average per year.
+    """
+    yearlyReward: BigInt!
+
+    """
+    currentRewardYearRate represents average reward rate
+    for any staked amount in average per year.
+    The value is calculated as linear gross proceeds for staked amount
+    of tokens yearly.
+    """
+    currentRewardRateYearly: Int!
+
+    """
+    Total amount of staked FTM tokens used for the calculation in WEI units.
+    The estimation uses total staked amount, not the effective amount provided
+    by the last epoch. The effective amount does include current
+    un-delegations and also skips offline self-staking and flagged staking.
+    """
+    totalStaked: BigInt!
+
+    """
+    Information about the last sealed epoch of the Opera blockchain.
+    The epoch provides useful information about total FTM supply,
+    total amount staked, rewards rate and weight, fee, etc.
+    """
+    lastEpoch: Epoch!
+}
 # Root schema definition
 schema {
     query: Query
@@ -1654,6 +1654,13 @@ type Query {
     # then it takes period for last month till now.
     defiTimePrices(address:Address!, resolution:String, fromDate:Int, toDate:Int, direction:Int):[DefiTimePrice!]!
     
+    # defiTimeReserves returns reserves for specified pair, time resolution and interval.
+    # Address is pair address and is mandatory.
+    # Resolution can be {month, day, 4h, 1h, 30m 15m, 5m, 1m}, is optional, default is a day.
+    # Dates are in unix UTC number and are optional. When not provided
+    # then it takes period for last month till now.
+    defiTimeReserves(address:Address!, resolution:String, fromDate:Int, toDate:Int):[DefiTimeReserve!]!
+
     # erc20Token provides the information about an ERC20 token specified by it's
     # address, if available. The resolver returns NULL if the token does not exist.
     erc20Token(token: Address!):ERC20Token

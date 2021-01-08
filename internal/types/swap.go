@@ -109,3 +109,14 @@ const (
 	SwapBurn
 	SwapSync
 )
+
+// DefiTimeReserve represents a reserve for uniswap pair in history
+type DefiTimeReserve struct {
+
+	// Time represents UTC ISO time tag for this reserve values
+	Time string
+
+	// ReserveClose is close reserve for this time period
+	// for both tokens
+	ReserveClose []hexutil.Big
+}

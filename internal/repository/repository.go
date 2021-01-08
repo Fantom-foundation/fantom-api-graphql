@@ -371,6 +371,9 @@ type Repository interface {
 	// UniswapTimePrices returns grouped prices for specified pair, time and resolution
 	UniswapTimePrices(*common.Address, string, int64, int64, int32) ([]types.DefiTimePrice, error)
 
+	// UniswapTimeReserves returns grouped reserves for specified pair, time and resolution
+	UniswapTimeReserves(*common.Address, string, int64, int64) ([]types.DefiTimeReserve, error)
+
 	// NativeTokenAddress returns address of the native token wrapper, if available.
 	NativeTokenAddress() (*common.Address, error)
 

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -597,6 +598,74 @@ func (db *MongoDbBridge) UniswapTimePrices(pairAddress *common.Address, resoluti
 			}
 			priceVal.PairAddress = *pairAddress
 			list = append(list, priceVal)
+		}
+	}
+
+	return list, nil
+}
+
+// UniswapTimeReserves resolves reserves of uniswap trades for specified pair grouped by date interval.
+// If toTime is 0, then it calculates prices till now
+func (db *MongoDbBridge) UniswapTimeReserves(pairAddress *common.Address, resolution string, fromTime int64, toTime int64) ([]types.DefiTimeReserve, error) {
+
+	// create query pipeline
+	pipe := mongo.Pipeline{
+		{{Key: "$match", Value: bson.D{
+			{Key: "date", Value: getDateBsonD(fromTime, toTime)},
+			{Key: "pair", Value: pairAddress.String()}}}},
+		{{Key: "$sort", Value: bson.D{
+			{Key: "date", Value: 1},
+		}}},
+		{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: getGroupBsonD(resolution)},
+			{Key: "close0", Value: bson.D{
+				{Key: "$last", Value: "$" + fiSwapReserve0}}},
+
+			{Key: "close1", Value: bson.D{
+				{Key: "$last", Value: "$" + fiSwapReserve1}}},
+		}}},
+		{{Key: "$sort", Value: bson.D{
+			{Key: "_id", Value: 1},
+		}}},
+	}
+
+	type TimeReserve struct {
+
+		// Time represents ISO time tag for this price
+		Time string `bson:"_id"`
+
+		// average price for this time period
+		Close0 int64 `bson:"close0"`
+		Close1 int64 `bson:"close1"`
+	}
+
+	list := make([]types.DefiTimeReserve, 0)
+
+	// execute query
+	col := db.client.Database(db.dbName).Collection(coUniswap)
+	cursor, err := col.Aggregate(context.Background(), pipe)
+	if err != nil {
+		db.log.Errorf(err.Error())
+		return list, nil
+	} else {
+		defer cursor.Close(context.Background())
+
+		// iterate thru results and construct data
+		for cursor.Next(context.Background()) {
+			var reserveVal TimeReserve
+			err := cursor.Decode(&reserveVal)
+			if err != nil {
+				db.log.Errorf(err.Error())
+			}
+
+			res := types.DefiTimeReserve{
+				Time: reserveVal.Time,
+				ReserveClose: []hexutil.Big{
+					hexutil.Big(*returnDecimals(new(big.Int).SetInt64(reserveVal.Close0))),
+					hexutil.Big(*returnDecimals(new(big.Int).SetInt64(reserveVal.Close1)))},
+			}
+
+			list = append(list, res)
 		}
 	}
 

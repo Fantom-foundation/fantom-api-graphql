@@ -108,3 +108,19 @@ type DefiTimePrice {
     # average price for this time period
     average: Float! 
 }
+
+# DefiTimeReserve represents a Uniswap pair reserve in history
+type DefiTimeReserve {
+
+    # UniswapPair represents the information about single
+    # Uniswap pair managed by the Uniswap Core.
+    uniswapPair: UniswapPair!
+
+    # Time represents UTC ISO time tag for this reserve values
+    time: String!
+
+    # ReserveClose is close reserve for this time period
+	# for both tokens. Index inside the array corresponds
+    # with the token position.
+    reserveClose: [BigInt!]!
+}

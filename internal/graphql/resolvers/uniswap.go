@@ -32,6 +32,11 @@ type DefiTimeVolume struct {
 	Value       hexutil.Big
 }
 
+type DefiTimeReserve struct {
+	types.DefiTimeReserve
+	*UniswapPair
+}
+
 // NewUniswapPair creates a new instance of resolvable UniswapPair token.
 func NewUniswapPair(adr *common.Address, repo repository.Repository) *UniswapPair {
 	// make the instance of the token
@@ -296,7 +301,7 @@ func (rs *rootResolver) DefiTimeVolumes(args *struct {
 	// get volumes from DB repository
 	swapVolumes, err := rs.repo.UniswapTimeVolumes(&args.Address, resolution, fDate, tDate)
 	if err != nil {
-		rs.log.Errorf("Can not get daily swap volumes from DB repository: %s", err.Error())
+		rs.log.Errorf("Can not get swap volumes from DB repository: %s", err.Error())
 		return list
 	}
 
@@ -349,7 +354,7 @@ func (rs *rootResolver) DefiTimePrices(args *struct {
 	// get prices from DB repository
 	swapPrices, err := rs.repo.UniswapTimePrices(&args.Address, resolution, fDate, tDate, dir)
 	if err != nil {
-		rs.log.Errorf("Can not get daily swap volumes from DB repository: %s", err.Error())
+		rs.log.Errorf("Can not get uniswap prices from DB repository: %s", err.Error())
 		return list
 	}
 
@@ -387,4 +392,47 @@ func (up *UniswapPair) ShareOf(args *struct{ User common.Address }) (hexutil.Big
 // LastKValue resolves the last value of the pool control coefficient.
 func (up *UniswapPair) LastKValue() (hexutil.Big, error) {
 	return up.repo.UniswapLastKValue(&up.PairAddress)
+}
+
+// DefiTimeReserves resolves uniswap reserves for given pair
+// If dates are not given, then it returns last month values
+func (rs *rootResolver) DefiTimeReserves(args *struct {
+	Address    common.Address
+	Resolution *string
+	FromDate   *int32
+	ToDate     *int32
+}) []DefiTimeReserve {
+
+	// create empty list as return value holder
+	list := make([]DefiTimeReserve, 0)
+
+	//check date values
+	var fDate, tDate int64
+	if args.FromDate != nil {
+		fDate = (int64)(*args.FromDate)
+	} else {
+		fDate = time.Now().UTC().AddDate(0, -1, 0).Unix()
+	}
+
+	//check resolution value
+	resolution := ""
+	if args.Resolution != nil {
+		resolution = *args.Resolution
+	}
+
+	// get reserves from DB repository
+	timeReserves, err := rs.repo.UniswapTimeReserves(&args.Address, resolution, fDate, tDate)
+	if err != nil {
+		rs.log.Errorf("Can not get uniswap reserves from DB repository: %s", err.Error())
+		return list
+	}
+	for _, timeReserve := range timeReserves {
+		res := DefiTimeReserve{
+			DefiTimeReserve: timeReserve,
+			UniswapPair:     NewUniswapPair(&args.Address, rs.repo),
+		}
+		list = append(list, res)
+	}
+
+	return list
 }
