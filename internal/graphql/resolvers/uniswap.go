@@ -534,7 +534,7 @@ func (cl *UniswapActionList) Edges() []*UniswapActionListEdge {
 		// make the element
 		edge := UniswapActionListEdge{
 			UniswapAction: ct,
-			Cursor:        Cursor(strconv.FormatUint(uint64(c.BlockNr), 10)),
+			Cursor:        Cursor(strconv.FormatUint(c.OrdIndex, 10)),
 		}
 
 		// add it to the list

@@ -149,7 +149,7 @@ func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *c
 	for itSwap.Next() {
 		blk := sws.getUniswapBlock(itSwap.Event.Raw.BlockNumber, nil)
 		sws.log.Debugf("Loading uniswap swap event from block nr# %d, tx: %s, time: %s", itSwap.Event.Raw.BlockNumber, itSwap.Event.Raw.TxHash.String(), blk.TimeStamp.String())
-		swap = newSwap(*blk, pair)
+		swap = sws.newSwap(*blk, pair, itSwap.Event.Raw.TxHash)
 		swap.Type = types.SwapNormal
 		swap.Sender = itSwap.Event.To
 		swap.Hash = types.BytesToHash(itSwap.Event.Raw.TxHash.Bytes())
@@ -181,7 +181,7 @@ func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *c
 		txhash := types.BytesToHash(itMint.Event.Raw.TxHash.Bytes())
 		tx, _ := sws.repo.Transaction(&txhash)
 		sws.log.Debugf("Loading uniswap mint event from block nr# %d, tx: %s, time: %s", itMint.Event.Raw.BlockNumber, itMint.Event.Raw.TxHash.String(), blk.TimeStamp.String())
-		swap = newSwap(*blk, pair)
+		swap = sws.newSwap(*blk, pair, itMint.Event.Raw.TxHash)
 		swap.Type = types.SwapMint
 		swap.Sender = tx.From
 		swap.Hash = types.BytesToHash(itMint.Event.Raw.TxHash.Bytes())
@@ -213,7 +213,7 @@ func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *c
 		txhash := types.BytesToHash(itBurn.Event.Raw.TxHash.Bytes())
 		tx, _ := sws.repo.Transaction(&txhash)
 		sws.log.Debugf("Loading uniswap burn event from block nr# %d, tx: %s, time: %s", itBurn.Event.Raw.BlockNumber, itBurn.Event.Raw.TxHash.String(), blk.TimeStamp.String())
-		swap = newSwap(*blk, pair)
+		swap = sws.newSwap(*blk, pair, itBurn.Event.Raw.TxHash)
 		swap.Type = types.SwapBurn
 		swap.Sender = tx.From
 		swap.Hash = types.BytesToHash(itBurn.Event.Raw.TxHash.Bytes())
@@ -243,7 +243,7 @@ func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *c
 	for itSync.Next() {
 		blk := sws.getUniswapBlock(itSync.Event.Raw.BlockNumber, nil)
 		sws.log.Debugf("Loading uniswap sync event from block nr# %d, tx: %s, time: %s", itSync.Event.Raw.BlockNumber, itSync.Event.Raw.TxHash.String(), blk.TimeStamp.String())
-		swap = newSwap(*blk, pair)
+		swap = sws.newSwap(*blk, pair, itSync.Event.Raw.TxHash)
 		swap.Type = types.SwapSync
 		swap.Hash = types.BytesToHash(itSync.Event.Raw.TxHash.Bytes())
 		swap.Amount0In = zero
@@ -274,10 +274,24 @@ func (sws *uniswapScanner) isStopSignal() bool {
 	return false
 }
 
-func newSwap(block types.Block, pair *common.Address) *types.Swap {
+// newSwap creates a new swap instance with predefined data
+func (sws *uniswapScanner) newSwap(block types.Block, pair *common.Address, txHash common.Hash) *types.Swap {
 	return &types.Swap{
+		OrdIndex:    sws.getOrdinalIndex(&block, &txHash),
 		BlockNumber: &block.Number,
 		TimeStamp:   &block.TimeStamp,
 		Pair:        *pair,
 	}
+}
+
+// getOrdinalIndex resolves ordinal index for block and transaction input
+func (sws *uniswapScanner) getOrdinalIndex(blk *types.Block, txHash *common.Hash) uint64 {
+	// get transaction
+	txhash := types.BytesToHash(txHash.Bytes())
+	tx, err := sws.repo.Transaction(&txhash)
+	if err != nil {
+		sws.log.Errorf("Transaction was not found for block %s and txHash %s; %s", blk.Number.String(), txhash.String(), err.Error())
+		return 0
+	}
+	return types.TransactionIndex(blk, tx)
 }

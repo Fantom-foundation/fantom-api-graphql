@@ -234,6 +234,7 @@ func (um *UniswapMonitor) getSwapData(swapEvent *contracts.UniswapPairSwap, pair
 
 	// prep sending struct and advance transaction index
 	swap := &types.Swap{
+		OrdIndex:    um.getOrdinalIndex(blk, &swapEvent.Raw.TxHash),
 		Type:        types.SwapNormal,
 		BlockNumber: &blk.Number,
 		TimeStamp:   &blk.TimeStamp,
@@ -284,13 +285,18 @@ func (um *UniswapMonitor) getMintData(mintEvent *contracts.UniswapPairMint, pair
 
 	// get actual transaction
 	txhash := types.BytesToHash(mintEvent.Raw.TxHash.Bytes())
-	tx, _ := um.repo.Transaction(&txhash)
+	tx, err := um.repo.Transaction(&txhash)
+	if err != nil {
+		um.log.Errorf("Transaction was not found for uniswap mint event on pair %s; %s", pair.String(), err.Error())
+		return nil, err
+	}
 
 	// log action
 	um.log.Debugf("Loading mint event data from block nr# %d, tx: %s", mintEvent.Raw.BlockNumber, mintEvent.Raw.TxHash.String())
 
 	// prep sending struct
 	swap := &types.Swap{
+		OrdIndex:    um.getOrdinalIndex(blk, &mintEvent.Raw.TxHash),
 		Type:        types.SwapMint,
 		BlockNumber: &blk.Number,
 		TimeStamp:   &blk.TimeStamp,
@@ -343,11 +349,17 @@ func (um *UniswapMonitor) getBurnData(burnEvent *contracts.UniswapPairBurn, pair
 
 	// get actual transaction
 	txhash := types.BytesToHash(burnEvent.Raw.TxHash.Bytes())
-	tx, _ := um.repo.Transaction(&txhash)
+	tx, err := um.repo.Transaction(&txhash)
+	if err != nil {
+		um.log.Errorf("Transaction was not found for uniswap burn event on pair %s; %s", pair.String(), err.Error())
+		return nil, err
+	}
+
 	zero := new(big.Int).SetUint64(0)
 
 	// prep sending struct
 	swap := &types.Swap{
+		OrdIndex:    um.getOrdinalIndex(blk, &burnEvent.Raw.TxHash),
 		Type:        types.SwapBurn,
 		BlockNumber: &blk.Number,
 		TimeStamp:   &blk.TimeStamp,
@@ -404,6 +416,7 @@ func (um *UniswapMonitor) getSyncData(syncEvent *contracts.UniswapPairSync, pair
 
 	// prep sending struct
 	swap := &types.Swap{
+		OrdIndex:    um.getOrdinalIndex(blk, &syncEvent.Raw.TxHash),
 		Type:        types.SwapSync,
 		BlockNumber: &blk.Number,
 		TimeStamp:   &blk.TimeStamp,
@@ -417,4 +430,16 @@ func (um *UniswapMonitor) getSyncData(syncEvent *contracts.UniswapPairSync, pair
 		Reserve1:    syncEvent.Reserve1,
 	}
 	return &evtSwap{swp: swap}, nil
+}
+
+// getOrdinalIndex resolves ordinal index for block and transaction input
+func (um *UniswapMonitor) getOrdinalIndex(blk *types.Block, txHash *common.Hash) uint64 {
+	// get transaction
+	txhash := types.BytesToHash(txHash.Bytes())
+	tx, err := um.repo.Transaction(&txhash)
+	if err != nil {
+		um.log.Errorf("Transaction was not found for block %s and txHash %s; %s", blk.Number.String(), txhash.String(), err.Error())
+		return 0
+	}
+	return types.TransactionIndex(blk, tx)
 }

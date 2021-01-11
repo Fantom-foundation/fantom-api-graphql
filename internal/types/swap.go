@@ -12,6 +12,10 @@ import (
 
 // Swap represents a basic information provided by the API about finished swap from Uniswap contract.
 type Swap struct {
+	// OrdIndex represents the ordinal index of the transaction inside the block chain.
+	// It's build from the block number and the index of the transaction inside the block
+	// when the transaction is stored in off-chain database.
+	OrdIndex uint64 `json:"orx" bson:"orx"`
 
 	// BlockNumber represents number of the block where this transaction was in. nil when its pending.
 	BlockNumber *hexutil.Uint64 `json:"blockNumber" bson:"blk"`
@@ -143,27 +147,16 @@ type UniswapActionList struct {
 	IsEnd bool
 }
 
-// Reverse reverses the order of contracts in the list.
-func (a *UniswapActionList) Reverse() {
-	// anything to swap at all?
-	if a.Collection == nil || len(a.Collection) < 2 {
-		return
-	}
-
-	// swap elements
-	for i, j := 0, len(a.Collection)-1; i < j; i, j = i+1, j-1 {
-		a.Collection[i], a.Collection[j] = a.Collection[j], a.Collection[i]
-	}
-
-	// swap indexes
-	a.First, a.Last = a.Last, a.First
-}
-
 // UniswapAction represents a Uniswap action - swap, mint, burn
 type UniswapAction struct {
 
 	// ID of the action in the persistent db
 	ID Hash `json:"id" bson:"_id"`
+
+	// OrdIndex represents the ordinal index of the transaction inside the block chain.
+	// It's build from the block number and the index of the transaction inside the block
+	// when the transaction is stored in off-chain database.
+	OrdIndex uint64 `json:"orx" bson:"orx"`
 
 	// BlockNr is number of the block for this action
 	BlockNr hexutil.Uint64 `json:"blk" bson:"blk"`

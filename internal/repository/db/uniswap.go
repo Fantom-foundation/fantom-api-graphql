@@ -25,6 +25,7 @@ const (
 
 	// fiSwapPk is the name of the primary key field of the swap collection.
 	fiSwapPk         = "_id"
+	fiSwapOrdIndex   = "orx"
 	fiSwapType       = "type"
 	fiSwapBlock      = "blk"
 	fiSwapTxHash     = "tx"
@@ -69,7 +70,7 @@ func (db *MongoDbBridge) initUniswapCollection(col *mongo.Collection) {
 	// index date, sender, blk
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiSwapDate, Value: 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiSwapSender, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiSwapBlock, Value: -1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiSwapOrdIndex, Value: -1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
@@ -148,6 +149,7 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 		swapData(&bson.D{
 			{Key: fiSwapPk, Value: swapHash.String()},
 			{Key: fiSwapBlock, Value: uint64(*swap.BlockNumber)},
+			{Key: fiSwapOrdIndex, Value: swap.OrdIndex},
 			{Key: fiSwapDate, Value: primitive.NewDateTimeFromTime(time.Unix((int64)(*swap.TimeStamp), 0).UTC())},
 		}, swap)); err != nil {
 
@@ -700,12 +702,7 @@ func (db *MongoDbBridge) UniswapActions(pairAddress *common.Address, cursor *str
 
 	// shift the first item on cursor
 	if cursor != nil {
-		list.First = uint64(list.Collection[0].BlockNr)
-	}
-
-	// reverse on negative so new-er contracts will be on top
-	if count < 0 {
-		list.Reverse()
+		list.First = list.Collection[0].OrdIndex
 	}
 
 	return list, nil
@@ -788,14 +785,14 @@ func (db *MongoDbBridge) uniswapActionListTop(col *mongo.Collection, pairAddress
 		// get the highest available ordinal index (top uniswap action)
 		list.First, err = db.findUniswapActionBorderOrdinalIndex(col,
 			*filter,
-			options.FindOne().SetSort(bson.D{{Key: fiSwapBlock, Value: -1}}))
+			options.FindOne().SetSort(bson.D{{Key: fiSwapOrdIndex, Value: -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available ordinal index (bottom uniswap action)
 		list.First, err = db.findUniswapActionBorderOrdinalIndex(col,
 			*filter,
-			options.FindOne().SetSort(bson.D{{Key: fiSwapBlock, Value: 1}}))
+			options.FindOne().SetSort(bson.D{{Key: fiSwapOrdIndex, Value: 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
@@ -846,7 +843,7 @@ func uniswapActionListTopFilter(pairAddress *common.Address, cursor *string, act
 
 	// filter for cursor
 	if cursor != nil {
-		filterCursor = bson.D{{Key: fiSwapBlock, Value: ix}}
+		filterCursor = bson.D{{Key: fiSwapOrdIndex, Value: ix}}
 	}
 
 	filter = bson.D{{Key: "$and", Value: bson.A{filterPair, filterType, filterCursor}}}
@@ -880,7 +877,7 @@ func (db *MongoDbBridge) uniswapActionListLoad(col *mongo.Collection, pairAddres
 		// process the last found hash
 		if uniswapAction != nil {
 			list.Collection = append(list.Collection, uniswapAction)
-			list.Last = uint64(uniswapAction.BlockNr)
+			list.Last = uniswapAction.OrdIndex
 		}
 
 		// try to decode the next row
@@ -910,7 +907,7 @@ func (db *MongoDbBridge) uniswapActionListLoad(col *mongo.Collection, pairAddres
 		// add the last item as well
 		if (list.IsStart || list.IsEnd) && uniswapAction != nil {
 			list.Collection = append(list.Collection, uniswapAction)
-			list.Last = uint64(uniswapAction.BlockNr)
+			list.Last = uniswapAction.OrdIndex
 		}
 	}
 
@@ -947,7 +944,7 @@ func (db *MongoDbBridge) uniswapActionListFilter(pairAddress *common.Address, ac
 	filterCursor := bson.D{}
 
 	// filter for cursor
-	filterCursor = bson.D{{Key: fiSwapBlock, Value: bson.D{{Key: ordinalOp, Value: list.First}}}}
+	filterCursor = bson.D{{Key: fiSwapOrdIndex, Value: bson.D{{Key: ordinalOp, Value: list.First}}}}
 
 	// filter for pair address
 	if pairAddress != nil {
@@ -972,10 +969,10 @@ func (db *MongoDbBridge) uniswapActionListOptions(count int32) *options.FindOpti
 	// how to sort results in the collection
 	if count > 0 {
 		// from high (new) to low (old)
-		opt.SetSort(bson.D{{Key: fiSwapBlock, Value: -1}})
+		opt.SetSort(bson.D{{Key: fiSwapOrdIndex, Value: -1}})
 	} else {
 		// from low (old) to high (new)
-		opt.SetSort(bson.D{{Key: fiSwapBlock, Value: 1}})
+		opt.SetSort(bson.D{{Key: fiSwapOrdIndex, Value: 1}})
 	}
 
 	// prep the loading limit
@@ -997,11 +994,11 @@ func (db *MongoDbBridge) uniswapActionListOptions(count int32) *options.FindOpti
 func (db *MongoDbBridge) findUniswapActionBorderOrdinalIndex(col *mongo.Collection, filter bson.D, opt *options.FindOneOptions) (uint64, error) {
 	// prep container
 	var row struct {
-		Value uint64 `bson:"blk"`
+		Value uint64 `bson:"orx"`
 	}
 
 	// make sure we pull only what we need
-	opt.SetProjection(bson.D{{Key: fiSwapBlock, Value: true}})
+	opt.SetProjection(bson.D{{Key: fiSwapOrdIndex, Value: true}})
 	sr := col.FindOne(context.Background(), filter, opt)
 
 	// try to decode
