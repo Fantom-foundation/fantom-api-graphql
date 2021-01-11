@@ -447,10 +447,11 @@ type UniswapAction struct {
 }
 
 // NewUniswapAction builds new resolvable uniswap action structure.
-func NewUniswapAction(ua *types.UniswapAction, repo repository.Repository) *UniswapAction {
+func NewUniswapAction(ua *types.UniswapAction, repo repository.Repository, pair *UniswapPair) *UniswapAction {
 	return &UniswapAction{
 		repo:          repo,
 		UniswapAction: *ua,
+		UniswapPair:   pair,
 	}
 }
 
@@ -528,8 +529,10 @@ func (cl *UniswapActionList) Edges() []*UniswapActionListEdge {
 	// make the list
 	edges := make([]*UniswapActionListEdge, len(cl.list.Collection))
 	for i, c := range cl.list.Collection {
+
+		up := NewUniswapPair(&c.PairAddress, cl.repo)
 		// make the uniswap action ref
-		ct := NewUniswapAction(c, cl.repo)
+		ct := NewUniswapAction(c, cl.repo, up)
 
 		// make the element
 		edge := UniswapActionListEdge{

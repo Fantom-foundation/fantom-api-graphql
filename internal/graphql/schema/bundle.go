@@ -546,6 +546,10 @@ type UniswapAction {
     # id of the action in the persistent db
     id: Hash!
 
+    # UniswapPair represents the information about single
+    # Uniswap pair managed by the Uniswap Core.
+    uniswapPair: UniswapPair!
+
     # pairAddress is address of the action's uniswap pair
     pairAddress: Address!
 
