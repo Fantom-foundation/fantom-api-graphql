@@ -374,6 +374,9 @@ type Repository interface {
 	// UniswapTimeReserves returns grouped reserves for specified pair, time and resolution
 	UniswapTimeReserves(*common.Address, string, int64, int64) ([]types.DefiTimeReserve, error)
 
+	// UniswapActions provides list of uniswap actions stored in the persistent db.
+	UniswapActions(*common.Address, *string, int32, int32) (*types.UniswapActionList, error)
+
 	// NativeTokenAddress returns address of the native token wrapper, if available.
 	NativeTokenAddress() (*common.Address, error)
 

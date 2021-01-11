@@ -522,6 +522,64 @@ type PendingRewards {
     toEpoch: Long!
 }
 
+# UniswapActionList is a list of uniswap action edges provided by sequential access request.
+type UniswapActionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [UniswapActionListEdge!]!
+
+    # TotalCount is the maximum number of uniswap actions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of uniswap action edges.
+    pageInfo: ListPageInfo!
+}
+
+# UniswapActionListEdge is a single edge in a sequential list of uniswap actions.
+type UniswapActionListEdge {
+    cursor: Cursor!
+    uniswapAction: UniswapAction!
+}
+
+# UniswapAction represents a Uniswap action - swap, mint, burn
+type UniswapAction {
+
+    # id of the action in the persistent db
+    id: Hash!
+
+    # pairAddress is address of the action's uniswap pair
+    pairAddress: Address!
+
+    # transactionHash represents the hash for this acstion transaction
+    transactionHash: Hash!
+
+    # sender is address of action owner account
+    sender: Address!
+
+    # type represents action type:
+    # 0 - swap
+    # 1 - mint
+    # 2 - burn
+    type: Int!
+
+    # blockNr is number of the block for this action
+    blockNr: Long!
+
+    # Time represents UTC ISO time tag for this reserve value
+    time: Long!
+
+    # amount0in is amount of incomming tokens for Token0 in this action
+    amount0in: BigInt!
+
+    # amount0out is amount of outgoing tokens for Token0 in this action
+    amount0out: BigInt!
+
+    # amount1in is amount of In tokens for Token1 in this action
+    amount1in: BigInt!
+
+    # amount1out is amount of outgoing tokens for Token1 in this action
+    amount1out: BigInt!
+}
+
 # StakerInfo represents extended staker information from smart contract.
 type StakerInfo {
     "Name represents the name of the staker."
@@ -1660,6 +1718,18 @@ type Query {
     # Dates are in unix UTC number and are optional. When not provided
     # then it takes period for last month till now.
     defiTimeReserves(address:Address!, resolution:String, fromDate:Int, toDate:Int):[DefiTimeReserve!]!
+
+    # Get list of Uniswap actions with at most <count> edges.
+    # If <count> is positive, return edges after the cursor,
+    # if negative, return edges before the cursor.
+    # For undefined cursor, positive <count> starts the list from top,
+    # negative <count> starts the list from bottom.
+    # Address can be used for specifying actions for one Uniswap pair. 
+    # ActionType represents action type:
+    # 0 - swap, 
+    # 1 - mint, 
+    # 2 - burn, 
+    defiUniswapActions(pairAddress:Address, cursor:Cursor, count:Int!, actionType:Int):UniswapActionList!
 
     # erc20Token provides the information about an ERC20 token specified by it's
     # address, if available. The resolver returns NULL if the token does not exist.

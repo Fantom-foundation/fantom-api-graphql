@@ -5,6 +5,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"math/big"
+	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -60,6 +61,7 @@ func (rs *rootResolver) DefiUniswapPairs() []*UniswapPair {
 	// loop all addresses and build the output list
 	for _, adr := range pairs {
 		uPair := NewUniswapPair(&adr, rs.repo)
+		uPair.Tokens()
 		list = append(list, uPair)
 	}
 
@@ -435,4 +437,109 @@ func (rs *rootResolver) DefiTimeReserves(args *struct {
 	}
 
 	return list
+}
+
+// UniswapAction represents resolvable blockchain uniswap action structure.
+type UniswapAction struct {
+	repo repository.Repository
+	types.UniswapAction
+	*UniswapPair
+}
+
+// NewUniswapAction builds new resolvable uniswap action structure.
+func NewUniswapAction(ua *types.UniswapAction, repo repository.Repository) *UniswapAction {
+	return &UniswapAction{
+		repo:          repo,
+		UniswapAction: *ua,
+	}
+}
+
+// UniswapActionList represents resolvable list of blockchain uniswap action edges structure.
+type UniswapActionList struct {
+	repo repository.Repository
+	list *types.UniswapActionList
+}
+
+// UniswapActionListEdge represents a single edge of a uniswap action list structure.
+type UniswapActionListEdge struct {
+	UniswapAction *UniswapAction
+	Cursor        Cursor
+}
+
+// NewUniswapActionList builds new resolvable list of uniswap actions.
+func NewUniswapActionList(ual *types.UniswapActionList, repo repository.Repository) *UniswapActionList {
+	return &UniswapActionList{
+		repo: repo,
+		list: ual,
+	}
+}
+
+// DefiUniswapActions resolves list of blockchain uniswap actions encapsulated in a listable structure.
+func (rs *rootResolver) DefiUniswapActions(args *struct {
+	Cursor      *Cursor
+	Count       int32
+	PairAddress *common.Address
+	ActionType  *int32
+}) (*UniswapActionList, error) {
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
+
+	if args.ActionType == nil {
+		var t int32 = -1
+		args.ActionType = &t
+	}
+
+	// get the uniswap action list from repository
+	al, err := rs.repo.UniswapActions(args.PairAddress, (*string)(args.Cursor), args.Count, *args.ActionType)
+	if err != nil {
+		rs.log.Errorf("Can not get uniswap action list; %s", err.Error())
+		return nil, err
+	}
+	return NewUniswapActionList(al, rs.repo), nil
+}
+
+// TotalCount resolves the total number of uniswap actions in the list.
+func (cl *UniswapActionList) TotalCount() hexutil.Big {
+	val := (*hexutil.Big)(big.NewInt(int64(cl.list.Total)))
+	return *val
+}
+
+// PageInfo resolves the current page information for the uniswap action list.
+func (cl *UniswapActionList) PageInfo() (*ListPageInfo, error) {
+	// do we have any items?
+	if cl.list == nil || cl.list.Collection == nil || len(cl.list.Collection) == 0 {
+		return NewListPageInfo(nil, nil, false, false)
+	}
+
+	// get the first and last elements
+	first := Cursor(strconv.FormatUint(cl.list.First, 10))
+	last := Cursor(strconv.FormatUint(cl.list.Last, 10))
+	return NewListPageInfo(&first, &last, !cl.list.IsEnd, !cl.list.IsStart)
+}
+
+// Edges resolves list of edges for the linked uniswap action list.
+func (cl *UniswapActionList) Edges() []*UniswapActionListEdge {
+	// do we have any items? return empty list if not
+	if cl.list == nil || cl.list.Collection == nil || len(cl.list.Collection) == 0 {
+		return make([]*UniswapActionListEdge, 0)
+	}
+
+	// make the list
+	edges := make([]*UniswapActionListEdge, len(cl.list.Collection))
+	for i, c := range cl.list.Collection {
+		// make the uniswap action ref
+		ct := NewUniswapAction(c, cl.repo)
+
+		// make the element
+		edge := UniswapActionListEdge{
+			UniswapAction: ct,
+			Cursor:        Cursor(strconv.FormatUint(uint64(c.BlockNr), 10)),
+		}
+
+		// add it to the list
+		edges[i] = &edge
+	}
+
+	return edges
 }

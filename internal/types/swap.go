@@ -4,6 +4,7 @@ package types
 import (
 	"encoding/json"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -119,4 +120,84 @@ type DefiTimeReserve struct {
 	// ReserveClose is close reserve for this time period
 	// for both tokens
 	ReserveClose []hexutil.Big
+}
+
+// UniswapActionList represents a list of Uniswap actions.
+type UniswapActionList struct {
+	// List keeps the actual Collection.
+	Collection []*UniswapAction
+
+	// Total indicates total number of uniswap actions in the whole collection.
+	Total uint64
+
+	// First is the index of the first item on the list
+	First uint64
+
+	// Last is the index of the last item on the list
+	Last uint64
+
+	// IsStart indicates there are no uniswap actions available above the list currently.
+	IsStart bool
+
+	// IsEnd indicates there are no uniswap actions available below the list currently.
+	IsEnd bool
+}
+
+// Reverse reverses the order of contracts in the list.
+func (a *UniswapActionList) Reverse() {
+	// anything to swap at all?
+	if a.Collection == nil || len(a.Collection) < 2 {
+		return
+	}
+
+	// swap elements
+	for i, j := 0, len(a.Collection)-1; i < j; i, j = i+1, j-1 {
+		a.Collection[i], a.Collection[j] = a.Collection[j], a.Collection[i]
+	}
+
+	// swap indexes
+	a.First, a.Last = a.Last, a.First
+}
+
+// UniswapAction represents a Uniswap action - swap, mint, burn
+type UniswapAction struct {
+
+	// ID of the action in the persistent db
+	ID Hash `json:"id" bson:"_id"`
+
+	// BlockNr is number of the block for this action
+	BlockNr hexutil.Uint64 `json:"blk" bson:"blk"`
+
+	// Type represents a general type of the uniswap action.
+	Type int32 `json:"type" bson:"type"`
+
+	// PairAddress is address of the action's uniswap pair
+	PairAddress common.Address `json:"pair"`
+	PairRaw     string         `bson:"pair"`
+
+	// Sender represents the account address for this uniswap action
+	Sender Address `json:"address"`
+
+	// TransactionHash represents the hash of the contract deployment transaction.
+	TransactionHash Hash `json:"tx"`
+
+	// Time represents UTC ISO time tag for this reserve value
+	Time    hexutil.Uint64 `json:"date"`
+	RawTime time.Time      `bson:"date"`
+
+	// Amount0in is amount of incomming tokens for Token0 in this action
+	Amount0in    hexutil.Big `json:"am0in"`
+	Amount0inRaw int64       `bson:"am0in"`
+
+	// amount0out is amount of outgoing tokens for Token0 in this action
+	Amount0out    hexutil.Big `json:"am0out"`
+	Amount0outRaw int64       `bson:"am0out"`
+
+	// amount1in is amount of In tokens for Token1 in this action
+	Amount1in    hexutil.Big `json:"am1in"`
+	Amount1inRaw int64       `bson:"am1in"`
+
+	// amount1out is amount of outgoing tokens for Token1 in this action
+	Amount1out    hexutil.Big `json:"am1out"`
+	Amount1outRaw int64       `bson:"am1out"`
 }

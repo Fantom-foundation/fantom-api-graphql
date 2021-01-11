@@ -1,0 +1,57 @@
+# UniswapActionList is a list of uniswap action edges provided by sequential access request.
+type UniswapActionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [UniswapActionListEdge!]!
+
+    # TotalCount is the maximum number of uniswap actions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of uniswap action edges.
+    pageInfo: ListPageInfo!
+}
+
+# UniswapActionListEdge is a single edge in a sequential list of uniswap actions.
+type UniswapActionListEdge {
+    cursor: Cursor!
+    uniswapAction: UniswapAction!
+}
+
+# UniswapAction represents a Uniswap action - swap, mint, burn
+type UniswapAction {
+
+    # id of the action in the persistent db
+    id: Hash!
+
+    # pairAddress is address of the action's uniswap pair
+    pairAddress: Address!
+
+    # transactionHash represents the hash for this acstion transaction
+    transactionHash: Hash!
+
+    # sender is address of action owner account
+    sender: Address!
+
+    # type represents action type:
+    # 0 - swap
+    # 1 - mint
+    # 2 - burn
+    type: Int!
+
+    # blockNr is number of the block for this action
+    blockNr: Long!
+
+    # Time represents UTC ISO time tag for this reserve value
+    time: Long!
+
+    # amount0in is amount of incomming tokens for Token0 in this action
+    amount0in: BigInt!
+
+    # amount0out is amount of outgoing tokens for Token0 in this action
+    amount0out: BigInt!
+
+    # amount1in is amount of In tokens for Token1 in this action
+    amount1in: BigInt!
+
+    # amount1out is amount of outgoing tokens for Token1 in this action
+    amount1out: BigInt!
+}
