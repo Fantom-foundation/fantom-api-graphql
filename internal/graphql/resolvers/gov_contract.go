@@ -151,6 +151,12 @@ func (gc *GovernanceContract) sfcDelegationsBy(addr common.Address) ([]common.Ad
 
 	// loop delegations to make the list
 	for _, d := range dl {
+		// is the delegation ok for voting?
+		if nil != d.DeactivatedTime {
+			gc.repo.Log().Debugf("delegation to %d from address %s is deactivated", d.ToStakerId, addr.String())
+			continue
+		}
+
 		// get the staker info
 		staker, err := gc.repo.StakerAddress(d.ToStakerId)
 		if err != nil {
