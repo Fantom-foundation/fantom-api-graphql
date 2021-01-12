@@ -154,7 +154,7 @@ func (gc *GovernanceContract) sfcDelegationsBy(addr common.Address) ([]common.Ad
 	// loop delegations to make the list
 	for _, d := range dl {
 		// is the delegation ok for voting?
-		if nil != d.DeactivatedTime {
+		if nil != d.DeactivatedEpoch && 0 < uint64(*d.DeactivatedEpoch) {
 			gc.repo.Log().Debugf("delegation to %d from address %s is deactivated", d.ToStakerId, addr.String())
 			continue
 		}
