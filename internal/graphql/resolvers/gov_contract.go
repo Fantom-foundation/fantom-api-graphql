@@ -116,6 +116,7 @@ func (gc *GovernanceContract) DelegationsBy(args struct{ From common.Address }) 
 	}
 
 	// no delegations by default
+	gc.repo.Log().Debugf("unknown governance type of %s", gc.Address.Hex())
 	return []common.Address{}, nil
 }
 
@@ -128,6 +129,7 @@ func (gc *GovernanceContract) CanVote(args struct{ From common.Address }) (bool,
 	}
 
 	// voting disabled by default
+	gc.repo.Log().Debugf("unknown governance type of %s", gc.Address.Hex())
 	return false, nil
 }
 
