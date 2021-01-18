@@ -1,0 +1,62 @@
+{
+  "app_name": "My GraphQL API for Opera MainNet",
+  "me": {
+    "address": "0xE8E2ab527D1fDbCe570B221977BB5c3f12dFa1DA",
+    "pkey": "0xaa682338447d15ac4462d938716c120d085a0db81d3945b18017ae0788a121a7"
+  },
+  "server": {
+    "bind": "127.0.0.1:16761",
+    "peers": [],
+    "origin": "https://opera.example.net"
+  },
+  "node": {
+    "url": "/var/opera/data/lachesis.ipc"
+  },
+  "log": {
+    "level": "Debug"
+  },
+  "db": {
+    "url": "mongodb://127.0.0.1:27017",
+    "db": "lachesis"
+  },
+  "compiler": {
+    "temp": "/tmp/solidity",
+    "sol": "/usr/local/bin/solc"
+  },
+  "repository": {
+    "stakers": 1
+  },
+  "staking": {
+    "sfc": "0xFC00FACE00000000000000000000000000000000",
+    "sti": "0x92ffad75b8a942d149621a39502cdd8ad1dd57b4",
+    "tokenizer": "0xc3e8459464a0e8fd08d767a16b5c211b45ac961f",
+    "token": "0x69c744d3444202d35a2783929a0f930f2fbb05ad"
+  },
+  "defi": {
+    "fmint": {
+      "address_provider": "0xcb20a1a22976764b882c2f03f0c8523f3df54b10"
+    },
+    "uniswap": {
+      "core": "0xbfd1ce8e6d85e911e80c169293d5c1f5c950fe03",
+      "router": "0x67a937ea41cd05ec8c832a044afc0100f30aa4b5"
+    }
+  },
+  "voting": {
+    "sources": "0x3a7952c135e7b40942e57ea01396b71bf9eb5b90"
+  },
+  "governance": {
+    "contracts": [
+      {
+        "address": "0x7c3b85a71e4fce1209a81d67f1af46b5a068770e",
+        "governable": "0xc5bb923137d25f7cbc60081f4e33fde9b37adffe",
+        "templates": "0x7403b7d2d0645f576ef5f702736390ad9fb6f6b0",
+        "name": "Core and SFC",
+        "type": "sfc"
+      }
+    ]
+  },
+  "erc20_logos": {
+    "0x0000000000000000000000000000000000000000": "https://repository.fantom.network/logos/erc20.svg",
+    "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83": "https://cryptologos.cc/logos/fantom-ftm-logo.svg?v=003"
+  }
+}
