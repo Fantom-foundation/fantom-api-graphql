@@ -573,7 +573,7 @@ func (db *MongoDbBridge) contractListLoad(col *mongo.Collection, validatedOnly b
 		list.IsStart = count < 0 && int32(len(list.Collection)) < -count
 
 		// add the last item as well
-		if (list.IsStart || list.IsEnd) {
+		if list.IsStart || list.IsEnd {
 			list.Collection = append(list.Collection, contract)
 			list.Last = contract.OrdinalIndex
 		}
