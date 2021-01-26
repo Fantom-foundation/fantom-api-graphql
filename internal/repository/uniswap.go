@@ -112,3 +112,14 @@ func (p *proxy) UniswapTimeVolumes(pairAddress *common.Address, resolution strin
 func (p *proxy) UniswapTimePrices(pairAddress *common.Address, resolution string, fromTime int64, toTime int64, direction int32) ([]types.DefiTimePrice, error) {
 	return p.db.UniswapTimePrices(pairAddress, resolution, fromTime, toTime, direction)
 }
+
+// UniswapTimeReserves resolves reserves of uniswap trades for specified pair grouped by date interval.
+// If toTime is 0, then it calculates prices till now
+func (p *proxy) UniswapTimeReserves(pairAddress *common.Address, resolution string, fromTime int64, toTime int64) ([]types.DefiTimeReserve, error) {
+	return p.db.UniswapTimeReserves(pairAddress, resolution, fromTime, toTime)
+}
+
+// UniswapActions provides list of uniswap actions stored in the persistent storage.
+func (p *proxy) UniswapActions(pairAddress *common.Address, cursor *string, count int32, actionType int32) (*types.UniswapActionList, error) {
+	return p.db.UniswapActions(pairAddress, cursor, count, actionType)
+}

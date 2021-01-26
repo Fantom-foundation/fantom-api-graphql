@@ -7,9 +7,11 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"math/big"
+	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,21 +20,24 @@ import (
 
 const (
 
-	// coUniswap is the name of the off-chain database collection storing transaction details.
+	// coUniswap is the name of the off-chain database collection storing Uniswap swap details.
 	coUniswap = "uniswap"
 
 	// fiSwapPk is the name of the primary key field of the swap collection.
 	fiSwapPk         = "_id"
+	fiSwapOrdIndex   = "orx"
+	fiSwapType       = "type"
 	fiSwapBlock      = "blk"
 	fiSwapTxHash     = "tx"
 	fiSwapPair       = "pair"
 	fiSwapDate       = "date"
 	fiSwapSender     = "sender"
-	fiSwapTo         = "to"
 	fiSwapAmount0in  = "am0in"
 	fiSwapAmount0out = "am0out"
 	fiSwapAmount1in  = "am1in"
 	fiSwapAmount1out = "am1out"
+	fiSwapReserve0   = "reserve0"
+	fiSwapReserve1   = "reserve1"
 )
 
 // decChange holds information, how many decimals will be added/removed
@@ -62,9 +67,10 @@ func (db *MongoDbBridge) initUniswapCollection(col *mongo.Collection) {
 		Keys: bson.D{{Key: fiSwapPk, Value: 1}},
 	})
 
-	// index sender and recipient
+	// index date, sender, blk
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiSwapDate, Value: 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiSwapSender, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiSwapOrdIndex, Value: -1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
@@ -80,7 +86,7 @@ func (db *MongoDbBridge) initUniswapCollection(col *mongo.Collection) {
 func (db *MongoDbBridge) shouldAddSwap(col *mongo.Collection, swap *types.Swap) bool {
 	// check if swap already exists
 	swapHash := getHash(swap)
-	exists, err := db.IsSwapKnown(col, swapHash)
+	exists, err := db.IsSwapKnown(col, swapHash, swap)
 	if err != nil {
 		db.log.Critical(err)
 		return false
@@ -88,6 +94,21 @@ func (db *MongoDbBridge) shouldAddSwap(col *mongo.Collection, swap *types.Swap) 
 
 	// if the transaction already exists, we don't need to do anything here
 	return !exists
+}
+
+// isZeroSwap checks if amounts are not zero to avoid divide by 0 during calculations in db
+func isZeroSwap(swap *types.Swap) bool {
+	if swap.Type == types.SwapSync {
+		return false
+	}
+	am := big.Int{}
+	am0small := removeDecimals(am.Add(swap.Amount0In, swap.Amount0Out))
+	am1small := removeDecimals(am.Add(swap.Amount1In, swap.Amount1Out))
+
+	if am0small == 0 || am1small == 0 {
+		return true
+	}
+	return false
 }
 
 // UniswapAdd stores a swap reference in connected persistent storage.
@@ -99,6 +120,12 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 
 	// get the collection for transactions
 	col := db.client.Database(db.dbName).Collection(coUniswap)
+
+	// check for zero amounts in the swap, because of future div by 0 during agregation in db
+	if isZeroSwap(swap) {
+		db.log.Debugf("Swap from block %v will not be added, because swap amount is 0 ater removing decimals", uint64(*swap.BlockNumber))
+		return nil
+	}
 
 	// if the swap already exists, we don't need to add it
 	// just make sure the transaction accounts were processed
@@ -122,6 +149,7 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 		swapData(&bson.D{
 			{Key: fiSwapPk, Value: swapHash.String()},
 			{Key: fiSwapBlock, Value: uint64(*swap.BlockNumber)},
+			{Key: fiSwapOrdIndex, Value: swap.OrdIndex},
 			{Key: fiSwapDate, Value: primitive.NewDateTimeFromTime(time.Unix((int64)(*swap.TimeStamp), 0).UTC())},
 		}, swap)); err != nil {
 
@@ -158,26 +186,25 @@ func swapData(base *bson.D, swap *types.Swap) bson.D {
 
 	// add the extended data
 	*base = append(*base,
+		bson.E{Key: fiSwapType, Value: swap.Type},
 		bson.E{Key: fiSwapTxHash, Value: swap.Hash.String()},
 		bson.E{Key: fiSwapPair, Value: swap.Pair.String()},
 		bson.E{Key: fiSwapSender, Value: swap.Sender.String()},
-		bson.E{Key: fiSwapTo, Value: swap.To.String()},
 		bson.E{Key: fiSwapAmount0in, Value: removeDecimals(swap.Amount0In)},
 		bson.E{Key: fiSwapAmount0out, Value: removeDecimals(swap.Amount0Out)},
 		bson.E{Key: fiSwapAmount1in, Value: removeDecimals(swap.Amount1In)},
 		bson.E{Key: fiSwapAmount1out, Value: removeDecimals(swap.Amount1Out)},
+		bson.E{Key: fiSwapReserve0, Value: removeDecimals(swap.Reserve0)},
+		bson.E{Key: fiSwapReserve1, Value: removeDecimals(swap.Reserve1)},
 	)
 	return *base
 }
 
 // IsSwapKnown checks if swap document already exists in the database.
-func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *types.Hash) (bool, error) {
+func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *types.Hash, swap *types.Swap) (bool, error) {
 	// try to find swap in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
-		{Key: fiSwapPk, Value: hash.String()},
-	}, options.FindOne().SetProjection(bson.D{
-		{Key: fiSwapPk, Value: true},
-	}))
+		{Key: fiSwapPk, Value: hash.String()}})
 
 	// error on lookup?
 	if sr.Err() != nil {
@@ -195,6 +222,39 @@ func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *types.Hash) (b
 
 	// swap is known, jus log and return true
 	db.log.Debugf("Swap %s is already in database.", hash.String())
+
+	// if swap is sync type, then update reserves
+	if swap.Type == types.SwapSync {
+		db.log.Debugf("Updating reserves for Swap %s", hash.String())
+		_, err := col.UpdateOne(context.Background(),
+			bson.M{fiSwapPk: hash.String()},
+			bson.D{
+				{Key: "$set", Value: bson.M{fiSwapReserve0: removeDecimals(swap.Reserve0)}},
+				{Key: "$set", Value: bson.M{fiSwapReserve1: removeDecimals(swap.Reserve1)}}})
+		if err != nil {
+			db.log.Errorf("Unable to update reserves for Swap %s", hash.String())
+		}
+	} else {
+
+		// in case the sync event was recorded first, update reserves into actual swap
+		// and delete sync record.
+		type Values struct {
+			Type     int   `bson:"type"`
+			Reserve0 int64 `bson:"reserve0"`
+			Reserve1 int64 `bson:"reserve1"`
+		}
+		var values Values
+		sr.Decode(&values)
+
+		if types.SwapSync == values.Type {
+			db.log.Debugf("Updating reserve for swap: %s, reserve0: %v, reserve1: %v", hash.String(), values.Reserve0, values.Reserve1)
+			col.DeleteOne(context.Background(), bson.D{{Key: fiSwapPk, Value: hash.String()}})
+			swap.Reserve0 = returnDecimals(big.NewInt(values.Reserve0))
+			swap.Reserve1 = returnDecimals(big.NewInt(values.Reserve1))
+			return false, nil
+		}
+	}
+	// no need to change data
 	return true, nil
 }
 
@@ -546,4 +606,406 @@ func (db *MongoDbBridge) UniswapTimePrices(pairAddress *common.Address, resoluti
 	}
 
 	return list, nil
+}
+
+// UniswapTimeReserves resolves reserves of uniswap trades for specified pair grouped by date interval.
+// If toTime is 0, then it calculates prices till now
+func (db *MongoDbBridge) UniswapTimeReserves(pairAddress *common.Address, resolution string, fromTime int64, toTime int64) ([]types.DefiTimeReserve, error) {
+
+	// create query pipeline
+	pipe := mongo.Pipeline{
+		{{Key: "$match", Value: bson.D{
+			{Key: "date", Value: getDateBsonD(fromTime, toTime)},
+			{Key: "pair", Value: pairAddress.String()}}}},
+		{{Key: "$sort", Value: bson.D{
+			{Key: "date", Value: 1},
+		}}},
+		{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: getGroupBsonD(resolution)},
+			{Key: "close0", Value: bson.D{
+				{Key: "$last", Value: "$" + fiSwapReserve0}}},
+
+			{Key: "close1", Value: bson.D{
+				{Key: "$last", Value: "$" + fiSwapReserve1}}},
+		}}},
+		{{Key: "$sort", Value: bson.D{
+			{Key: "_id", Value: 1},
+		}}},
+	}
+
+	type TimeReserve struct {
+
+		// Time represents ISO time tag for this price
+		Time string `bson:"_id"`
+
+		// average price for this time period
+		Close0 int64 `bson:"close0"`
+		Close1 int64 `bson:"close1"`
+	}
+
+	list := make([]types.DefiTimeReserve, 0)
+
+	// execute query
+	col := db.client.Database(db.dbName).Collection(coUniswap)
+	cursor, err := col.Aggregate(context.Background(), pipe)
+	if err != nil {
+		db.log.Errorf(err.Error())
+		return list, nil
+	} else {
+		defer cursor.Close(context.Background())
+
+		// iterate thru results and construct data
+		for cursor.Next(context.Background()) {
+			var reserveVal TimeReserve
+			err := cursor.Decode(&reserveVal)
+			if err != nil {
+				db.log.Errorf(err.Error())
+			}
+
+			res := types.DefiTimeReserve{
+				Time: reserveVal.Time,
+				ReserveClose: []hexutil.Big{
+					hexutil.Big(*returnDecimals(new(big.Int).SetInt64(reserveVal.Close0))),
+					hexutil.Big(*returnDecimals(new(big.Int).SetInt64(reserveVal.Close1)))},
+			}
+
+			list = append(list, res)
+		}
+	}
+
+	return list, nil
+}
+
+// UniswapActions provides list of uniswap actions stored in the persistent storage.
+func (db *MongoDbBridge) UniswapActions(pairAddress *common.Address, cursor *string, count int32, actionType int32) (*types.UniswapActionList, error) {
+	// nothing to load?
+	if count == 0 {
+		return nil, fmt.Errorf("nothing to do, zero uniswap actions requested")
+	}
+
+	// get the collection and context
+	col := db.client.Database(db.dbName).Collection(coUniswap)
+
+	// init the list
+	list, err := db.uniswapActionListInit(col, pairAddress, cursor, count, actionType)
+	if err != nil {
+		db.log.Errorf("can not build uniswap action list; %s", err.Error())
+		return nil, err
+	}
+
+	// load data
+	err = db.uniswapActionListLoad(col, pairAddress, actionType, cursor, count, list)
+	if err != nil {
+		db.log.Errorf("can not load uniswap action list from database; %s", err.Error())
+		return nil, err
+	}
+
+	// shift the first item on cursor
+	if cursor != nil {
+		list.First = list.Collection[0].OrdIndex
+	}
+
+	return list, nil
+}
+
+// contractListInit initializes list of contracts based on provided cursor and count.
+func (db *MongoDbBridge) uniswapActionListInit(col *mongo.Collection, pairAddress *common.Address, cursor *string, count int32, actionType int32) (*types.UniswapActionList, error) {
+	// make the list
+	list := types.UniswapActionList{
+		Collection: make([]*types.UniswapAction, 0),
+		Total:      0,
+		First:      0,
+		Last:       0,
+		IsStart:    false,
+		IsEnd:      false,
+	}
+
+	// calculate the total number of contracts in the list
+	if err := db.uniswapActionListTotal(col, pairAddress, &list, actionType); err != nil {
+		return nil, err
+	}
+
+	// inform what we are about to do
+	db.log.Debugf("Found %d uniswap actions in off-chain database for secified criteria", list.Total)
+
+	// find the top uniswap action of the list
+	if err := db.uniswapActionListTop(col, pairAddress, actionType, cursor, count, &list); err != nil {
+		return nil, err
+	}
+
+	// inform what we are about to do
+	db.log.Debugf("Uniswap action list initialized with ordinal index %d", list.First)
+	return &list, nil
+}
+
+// uniswapActionListTotal find the total amount of uniswap events for the criteria and populates the list
+func (db *MongoDbBridge) uniswapActionListTotal(col *mongo.Collection, pairAddress *common.Address, list *types.UniswapActionList, actionType int32) error {
+	// prep the empty filter
+	filter := bson.D{}
+	filterPair := bson.D{}
+	filterType := bson.D{}
+
+	// validation filter for pair address
+	if pairAddress != nil {
+		filterPair = bson.D{{Key: fiSwapPair, Value: pairAddress.String()}}
+	}
+
+	// validation filter for action type
+	if actionType >= 0 {
+		filterType = bson.D{{Key: fiSwapType, Value: actionType}}
+	}
+
+	filterBlk := bson.D{{Key: fiSwapBlock, Value: bson.D{{Key: "$exists", Value: true}}}}
+
+	filter = bson.D{{Key: "$and", Value: bson.A{filterPair, filterType, filterBlk}}}
+
+	// find how many uniswap events do we have in the database
+	total, err := col.CountDocuments(context.Background(), filter)
+	if err != nil {
+		db.log.Errorf("Can not count uniswap actions: %v", err.Error())
+		return err
+	}
+
+	// apply the total count
+	list.Total = uint64(total)
+	return nil
+}
+
+// uniswapActionListTop find the first uniswap action of the list based on provided criteria and populates the list.
+func (db *MongoDbBridge) uniswapActionListTop(col *mongo.Collection, pairAddress *common.Address, actionType int32, cursor *string, count int32, list *types.UniswapActionList) error {
+	// get the filter
+	filter, err := uniswapActionListTopFilter(pairAddress, cursor, actionType)
+	if err != nil {
+		db.log.Errorf("can not find top uniswap action for the list; %s", err.Error())
+		return err
+	}
+
+	// find out the cursor ordinal index
+	if cursor == nil && count > 0 {
+		// get the highest available ordinal index (top uniswap action)
+		list.First, err = db.findUniswapActionBorderOrdinalIndex(col,
+			*filter,
+			options.FindOne().SetSort(bson.D{{Key: fiSwapOrdIndex, Value: -1}}))
+		list.IsStart = true
+
+	} else if cursor == nil && count < 0 {
+		// get the lowest available ordinal index (bottom uniswap action)
+		list.First, err = db.findUniswapActionBorderOrdinalIndex(col,
+			*filter,
+			options.FindOne().SetSort(bson.D{{Key: fiSwapOrdIndex, Value: 1}}))
+		list.IsEnd = true
+
+	} else if cursor != nil {
+		// get the highest available ordinal index (top uniswap action)
+		list.First, err = db.findUniswapActionBorderOrdinalIndex(col,
+			*filter,
+			options.FindOne())
+	}
+
+	// check the error
+	if err != nil {
+		db.log.Errorf("can not find the initial uniswap action")
+		return err
+	}
+
+	return nil
+}
+
+// uniswapActionListTopFilter constructs a filter for finding the top item of the list.
+func uniswapActionListTopFilter(pairAddress *common.Address, cursor *string, actionType int32) (*bson.D, error) {
+	// what is the requested ordinal index from cursor, if any
+	var ix uint64
+	if cursor != nil {
+		var err error
+
+		// get the ordinal index based on cursor
+		ix, err = strconv.ParseUint(*cursor, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid cursor value; %s", err.Error())
+		}
+	}
+
+	// prep the empty filter (no cursor and any validation status)
+	filter := bson.D{}
+	filterPair := bson.D{}
+	filterType := bson.D{}
+	filterCursor := bson.D{}
+
+	// filter for pair address
+	if pairAddress != nil {
+		filterPair = bson.D{{Key: fiSwapPair, Value: pairAddress.String()}}
+	}
+
+	// filter for action type
+	if actionType >= 0 {
+		filterType = bson.D{{Key: fiSwapType, Value: actionType}}
+	}
+
+	// filter for cursor
+	if cursor != nil {
+		filterCursor = bson.D{{Key: fiSwapOrdIndex, Value: ix}}
+	}
+
+	filter = bson.D{{Key: "$and", Value: bson.A{filterPair, filterType, filterCursor}}}
+
+	return &filter, nil
+}
+
+// uniswapActionListLoad loads the initialized uniswap action list from persistent database.
+func (db *MongoDbBridge) uniswapActionListLoad(col *mongo.Collection, pairAddress *common.Address, actionType int32, cursor *string, count int32, list *types.UniswapActionList) error {
+	// get the context for loader
+	ctx := context.Background()
+
+	// load the data
+	ld, err := col.Find(ctx, db.uniswapActionListFilter(pairAddress, actionType, cursor, count, list), db.uniswapActionListOptions(count))
+	if err != nil {
+		db.log.Errorf("error loading uniswap action list; %s", err.Error())
+		return err
+	}
+
+	// close the cursor as we leave
+	defer func() {
+		err := ld.Close(ctx)
+		if err != nil {
+			db.log.Errorf("error closing uniswap action list cursor; %s", err.Error())
+		}
+	}()
+
+	// loop and load
+	var uniswapAction *types.UniswapAction
+	for ld.Next(ctx) {
+		// process the last found hash
+		if uniswapAction != nil {
+			list.Collection = append(list.Collection, uniswapAction)
+			list.Last = uniswapAction.OrdIndex
+		}
+
+		// try to decode the next row
+		var ua types.UniswapAction
+		if err := ld.Decode(&ua); err != nil {
+			db.log.Errorf("can not decode uniswap action list row; %s", err.Error())
+			return err
+		}
+
+		// decode special data
+		ua.Time = hexutil.Uint64(ua.RawTime.UTC().Unix())
+		ua.Amount0in = *(*hexutil.Big)(big.NewInt(ua.Amount0inRaw))
+		ua.Amount0out = *(*hexutil.Big)(big.NewInt(ua.Amount0outRaw))
+		ua.Amount1in = *(*hexutil.Big)(big.NewInt(ua.Amount1inRaw))
+		ua.Amount1out = *(*hexutil.Big)(big.NewInt(ua.Amount1outRaw))
+		ua.PairAddress = common.HexToAddress(ua.PairRaw)
+
+		// keep this one
+		uniswapAction = &ua
+	}
+
+	// we should have all the items already; we may just need to check if a boundary was reached
+	if cursor != nil {
+		list.IsEnd = count > 0 && int32(len(list.Collection)) < count
+		list.IsStart = count < 0 && int32(len(list.Collection)) < -count
+
+		// add the last item as well
+		if (list.IsStart || list.IsEnd) && uniswapAction != nil {
+			list.Collection = append(list.Collection, uniswapAction)
+			list.Last = uniswapAction.OrdIndex
+		}
+	}
+
+	return nil
+}
+
+// uniswapActionListFilter creates a filter for uniswap action list search.
+func (db *MongoDbBridge) uniswapActionListFilter(pairAddress *common.Address, actionType int32, cursor *string, count int32, list *types.UniswapActionList) *bson.D {
+	// inform what we are about to do
+	db.log.Debugf("uniswap action filter starts from index %d", list.First)
+
+	// prep base operator
+	ordinalOp := "$lte"
+
+	// no cursor and bottom up list
+	if cursor == nil && count < 0 {
+		ordinalOp = "$gte"
+	}
+
+	// we have the cursor and we scan from top
+	if cursor != nil && count > 0 {
+		ordinalOp = "$lt"
+	}
+
+	// we have the cursor and we scan from bottom
+	if cursor != nil && count < 0 {
+		ordinalOp = "$gt"
+	}
+
+	// prep the empty filter (no cursor and any validation status)
+	filter := bson.D{}
+	filterPair := bson.D{}
+	filterType := bson.D{}
+	filterCursor := bson.D{}
+
+	// filter for cursor
+	filterCursor = bson.D{{Key: fiSwapOrdIndex, Value: bson.D{{Key: ordinalOp, Value: list.First}}}}
+
+	// filter for pair address
+	if pairAddress != nil {
+		filterPair = bson.D{{Key: fiSwapPair, Value: pairAddress.String()}}
+	}
+
+	// filter for action type
+	if actionType >= 0 {
+		filterType = bson.D{{Key: fiSwapType, Value: actionType}}
+	}
+
+	filter = bson.D{{Key: "$and", Value: bson.A{filterPair, filterType, filterCursor}}}
+
+	return &filter
+}
+
+// uniswapActionListOptions creates a filter options set for uniswap action list search.
+func (db *MongoDbBridge) uniswapActionListOptions(count int32) *options.FindOptions {
+	// prep options
+	opt := options.Find()
+
+	// how to sort results in the collection
+	if count > 0 {
+		// from high (new) to low (old)
+		opt.SetSort(bson.D{{Key: fiSwapOrdIndex, Value: -1}})
+	} else {
+		// from low (old) to high (new)
+		opt.SetSort(bson.D{{Key: fiSwapOrdIndex, Value: 1}})
+	}
+
+	// prep the loading limit
+	var limit = int64(count)
+	if limit < 0 {
+		limit = -limit
+	}
+
+	// try to get one more
+	limit++
+
+	// apply the limit
+	opt.SetLimit(limit)
+	return opt
+}
+
+// findUniswapActionBorderOrdinalIndex finds the highest, or lowest ordinal index in the collection.
+// For negative sort it will return highest and for positive sort it will return lowest available value.
+func (db *MongoDbBridge) findUniswapActionBorderOrdinalIndex(col *mongo.Collection, filter bson.D, opt *options.FindOneOptions) (uint64, error) {
+	// prep container
+	var row struct {
+		Value uint64 `bson:"orx"`
+	}
+
+	// make sure we pull only what we need
+	opt.SetProjection(bson.D{{Key: fiSwapOrdIndex, Value: true}})
+	sr := col.FindOne(context.Background(), filter, opt)
+
+	// try to decode
+	err := sr.Decode(&row)
+	if err != nil {
+		return 0, err
+	}
+
+	return row.Value, nil
 }
