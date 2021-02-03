@@ -1,0 +1,83 @@
+# LendingPool represents a lendingpool instance.
+type LendingPool {
+
+    # Returns all assets reserve addresses
+    reserveList(): [Address!]!
+
+    # A list of all assets reserves with its data 
+    reserveDataList(): [ReserveData!]!
+
+    # Asset reserve data just for one asset address
+	reserveData(address: Address!): ReserveData!
+    
+    # User account data for specified user address
+    userAccountData(address: Address!): FLendUserData!
+}
+
+
+# ReserveData represents a lendingpool asset data.
+# Unit Ray is 1e27.
+type ReserveData {
+
+    # address of the asset
+    AssetAddress: Address!
+
+    # number in the reserveList() array
+    ID: Int!
+
+    # bitmask encoded asset reserve configuration data
+    Configuration: BigInt!
+
+    # liquidity index in ray
+    LiquidityIndex: BigInt!
+
+    # variable borrow index in ray
+    VariableBorrowIndex: BigInt!
+
+    # current supply / liquidity / deposit rate in ray
+    CurrentLiquidityRate: BigInt!
+
+    # current variable borrow rate in ray
+    CurrentVariableBorrowRate: BigInt!
+
+    # current stable borrow rate in ray
+    CurrentStableBorrowRate: BigInt!
+
+    # timestamp of when reserve data was last updated
+    LastUpdateTimestamp: BigInt!
+
+    # address of associated aToken (tokenised deposit)
+    ATokenAddress: Address!
+
+    # address of associated stable debt token
+	StableDebtTokenAddress: Address!
+
+    # address of associated variable debt token
+	VariableDebtTokenAddress: Address!
+
+    # address of interest rate strategy
+    InterestRateStrategyAddress: Address!
+}
+    
+
+# FLendUserData represents a lendingpool user data.
+type FLendUserData {
+
+    # total collateral in FUSD of the user
+	TotalCollateralFUSD: BigInt!
+
+    # total debt in FUSD of the user
+	TotalDebtFUSD: BigInt!
+
+    # borrowing power left of the user in FUSD
+	AvailableBorrowsFUSD: BigInt!
+
+    # liquidation threshold of the user
+	CurrentLiquidationThreshold: BigInt!
+
+    # Loan To Value of the user
+	Ltv: BigInt!
+
+    # current health factor of the user
+	HealthFactor: BigInt!
+}
