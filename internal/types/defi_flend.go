@@ -70,3 +70,53 @@ type FLendUserAccountData struct {
 	// current health factor of the user
 	HealthFactor hexutil.Big
 }
+
+// FLendDeposit represents a Lending pool deposit event data.
+type FLendDeposit struct {
+
+	// address of the asset
+	AssetAddress common.Address
+
+	// address of the user
+	UserAddress common.Address
+
+	// address of the on behalf of
+	OnBehalfOfAddress common.Address
+
+	// deposit amount
+	Amount hexutil.Big
+
+	// referal code
+	ReferalCode int32
+
+	// time of deposit
+	Timestamp hexutil.Uint64
+}
+
+// FLendBorrow represents a Lending pool borrow event data.
+type FLendBorrow struct {
+
+	// address of the asset
+	AssetAddress common.Address
+
+	// address of the user
+	UserAddress common.Address
+
+	// address of the on behalf of
+	OnBehalfOfAddress common.Address
+
+	// deposit amount
+	Amount hexutil.Big
+
+	// interest rate mode
+	InterestRateMode int32
+
+	// borrow rate
+	BorrowRate int32
+
+	// referal code
+	ReferalCode int32
+
+	// time of deposit
+	Timestamp hexutil.Uint64
+}

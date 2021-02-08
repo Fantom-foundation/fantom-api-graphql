@@ -124,3 +124,58 @@ func (ftm *FtmBridge) FLendGetUserAccountData(userAddress *common.Address) (*typ
 	}
 	return uad, nil
 }
+
+// FLendGetUserDepositHistory resolves deposit event history data for specified user and asset address
+func (ftm *FtmBridge) FLendGetUserDepositHistory(userAddress *common.Address, assetAddress *common.Address) ([]*types.FLendDeposit, error) {
+
+	// create user filter
+	userFilter := []common.Address{}
+	if userAddress != nil {
+		userFilter = append(userFilter, *userAddress)
+	}
+
+	// create asset filter
+	assetFilter := []common.Address{}
+	if assetAddress != nil {
+		assetFilter = append(assetFilter, *assetAddress)
+	}
+
+	// get the lending pool contract
+	lp, err := ftm.FLendGetLendingPool()
+	if err != nil {
+		ftm.log.Errorf("Can not access lending pool %s", err.Error())
+		return nil, err
+	}
+
+	// filter logs
+	fdi, err := lp.FilterDeposit(&bind.FilterOpts{}, assetFilter, userFilter, []uint16{0})
+	if err != nil {
+		ftm.log.Errorf("Can not filter lending pool deposit logs for user %s: %s", userAddress.String(), err.Error())
+		return nil, err
+	}
+
+	// results arrray
+	depositArray := make([]*types.FLendDeposit, 0)
+
+	// iterate thru filtered logs
+	for fdi.Next() {
+
+		// get block for timestamp information
+		blkHash := fdi.Event.Raw.BlockHash.String()
+		blk, err := ftm.BlockByHash(&blkHash)
+		if err != nil {
+			ftm.log.Errorf("fLend block with hash %s was not found: %s", blkHash, err.Error())
+		}
+
+		// add deposit event data to reults
+		depositArray = append(depositArray, &types.FLendDeposit{
+			AssetAddress:      fdi.Event.Reserve,
+			UserAddress:       fdi.Event.User,
+			OnBehalfOfAddress: fdi.Event.OnBehalfOf,
+			Amount:            hexutil.Big(*fdi.Event.Amount),
+			ReferalCode:       int32(byte(fdi.Event.Referral)),
+			Timestamp:         blk.TimeStamp,
+		})
+	}
+	return depositArray, nil
+}

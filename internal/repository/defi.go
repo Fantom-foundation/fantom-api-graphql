@@ -97,3 +97,9 @@ func (p *proxy) FLendGetUserAccountData(userAddress *common.Address) (*types.FLe
 func (p *proxy) FLendGetReserveList() ([]common.Address, error) {
 	return p.rpc.FLendGetReserveList()
 }
+
+// FLendGetUserDepositHistory resolves deposit history
+// data for specified user and asset address
+func (p *proxy) FLendGetUserDepositHistory(userAddress *common.Address, assetAddress *common.Address) ([]*types.FLendDeposit, error) {
+	return p.rpc.FLendGetUserDepositHistory(userAddress, assetAddress)
+}

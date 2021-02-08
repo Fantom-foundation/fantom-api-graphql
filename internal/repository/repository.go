@@ -459,6 +459,10 @@ type Repository interface {
 	// FLendGetReserveList resolves list of reserves in lending pool
 	FLendGetReserveList() ([]common.Address, error)
 
+	// FLendGetUserHistoryDeposit resolves deposit history
+	// data for specified user and asset address
+	FLendGetUserDepositHistory(*common.Address, *common.Address) ([]*types.FLendDeposit, error)
+
 	// Close and cleanup the repository.
 	Close()
 }

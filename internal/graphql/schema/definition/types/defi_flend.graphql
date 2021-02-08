@@ -12,8 +12,10 @@ type LendingPool {
     
     # User account data for specified user address
     userAccountData(address: Address!): FLendUserData!
-}
 
+    # User account deposit event history data
+    userDepositHistory(address: Address, asset: Address): [FLendDeposit!]!
+}
 
 # ReserveData represents a lendingpool asset data.
 # Unit Ray is 1e27.
@@ -80,4 +82,54 @@ type FLendUserData {
 
     # current health factor of the user
 	HealthFactor: BigInt!
+}
+
+# FLendDeposit represents a lendingpool deposit event data.
+type FLendDeposit {
+
+    # address of the asset
+	AssetAddress: Address!
+
+	# address of the user
+	UserAddress: Address!
+
+    # address of the on behalf of
+	OnBehalfOfAddress: Address!
+
+	# deposit amount
+	Amount: BigInt!
+
+	# referal code
+	ReferalCode: Int!
+
+    # time of deposit
+    Timestamp: Long!
+}
+
+# FLendBorrow represents a lendingpool borrow event data.
+type FLendBorrow {
+
+    # address of the asset
+	AssetAddress: Address!
+
+	# address of the user
+	UserAddress: Address!
+
+    # address of the on behalf of
+	OnBehalfOfAddress: Address!
+
+	# deposit amount
+	Amount: BigInt!
+
+    # interest rate mode
+    InterestRateMode: Int!
+
+    # borrow rate
+    BorrowRate: Int!
+
+	# referal code
+	ReferalCode: Int!
+
+    # time of deposit
+    Timestamp: Long!
 }

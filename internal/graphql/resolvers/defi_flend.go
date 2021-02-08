@@ -71,3 +71,17 @@ func (lp *LendingPool) UserAccountData(args *struct{ Address common.Address }) (
 	}
 	return uad, nil
 }
+
+// UserDepositHistory resolves user account deposit history data from lending pool
+func (lp *LendingPool) UserDepositHistory(args *struct {
+	Address *common.Address
+	Asset   *common.Address
+}) ([]*types.FLendDeposit, error) {
+
+	uad, err := lp.repo.FLendGetUserDepositHistory(args.Address, args.Asset)
+	if err != nil {
+		lp.repo.Log().Errorf("Can not get lending pool deposit history data for user %s, asset %s: %s", args.Address.String(), args.Asset.String(), err.Error())
+		return nil, err
+	}
+	return uad, nil
+}
