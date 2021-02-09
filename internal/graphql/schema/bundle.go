@@ -276,43 +276,43 @@ type LendingPool {
 type ReserveData {
 
     # address of the asset
-    AssetAddress: Address!
+    assetAddress: Address!
 
     # number in the reserveList() array
     ID: Int!
 
     # bitmask encoded asset reserve configuration data
-    Configuration: BigInt!
+    configuration: BigInt!
 
     # liquidity index in ray
-    LiquidityIndex: BigInt!
+    liquidityIndex: BigInt!
 
     # variable borrow index in ray
-    VariableBorrowIndex: BigInt!
+    variableBorrowIndex: BigInt!
 
     # current supply / liquidity / deposit rate in ray
-    CurrentLiquidityRate: BigInt!
+    currentLiquidityRate: BigInt!
 
     # current variable borrow rate in ray
-    CurrentVariableBorrowRate: BigInt!
+    currentVariableBorrowRate: BigInt!
 
     # current stable borrow rate in ray
-    CurrentStableBorrowRate: BigInt!
+    currentStableBorrowRate: BigInt!
 
     # timestamp of when reserve data was last updated
-    LastUpdateTimestamp: BigInt!
+    lastUpdateTimestamp: BigInt!
 
     # address of associated aToken (tokenised deposit)
-    ATokenAddress: Address!
+    aTokenAddress: Address!
 
     # address of associated stable debt token
-	StableDebtTokenAddress: Address!
+	stableDebtTokenAddress: Address!
 
     # address of associated variable debt token
-	VariableDebtTokenAddress: Address!
+	variableDebtTokenAddress: Address!
 
     # address of interest rate strategy
-    InterestRateStrategyAddress: Address!
+    interestRateStrategyAddress: Address!
 }
     
 
@@ -364,28 +364,28 @@ type FLendDeposit {
 type FLendBorrow {
 
     # address of the asset
-	AssetAddress: Address!
+	assetAddress: Address!
 
 	# address of the user
-	UserAddress: Address!
+	userAddress: Address!
 
     # address of the on behalf of
-	OnBehalfOfAddress: Address!
+	onBehalfOfAddress: Address!
 
 	# deposit amount
-	Amount: BigInt!
+	amount: BigInt!
 
     # interest rate mode
-    InterestRateMode: Int!
+    interestRateMode: Int!
 
     # borrow rate
-    BorrowRate: Int!
+    borrowRate: Int!
 
 	# referal code
-	ReferalCode: Int!
+	referalCode: Int!
 
     # time of deposit
-    Timestamp: Long!
+    timestamp: Long!
 }
 # Transaction is an Opera block chain transaction.
 type Transaction {
