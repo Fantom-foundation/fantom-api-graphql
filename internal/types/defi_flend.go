@@ -69,6 +69,9 @@ type FLendUserAccountData struct {
 
 	// current health factor of the user
 	HealthFactor hexutil.Big
+
+	// configuration data
+	ConfigurationData hexutil.Big
 }
 
 // FLendDeposit represents a Lending pool deposit event data.

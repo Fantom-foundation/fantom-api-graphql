@@ -336,6 +336,9 @@ type FLendUserData {
 
     # current health factor of the user
 	healthFactor: BigInt!
+
+    # configuration data
+    configurationData: BigInt!
 }
 
 # FLendDeposit represents a lendingpool deposit event data.

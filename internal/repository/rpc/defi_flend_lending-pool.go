@@ -114,6 +114,12 @@ func (ftm *FtmBridge) FLendGetUserAccountData(userAddress *common.Address) (*typ
 		return nil, err
 	}
 
+	uc, err := lp.GetUserConfiguration(&bind.CallOpts{}, *userAddress)
+	if err != nil {
+		ftm.log.Errorf("Cannot get user account configuration data for address %s: %s", userAddress.String(), err.Error())
+		return nil, err
+	}
+
 	uad := &types.FLendUserAccountData{
 		TotalCollateralFUSD:         hexutil.Big(*ua.TotalCollateralETH),
 		TotalDebtFUSD:               hexutil.Big(*ua.TotalDebtETH),
@@ -121,6 +127,7 @@ func (ftm *FtmBridge) FLendGetUserAccountData(userAddress *common.Address) (*typ
 		CurrentLiquidationThreshold: hexutil.Big(*ua.CurrentLiquidationThreshold),
 		Ltv:                         hexutil.Big(*ua.Ltv),
 		HealthFactor:                hexutil.Big(*ua.HealthFactor),
+		ConfigurationData:           hexutil.Big(*uc.Data),
 	}
 	return uad, nil
 }
