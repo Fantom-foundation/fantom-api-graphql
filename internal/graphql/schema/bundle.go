@@ -320,44 +320,44 @@ type ReserveData {
 type FLendUserData {
 
     # total collateral in FUSD of the user
-	TotalCollateralFUSD: BigInt!
+	totalCollateralFUSD: BigInt!
 
     # total debt in FUSD of the user
-	TotalDebtFUSD: BigInt!
+	totalDebtFUSD: BigInt!
 
     # borrowing power left of the user in FUSD
-	AvailableBorrowsFUSD: BigInt!
+	availableBorrowsFUSD: BigInt!
 
     # liquidation threshold of the user
-	CurrentLiquidationThreshold: BigInt!
+	currentLiquidationThreshold: BigInt!
 
     # Loan To Value of the user
-	Ltv: BigInt!
+	ltv: BigInt!
 
     # current health factor of the user
-	HealthFactor: BigInt!
+	healthFactor: BigInt!
 }
 
 # FLendDeposit represents a lendingpool deposit event data.
 type FLendDeposit {
 
     # address of the asset
-	AssetAddress: Address!
+	assetAddress: Address!
 
 	# address of the user
-	UserAddress: Address!
+	userAddress: Address!
 
     # address of the on behalf of
-	OnBehalfOfAddress: Address!
+	onBehalfOfAddress: Address!
 
 	# deposit amount
-	Amount: BigInt!
+	amount: BigInt!
 
 	# referal code
-	ReferalCode: Int!
+	referalCode: Int!
 
     # time of deposit
-    Timestamp: Long!
+    timestamp: Long!
 }
 
 # FLendBorrow represents a lendingpool borrow event data.
