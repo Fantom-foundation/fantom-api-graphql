@@ -444,6 +444,25 @@ type Repository interface {
 	// in the governance contract identified by the address.
 	GovernanceTotalWeight(*common.Address) (hexutil.Big, error)
 
+	// FLendGetLendingPool resolves lending pool contract instace
+	// to be able to get calls and informations from this contract
+	FLendGetLendingPool() (*contracts.ILendingPool, error)
+
+	// FLendGetLendingPoolReserveData resolves reserve data
+	// according to given address
+	FLendGetLendingPoolReserveData(*common.Address) (*types.ReserveData, error)
+
+	// FLendGetUserAccountData resolves user account data for
+	// specified address
+	FLendGetUserAccountData(*common.Address) (*types.FLendUserAccountData, error)
+
+	// FLendGetReserveList resolves list of reserves in lending pool
+	FLendGetReserveList() ([]common.Address, error)
+
+	// FLendGetUserHistoryDeposit resolves deposit history
+	// data for specified user and asset address
+	FLendGetUserDepositHistory(*common.Address, *common.Address) ([]*types.FLendDeposit, error)
+
 	// Close and cleanup the repository.
 	Close()
 }
