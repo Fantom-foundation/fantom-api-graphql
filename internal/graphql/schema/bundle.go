@@ -1724,7 +1724,7 @@ type Query {
 
     # Get information about specified epoch. Returns current epoch information
     # if id is not provided.
-    epoch(id: Long!): Epoch!
+    epoch(id: Long): Epoch!
 
     # The last staker id in Opera blockchain.
     lastStakerId: Long!
