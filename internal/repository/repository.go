@@ -94,7 +94,7 @@ type Repository interface {
 	CurrentSealedEpoch() (*types.Epoch, error)
 
 	// Epoch returns the id of the current epoch.
-	Epoch(hexutil.Uint64) (types.Epoch, error)
+	Epoch(*hexutil.Uint64) (types.Epoch, error)
 
 	// Block returns a block at Opera blockchain represented by a hash.
 	// Top block is returned if the hash is not provided.

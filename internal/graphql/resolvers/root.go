@@ -107,7 +107,7 @@ type ApiResolver interface {
 	CurrentEpoch() (hexutil.Uint64, error)
 
 	// Epoch resolves information about epoch of the given id.
-	Epoch(*struct{ Id hexutil.Uint64 }) (types.Epoch, error)
+	Epoch(*struct{ Id *hexutil.Uint64 }) (types.Epoch, error)
 
 	// LastStakerId resolves the last staker id in Opera blockchain.
 	LastStakerId() (hexutil.Uint64, error)

@@ -14,7 +14,7 @@ func (rs *rootResolver) CurrentEpoch() (hexutil.Uint64, error) {
 }
 
 // Epoch resolves information about epoch of the given id.
-func (rs *rootResolver) Epoch(args *struct{ Id hexutil.Uint64 }) (types.Epoch, error) {
+func (rs *rootResolver) Epoch(args *struct{ Id *hexutil.Uint64 }) (types.Epoch, error) {
 	return rs.repo.Epoch(args.Id)
 }
 
