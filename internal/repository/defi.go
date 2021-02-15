@@ -37,6 +37,11 @@ func (p *proxy) FMintTokenBalance(owner *common.Address, token *common.Address, 
 	return p.rpc.FMintTokenBalance(owner, token, tp)
 }
 
+// FMintTokenTotalBalance loads total balance of a single DeFi token by it's address.
+func (p *proxy) FMintTokenTotalBalance(token *common.Address, tp types.DefiTokenType) (hexutil.Big, error) {
+	return p.rpc.FMintTokenTotalBalance(token, tp)
+}
+
 // FMintTokenValue loads value of a single DeFi token by it's address in fUSD.
 func (p *proxy) FMintTokenValue(owner *common.Address, token *common.Address, tp types.DefiTokenType) (hexutil.Big, error) {
 	return p.rpc.FMintTokenValue(owner, token, tp)

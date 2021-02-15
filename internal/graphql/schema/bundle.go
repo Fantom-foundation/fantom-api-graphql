@@ -68,6 +68,12 @@ type DefiToken {
 
     # totalSupply represents total amount of tokens across all accounts
     totalSupply: BigInt!
+
+    # totalDeposited represents total amount of deposited tokens collateral on fMint.
+    totalDeposit: BigInt!
+
+    # totalDept represents total amount of borrowed/minted tokens on fMint.
+    totalDept: BigInt!
 }
 
 # DefiTokenBalanceType represents the type of DeFi token balance record.
@@ -316,6 +322,12 @@ type ERC20Token {
     # allowance represents the amount of ERC20 tokens unlocked
     # by the owner / token holder to be accessible for the given spender.
     allowance(owner: Address!, spender: Address!): BigInt!
+
+    # totalDeposited represents total amount of deposited tokens collateral on fMint.
+    totalDeposit: BigInt!
+
+    # totalDept represents total amount of borrowed/minted tokens on fMint.
+    totalDept: BigInt!
 }
 
 # DelegationList is a list of delegations edges provided by sequential access request.

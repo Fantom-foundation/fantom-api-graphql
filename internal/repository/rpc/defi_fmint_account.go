@@ -105,6 +105,47 @@ func (ftm *FtmBridge) FMintTokenBalance(owner *common.Address, token *common.Add
 	return ftm.FMintPoolBalance(pool, owner, token)
 }
 
+// FMintTokenTotalBalance loads total balance of a single DeFi token by it's address.
+func (ftm *FtmBridge) FMintTokenTotalBalance(token *common.Address, tp types.DefiTokenType) (hexutil.Big, error) {
+	var err error
+	var pool *contracts.DeFiTokenStorage
+
+	// pull the right value based to token type
+	switch tp {
+	case types.DefiTokenTypeCollateral:
+		pool, err = ftm.fMintCfg.fMintCollateralPool()
+	case types.DefiTokenTypeDebt:
+		pool, err = ftm.fMintCfg.fMintDebtPool()
+	}
+
+	// error in pool loading?
+	if err != nil {
+		ftm.log.Debugf("token storage pool failed to load; %s", err.Error())
+		return hexutil.Big{}, err
+	}
+
+	// do we have the pool?
+	if pool == nil {
+		ftm.log.Debugf("token storage pool not available")
+		return hexutil.Big{}, nil
+	}
+
+	// get the collateral token balance
+	val, err := pool.TotalBalance(nil, *token)
+	if err != nil {
+		ftm.log.Debugf("pool total balance failed on token %s", token.String(), err.Error())
+		return hexutil.Big{}, err
+	}
+
+	// do we have a value?
+	if val == nil {
+		ftm.log.Debugf("token %s total balance not available", token.String())
+		return hexutil.Big{}, nil
+	}
+
+	return hexutil.Big(*val), nil
+}
+
 // FMintTokenValue loads value of a single DeFi token by it's address in fUSD.
 func (ftm *FtmBridge) FMintTokenValue(owner *common.Address, token *common.Address, tp types.DefiTokenType) (hexutil.Big, error) {
 	// get the balance

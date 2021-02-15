@@ -91,3 +91,13 @@ func (token *ERC20Token) Allowance(args *struct {
 func (token *ERC20Token) LogoURL() string {
 	return token.repo.Erc20LogoURL(&token.Address)
 }
+
+// TotalDeposit represents the total amount of tokens deposited to fMint as collateral.
+func (token *ERC20Token) TotalDeposit() (hexutil.Big, error) {
+	return token.repo.FMintTokenTotalBalance(&token.Address, types.DefiTokenTypeCollateral)
+}
+
+// TotalDept represents the total amount of tokens borrowed/minted on fMint.
+func (token *ERC20Token) TotalDept() (hexutil.Big, error) {
+	return token.repo.FMintTokenTotalBalance(&token.Address, types.DefiTokenTypeDebt)
+}
