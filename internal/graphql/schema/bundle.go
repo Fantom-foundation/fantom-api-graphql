@@ -72,8 +72,8 @@ type DefiToken {
     # totalDeposited represents total amount of deposited tokens collateral on fMint.
     totalDeposit: BigInt!
 
-    # totalDept represents total amount of borrowed/minted tokens on fMint.
-    totalDept: BigInt!
+    # totalDebt represents total amount of borrowed/minted tokens on fMint.
+    totalDebt: BigInt!
 }
 
 # DefiTokenBalanceType represents the type of DeFi token balance record.
@@ -326,8 +326,8 @@ type ERC20Token {
     # totalDeposited represents total amount of deposited tokens collateral on fMint.
     totalDeposit: BigInt!
 
-    # totalDept represents total amount of borrowed/minted tokens on fMint.
-    totalDept: BigInt!
+    # totalDebt represents total amount of borrowed/minted tokens on fMint.
+    totalDebt: BigInt!
 }
 
 # DelegationList is a list of delegations edges provided by sequential access request.

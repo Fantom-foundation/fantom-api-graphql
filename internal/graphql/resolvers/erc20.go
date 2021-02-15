@@ -97,7 +97,7 @@ func (token *ERC20Token) TotalDeposit() (hexutil.Big, error) {
 	return token.repo.FMintTokenTotalBalance(&token.Address, types.DefiTokenTypeCollateral)
 }
 
-// TotalDept represents the total amount of tokens borrowed/minted on fMint.
-func (token *ERC20Token) TotalDept() (hexutil.Big, error) {
+// TotalDebt represents the total amount of tokens borrowed/minted on fMint.
+func (token *ERC20Token) TotalDebt() (hexutil.Big, error) {
 	return token.repo.FMintTokenTotalBalance(&token.Address, types.DefiTokenTypeDebt)
 }
