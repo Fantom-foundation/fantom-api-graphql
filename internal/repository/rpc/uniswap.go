@@ -16,6 +16,7 @@ package rpc
 import (
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"math/big"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -93,11 +94,31 @@ func (ftm *FtmBridge) UniswapPairs() ([]common.Address, error) {
 			continue
 		}
 
-		// add the address to the list
-		list = append(list, adr)
+		// check the pair (is it on the white list?)
+		// add the address to the list, if it's ok
+		if ftm.isUniswapPairWhitelisted(&adr) {
+			list = append(list, adr)
+		}
 	}
 
 	return list, nil
+}
+
+// isUniswapPairWhitelisted checks if the given Uniswap pair is whitelisted
+// on our configuration.
+func (ftm *FtmBridge) isUniswapPairWhitelisted(pair *common.Address) bool {
+	// decode the pair address
+	pairAddr := pair.String()
+
+	// check the pair address against all the white listed pairs in config
+	for _, addr := range ftm.uniswapConfig.PairsWhiteList {
+		if strings.EqualFold(addr.String(), pairAddr) {
+			return true
+		}
+	}
+
+	// we did not find it
+	return false
 }
 
 // UniswapQuoteInput calculates optimal input on sibling token based on input amount and
