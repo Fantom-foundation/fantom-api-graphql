@@ -290,6 +290,9 @@ type Repository interface {
 	// FMintTokenBalance loads balance of a single DeFi token by it's address.
 	FMintTokenBalance(*common.Address, *common.Address, types.DefiTokenType) (hexutil.Big, error)
 
+	// FMintTokenTotalBalance loads total balance of a single DeFi token by it's address.
+	FMintTokenTotalBalance(*common.Address, types.DefiTokenType) (hexutil.Big, error)
+
 	// FMintTokenValue loads value of a single DeFi token by it's address in fUSD.
 	FMintTokenValue(*common.Address, *common.Address, types.DefiTokenType) (hexutil.Big, error)
 
