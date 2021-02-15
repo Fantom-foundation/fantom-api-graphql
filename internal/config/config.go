@@ -125,8 +125,9 @@ type DeFiFMint struct {
 
 // DeFiUniswap represents the Uniswap protocol DeFi module configuration.
 type DeFiUniswap struct {
-	Core   common.Address `mapstructure:"core"`
-	Router common.Address `mapstructure:"router"`
+	Core           common.Address   `mapstructure:"core"`
+	Router         common.Address   `mapstructure:"router"`
+	PairsWhiteList []common.Address `mapstructure:"whitelist"`
 }
 
 // Voting represents the simple voting/ballots module configuration.
