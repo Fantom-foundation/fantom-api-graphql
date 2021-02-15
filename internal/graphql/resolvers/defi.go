@@ -88,7 +88,7 @@ func (dt *DefiToken) TotalDeposit() (hexutil.Big, error) {
 	return dt.repo.FMintTokenTotalBalance(&dt.Address, types.DefiTokenTypeCollateral)
 }
 
-// TotalDept represents the total amount of tokens borrowed/minted on fMint.
-func (dt *DefiToken) TotalDept() (hexutil.Big, error) {
+// TotalDebt represents the total amount of tokens borrowed/minted on fMint.
+func (dt *DefiToken) TotalDebt() (hexutil.Big, error) {
 	return dt.repo.FMintTokenTotalBalance(&dt.Address, types.DefiTokenTypeDebt)
 }
