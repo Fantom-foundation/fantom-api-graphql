@@ -30,7 +30,7 @@ func (b *MemBridge) PullPrice(symbol string) *types.Price {
 }
 
 // PushPrice stores provided price in the in-memory cache.
-func (b *MemBridge) PushPrice(pri *types.Price) error {
+func (b *MemBridge) PushPrice(sym string, pri *types.Price) error {
 	// we need valid price
 	if nil == pri {
 		return fmt.Errorf("undefined price can not be pushed to the in-memory cache")
@@ -44,7 +44,7 @@ func (b *MemBridge) PushPrice(pri *types.Price) error {
 	}
 
 	// set the data to cache by block number
-	return b.cache.Set(getPriceKeyBySymbol(pri.ToSymbol), data)
+	return b.cache.Set(getPriceKeyBySymbol(sym), data)
 }
 
 // getPriceKeyBySymbol build a cache key for the given price symbol.

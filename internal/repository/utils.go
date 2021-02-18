@@ -17,6 +17,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 const (
@@ -24,6 +25,9 @@ const (
 	priceApiAddress         = "https://min-api.cryptocompare.com/data/pricemultifull?"
 	priceApiSourceSymbolVar = "fsyms="
 	priceApiTargetSymbolVar = "tsyms="
+
+	// pricePullRequestTimeout is number of seconds we wait for the price information request to finish.
+	pricePullRequestTimeout = 5
 )
 
 // GasPrice resolves the current amount of WEI for single Gas.
@@ -64,7 +68,7 @@ func (p *proxy) Price(sym string) (types.Price, error) {
 	}
 
 	// try to store the price in cache for future use
-	err = p.cache.PushPrice(&pri)
+	err = p.cache.PushPrice(sym, &pri)
 	if err != nil {
 		p.log.Error(err)
 	}
@@ -99,7 +103,7 @@ func (p *proxy) pullPrice(sym string) (types.Price, error) {
 	}
 
 	// do the request
-	client := &http.Client{}
+	client := &http.Client{Timeout: time.Second * pricePullRequestTimeout}
 	resp, err := client.Do(req)
 	if err != nil {
 		return types.Price{}, fmt.Errorf("can not query price API; %s", err.Error())
@@ -107,6 +111,9 @@ func (p *proxy) pullPrice(sym string) (types.Price, error) {
 
 	// don't forget to close
 	defer func() {
+		// log the HTTP request
+		p.log.Debugf("finished HTTP request to pull [%s] price", sym)
+
 		// close the connection
 		err := resp.Body.Close()
 		if err != nil {
