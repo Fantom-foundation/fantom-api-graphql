@@ -46,8 +46,26 @@ func (p *proxy) GasEstimate(trx *struct {
 	return p.rpc.GasEstimate(trx)
 }
 
+// isValidPriceSymbol checks if the requested symbol is a valid price symbol we support
+func (p *proxy) isValidPriceSymbol(sym string) bool {
+	// check against supported price symbols from configuration
+	for _, vs := range p.cfg.DeFi.PriceSymbols {
+		if strings.EqualFold(vs, sym) {
+			return true
+		}
+	}
+	return false
+}
+
 // Price returns a price information for the given target symbol.
 func (p *proxy) Price(sym string) (types.Price, error) {
+	// check the symbol validity
+	if !p.isValidPriceSymbol(sym) {
+		// inform what we do
+		p.log.Debugf("price [%s] loaded from cache", sym)
+		return types.Price{}, fmt.Errorf("unknown price symbol requested")
+	}
+
 	// inform what we do
 	p.log.Infof("loading price info for symbol [%s]", sym)
 
