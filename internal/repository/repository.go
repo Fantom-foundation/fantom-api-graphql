@@ -17,6 +17,7 @@ import (
 	"fantom-api-graphql/internal/repository/rpc"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
+	"golang.org/x/sync/singleflight"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -478,6 +479,9 @@ type proxy struct {
 	rpc   *rpc.FtmBridge
 	log   logger.Logger
 	cfg   *config.Config
+
+	// we need a Group to use single flight to control price pulls
+	apiRequestGroup singleflight.Group
 
 	// governance contracts reference
 	govContracts map[string]*config.GovernanceContract

@@ -70,29 +70,46 @@ func (p *proxy) Price(sym string) (types.Price, error) {
 	// try to use the in-memory cache
 	if pri := p.cache.PullPrice(sym); pri != nil {
 		// inform what we do
-		p.log.Debugf("price [%s] loaded from cache", sym)
-
-		// return the price data
+		p.log.Infof("price [%s] loaded from cache", sym)
 		return *pri, nil
 	}
 
-	// pull the price from remote service
-	pri, err := p.pullPrice(sym)
+	// call for the price from an external source
+	pri, err := p.requestPrice(sym)
 	if err != nil {
-		p.log.Error(err)
+		// inform what we do
+		p.log.Errorf("price [%s] not available; %s", sym, err.Error())
 		return types.Price{}, err
 	}
 
-	// try to store the price in cache for future use
-	err = p.cache.PushPrice(sym, &pri)
-	if err != nil {
-		p.log.Error(err)
-	}
-	p.log.Debug(pri)
-
 	// inform what we do
-	p.log.Debugf("price [%s] loaded by pulling", sym)
+	p.log.Infof("price [%s] obtained from an API request", sym)
 	return pri, nil
+}
+
+// requestPrice requests the price from an external 3rd party API
+// inside a request group.
+func (p *proxy) requestPrice(sym string) (types.Price, error) {
+	// call for the price inside a named request group
+	pri, err, _ := p.apiRequestGroup.Do(priceRequestName(sym), func() (interface{}, error) {
+		return p.requestRemotePrice(sym)
+	})
+
+	// any error on the process?
+	if err != nil {
+		return types.Price{}, err
+	}
+
+	// return the price we have
+	return pri.(types.Price), nil
+}
+
+// priceRequestName generates a name for the price pull request.
+func priceRequestName(sym string) string {
+	var sb strings.Builder
+	sb.WriteString("price+")
+	sb.WriteString(sym)
+	return sb.String()
 }
 
 // getPriceApiUrl builds REST API endpoint URL for the given target symbol.
@@ -110,8 +127,29 @@ func getPriceApiUrl(sym string) string {
 	return sb.String()
 }
 
-// pullPrice pulls the price detail from remote API server
-func (p *proxy) pullPrice(sym string) (types.Price, error) {
+// requestRemotePrice pulls the price for given symbol from an external API
+// and ensures the result, if valid, is stored in cache for future use
+func (p *proxy) requestRemotePrice(sym string) (types.Price, error) {
+	// make the request tpo remote API
+	pri, err := p.makePriceRequest(sym)
+	if err != nil {
+		return types.Price{}, err
+	}
+
+	// try to store the price in cache for future use
+	err = p.cache.PushPrice(sym, &pri)
+	if err != nil {
+		p.log.Error(err)
+	}
+
+	// inform what we got here
+	p.log.Infof("price loaded: %s -> %s = %f", pri.FromSymbol, pri.ToSymbol, pri.Price)
+	return pri, nil
+}
+
+// makePriceRequest executes a request to remote API to pull the price
+// and return the result from the pull.
+func (p *proxy) makePriceRequest(sym string) (types.Price, error) {
 	// prep the request
 	req, err := http.NewRequest("GET", getPriceApiUrl(sym), nil)
 	if err != nil {
