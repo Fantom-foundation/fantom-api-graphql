@@ -116,6 +116,7 @@ type DeFi struct {
 	FMint   DeFiFMint   `mapstructure:"fmint"`
 	Uniswap DeFiUniswap `mapstructure:"uniswap"`
 	FLend   DeFiFLend   `mapstructure:"flend"`
+	PriceSymbols []string    `mapstructure:"symbols"`
 }
 
 // DeFiFMint represents the fMint DeFi module configuration.

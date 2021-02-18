@@ -8,10 +8,18 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"io"
+	"regexp"
 )
+
+// reExpectedPriceSymbol represents a price symbol expected to be resolved
+var reExpectedPriceSymbol = regexp.MustCompile(`^[\w]{2,4}$`)
 
 // Price resolves price details of the Opera blockchain token for the given target symbols.
 func (rs *rootResolver) Price(args *struct{ To string }) (types.Price, error) {
+	// is the requested denomination even reasonable
+	if !reExpectedPriceSymbol.Match([]byte(args.To)) {
+		return types.Price{}, fmt.Errorf("invalid denomination received")
+	}
 	return rs.repo.Price(args.To)
 }
 
