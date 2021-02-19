@@ -23,6 +23,13 @@ const (
 	// defServerBind holds default API server binding address
 	defServerBind = "localhost:16761"
 
+	// default set of timeouts for the server
+	defReadTimeout     = 2
+	defWriteTimeout    = 15
+	defIdleTimeout     = 1
+	defHeaderTimeout   = 1
+	defResolverTimeout = 15
+
 	// defServerDomain holds default API server domain address
 	defServerDomain = "localhost:16761"
 
@@ -100,6 +107,13 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyApiPeers, defApiPeers)
 	cfg.SetDefault(keyApiStateOrigin, defApiStateOrigin)
 	cfg.SetDefault(keyErc20Logos, defERC20Logo)
+
+	// server timeouts
+	cfg.SetDefault(keyTimeoutRead, defReadTimeout)
+	cfg.SetDefault(keyTimeoutWrite, defWriteTimeout)
+	cfg.SetDefault(keyTimeoutHeader, defHeaderTimeout)
+	cfg.SetDefault(keyTimeoutIdle, defIdleTimeout)
+	cfg.SetDefault(keyTimeoutResolver, defResolverTimeout)
 
 	// no voting sources by default
 	cfg.SetDefault(keyVotingSources, defVotingSources)
