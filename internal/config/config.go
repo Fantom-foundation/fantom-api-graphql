@@ -56,11 +56,16 @@ type Config struct {
 
 // Server represents the GraphQL server configuration
 type Server struct {
-	BindAddress   string   `mapstructure:"bind"`
-	DomainAddress string   `mapstructure:"domain"`
-	Origin        string   `mapstructure:"origin"`
-	Peers         []string `mapstructure:"peers"`
-	CorsOrigin    []string `mapstructure:"cors_origins"`
+	BindAddress     string   `mapstructure:"bind"`
+	DomainAddress   string   `mapstructure:"domain"`
+	Origin          string   `mapstructure:"origin"`
+	Peers           []string `mapstructure:"peers"`
+	CorsOrigin      []string `mapstructure:"cors_origins"`
+	ReadTimeout     int64    `mapstructure:"read_timeout"`
+	WriteTimeout    int64    `mapstructure:"write_timeout"`
+	IdleTimeout     int64    `mapstructure:"idle_timeout"`
+	HeaderTimeout   int64    `mapstructure:"header_timeout"`
+	ResolverTimeout int64    `mapstructure:"resolver_timeout"`
 }
 
 // ServerSignature represents the signature used by this server
