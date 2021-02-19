@@ -19,6 +19,7 @@ import (
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/sync/singleflight"
+	"sync"
 )
 
 // identifiers of fMint contracts we may want to get
@@ -41,7 +42,7 @@ type fMintConfig struct {
 	addressProvider common.Address
 
 	// contracts represents lazy-loaded addresses
-	contracts map[string]*common.Address
+	contracts sync.Map
 
 	// use request group to handle contracts address resolution
 	requestGroup singleflight.Group
@@ -168,8 +169,9 @@ func (fmc *fMintConfig) mustContractAddress(name string) common.Address {
 // contractAddress returns an address of a contract from the registry
 func (fmc *fMintConfig) contractAddress(name string) (common.Address, error) {
 	// make sure the contract addresses map exists
-	if nil == fmc.contracts {
-		fmc.contracts = make(map[string]*common.Address, 6)
+	adr, ok := fmc.contracts.Load(name)
+	if ok {
+		return adr.(common.Address), nil
 	}
 
 	// lazy load the contract address requested
@@ -195,7 +197,7 @@ func (fmc *fMintConfig) pullContractAddress(name string) (common.Address, error)
 	}
 
 	// keep the address for later
-	fmc.contracts[name] = adr
+	fmc.contracts.Store(name, *adr)
 	return *adr, nil
 }
 
