@@ -23,11 +23,16 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/http"
+	"net/url"
+	"regexp"
 	"time"
 )
 
 // stiRequestTimeout is number of seconds we wait for the staker information request to finish.
 const stiRequestTimeout = 15
+
+// stiNameCheckRegex is the expression used to check for staker name validity
+var stiNameCheckRegex = regexp.MustCompile(`(?m)^[\w\d\s.\-_]+$`)
 
 // StakerInfo extracts an extended staker information from smart contact by their id.
 func (ftm *FtmBridge) StakerInfo(id hexutil.Uint64) (*types.StakerInfo, error) {
@@ -42,32 +47,32 @@ func (ftm *FtmBridge) StakerInfo(id hexutil.Uint64) (*types.StakerInfo, error) {
 	}
 
 	// call for data
-	url, err := contract.GetInfo(nil, big.NewInt(int64(id)))
+	stUrl, err := contract.GetInfo(nil, big.NewInt(int64(id)))
 	if err != nil {
 		ftm.log.Errorf("failed to get the staker information: %v", err)
 		return nil, err
 	}
 
 	// var url string
-	if len(url) == 0 {
+	if len(stUrl) == 0 {
 		ftm.log.Debugf("no information for staker #%d", id)
 		return nil, nil
 	}
 
 	// try to download JSON for the info
-	return ftm.downloadStakerInfo(url)
+	return ftm.downloadStakerInfo(stUrl)
 }
 
 // downloadStakerInfo tries to download staker information from the given URL address.
-func (ftm *FtmBridge) downloadStakerInfo(url string) (*types.StakerInfo, error) {
+func (ftm *FtmBridge) downloadStakerInfo(stUrl string) (*types.StakerInfo, error) {
 	// log what we are about to do
-	ftm.log.Debugf("downloading staker info address [%s]", url)
+	ftm.log.Debugf("downloading staker info address [%s]", stUrl)
 
 	// make a http client
 	cl := http.Client{Timeout: time.Second * stiRequestTimeout}
 
 	// prep request
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequest(http.MethodGet, stUrl, nil)
 	if err != nil {
 		ftm.log.Errorf("can not request given staker info; %s", err.Error())
 		return nil, err
@@ -99,9 +104,49 @@ func (ftm *FtmBridge) downloadStakerInfo(url string) (*types.StakerInfo, error) 
 	}
 
 	// do we have anything?
-	if info.Name != nil {
-		ftm.log.Debugf("found staker [%s]", *info.Name)
+	if !ftm.isValidStakerInfo(&info) {
+		ftm.log.Errorf("invalid response for staker info [%s]", stUrl)
+		return nil, err
 	}
 
+	ftm.log.Debugf("found staker [%s]", *info.Name)
 	return &info, nil
+}
+
+// isValidStakerInfo check if the staker information is valid and can be used.
+func (ftm *FtmBridge) isValidStakerInfo(info *types.StakerInfo) bool {
+	// name must be available
+	if nil == info.Name || 0 == len(*info.Name) || !stiNameCheckRegex.Match([]byte(*info.Name)) {
+		ftm.log.Error("staker name not valid")
+		return false
+	}
+
+	// check the logo URL
+	if nil != info.LogoUrl && 0 < len(*info.LogoUrl) {
+		u, err := url.ParseRequestURI(*info.LogoUrl)
+		if err != nil || u.Scheme != "https" {
+			ftm.log.Error("staker logo URL not valid")
+			return false
+		}
+	}
+
+	// check the website
+	if nil != info.Website && 0 < len(*info.Website) {
+		u, err := url.ParseRequestURI(*info.Website)
+		if err != nil || u.Scheme == "" {
+			ftm.log.Error("staker website URL not valid")
+			return false
+		}
+	}
+
+	// check the contact URL
+	if nil != info.Contact && 0 < len(*info.Contact) {
+		u, err := url.ParseRequestURI(*info.Contact)
+		if err != nil || u.Scheme == "" {
+			ftm.log.Error("staker contact URL not valid")
+			return false
+		}
+	}
+
+	return true
 }
