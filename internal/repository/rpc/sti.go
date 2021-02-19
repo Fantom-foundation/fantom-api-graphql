@@ -32,7 +32,7 @@ import (
 const stiRequestTimeout = 15
 
 // stiNameCheckRegex is the expression used to check for staker name validity
-var stiNameCheckRegex = regexp.MustCompile(`(?m)^[\w\d\s.\-_'$]+$`)
+var stiNameCheckRegex = regexp.MustCompile(`(?m)^[\w\d\s.\-_'$()]+$`)
 
 // StakerInfo extracts an extended staker information from smart contact by their id.
 func (ftm *FtmBridge) StakerInfo(id hexutil.Uint64) (*types.StakerInfo, error) {
