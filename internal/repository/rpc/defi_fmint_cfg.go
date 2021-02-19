@@ -18,6 +18,7 @@ package rpc
 import (
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"github.com/ethereum/go-ethereum/common"
+	"golang.org/x/sync/singleflight"
 )
 
 // identifiers of fMint contracts we may want to get
@@ -41,6 +42,9 @@ type fMintConfig struct {
 
 	// contracts represents lazy-loaded addresses
 	contracts map[string]*common.Address
+
+	// use request group to handle contracts address resolution
+	requestGroup singleflight.Group
 }
 
 // tokenRegistryContract returns an instance of the fMint TokenRegistry
@@ -169,16 +173,30 @@ func (fmc *fMintConfig) contractAddress(name string) (common.Address, error) {
 	}
 
 	// lazy load the contract address requested
-	if nil == fmc.contracts[name] {
-		var err error
-		fmc.contracts[name], err = fmc.loadAddress(name)
-		if err != nil {
-			return common.Address{}, err
-		}
+	adr, err, _ := fmc.requestGroup.Do(name, func() (interface{}, error) {
+		return fmc.pullContractAddress(name)
+	})
+
+	// handle error response
+	if err != nil {
+		return common.Address{}, err
 	}
 
 	// return the address
-	return *fmc.contracts[name], nil
+	return adr.(common.Address), nil
+}
+
+// pullContractAddress extracts the address of given fMint contract
+func (fmc *fMintConfig) pullContractAddress(name string) (common.Address, error) {
+	// try to get the address
+	adr, err := fmc.loadAddress(name)
+	if err != nil {
+		return common.Address{}, err
+	}
+
+	// keep the address for later
+	fmc.contracts[name] = adr
+	return *adr, nil
 }
 
 // loadAddress loads a specified contract address from the AddressProvider.
