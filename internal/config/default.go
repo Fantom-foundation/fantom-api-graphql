@@ -28,7 +28,7 @@ const (
 	defWriteTimeout    = 15
 	defIdleTimeout     = 1
 	defHeaderTimeout   = 1
-	defResolverTimeout = 15
+	defResolverTimeout = 30
 
 	// defServerDomain holds default API server domain address
 	defServerDomain = "localhost:16761"
