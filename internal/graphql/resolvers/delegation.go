@@ -138,7 +138,7 @@ func (del Delegation) Deactivation() ([]DeactivatedDelegation, error) {
 
 // DelegationLock returns information about delegation lock
 func (del Delegation) DelegationLock() *types.DelegationLock {
-	if nil == del.lock {
+	if nil == del.lock && 0 < del.ToStakerId {
 		var err error
 		del.lock, err = del.repo.DelegationLock(&del.Delegation)
 		if err != nil {

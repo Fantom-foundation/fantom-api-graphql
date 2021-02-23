@@ -14,7 +14,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 //go:generate abigen --abi ./contracts/abi/sfc-1.1.abi --pkg contracts --type SfcV1Contract --out ./contracts/sfc-v1.go
-//go:generate abigen --abi ./contracts/abi/sfc-2.0.2-rc2.abi --pkg contracts --type SfcContract --out ./contracts/sfc-v2.go
+//go:generate abigen --abi ./contracts/abi/sfc-2.0.4-rc.2.abi --pkg contracts --type SfcContract --out ./contracts/sfc-v2.go
 //go:generate abigen --abi ./contracts/abi/sfc-tokenizer.abi --pkg contracts --type SfcTokenizer --out ./contracts/sfc_tokenizer.go
 
 import (
@@ -459,7 +459,15 @@ func (ftm *FtmBridge) Delegation(addr common.Address, staker hexutil.Uint64) (*t
 }
 
 // DelegationLock returns delegation lock information using SFC contract binding.
-func (ftm *FtmBridge) DelegationLock(delegation *types.Delegation) (*types.DelegationLock, error) {
+func (ftm *FtmBridge) DelegationLock(delegation *types.Delegation) (dll *types.DelegationLock, err error) {
+	// recover from panic here
+	defer func() {
+		if r := recover(); r != nil {
+			ftm.log.Criticalf("can not get SFL lock status on delegation %s to %d; SFC call panic", delegation.Address.String(), delegation.ToStakerId.String())
+			dll = &types.DelegationLock{}
+		}
+	}()
+
 	// instantiate the contract
 	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
