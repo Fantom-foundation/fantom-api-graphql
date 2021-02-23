@@ -871,6 +871,20 @@ func (db *MongoDbBridge) uniswapActionListLoad(col *mongo.Collection, pairAddres
 		}
 	}()
 
+	type UniswapActionDB struct {
+		ID              string         `bson:"_id"`
+		OrdIndex        uint64         `bson:"orx"`
+		BlockNr         hexutil.Uint64 `bson:"blk"`
+		Type            int32          `bson:"type"`
+		PairAddress     string         `bson:"pair"`
+		Sender          string         `bson:"sender"`
+		TransactionHash string         `bson:"tx"`
+		Time            time.Time      `bson:"date"`
+		Amount0in       int64          `bson:"am0in"`
+		Amount0out      int64          `bson:"am0out"`
+		Amount1in       int64          `bson:"am1in"`
+		Amount1out      int64          `bson:"am1out"`
+	}
 	// loop and load
 	var uniswapAction *types.UniswapAction
 	for ld.Next(ctx) {
@@ -881,24 +895,30 @@ func (db *MongoDbBridge) uniswapActionListLoad(col *mongo.Collection, pairAddres
 		}
 
 		// try to decode the next row
-		var ua types.UniswapAction
-		if err := ld.Decode(&ua); err != nil {
+		ua := types.UniswapAction{}
+		var uadb UniswapActionDB
+		if err := ld.Decode(&uadb); err != nil {
 			db.log.Errorf("can not decode uniswap action list row; %s", err.Error())
 			return err
 		}
 
-		// decode special data
-		ua.Time = hexutil.Uint64(ua.RawTime.UTC().Unix())
-		ua.Amount0in = *(*hexutil.Big)(big.NewInt(ua.Amount0inRaw))
-		ua.Amount0out = *(*hexutil.Big)(big.NewInt(ua.Amount0outRaw))
-		ua.Amount1in = *(*hexutil.Big)(big.NewInt(ua.Amount1inRaw))
-		ua.Amount1out = *(*hexutil.Big)(big.NewInt(ua.Amount1outRaw))
-		ua.PairAddress = common.HexToAddress(ua.PairRaw)
+		// decode data
+		ua.ID = types.HexToHash(uadb.ID)
+		ua.OrdIndex = uadb.OrdIndex
+		ua.BlockNr = uadb.BlockNr
+		ua.Type = uadb.Type
+		ua.PairAddress = common.HexToAddress(uadb.PairAddress)
+		ua.Sender = common.HexToAddress(uadb.Sender)
+		ua.TransactionHash = types.HexToHash(uadb.TransactionHash)
+		ua.Time = hexutil.Uint64(uadb.Time.UTC().Unix())
+		ua.Amount0in = *(*hexutil.Big)(returnDecimals(big.NewInt(uadb.Amount0in)))
+		ua.Amount0out = *(*hexutil.Big)(returnDecimals(big.NewInt(uadb.Amount0out)))
+		ua.Amount1in = *(*hexutil.Big)(returnDecimals(big.NewInt(uadb.Amount1in)))
+		ua.Amount1out = *(*hexutil.Big)(returnDecimals(big.NewInt(uadb.Amount1out)))
 
 		// keep this one
 		uniswapAction = &ua
 	}
-
 	// we should have all the items already; we may just need to check if a boundary was reached
 	if cursor != nil {
 		list.IsEnd = count > 0 && int32(len(list.Collection)) < count
