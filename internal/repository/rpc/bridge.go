@@ -17,7 +17,6 @@ import (
 	"context"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	eth "github.com/ethereum/go-ethereum/ethclient"
 	ftm "github.com/ethereum/go-ethereum/rpc"
@@ -36,7 +35,6 @@ type FtmBridge struct {
 
 	// extended minter config
 	fMintCfg fMintConfig
-	fLendCfg fLendConfig
 }
 
 // New creates new Lachesis RPC connection bridge.
@@ -77,7 +75,6 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 		fMintCfg: fMintConfig{
 			addressProvider: cfg.DeFi.FMint.AddressProvider,
 		},
-		fLendCfg: fLendConfig{lendigPoolAddress: cfg.DeFi.FLend.LendingPool},
 	}
 
 	// inform about the local address of the API node
