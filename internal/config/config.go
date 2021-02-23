@@ -3,8 +3,9 @@ package config
 
 import (
 	"crypto/ecdsa"
-	"github.com/ethereum/go-ethereum/common"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // Config defines configuration options structure for Fantom API server.
@@ -114,6 +115,7 @@ type Staking struct {
 type DeFi struct {
 	FMint   DeFiFMint   `mapstructure:"fmint"`
 	Uniswap DeFiUniswap `mapstructure:"uniswap"`
+	FLend   DeFiFLend   `mapstructure:"flend"`
 }
 
 // DeFiFMint represents the fMint DeFi module configuration.
@@ -144,4 +146,9 @@ type GovernanceContract struct {
 	Templates  common.Address `mapstructure:"templates"`
 	Name       string         `mapstructure:"name"`
 	Type       string         `mapstructure:"type"`
+}
+
+// DeFiFLend represents the fLend DeFi module configuration.
+type DeFiFLend struct {
+	LendingPool common.Address `mapstructure:"lending_pool"`
 }
