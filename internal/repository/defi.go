@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -71,4 +73,33 @@ func (p *proxy) FMintCanReceiveRewards(addr *common.Address) (bool, error) {
 // on the rewards distribution contract and can be pushed to accounts.
 func (p *proxy) FMintCanPushRewards() (bool, error) {
 	return p.rpc.FMintCanPushRewards()
+}
+
+// FLendGetLendingPool resolves lending pool contract instace
+// to be able to get calls and informations from this contract
+func (p *proxy) FLendGetLendingPool() (*contracts.ILendingPool, error) {
+	return p.rpc.FLendGetLendingPool()
+}
+
+// FLendGetLendingPoolReserveData resolves reserve data
+// according to given address
+func (p *proxy) FLendGetLendingPoolReserveData(assetAddress *common.Address) (*types.ReserveData, error) {
+	return p.rpc.FLendGetLendingPoolReserveData(assetAddress)
+}
+
+// FLendGetUserAccountData resolves user account data for
+// specified address
+func (p *proxy) FLendGetUserAccountData(userAddress *common.Address) (*types.FLendUserAccountData, error) {
+	return p.rpc.FLendGetUserAccountData(userAddress)
+}
+
+// FLendGetReserveList resolves list of reserves in lending pool
+func (p *proxy) FLendGetReserveList() ([]common.Address, error) {
+	return p.rpc.FLendGetReserveList()
+}
+
+// FLendGetUserDepositHistory resolves deposit history
+// data for specified user and asset address
+func (p *proxy) FLendGetUserDepositHistory(userAddress *common.Address, assetAddress *common.Address) ([]*types.FLendDeposit, error) {
+	return p.rpc.FLendGetUserDepositHistory(userAddress, assetAddress)
 }

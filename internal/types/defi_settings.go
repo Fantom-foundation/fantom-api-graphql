@@ -57,4 +57,7 @@ type DefiSettings struct {
 	// PriceOracleAggregate is the address of the current price oracle
 	// aggregate used by the DeFe to obtain USD price of tokens managed.
 	PriceOracleAggregate common.Address
+
+	// FLendingPool is the address of the Lending pool interface for fLend
+	FLendingPool common.Address
 }
