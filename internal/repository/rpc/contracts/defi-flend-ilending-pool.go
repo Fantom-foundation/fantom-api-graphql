@@ -967,7 +967,6 @@ func (_ILendingPool *ILendingPoolFilterer) ParseBorrow(log types.Log) (*ILending
 	if err := _ILendingPool.contract.UnpackLog(event, "Borrow", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -1135,7 +1134,6 @@ func (_ILendingPool *ILendingPoolFilterer) ParseDeposit(log types.Log) (*ILendin
 	if err := _ILendingPool.contract.UnpackLog(event, "Deposit", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -1300,7 +1298,6 @@ func (_ILendingPool *ILendingPoolFilterer) ParseFlashLoan(log types.Log) (*ILend
 	if err := _ILendingPool.contract.UnpackLog(event, "FlashLoan", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -1466,7 +1463,6 @@ func (_ILendingPool *ILendingPoolFilterer) ParseLiquidationCall(log types.Log) (
 	if err := _ILendingPool.contract.UnpackLog(event, "LiquidationCall", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -1599,7 +1595,6 @@ func (_ILendingPool *ILendingPoolFilterer) ParsePaused(log types.Log) (*ILending
 	if err := _ILendingPool.contract.UnpackLog(event, "Paused", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -1752,7 +1747,6 @@ func (_ILendingPool *ILendingPoolFilterer) ParseRebalanceStableBorrowRate(log ty
 	if err := _ILendingPool.contract.UnpackLog(event, "RebalanceStableBorrowRate", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -1915,7 +1909,6 @@ func (_ILendingPool *ILendingPoolFilterer) ParseRepay(log types.Log) (*ILendingP
 	if err := _ILendingPool.contract.UnpackLog(event, "Repay", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -2064,7 +2057,6 @@ func (_ILendingPool *ILendingPoolFilterer) ParseReserveDataUpdated(log types.Log
 	if err := _ILendingPool.contract.UnpackLog(event, "ReserveDataUpdated", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -2217,7 +2209,6 @@ func (_ILendingPool *ILendingPoolFilterer) ParseReserveUsedAsCollateralDisabled(
 	if err := _ILendingPool.contract.UnpackLog(event, "ReserveUsedAsCollateralDisabled", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -2370,7 +2361,6 @@ func (_ILendingPool *ILendingPoolFilterer) ParseReserveUsedAsCollateralEnabled(l
 	if err := _ILendingPool.contract.UnpackLog(event, "ReserveUsedAsCollateralEnabled", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -2524,7 +2514,6 @@ func (_ILendingPool *ILendingPoolFilterer) ParseSwap(log types.Log) (*ILendingPo
 	if err := _ILendingPool.contract.UnpackLog(event, "Swap", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -2657,7 +2646,6 @@ func (_ILendingPool *ILendingPoolFilterer) ParseUnpaused(log types.Log) (*ILendi
 	if err := _ILendingPool.contract.UnpackLog(event, "Unpaused", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -2820,6 +2808,5 @@ func (_ILendingPool *ILendingPoolFilterer) ParseWithdraw(log types.Log) (*ILendi
 	if err := _ILendingPool.contract.UnpackLog(event, "Withdraw", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
