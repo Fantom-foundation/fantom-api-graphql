@@ -560,6 +560,9 @@ func (db *MongoDbBridge) UniswapTimePrices(pairAddress *common.Address, resoluti
 	pipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{
 			{Key: "date", Value: getDateBsonD(fromTime, toTime)},
+			{Key: "type", Value: bson.D{
+				{Key: "$not", Value: bson.D{
+					{Key: "$eq", Value: 3}}}}},
 			{Key: "pair", Value: pairAddress.String()}}}},
 		{{Key: "$sort", Value: bson.D{
 			{Key: "date", Value: 1},
