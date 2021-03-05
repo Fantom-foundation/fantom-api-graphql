@@ -20,7 +20,7 @@ Building `apiserver` requires a Go (version 1.13 or later). You can install
 it using your favourite package manager. Once the dependencies are installed, run
 
 ```shell
-go build -o ./build/apiserver ./cmd/apiserver
+make
 ```
 
 The build output is ```build/apiserver``` executable.
