@@ -289,12 +289,13 @@ func (rs *rootResolver) DefiTimeVolumes(args *struct {
 	// create empty list as return value
 	list := make([]*DefiTimeVolume, 0)
 
-	var fDate, tDate int64
+	var fDate int64
 	if args.FromDate != nil {
 		fDate = (int64)(*args.FromDate)
 	} else {
 		fDate = time.Now().UTC().AddDate(0, -1, 0).Unix()
 	}
+	tDate := checkDate(args.ToDate)
 
 	resolution := ""
 	if args.Resolution != nil {
@@ -334,12 +335,13 @@ func (rs *rootResolver) DefiTimePrices(args *struct {
 	list := make([]types.DefiTimePrice, 0)
 
 	//check date values
-	var fDate, tDate int64
+	var fDate int64
 	if args.FromDate != nil {
 		fDate = (int64)(*args.FromDate)
 	} else {
 		fDate = time.Now().UTC().AddDate(0, -1, 0).Unix()
 	}
+	tDate := checkDate(args.ToDate)
 
 	//check resolution value
 	resolution := ""
@@ -396,6 +398,13 @@ func (up *UniswapPair) LastKValue() (hexutil.Big, error) {
 	return up.repo.UniswapLastKValue(&up.PairAddress)
 }
 
+func checkDate(tdate *int32) int64 {
+	if tdate != nil {
+		return (int64)(*tdate)
+	}
+	return 0
+}
+
 // DefiTimeReserves resolves uniswap reserves for given pair
 // If dates are not given, then it returns last month values
 func (rs *rootResolver) DefiTimeReserves(args *struct {
@@ -409,12 +418,13 @@ func (rs *rootResolver) DefiTimeReserves(args *struct {
 	list := make([]DefiTimeReserve, 0)
 
 	//check date values
-	var fDate, tDate int64
+	var fDate int64
 	if args.FromDate != nil {
 		fDate = (int64)(*args.FromDate)
 	} else {
 		fDate = time.Now().UTC().AddDate(0, -1, 0).Unix()
 	}
+	tDate := checkDate(args.ToDate)
 
 	//check resolution value
 	resolution := ""
