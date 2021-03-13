@@ -209,7 +209,16 @@ type ApiResolver interface {
 	}) (hexutil.Big, error)
 
 	// Erc20Token resolves an instance of ERC20 token if available.
-	Erc20Token(args *struct{ Token common.Address }) *ERC20Token
+	Erc20Token(*struct{ Token common.Address }) *ERC20Token
+
+	// Erc20TokenList resolves a list of instances of ERC20 tokens.
+	Erc20TokenList(struct{ Count int32 }) ([]*ERC20Token, error)
+
+	// Erc20Assets resolves a list of instances of ERC20 tokens for the given owner.
+	Erc20Assets(struct {
+		Owner common.Address
+		Count int32
+	}) ([]*ERC20Token, error)
 
 	// ErcTokenBalance resolves the current available balance of the specified token
 	// for the specified owner.
