@@ -14,7 +14,8 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 //go:generate abigen --abi ./contracts/abi/sfc-1.1.abi --pkg contracts --type SfcV1Contract --out ./contracts/sfc-v1.go
-//go:generate abigen --abi ./contracts/abi/sfc-2.0.4-rc.2.abi --pkg contracts --type SfcContract --out ./contracts/sfc-v2.go
+//go:generate abigen --abi ./contracts/abi/sfc-2.0.4-rc.2.abi --pkg contracts --type SfcV2Contract --out ./contracts/sfc-v2.go
+//go:generate abigen --abi ./contracts/abi/sfc-3.0-rc.1.abi --pkg contracts --type SfcContract --out ./contracts/sfc-v3.go
 //go:generate abigen --abi ./contracts/abi/sfc-tokenizer.abi --pkg contracts --type SfcTokenizer --out ./contracts/sfc_tokenizer.go
 
 import (
@@ -26,6 +27,9 @@ import (
 	"math/big"
 	"strconv"
 )
+
+// sfcFirstLockEpoch represents the first epoch with stake locking available.
+const sfcFirstLockEpoch uint64 = 1600
 
 // SfcVersion returns current version of the SFC contract as a single number.
 func (ftm *FtmBridge) SfcVersion() (hexutil.Uint64, error) {
@@ -199,9 +203,9 @@ func (ftm *FtmBridge) maxDelegatedLimit(staked *hexutil.Big, contract *contracts
 		return (hexutil.Big)(*hexutil.MustDecodeBig("0x0"))
 	}
 
-	// ratio unit is used to calculate the value (1.000.000)
-	// please note this formula is taken from SFC contract and can change
-	ratioUnit := hexutil.MustDecodeBig("0xF4240")
+	// ratio unit is used to calculate the value (1e18)
+	// please note this value comes from opera-sfc/contracts/common/Decimal.sol::unit()
+	ratioUnit := hexutil.MustDecodeBig("0xDE0B6B3A7640000")
 
 	// get delegation ration
 	ratio, err := contract.MaxDelegatedRatio(nil)
@@ -321,23 +325,23 @@ func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (types.Epoch, error) {
 	}
 
 	// extract epoch snapshot
-	epo, err := contract.EpochSnapshots(nil, big.NewInt(int64(id)))
+	epo, err := contract.GetEpochSnapshot(nil, big.NewInt(int64(id)))
 	if err != nil {
 		ftm.log.Errorf("failed to extract epoch information: %v", err)
 		return types.Epoch{}, err
 	}
 
 	return types.Epoch{
-		Id:                     id,
-		EndTime:                (hexutil.Big)(*epo.EndTime),
-		Duration:               (hexutil.Big)(*epo.Duration),
-		EpochFee:               (hexutil.Big)(*epo.EpochFee),
-		TotalBaseRewardWeight:  (hexutil.Big)(*epo.TotalBaseRewardWeight),
-		TotalTxRewardWeight:    (hexutil.Big)(*epo.TotalTxRewardWeight),
-		BaseRewardPerSecond:    (hexutil.Big)(*epo.BaseRewardPerSecond),
-		StakeTotalAmount:       (hexutil.Big)(*epo.StakeTotalAmount),
-		DelegationsTotalAmount: (hexutil.Big)(*epo.DelegationsTotalAmount),
-		TotalSupply:            (hexutil.Big)(*epo.TotalSupply),
+		Id:      id,
+		EndTime: (hexutil.Big)(*epo.EndTime),
+		// Duration:               (hexutil.Big)(*epo.Duration),
+		EpochFee:              (hexutil.Big)(*epo.EpochFee),
+		TotalBaseRewardWeight: (hexutil.Big)(*epo.TotalBaseRewardWeight),
+		TotalTxRewardWeight:   (hexutil.Big)(*epo.TotalTxRewardWeight),
+		BaseRewardPerSecond:   (hexutil.Big)(*epo.BaseRewardPerSecond),
+		StakeTotalAmount:      (hexutil.Big)(*epo.TotalStake),
+		// DelegationsTotalAmount: (hexutil.Big)(*epo.DelegationsTotalAmount),
+		TotalSupply: (hexutil.Big)(*epo.TotalSupply),
 	}, nil
 }
 
@@ -586,13 +590,6 @@ func (ftm *FtmBridge) LockingAllowed() (bool, error) {
 		return false, err
 	}
 
-	// get the current value of the first lock
-	firstLock, err := contract.FirstLockedUpEpoch(nil)
-	if err != nil {
-		ftm.log.Errorf("failed to get the first epoch with enabled locking: %s", err.Error())
-		return false, err
-	}
-
 	// get the current sealed epoch value from the contract
 	epoch, err := contract.CurrentSealedEpoch(nil)
 	if err != nil {
@@ -600,7 +597,7 @@ func (ftm *FtmBridge) LockingAllowed() (bool, error) {
 		return false, err
 	}
 
-	return firstLock.Uint64() > 0 && epoch.Uint64() >= firstLock.Uint64(), nil
+	return epoch.Uint64() >= sfcFirstLockEpoch, nil
 }
 
 // DelegationFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
