@@ -6,21 +6,23 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-// WithdrawRequest represents a partial withdraw request in Opera staking
+// WithdrawRequest represents a withdraw request in Opera staking
 // SFC contract. When partial withdraw is requested either on staking or delegation,
 // this record is created in the SFC contract to track the withdrawal process.
 type WithdrawRequest struct {
-	Address            common.Address
-	Receiver           common.Address
-	StakerID           hexutil.Uint64
-	WithdrawRequestID  hexutil.Big
-	IsDelegation       bool
-	Amount             hexutil.Big
-	RequestBlockNumber hexutil.Uint64
+	// struct members for initiated withdraw
+	Address            common.Address `bson:"addr"`
+	StakerID           hexutil.Uint64 `bson:"staker"`
+	WithdrawRequestID  hexutil.Big    `bson:"reqID"`
+	IsDelegation       bool           `bson:"isDlg"`
+	Amount             hexutil.Big    `bson:"amo"`
+	RequestBlockNumber hexutil.Uint64 `bson:"reqBlk"`
+	Receiver           common.Address `bson:"to"`
 
 	// struct members for finalized withdraw
-	WithdrawBlockNumber *hexutil.Uint64
-	WithdrawPenalty     *hexutil.Big
+	WithdrawBlockNumber *hexutil.Uint64 `bson:"finBlk"`
+	WithdrawAmount      *hexutil.Big    `bson:"finAmo"`
+	WithdrawPenalty     *hexutil.Big    `bson:"finPen"`
 }
 
 // WithdrawRequestsByAge represents a list of withdraw requests sortable
