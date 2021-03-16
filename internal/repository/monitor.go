@@ -98,20 +98,6 @@ func (bm *blockMonitor) subscribe() error {
 
 // monitor consumes new blocks from the block channel and route them to target functions.
 func (bm *blockMonitor) monitor() {
-	// don't forget to sign off after we are done
-	defer func() {
-		// unsubscribe
-		bm.log.Notice("block monitor unsubscribe")
-		bm.sub.Unsubscribe()
-
-		// close block processing channel
-		close(bm.procChan)
-		close(bm.blkChan)
-
-		// inform about channels closed
-		bm.log.Notice("block monitor channels closed")
-	}()
-
 	// make sure to recover from channel closing issues
 	defer func() {
 		// the block channel may have been already closed
@@ -128,6 +114,21 @@ func (bm *blockMonitor) monitor() {
 
 		// signal to wait group we are done
 		bm.wg.Done()
+	}()
+
+	// don't forget to sign off after we are done
+	defer func() {
+		// unsubscribe
+		bm.log.Notice("block monitor unsubscribe")
+		bm.sub.Unsubscribe()
+
+		// close block processing channel
+		bm.log.Notice("block monitor closing channels")
+		close(bm.procChan)
+		close(bm.blkChan)
+
+		// inform about channels closed
+		bm.log.Notice("block monitor channels closed")
 	}()
 
 	// received block
