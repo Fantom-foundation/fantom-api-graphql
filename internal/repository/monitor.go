@@ -101,11 +101,27 @@ func (bm *blockMonitor) monitor() {
 	// don't forget to sign off after we are done
 	defer func() {
 		// unsubscribe
+		bm.log.Notice("block monitor unsubscribe")
 		bm.sub.Unsubscribe()
 
-		// close block processing channels
-		close(bm.blkChan)
+		// close block processing channel
 		close(bm.procChan)
+		close(bm.blkChan)
+
+		// inform about channels closed
+		bm.log.Notice("block monitor channels closed")
+	}()
+
+	// make sure to recover from channel closing issues
+	defer func() {
+		// the block channel may have been already closed
+		if r := recover(); r != nil {
+			// log the recover; probably caused by the unsubscribed channel close attempt
+			bm.log.Errorf("block monitor panic recovered")
+			if err, ok := r.(error); ok {
+				bm.log.Warningf("block monitor issue; %s", err.Error())
+			}
+		}
 
 		// log finish
 		bm.log.Notice("block monitor done")
