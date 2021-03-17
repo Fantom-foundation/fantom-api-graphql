@@ -98,37 +98,17 @@ func (bm *blockMonitor) subscribe() error {
 
 // monitor consumes new blocks from the block channel and route them to target functions.
 func (bm *blockMonitor) monitor() {
-	// make sure to recover from channel closing issues
-	defer func() {
-		// the block channel may have been already closed
-		if r := recover(); r != nil {
-			// log the recover; probably caused by the unsubscribed channel close attempt
-			bm.log.Errorf("block monitor panic recovered")
-			if err, ok := r.(error); ok {
-				bm.log.Warningf("block monitor issue; %s", err.Error())
-			}
-		}
-
-		// log finish
-		bm.log.Notice("block monitor done")
-
-		// signal to wait group we are done
-		bm.wg.Done()
-	}()
-
 	// don't forget to sign off after we are done
 	defer func() {
 		// unsubscribe
 		bm.log.Notice("block monitor unsubscribe")
 		bm.sub.Unsubscribe()
 
-		// close block processing channel
-		bm.log.Notice("block monitor closing channels")
-		close(bm.procChan)
-		close(bm.blkChan)
+		// log finish
+		bm.log.Notice("block monitor done")
 
-		// inform about channels closed
-		bm.log.Notice("block monitor channels closed")
+		// signal to wait group we are done
+		bm.wg.Done()
 	}()
 
 	// received block
@@ -139,16 +119,18 @@ func (bm *blockMonitor) monitor() {
 		select {
 		case <-bm.sigStop:
 			return
-		case err := <-bm.sub.Err():
-			if err != nil {
-				// log issue
-				bm.log.Error("monitor subscription error; %s", err.Error())
-
-				// signal orchestrator to schedule re-scan and restart subscription
-				bm.reScan <- true
-			} else {
-				bm.log.Notice("monitor subscription has been closed")
+		case err, ok := <-bm.sub.Err():
+			// do we have a working channel?
+			if !ok {
+				bm.log.Notice("block monitor subscription has been closed")
+				return
 			}
+
+			// log issue
+			bm.log.Error("block monitor subscription error; %s", err.Error())
+
+			// signal orchestrator to schedule re-scan and restart subscription
+			bm.reScan <- true
 			return
 		case block = <-bm.blkChan:
 			// log the action
