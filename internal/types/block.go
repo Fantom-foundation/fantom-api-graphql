@@ -25,7 +25,7 @@ type Block struct {
 	Difficulty hexutil.Uint64 `json:"difficulty"`
 
 	// Size represents the size of this block in bytes.
-	Size int32 `json:"size"`
+	Size hexutil.Uint64 `json:"size"`
 
 	// GasLimit represents the maximum gas allowed in this block.
 	GasLimit hexutil.Uint64 `json:"gasLimit"`
