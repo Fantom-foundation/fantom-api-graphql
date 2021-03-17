@@ -2,6 +2,7 @@ package config
 
 import (
 	"crypto/ecdsa"
+	"encoding/json"
 	"fantom-api-graphql/internal/types"
 	"flag"
 	"fmt"
@@ -9,12 +10,42 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
+	"io/ioutil"
 	"log"
+	"os"
 	"reflect"
 )
 
 // Load provides a loaded configuration for Fantom API server.
 func Load() (*Config, error) {
+	// Get the config reader
+	cfg, err := readConfigFile()
+	if err != nil {
+		return nil, err
+	}
+
+	// prep the container and try to unmarshal
+	// the config file into the config structure
+	var config Config
+	if err = cfg.Unmarshal(&config, setupConfigUnmarshaler); err != nil {
+		log.Println("can not extract API server configuration")
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	// try to load the logo map file
+	loadErc20LogMap(&config)
+
+	// return the final config
+	return &config, nil
+}
+
+// readConfigFile reads the config file and provides instance
+// of the loaded configuration.
+func readConfigFile() (*viper.Viper, error) {
+	// inform about tokens loading
+	log.Printf("loading app configuration")
+
 	// Get the config reader
 	cfg := reader()
 
@@ -23,27 +54,56 @@ func Load() (*Config, error) {
 
 	// Try to read the file
 	if err := cfg.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found; ignore the error, we may not need the config file
-			log.Print("configuration file not found, using default values")
-		} else {
+		// is this an error notifying missing config file?
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 			// Config file was found but another error was produced
 			log.Printf("can not read the server configuration")
 			return nil, err
 		}
+
+		// Config file not found; ignore the error, we may not need the config file
+		log.Print("configuration file not found, using default values")
 	}
 
-	// prep the container and try to unmarshal
-	// the config file into the config structure
-	var config Config
-	err := cfg.Unmarshal(&config, setupConfigUnmarshaler)
+	return cfg, nil
+}
+
+// loadErc20LogMap loads the map of ERC20 token logos.
+func loadErc20LogMap(cfg *Config) {
+	// is there any path at all?
+	if cfg.TokenLogoFilePath == "" {
+		log.Print("ERC20 tokens map file path not available")
+		return
+	}
+
+	// try to open the file
+	f, err := os.Open(cfg.TokenLogoFilePath)
 	if err != nil {
-		log.Println("can not extract API server configuration")
-		log.Println(err.Error())
-		return nil, err
+		log.Printf("can not open ERC20 tokens map file; %s", err.Error())
+		return
 	}
 
-	return &config, nil
+	// make sure to close the file
+	defer f.Close()
+
+	// inform about tokens loading
+	log.Printf("loading ERC20 tokens from %s", cfg.TokenLogoFilePath)
+
+	// read the whole file
+	data, err := ioutil.ReadAll(f)
+	if err != nil {
+		log.Printf("can not read ERC20 tokens map file; %s", err.Error())
+		return
+	}
+
+	// try to unmarshal the data
+	if err := json.Unmarshal(data, &cfg.TokenLogo); err != nil {
+		log.Printf("can not decode ERC20 tokens map file; %s", err.Error())
+		return
+	}
+
+	// inform about tokens
+	log.Printf("found %d ERC20 tokens", len(cfg.TokenLogo))
 }
 
 // setupConfigUnmarshaler configures the Config loader to properly unmarshal

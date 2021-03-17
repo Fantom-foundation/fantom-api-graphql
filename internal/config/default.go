@@ -73,6 +73,9 @@ const (
 
 	// defDefiFMintAddressProvider represents the address of the fMintAddressProvider
 	defDefiUniswapRouter = EmptyAddress
+
+	// defTokenLogoFilePath represents the default path to the tokens map file
+	defTokenLogoFilePath = "tokens.json"
 )
 
 // default list of API peers
@@ -106,6 +109,7 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keySolCompilerPath, defSolCompilerPath)
 	cfg.SetDefault(keyApiPeers, defApiPeers)
 	cfg.SetDefault(keyApiStateOrigin, defApiStateOrigin)
+	cfg.SetDefault(keyErc20TokenMapFilePath, defTokenLogoFilePath)
 	cfg.SetDefault(keyErc20Logos, defERC20Logo)
 
 	// server timeouts

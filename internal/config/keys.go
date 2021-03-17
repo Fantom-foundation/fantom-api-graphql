@@ -45,8 +45,9 @@ const (
 	keySolCompilerPath = "compiler.sol"
 
 	// utility options
-	keyVotingSources = "voting.sources"
-	keyErc20Logos    = "erc20_logos"
+	keyVotingSources         = "voting.sources"
+	keyErc20TokenMapFilePath = "erc20_tokens_file"
+	keyErc20Logos            = "erc20_logos"
 
 	// PoS staking configuration
 	keyStakingSfcContract       = "staking.sfc"

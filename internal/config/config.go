@@ -49,9 +49,14 @@ type Config struct {
 	// Governance configuration
 	Governance Governance `mapstructure:"governance"`
 
-	// KnownTokens is a list of known ERC20 tokens
+	// TokenLogoFilePath contains the path to JSON file with the map
+	// of known ERC20 tokens to their logo URLs.
+	// The file will be loaded on configuration loading.
+	TokenLogoFilePath string `mapstructure:"erc20_tokens_file"`
+
+	// TokenLogo is a list of known ERC20 tokens
 	// mapped to URL addresses of their logos.
-	TokenLogo map[common.Address]string `mapstructure:"erc20_logos"`
+	TokenLogo map[common.Address]string
 }
 
 // Server represents the GraphQL server configuration
@@ -118,9 +123,9 @@ type Staking struct {
 
 // DeFi represents the DeFi and financial contracts configuration.
 type DeFi struct {
-	FMint   DeFiFMint   `mapstructure:"fmint"`
-	Uniswap DeFiUniswap `mapstructure:"uniswap"`
-	FLend   DeFiFLend   `mapstructure:"flend"`
+	FMint        DeFiFMint   `mapstructure:"fmint"`
+	Uniswap      DeFiUniswap `mapstructure:"uniswap"`
+	FLend        DeFiFLend   `mapstructure:"flend"`
 	PriceSymbols []string    `mapstructure:"symbols"`
 }
 
