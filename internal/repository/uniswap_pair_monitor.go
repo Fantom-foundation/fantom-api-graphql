@@ -23,7 +23,7 @@ import (
 )
 
 // uniswapPairEventQueueSize represents the size of the uniswap pair events queue.
-const uniswapPairEventQueueSize = 200
+const uniswapPairEventQueueSize = 50
 
 // UniswapPairMonitor represents a monitor capturing events on a given Uniswap pair
 type UniswapPairMonitor struct {
@@ -70,6 +70,9 @@ func NewUniswapPairMonitor(
 
 // run starts the uniswap pair monitoring.
 func (pam *UniswapPairMonitor) run() {
+	// inform
+	pam.log.Debugf("initiating uniswap pair %s monitor", pam.pair.String())
+
 	// get contract instance for obtaining log events
 	contract, err := pam.repo.UniswapPairContract(&pam.pair)
 	if err != nil {
@@ -96,6 +99,9 @@ func (pam *UniswapPairMonitor) run() {
 
 // subscribe opens subscriptions to all the monitored events on the pair.
 func (pam *UniswapPairMonitor) subscribe(pair *contracts.UniswapPair) (err error) {
+	// inform
+	pam.log.Debugf("opening subscriptions for uniswap pair %s", pam.pair.String())
+
 	// collect subs so we can unsubscribe when done
 	pam.subs = make([]event.Subscription, 4)
 
@@ -135,16 +141,18 @@ func (pam *UniswapPairMonitor) monitor() {
 	// don't forget to sign off after we are done
 	defer func() {
 		// unsubscribe from events
+		pam.log.Debugf("closing subscriptions for uniswap pair %s", pam.pair.String())
 		for _, sub := range pam.subs {
 			sub.Unsubscribe()
 		}
 
-		// log
-		pam.log.Notice("uniswap pair %s monitor stopped", pam.pair.String())
-
 		// signal to wait group we are done
+		pam.log.Notice("uniswap pair %s monitor stopped", pam.pair.String())
 		pam.wg.Done()
 	}()
+
+	// inform about the active state
+	pam.log.Debugf("uniswap pair %s is being monitored", pam.pair.String())
 
 	// loop until terminated
 	for {

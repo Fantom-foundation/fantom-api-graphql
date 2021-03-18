@@ -127,10 +127,8 @@ func (um *UniswapMonitor) monitor() {
 		// unsubscribe from new pairs monitoring
 		um.newPairSub.Unsubscribe()
 
-		// log
-		um.log.Notice("uniswap factory monitor stopped")
-
 		// signal to wait group we are done
+		um.log.Notice("uniswap factory monitor stopped")
 		um.wg.Done()
 	}()
 
@@ -139,13 +137,18 @@ func (um *UniswapMonitor) monitor() {
 		select {
 		case <-um.sigStop:
 			// the master monitor is terminating
+			um.log.Noticef("closing %d uniswap pair monitors", len(um.pairs))
+
 			// signal all the pair monitors to stop as well
 			for _, pair := range um.pairs {
 				pair.close()
 			}
-
 			return
+
 		case newPair := <-um.newPairEvtCh:
+			// info about a new pair
+			um.log.Infof("new uniswap pair %s contract detected, monitoring", newPair.Pair.String())
+
 			// make the pair monitor and add the pair monitor to the list
 			pm := NewUniswapPairMonitor(um.con, um.swapChan, um.repo, um.log, um.wg, &newPair.Pair)
 			um.pairs = append(um.pairs, pm)

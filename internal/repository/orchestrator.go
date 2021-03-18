@@ -140,9 +140,6 @@ func (or *orchestrator) close() {
 	// close all the services
 	or.closeServices()
 
-	// kill re-scan scheduler
-	or.sigKillScheduler <- true
-
 	// wait scanners to terminate
 	or.log.Debugf("waiting for services to finish")
 	or.wg.Wait()
@@ -160,6 +157,9 @@ func (or *orchestrator) close() {
 
 // closeServices signals services of the orchestrator to close
 func (or *orchestrator) closeServices() {
+	// we are done
+	or.log.Notice("closing services")
+
 	// signal the orchestrator to close
 	or.service.close()
 
@@ -177,6 +177,9 @@ func (or *orchestrator) closeServices() {
 	if or.sti != nil {
 		or.sti.close()
 	}
+
+	// kill re-scan scheduler
+	or.sigKillScheduler <- true
 }
 
 // setBlockChannel registers a channel for notifying new block events.
