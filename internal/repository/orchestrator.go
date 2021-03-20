@@ -16,37 +16,51 @@ import (
 	"time"
 )
 
-// trxDispatchBufferCapacity is the number of transactions kept in the dispatch buffer.
-const trxDispatchBufferCapacity = 20000
-const swapDispatchBufferCapacity = 20000
+// trxDispatchQueueCapacity is the number of transactions kept in the dispatch buffer.
+const trxDispatchQueueCapacity = 20000
+
+// swapDispatchQueueCapacity is the number of Uniswap swap kept in the dispatch buffer.
+const swapDispatchQueueCapacity = 20000
+
+// orScannersCount is the number of scanner services running concurently.
+const orScannersCount = 2
 
 // Orchestrator implements repository synchronization and monitoring control
 type orchestrator struct {
 	service
 
 	// orchestrator managed channels
-	trxBuffer          chan *evtTransaction
-	swapBuffer         chan *evtSwap
-	accountQueue       chan *accountQueueRequest
-	contractCallsQueue chan *types.Transaction
-	sysDone            chan bool
-	swsDone            chan bool
-	reScan             chan bool
-	sigKillScheduler   chan bool
+	trxDispatcherQueue  chan *evtTransaction
+	swapDispatcherQueue chan *types.Swap
+	accountQueue        chan *accountEvent
+	contractCallQueue   chan *types.Transaction
 
-	// count re-scans
+	// orchestration related events
+	blkScanDone   chan bool
+	swapScanDone  chan bool
+	reScan        chan bool
+	reScanSigStop chan bool
+
+	// re-scans counter
 	reScanCounter uint
 
-	// services being orchestrated
+	// dispatchers handle objects put into a corresponding queue
+	// and process them into the database, and/or any other way needed
 	txd *trxDispatcher
-	sys *scanner
-	sws *uniswapScanner
-	swd *swapDispatcher
-	smo *UniswapMonitor
-	mon *blockMonitor
-	sti *stiMonitor
-	acq *accountQueue
-	ccq *contractCallQueue
+	acd *accountDispatcher
+	ccd *contractCallDispatcher
+	uwd *swapDispatcher
+
+	// scanners synchronize content of the database with the current
+	// chain state to catch up after the API service restarted
+	bls *blockScanner
+	uws *uniswapScanner
+
+	// monitors watch for newly created objects on the block chain
+	// and push those object into their processing queues to be sorted out
+	uwm *UniswapMonitor
+	blm *blockMonitor
+	stm *stiMonitor
 }
 
 // NewOrchestrator creates a new instance of repository orchestrator.
@@ -56,78 +70,72 @@ func newOrchestrator(repo Repository, log logger.Logger, cfg *config.Repository)
 
 	// create new orchestrator
 	or := orchestrator{
-		service:          newService("orchestrator", repo, log, &wg),
-		sigKillScheduler: make(chan bool, 1),
+		// make the service
+		service: newService("orchestrator", repo, log, &wg),
+
+		// make queues for dispatchers; scanners and monitors will use them to push new objects
+		trxDispatcherQueue:  make(chan *evtTransaction, trxDispatchQueueCapacity),
+		swapDispatcherQueue: make(chan *types.Swap, swapDispatchQueueCapacity),
+		accountQueue:        make(chan *accountEvent, accountQueueLength),
+		contractCallQueue:   make(chan *types.Transaction, contractCallQueueLength),
+
+		// make sure to accept all the incoming signals
+		reScanSigStop: make(chan bool, 1),
 	}
 
 	// init the orchestration
 	or.init(cfg)
-
-	// return the orchestrator
 	return &or
 }
 
 // init initiates the orchestrator work.
 func (or *orchestrator) init(cfg *config.Repository) {
-	// create a channel for transaction and swap dispatcher
-	or.trxBuffer = make(chan *evtTransaction, trxDispatchBufferCapacity)
-	or.swapBuffer = make(chan *evtSwap, swapDispatchBufferCapacity)
-	or.accountQueue = make(chan *accountQueueRequest, accountQueueLength)
-	or.contractCallsQueue = make(chan *types.Transaction, contractCallQueueLength)
+	// make all the dispatchers first so they can receive and process objects
+	or.txd = newTrxDispatcher(or.trxDispatcherQueue, or.repo, or.log, or.wg)
+	or.acd = newAccountDispatcher(or.accountQueue, or.repo, or.log, or.wg)
+	or.ccd = newContractCallDispatcher(or.contractCallQueue, or.repo, or.log, or.wg)
+	or.uwd = newSwapDispatcher(or.swapDispatcherQueue, or.repo, or.log, or.wg)
 
-	// make the transaction dispatcher; it starts dispatching immediately
-	or.txd = newTrxDispatcher(or.trxBuffer, or.repo, or.log, or.wg)
+	// create sync blockScanner; it starts scanning immediately
+	or.blkScanDone = make(chan bool, 1)
+	or.bls = newBlockScanner(or.trxDispatcherQueue, or.blkScanDone, or.repo, or.log, or.wg)
 
-	// make the swap dispatcher; it starts dispatching immediately
-	or.swd = newSwapDispatcher(or.swapBuffer, or.repo, or.log, or.wg)
+	// create swap blockScanner, which loads uniswap to local db immediately
+	or.swapScanDone = make(chan bool, 1)
+	or.uws = newUniswapScanner(or.swapDispatcherQueue, or.swapScanDone, or.repo, or.log, or.wg)
 
-	// make the account queue handler; it starts processing immediately
-	or.acq = newAccountQueue(or.accountQueue, or.repo, or.log, or.wg)
-
-	// make the contract call analyzer queue handler; it starts processing immediately
-	or.ccq = newContractCallQueue(or.contractCallsQueue, or.repo, or.log, or.wg)
-
-	// create sync scanner; it starts scanning immediately
-	or.sysDone = make(chan bool, 1)
-	or.sys = newScanner(or.trxBuffer, or.sysDone, or.repo, or.log, or.wg)
-
-	// create swap scanner, which loads uniswaps to local db immediately
-	or.swsDone = make(chan bool, 1)
-	or.sws = newUniswapScanner(or.swapBuffer, or.swsDone, or.repo, or.log, or.wg)
-
-	// create block monitor; it waits for sync scanner to finish
-	or.reScan = make(chan bool, 1)
-	or.mon = NewBlockMonitor(or.repo.FtmConnection(), or.trxBuffer, or.reScan, or.repo, or.log, or.wg)
+	// create block monitor; it waits for sync blockScanner to finish
+	or.reScan = make(chan bool, orScannersCount)
+	or.blm = NewBlockMonitor(or.repo.FtmConnection(), or.trxDispatcherQueue, or.reScan, or.repo, or.log, or.wg)
 
 	// create the Uniswap monitor
-	or.smo = NewUniswapMonitor(or.repo.FtmConnection(), or.swapBuffer, or.repo, or.log, or.wg)
+	or.uwm = NewUniswapMonitor(or.repo.FtmConnection(), or.swapDispatcherQueue, or.repo, or.log, or.wg)
 
 	// create staker information monitor; it starts right away on slow peace
 	if cfg.MonitorStakers {
-		or.sti = newStiMonitor(or.repo, or.log, or.wg)
+		or.stm = newStiMonitor(or.repo, or.log, or.wg)
 	}
 }
 
 // run starts the orchestrator work
 func (or *orchestrator) run() {
-	// start all the services in the expected order
-	// queue dispatchers come first
+	// queue dispatchers come first so they cna process new objects
 	or.txd.run()
-	or.swd.run()
-	or.acq.run()
-	or.ccq.run()
+	or.uwd.run()
+	or.acd.run()
+	or.ccd.run()
 
 	// now the scanners so we sync the off-chain database
-	or.sys.run()
-	or.sws.run()
+	or.bls.run()
+	or.uws.run()
 
 	// finally monitors
-	or.mon.run()
-	or.smo.run()
+	or.blm.run()
+	or.uwm.run()
 
-	// most of them are fired separately, once the sync is done, though
-	if or.sti != nil {
-		or.sti.run()
+	// stakers info monitor may not be run at all
+	if or.stm != nil {
+		or.stm.run()
 	}
 
 	// start orchestrating
@@ -137,6 +145,7 @@ func (or *orchestrator) run() {
 
 // close signals orchestrator to terminate all orchestrated services.
 func (or *orchestrator) close() {
+
 	// close all the services
 	or.closeServices()
 
@@ -145,11 +154,11 @@ func (or *orchestrator) close() {
 	or.wg.Wait()
 
 	// close owned channels
-	close(or.trxBuffer)
-	close(or.swapBuffer)
-	close(or.swsDone)
-	close(or.sysDone)
-	close(or.sigKillScheduler)
+	close(or.trxDispatcherQueue)
+	close(or.swapDispatcherQueue)
+	close(or.swapScanDone)
+	close(or.blkScanDone)
+	close(or.reScanSigStop)
 
 	// we are done
 	or.log.Notice("orchestrator done")
@@ -162,34 +171,36 @@ func (or *orchestrator) closeServices() {
 
 	// signal the orchestrator to close
 	or.service.close()
+	or.reScanSigStop <- true
 
-	// signal the services to close
-	or.sys.close()
-	or.sws.close()
-	or.swd.close()
-	or.smo.close()
-	or.mon.close()
-	or.txd.close()
-	or.acq.close()
-	or.ccq.close()
+	// signal monitors to close
+	or.blm.close()
+	or.uwm.close()
 
-	// signal sti monitor if it exists
-	if or.sti != nil {
-		or.sti.close()
+	// signal scanners to close
+	or.bls.close()
+	or.uws.close()
+
+	// signal closing to sti monitor as well, if it exists
+	if or.stm != nil {
+		or.stm.close()
 	}
 
-	// kill re-scan scheduler
-	or.sigKillScheduler <- true
+	// signal dispatchers to close
+	or.uwd.close()
+	or.txd.close()
+	or.acd.close()
+	or.ccd.close()
 }
 
 // setBlockChannel registers a channel for notifying new block events.
 func (or *orchestrator) setBlockChannel(ch chan *types.Block) {
-	or.mon.onBlock = ch
+	or.blm.onBlock = ch
 }
 
 // setTrxChannel registers a channel for notifying new transaction events.
 func (or *orchestrator) setTrxChannel(ch chan *types.Transaction) {
-	or.mon.onTransaction = ch
+	or.blm.onTransaction = ch
 }
 
 // orchestrate starts the service orchestration.
@@ -200,25 +211,24 @@ func (or *orchestrator) orchestrate() {
 	// don't forget to sign off after we are done
 	defer func() {
 		// log finish
-		or.log.Notice("orchestrator scheduler is closing")
+		or.log.Notice("orchestrator is closed")
 
 		// signal to wait group we are done
 		or.wg.Done()
 	}()
 
-	// wait for either stop signal, or scanner to finish
+	// wait for either stop signal, or blockScanner to finish
 	for {
 		select {
 		case <-or.sigStop:
-			// stop signal received?
 			return
-		case <-or.sysDone:
-			// log action
+
+		case <-or.blkScanDone:
 			or.log.Notice("blocks synchronization finished")
-			// scanner is done, start monitoring
-			or.mon.run()
-		case <-or.swsDone:
+
+		case <-or.swapScanDone:
 			or.log.Notice("swaps synchronization finished")
+
 		case <-or.reScan:
 			// advance counter
 			or.reScanCounter++
@@ -235,10 +245,13 @@ func (or *orchestrator) orchestrate() {
 
 // scheduleRescan schedules block chain re-scan on monitoring failure.
 func (or *orchestrator) scheduleRescan() {
+	// inform
+	or.log.Notice("re-scan scheduler is running")
+
 	// don't forget to sign off after we are done
 	defer func() {
 		// log finish
-		or.log.Notice("orchestrator re-scan scheduler is done")
+		or.log.Notice("re-scan scheduler is closed")
 
 		// signal to wait group we are done
 		or.wg.Done()
@@ -247,17 +260,17 @@ func (or *orchestrator) scheduleRescan() {
 	// calculate delay duration of this re-scan
 	// we increase delay between re-scans so we don't consume too much resources
 	// if the Lachesis is dropping subscriptions but is still available for RPC calls
-	var dur = time.Duration(or.reScanCounter*2) * time.Second
+	var dur = time.Duration(or.reScanCounter*5) * time.Second
 	or.log.Warningf("re-scan scheduled after %d seconds", dur)
 
-	// wait for either stop signal, or scanner to finish
+	// wait for either stop signal, or blockScanner to finish
 	for {
 		select {
-		case <-or.sigKillScheduler:
+		case <-or.reScanSigStop:
 			return
 		case <-time.After(dur):
-			or.sys.run()
-			or.sws.run()
+			or.bls.run()
+			or.uws.run()
 			return
 		}
 	}

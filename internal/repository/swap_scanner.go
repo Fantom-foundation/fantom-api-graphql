@@ -21,16 +21,16 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-// uniswapScanner implements blockchain scanner used to extract blockchain data to off-chain storage.
+// uniswapScanner implements blockchain blockScanner used to extract blockchain data to off-chain storage.
 type uniswapScanner struct {
 	service
-	buffer chan *evtSwap
+	buffer chan *types.Swap
 	isDone chan bool
 }
 
-// newUniswapScanner creates new blockchain scanner service.
-func newUniswapScanner(buffer chan *evtSwap, isDone chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *uniswapScanner {
-	// create new scanner instance
+// newUniswapScanner creates new blockchain blockScanner service.
+func newUniswapScanner(buffer chan *types.Swap, isDone chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *uniswapScanner {
+	// create new blockScanner instance
 	return &uniswapScanner{
 		service: newService("uniswap scanner", repo, log, wg),
 		buffer:  buffer,
@@ -38,24 +38,24 @@ func newUniswapScanner(buffer chan *evtSwap, isDone chan bool, repo Repository, 
 	}
 }
 
-// scan initializes the scanner and starts scanning
+// scan initializes the blockScanner and starts scanning
 func (sws *uniswapScanner) run() {
 	// get the newest known swap block number
 	lnb, err := sws.repo.LastKnownSwapBlock()
 	if err != nil {
-		sws.log.Critical("can not scan blockchain; %s", err.Error())
+		sws.log.Critical("can not scan uniswap contract; %s", err.Error())
 		return
 	}
 
 	// log what we do
-	sws.log.Noticef("blockchain swap scan starts from block #%d", lnb)
+	sws.log.Noticef("uniswap scan starts from block #%d", lnb)
 
-	// start scanner
+	// start blockScanner
 	sws.wg.Add(1)
 	go sws.scan(lnb)
 }
 
-// scan performs the actual scanner operation on the missing blocks starting
+// scan performs the actual blockScanner operation on the missing blocks starting
 // from the identified last known block id/number.
 func (sws *uniswapScanner) scan(lnb uint64) {
 	// don't forget to sign off after we are done
@@ -64,7 +64,7 @@ func (sws *uniswapScanner) scan(lnb uint64) {
 		sws.isDone <- true
 
 		// log finish
-		sws.log.Notice("blockchain swap scanner done")
+		sws.log.Notice("uniswap scanner done")
 
 		// signal to wait group we are done
 		sws.wg.Done()
@@ -94,8 +94,8 @@ func (sws *uniswapScanner) scan(lnb uint64) {
 
 	// get filter for all pairs
 	for _, pair := range pairs {
-
-		sws.log.Debugf("starting swap scan for pair %s", pair.String())
+		// inform what we are about to do
+		sws.log.Debugf("starting uniswap scan for pair %s", pair.String())
 
 		// get contract instance for obtaining log events
 		contract, err := sws.repo.UniswapPairContract(&pair)
@@ -112,12 +112,14 @@ func (sws *uniswapScanner) scan(lnb uint64) {
 	}
 
 	// store/update last processed swap block number into db
-	sws.repo.UniswapUpdateLastKnownSwapBlock(lastBlkNr)
+	if err = sws.repo.UniswapUpdateLastKnownSwapBlock(lastBlkNr); err != nil {
+		sws.log.Errorf("last known block number can not be updated; %s", err.Error())
+	}
 }
 
 // getUniswapBlock returns block with given number or the actual block if the number os same
 func (sws *uniswapScanner) getUniswapBlock(blockNr uint64, actualBlock *types.Block) *types.Block {
-
+	// do we have a block to scan from?
 	if actualBlock != nil && blockNr == uint64(actualBlock.Number) {
 		return actualBlock
 	}
@@ -133,11 +135,11 @@ func (sws *uniswapScanner) getUniswapBlock(blockNr uint64, actualBlock *types.Bl
 
 // processSwaps loops thru filtered swaps and adds them into the chanel for processing
 func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *common.Address, filter *bind.FilterOpts) uint64 {
-
 	var (
 		swap      *types.Swap
 		lastBlkNr uint64
 	)
+
 	// get the iterator for uniswap swap event according to provided filter
 	itSwap, err := contract.FilterSwap(filter, nil, nil)
 	if err != nil {
@@ -163,10 +165,11 @@ func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *c
 		if lastBlkNr < uint64(blk.Number) {
 			lastBlkNr = uint64(blk.Number)
 		}
+
 		if sws.isStopSignal() {
 			return 0
 		}
-		sws.buffer <- &evtSwap{swp: swap}
+		sws.buffer <- swap
 	}
 
 	// get the iterator for uniswap mint event according to provided filter
@@ -198,7 +201,7 @@ func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *c
 		if sws.isStopSignal() {
 			return 0
 		}
-		sws.buffer <- &evtSwap{swp: swap}
+		sws.buffer <- swap
 	}
 
 	// get the iterator for uniswap burn event according to provided filter
@@ -230,7 +233,7 @@ func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *c
 		if sws.isStopSignal() {
 			return 0
 		}
-		sws.buffer <- &evtSwap{swp: swap}
+		sws.buffer <- swap
 	}
 
 	// get the iterator for uniswap sync event according to provided filter
@@ -259,7 +262,7 @@ func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *c
 		if sws.isStopSignal() {
 			return 0
 		}
-		sws.buffer <- &evtSwap{swp: swap}
+		sws.buffer <- swap
 	}
 	return lastBlkNr
 }
@@ -287,10 +290,10 @@ func (sws *uniswapScanner) newSwap(block types.Block, pair *common.Address, txHa
 // getOrdinalIndex resolves ordinal index for block and transaction input
 func (sws *uniswapScanner) getOrdinalIndex(blk *types.Block, txHash *common.Hash) uint64 {
 	// get transaction
-	txhash := types.BytesToHash(txHash.Bytes())
-	tx, err := sws.repo.Transaction(&txhash)
+	txh := types.BytesToHash(txHash.Bytes())
+	tx, err := sws.repo.Transaction(&txh)
 	if err != nil {
-		sws.log.Errorf("Transaction was not found for block %s and txHash %s; %s", blk.Number.String(), txhash.String(), err.Error())
+		sws.log.Errorf("Transaction was not found for block %s and txHash %s; %s", blk.Number.String(), txh.String(), err.Error())
 		return 0
 	}
 	return types.TransactionIndex(blk, tx)

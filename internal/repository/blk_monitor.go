@@ -23,12 +23,13 @@ const monBlocksBufferCapacity = 25000
 type blockMonitor struct {
 	service
 
-	txChan   chan *evtTransaction
-	blkChan  chan types.Block
-	procChan chan types.Block
-	reScan   chan bool
-	con      *ftm.Client
-	sub      *ftm.ClientSubscription
+	txChan      chan *evtTransaction
+	blkChan     chan types.Block
+	procChan    chan types.Block
+	sigProcStop chan bool
+	reScan      chan bool
+	con         *ftm.Client
+	sub         *ftm.ClientSubscription
 
 	// event broadcast channels
 	onBlock       chan *types.Block
@@ -37,28 +38,20 @@ type blockMonitor struct {
 
 // NewBlockMonitor creates a new block monitor instance.
 func NewBlockMonitor(con *ftm.Client, buffer chan *evtTransaction, rescan chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *blockMonitor {
-	// create new scanner instance
+	// create new blockScanner instance
 	return &blockMonitor{
-		service: newService("block monitor", repo, log, wg),
-		txChan:  buffer,
-		reScan:  rescan,
-		con:     con,
+		service:     newService("block monitor", repo, log, wg),
+		txChan:      buffer,
+		reScan:      rescan,
+		con:         con,
+		sigProcStop: make(chan bool, 1),
+		blkChan:     make(chan types.Block, monBlocksBufferCapacity),
+		procChan:    make(chan types.Block, monBlocksBufferCapacity),
 	}
 }
 
 // run starts monitoring for new transaction
 func (bm *blockMonitor) run() {
-	// log
-	bm.log.Notice("initializing blockchain monitor")
-
-	// init the monitor
-	err := bm.init()
-	if err != nil {
-		bm.log.Critical("can not monitor blockchain")
-		bm.log.Critical(err)
-		return
-	}
-
 	// start go routine for processing
 	bm.wg.Add(1)
 	go bm.process()
@@ -66,19 +59,6 @@ func (bm *blockMonitor) run() {
 	// start go routine for subscription reader
 	bm.wg.Add(1)
 	go bm.monitor()
-
-	// log what we do
-	bm.log.Notice("new blocks monitoring and processing started")
-}
-
-// init prepares to monitor the Opera/Lachesis blockchain for new blocks.
-func (bm *blockMonitor) init() error {
-	// open block channel
-	bm.blkChan = make(chan types.Block, monBlocksBufferCapacity)
-	bm.procChan = make(chan types.Block, monBlocksBufferCapacity)
-
-	// subscribe
-	return bm.subscribe()
 }
 
 // subscribe opens a subscription on the connected Opera/Lachesis full node.
@@ -98,27 +78,38 @@ func (bm *blockMonitor) subscribe() error {
 
 // monitor consumes new blocks from the block channel and route them to target functions.
 func (bm *blockMonitor) monitor() {
+	// inform about the monitor
+	bm.log.Notice("block monitor is running")
+
 	// don't forget to sign off after we are done
 	defer func() {
+		// make sure to spread the word
+		bm.sigProcStop <- true
+
 		// unsubscribe
-		bm.log.Notice("block monitor unsubscribe")
+		bm.log.Notice("block monitor unsubscribed")
 		bm.sub.Unsubscribe()
+		bm.sub = nil
 
 		// log finish
-		bm.log.Notice("block monitor done")
+		bm.log.Notice("block monitor is closed")
 
 		// signal to wait group we are done
 		bm.wg.Done()
 	}()
 
-	// received block
-	var block types.Block
+	// open subscription
+	if err := bm.subscribe(); err != nil {
+		bm.log.Criticalf("block monitor subscription failed; %s", err.Error())
+		return
+	}
 
 	// loop here
 	for {
 		select {
 		case <-bm.sigStop:
 			return
+
 		case err, ok := <-bm.sub.Err():
 			// do we have a working channel?
 			if !ok {
@@ -132,12 +123,13 @@ func (bm *blockMonitor) monitor() {
 			// signal orchestrator to schedule re-scan and restart subscription
 			bm.reScan <- true
 			return
-		case block = <-bm.blkChan:
+
+		case blk := <-bm.blkChan:
 			// log the action
-			bm.log.Debugf("new block #%d arrived", uint64(block.Number))
+			bm.log.Debugf("new block #%d arrived", uint64(blk.Number))
 
 			// extract full block information
-			block, err := bm.repo.BlockByNumber(&block.Number)
+			block, err := bm.repo.BlockByNumber(&blk.Number)
 			if err != nil {
 				bm.log.Errorf("can not process block; %s", err.Error())
 			} else {
@@ -153,51 +145,62 @@ func (bm *blockMonitor) monitor() {
 
 // process pulls blocks from processing queue and act on it as needed.
 func (bm *blockMonitor) process() {
+	// inform about the monitor
+	bm.log.Notice("block processor is running")
+
 	// don't forget to sign off after we are done
 	defer func() {
 		// log finish
-		bm.log.Notice("block processor done")
+		bm.log.Notice("block processor is closed")
 
 		// signal to wait group we are done
 		bm.wg.Done()
 	}()
 
 	for {
-		// wait to receive next block
-		block, ok := <-bm.procChan
-
-		// if the channel is closed, no more data will arrive here
-		if !ok {
+		select {
+		case <-bm.sigProcStop:
 			return
-		}
 
-		// any transactions in the block?
-		if block.Txs != nil && len(block.Txs) > 0 {
-			// log action
-			bm.log.Debugf("block #%d has %d transactions to process", uint64(block.Number), len(block.Txs))
-
-			// loop transaction hashes
-			for i, hash := range block.Txs {
-				// log action
-				bm.log.Debugf("processing transaction #%d of block #%d", i, uint64(block.Number))
-
-				// get transaction
-				trx, err := bm.repo.Transaction(hash)
-				if err != nil {
-					bm.log.Errorf("error getting transaction detail; %s", err.Error())
-					continue
-				}
-
-				// prep sending struct and push it to the queue
-				event := evtTransaction{block: &block, trx: trx}
-				bm.txChan <- &event
-
-				// notify new transaction
-				bm.onTransaction <- trx
+		case block, ok := <-bm.procChan:
+			// if the channel is closed, no more data will arrive here
+			if !ok {
+				return
 			}
 
-			// log action
-			bm.log.Debugf("block #%d processed", uint64(block.Number))
+			// any transactions in the block? process them
+			if block.Txs != nil && len(block.Txs) > 0 {
+				bm.handle(&block)
+			}
 		}
 	}
+}
+
+// handle pulls transactions from the incoming block to be processed in the trx dispatch queue.
+func (bm *blockMonitor) handle(block *types.Block) {
+	// log action
+	bm.log.Debugf("block #%d has %d transactions to process", uint64(block.Number), len(block.Txs))
+
+	// loop transaction hashes
+	for i, hash := range block.Txs {
+		// log action
+		bm.log.Debugf("processing transaction #%d of block #%d", i, uint64(block.Number))
+
+		// get transaction
+		trx, err := bm.repo.Transaction(hash)
+		if err != nil {
+			bm.log.Errorf("error getting transaction detail; %s", err.Error())
+			continue
+		}
+
+		// prep sending struct and push it to the queue
+		event := evtTransaction{block: block, trx: trx}
+		bm.txChan <- &event
+
+		// notify new transaction
+		bm.onTransaction <- trx
+	}
+
+	// log action
+	bm.log.Debugf("block #%d processed", uint64(block.Number))
 }

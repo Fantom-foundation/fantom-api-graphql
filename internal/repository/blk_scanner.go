@@ -15,53 +15,53 @@ import (
 	"sync"
 )
 
-// scanner implements blockchain scanner used to extract blockchain data to off-chain storage.
-type scanner struct {
+// blockScanner implements blockchain blockScanner used to extract blockchain data to off-chain storage.
+type blockScanner struct {
 	service
 	buffer chan *evtTransaction
 	isDone chan bool
 }
 
-// newScanner creates new blockchain scanner service.
-func newScanner(buffer chan *evtTransaction, isDone chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *scanner {
-	// create new scanner instance
-	return &scanner{
-		service: newService("scanner", repo, log, wg),
+// newBlockScanner creates new blockchain blockScanner service.
+func newBlockScanner(buffer chan *evtTransaction, isDone chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *blockScanner {
+	// create new blockScanner instance
+	return &blockScanner{
+		service: newService("block scanner", repo, log, wg),
 		buffer:  buffer,
 		isDone:  isDone,
 	}
 }
 
-// scan initializes the scanner and starts scanning
-func (sys *scanner) run() {
+// scan initializes the blockScanner and starts scanning
+func (bls *blockScanner) run() {
 	// get the newest known transaction
-	lnb, err := sys.repo.LastKnownBlock()
+	lnb, err := bls.repo.LastKnownBlock()
 	if err != nil {
-		sys.log.Critical("can not scan blockchain; %sys", err.Error())
+		bls.log.Critical("can not scan blockchain; %sys", err.Error())
 		return
 	}
 
 	// log what we do
-	sys.log.Noticef("blockchain scan starts from block #%d", lnb)
+	bls.log.Noticef("block chain scan starts from block #%d", lnb)
 
-	// start scanner
-	sys.wg.Add(1)
-	go sys.scan(lnb)
+	// start blockScanner
+	bls.wg.Add(1)
+	go bls.scan(lnb)
 }
 
-// scan performs the actual scanner operation on the missing blocks starting
+// scan performs the actual blockScanner operation on the missing blocks starting
 // from the identified last known block id/number.
-func (sys *scanner) scan(lnb uint64) {
+func (bls *blockScanner) scan(lnb uint64) {
 	// don't forget to sign off after we are done
 	defer func() {
 		// signal we are done with the sync
-		sys.isDone <- true
+		bls.isDone <- true
 
 		// log finish
-		sys.log.Notice("blockchain scanner done")
+		bls.log.Notice("block scanner done")
 
 		// signal to wait group we are done
-		sys.wg.Done()
+		bls.wg.Done()
 	}()
 
 	// what is the current block
@@ -79,10 +79,10 @@ func (sys *scanner) scan(lnb uint64) {
 		// do we need a new block?
 		if block == nil || block.Txs == nil || len(block.Txs) <= index {
 			// log action
-			sys.log.Infof("scanner reached block #%d", uint64(current))
+			bls.log.Infof("blockScanner reached block #%d", uint64(current))
 
 			// try to get the next block
-			block, err = sys.repo.BlockByNumber(&current)
+			block, err = bls.repo.BlockByNumber(&current)
 			if err != nil {
 				return
 			}
@@ -97,10 +97,10 @@ func (sys *scanner) scan(lnb uint64) {
 			// do we need to pull next transaction?
 			if toSend == nil {
 				// log action
-				sys.log.Debugf("loading transaction #%d of block #%d", index, uint64(block.Number))
+				bls.log.Debugf("loading transaction #%d of block #%d", index, uint64(block.Number))
 
 				// get transaction
-				trx, err = sys.repo.Transaction(block.Txs[index])
+				trx, err = bls.repo.Transaction(block.Txs[index])
 				if err != nil {
 					return
 				}
@@ -112,10 +112,10 @@ func (sys *scanner) scan(lnb uint64) {
 
 			// try to send
 			select {
-			case <-sys.sigStop:
+			case <-bls.sigStop:
 				// stop signal received?
 				return
-			case sys.buffer <- toSend:
+			case bls.buffer <- toSend:
 				// we did send it and now we need next one
 				toSend = nil
 			default:

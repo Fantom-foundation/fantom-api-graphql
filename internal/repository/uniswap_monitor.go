@@ -11,6 +11,7 @@ package repository
 import (
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
+	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/event"
 	"sync"
 
@@ -26,7 +27,7 @@ type UniswapMonitor struct {
 	service
 
 	con      *ftm.Client
-	swapChan chan *evtSwap
+	swapChan chan *types.Swap
 
 	// pairs represents a list of pair monitors we control
 	pairs []*UniswapPairMonitor
@@ -37,7 +38,7 @@ type UniswapMonitor struct {
 }
 
 // NewUniswapMonitor creates a new uniswap monitor instance.
-func NewUniswapMonitor(con *ftm.Client, buffer chan *evtSwap, repo Repository, log logger.Logger, wg *sync.WaitGroup) *UniswapMonitor {
+func NewUniswapMonitor(con *ftm.Client, buffer chan *types.Swap, repo Repository, log logger.Logger, wg *sync.WaitGroup) *UniswapMonitor {
 	// create new monitor instance
 	um := UniswapMonitor{
 		service:  newService("uniswap monitor", repo, log, wg),
@@ -52,9 +53,6 @@ func NewUniswapMonitor(con *ftm.Client, buffer chan *evtSwap, repo Repository, l
 
 // run starts monitoring for uniswap swap events
 func (um *UniswapMonitor) run() {
-	// log
-	um.log.Notice("initializing uniswap contract monitor")
-
 	// start pairs monitoring
 	if err := um.runPairsMonitor(); err != nil {
 		um.log.Errorf("uniswap monitor can not be started; %s", err.Error())
@@ -66,9 +64,6 @@ func (um *UniswapMonitor) run() {
 		um.log.Errorf("uniswap monitor can not be started; %s", err.Error())
 		return
 	}
-
-	// inform about the monitor being started
-	um.log.Notice("uniswap swap event monitor started")
 }
 
 // initFactoryMonitor initializes the core uniswap factory contract monitoring.
@@ -91,7 +86,6 @@ func (um *UniswapMonitor) runFactoryMonitor() error {
 	// start uniswap factory monitoring routine
 	um.wg.Add(1)
 	go um.monitor()
-
 	return nil
 }
 
@@ -122,13 +116,16 @@ func (um *UniswapMonitor) runPairsMonitor() error {
 
 // monitor monitors new uniswap pairs event and adds the new pairs to the pair monitor collection.
 func (um *UniswapMonitor) monitor() {
+	// inform about the active state
+	um.log.Notice("uniswap factory monitor is running")
+
 	// don't forget to sign off after we are done
 	defer func() {
 		// unsubscribe from new pairs monitoring
 		um.newPairSub.Unsubscribe()
 
 		// signal to wait group we are done
-		um.log.Notice("uniswap factory monitor stopped")
+		um.log.Notice("uniswap factory monitor is closed")
 		um.wg.Done()
 	}()
 

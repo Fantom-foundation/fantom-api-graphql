@@ -14,7 +14,7 @@ import (
 	"sync"
 )
 
-// TrxDispatcher implements dispatcher of new transactions in the blockchain.
+// trxDispatcher implements dispatcher of new transactions in the blockchain.
 type trxDispatcher struct {
 	service
 	buffer chan *evtTransaction
@@ -30,16 +30,13 @@ type evtTransaction struct {
 func newTrxDispatcher(buffer chan *evtTransaction, repo Repository, log logger.Logger, wg *sync.WaitGroup) *trxDispatcher {
 	// create new dispatcher
 	return &trxDispatcher{
-		service: newService("dispatcher", repo, log, wg),
+		service: newService("trx dispatcher", repo, log, wg),
 		buffer:  buffer,
 	}
 }
 
 // run starts the transaction dispatcher job
 func (td *trxDispatcher) run() {
-	// inform about the action
-	td.log.Notice("starting transaction dispatcher")
-
 	// add self to the wait group and run the dispatch routine
 	td.wg.Add(1)
 	go td.dispatch()
@@ -47,21 +44,21 @@ func (td *trxDispatcher) run() {
 
 // Dispatch implements the dispatcher reader and router routine.
 func (td *trxDispatcher) dispatch() {
+	// log action
+	td.log.Notice("trx dispatcher is running")
+
 	// don't forget to sign off after we are done
 	defer func() {
 		// log finish
-		td.log.Notice("dispatcher done")
+		td.log.Notice("trx dispatcher is closed")
 		td.wg.Done()
 	}()
-
-	// what we dispatch
-	var toDispatch *evtTransaction
 
 	// wait for transactions and process them
 	for {
 		// try to read next transaction
 		select {
-		case toDispatch = <-td.buffer:
+		case toDispatch := <-td.buffer:
 			// validate
 			if toDispatch.block == nil || toDispatch.trx == nil {
 				td.log.Critical("dispatcher received invalid transaction")

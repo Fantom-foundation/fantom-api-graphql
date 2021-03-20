@@ -30,7 +30,7 @@ type UniswapPairMonitor struct {
 	service
 
 	pair     common.Address
-	swapChan chan *evtSwap
+	swapChan chan *types.Swap
 
 	// channels capturing events from the subscription on the pair
 	swapEventCh chan *contracts.UniswapPairSwap
@@ -45,7 +45,7 @@ type UniswapPairMonitor struct {
 // NewUniswapPairMonitor creates a new uniswap monitor instance.
 func NewUniswapPairMonitor(
 	con *ftm.Client,
-	buffer chan *evtSwap,
+	buffer chan *types.Swap,
 	repo Repository,
 	log logger.Logger,
 	wg *sync.WaitGroup,
@@ -147,7 +147,7 @@ func (pam *UniswapPairMonitor) monitor() {
 		}
 
 		// signal to wait group we are done
-		pam.log.Notice("uniswap pair %s monitor stopped", pam.pair.String())
+		pam.log.Notice("uniswap pair %s monitor is closed", pam.pair.String())
 		pam.wg.Done()
 	}()
 
@@ -162,51 +162,51 @@ func (pam *UniswapPairMonitor) monitor() {
 			return
 		case swap := <-pam.swapEventCh:
 			// new swap have been detected
-			evtData, err := pam.getSwapData(swap)
+			swapData, err := pam.getSwapData(swap)
 			if err != nil {
 				pam.log.Criticalf("can not extract data from swap event. %s", err.Error())
 				continue
 			}
 
 			// send the event for processing
-			pam.swapChan <- evtData
-			pam.log.Debugf("sending Uniswap swap for dispatch Tx: %s", evtData.swp.Hash.String())
+			pam.swapChan <- swapData
+			pam.log.Debugf("sending Uniswap swap for dispatch Tx: %s", swapData.Hash.String())
 
 		case mint := <-pam.mintEventCh:
 			// new swap have been detected
-			evtData, err := pam.getMintData(mint)
+			swapData, err := pam.getMintData(mint)
 			if err != nil {
 				pam.log.Criticalf("can not extract data from mint event. %s", err.Error())
 				continue
 			}
 
 			// send the event for processing
-			pam.swapChan <- evtData
-			pam.log.Debugf("sending Uniswap mint for dispatch Tx: %s", evtData.swp.Hash.String())
+			pam.swapChan <- swapData
+			pam.log.Debugf("sending Uniswap mint for dispatch Tx: %s", swapData.Hash.String())
 
 		case burn := <-pam.burnEventCh:
 			// new swap have been detected
-			evtData, err := pam.getBurnData(burn)
+			swapData, err := pam.getBurnData(burn)
 			if err != nil {
 				pam.log.Criticalf("can not extract data from burn event. %s", err.Error())
 				continue
 			}
 
 			// send the event for processing
-			pam.swapChan <- evtData
-			pam.log.Debugf("sending Uniswap burn for dispatch Tx: %s", evtData.swp.Hash.String())
+			pam.swapChan <- swapData
+			pam.log.Debugf("sending Uniswap burn for dispatch Tx: %s", swapData.Hash.String())
 
 		case snc := <-pam.syncEventCh:
 			// new swap have been detected
-			evtData, err := pam.getSyncData(snc)
+			swapData, err := pam.getSyncData(snc)
 			if err != nil {
 				pam.log.Criticalf("can not extract data from sync event. %s", err.Error())
 				continue
 			}
 
 			// send the event for processing
-			pam.swapChan <- evtData
-			pam.log.Debugf("sending Uniswap sync for dispatch Tx: %s", evtData.swp.Hash.String())
+			pam.swapChan <- swapData
+			pam.log.Debugf("sending Uniswap sync for dispatch Tx: %s", swapData.Hash.String())
 		}
 	}
 }
@@ -224,7 +224,7 @@ func (pam *UniswapPairMonitor) getOrdinalIndex(blk *types.Block, txHash *common.
 }
 
 // getSwapData loops thru filtered swaps and adds them into the channel for processing
-func (pam *UniswapPairMonitor) getSwapData(swapEvent *contracts.UniswapPairSwap) (*evtSwap, error) {
+func (pam *UniswapPairMonitor) getSwapData(swapEvent *contracts.UniswapPairSwap) (*types.Swap, error) {
 	zero := new(big.Int).SetUint64(0)
 	blkNumber := hexutil.Uint64(swapEvent.Raw.BlockNumber)
 
@@ -254,11 +254,11 @@ func (pam *UniswapPairMonitor) getSwapData(swapEvent *contracts.UniswapPairSwap)
 		Reserve0:    zero,
 		Reserve1:    zero,
 	}
-	return &evtSwap{swp: swap}, nil
+	return swap, nil
 }
 
 // getMintData loops thru filtered mint event data and adds them into the channel for processing
-func (pam *UniswapPairMonitor) getMintData(mintEvent *contracts.UniswapPairMint) (*evtSwap, error) {
+func (pam *UniswapPairMonitor) getMintData(mintEvent *contracts.UniswapPairMint) (*types.Swap, error) {
 	zero := new(big.Int).SetUint64(0)
 	blkNumber := hexutil.Uint64(mintEvent.Raw.BlockNumber)
 
@@ -295,11 +295,11 @@ func (pam *UniswapPairMonitor) getMintData(mintEvent *contracts.UniswapPairMint)
 		Reserve0:    zero,
 		Reserve1:    zero,
 	}
-	return &evtSwap{swp: swap}, nil
+	return swap, nil
 }
 
 // getBurnData loops thru filtered burn event data and adds them into the channel for processing
-func (pam *UniswapPairMonitor) getBurnData(burnEvent *contracts.UniswapPairBurn) (*evtSwap, error) {
+func (pam *UniswapPairMonitor) getBurnData(burnEvent *contracts.UniswapPairBurn) (*types.Swap, error) {
 	zero := new(big.Int).SetUint64(0)
 	blkNumber := hexutil.Uint64(burnEvent.Raw.BlockNumber)
 
@@ -336,11 +336,11 @@ func (pam *UniswapPairMonitor) getBurnData(burnEvent *contracts.UniswapPairBurn)
 		Reserve0:    zero,
 		Reserve1:    zero,
 	}
-	return &evtSwap{swp: swap}, nil
+	return swap, nil
 }
 
 // getSyncData loops thru filtered uniswap sync event data and adds them into the chanel for processing
-func (pam *UniswapPairMonitor) getSyncData(syncEvent *contracts.UniswapPairSync) (*evtSwap, error) {
+func (pam *UniswapPairMonitor) getSyncData(syncEvent *contracts.UniswapPairSync) (*types.Swap, error) {
 	zero := new(big.Int).SetUint64(0)
 	blkNumber := hexutil.Uint64(syncEvent.Raw.BlockNumber)
 
@@ -370,5 +370,5 @@ func (pam *UniswapPairMonitor) getSyncData(syncEvent *contracts.UniswapPairSync)
 		Reserve0:    syncEvent.Reserve0,
 		Reserve1:    syncEvent.Reserve1,
 	}
-	return &evtSwap{swp: swap}, nil
+	return swap, nil
 }
