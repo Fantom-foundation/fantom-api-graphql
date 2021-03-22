@@ -568,12 +568,12 @@ func (db *MongoDbBridge) contractListLoad(col *mongo.Collection, validatedOnly b
 	}
 
 	// we should have all the items already; we may just need to check if a boundary was reached
-	if cursor != nil {
+	if contract != nil {
 		list.IsEnd = count > 0 && int32(len(list.Collection)) < count
 		list.IsStart = count < 0 && int32(len(list.Collection)) < -count
 
 		// add the last item as well
-		if (list.IsStart || list.IsEnd) && contract != nil {
+		if list.IsStart || list.IsEnd {
 			list.Collection = append(list.Collection, contract)
 			list.Last = contract.OrdinalIndex
 		}

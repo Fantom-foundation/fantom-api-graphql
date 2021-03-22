@@ -7,6 +7,7 @@ import (
 	"fantom-api-graphql/internal/handlers"
 	"flag"
 	"net/http"
+	"time"
 
 	/* "fantom-api-graphql/internal/handlers" */
 	"fantom-api-graphql/internal/logger"
@@ -17,6 +18,16 @@ import (
 	"os/signal"
 	"syscall"
 )
+
+// init initializes the package and sets some important app-wide options
+func init() {
+	/*
+	   Safety net for 'too many open files' issue on legacy code.
+	   Set a sane timeout duration for the http.DefaultClient, to ensure idle connections are terminated.
+	   Reference: https://stackoverflow.com/questions/37454236/net-http-server-too-many-open-files-error
+	*/
+	http.DefaultClient.Timeout = time.Second * 10
+}
 
 // main initializes the API server and starts it when ready.
 func main() {
@@ -44,28 +55,49 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// capture termination signals and start listening
-	setupSignals(repo, resolver(cfg, lg, repo), lg)
-	log.Fatal(http.ListenAndServe(cfg.Server.BindAddress, nil))
+	// start the HTTP server
+	startHttpServer(cfg, lg, repo)
 }
 
-// initRepository initializes the repository
-func resolver(cfg *config.Config, log logger.Logger, repo repository.Repository) resolvers.ApiResolver {
+// startHttpServer starts the HTTP server and begins resolving incoming requests.
+func startHttpServer(cfg *config.Config, log logger.Logger, repo repository.Repository) {
+	// create request MUXer
+	srvMux := new(http.ServeMux)
+
+	// create a HTTP server to handle our requests
+	srv := &http.Server{
+		Addr:              cfg.Server.BindAddress,
+		ReadTimeout:       time.Second * time.Duration(cfg.Server.ReadTimeout),
+		WriteTimeout:      time.Second * time.Duration(cfg.Server.WriteTimeout),
+		IdleTimeout:       time.Second * time.Duration(cfg.Server.IdleTimeout),
+		ReadHeaderTimeout: time.Second * time.Duration(cfg.Server.HeaderTimeout),
+		Handler:           srvMux,
+	}
+
+	// capture termination signals and start listening
+	setupSignals(repo, setupHandlers(srvMux, cfg, log, repo), log)
+
+	// log the server opening info
+	log.Infof("welcome to Fantom GraphQL API server network interface.")
+	log.Infof("listening for requests on [%s]", cfg.Server.BindAddress)
+
+	// start the server
+	log.Fatal(srv.ListenAndServe())
+}
+
+// setupHandlers initializes an array of handlers for our HTTP API end-points.
+func setupHandlers(mux *http.ServeMux, cfg *config.Config, log logger.Logger, repo repository.Repository) resolvers.ApiResolver {
 	// create root resolver
 	rs := resolvers.New(cfg, log, repo)
 	log.Notice("initialized, going live")
 
 	// setup GraphQL API handler
-	h := handlers.Api(cfg, log, rs)
-	http.Handle("/api", h)
-	http.Handle("/graphql", h)
+	h := http.TimeoutHandler(handlers.Api(cfg, log, rs), time.Second*time.Duration(cfg.Server.ResolverTimeout), "Service timeout.")
+	mux.Handle("/api", h)
+	mux.Handle("/graphql", h)
 
 	// handle GraphiQL interface
-	http.Handle("/graphi", handlers.GraphiHandler(cfg.Server.DomainAddress, log))
-
-	// log the server opening info
-	log.Infof("welcome to Fantom GraphQL API server network interface.")
-	log.Infof("listening for requests on [%s]", cfg.Server.BindAddress)
+	mux.Handle("/graphi", handlers.GraphiHandler(cfg.Server.DomainAddress, log))
 
 	return rs
 }

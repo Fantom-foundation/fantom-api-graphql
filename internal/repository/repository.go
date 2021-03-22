@@ -17,6 +17,7 @@ import (
 	"fantom-api-graphql/internal/repository/rpc"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
+	"golang.org/x/sync/singleflight"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -94,7 +95,7 @@ type Repository interface {
 	CurrentSealedEpoch() (*types.Epoch, error)
 
 	// Epoch returns the id of the current epoch.
-	Epoch(hexutil.Uint64) (types.Epoch, error)
+	Epoch(*hexutil.Uint64) (types.Epoch, error)
 
 	// Block returns a block at Opera blockchain represented by a hash.
 	// Top block is returned if the hash is not provided.
@@ -290,6 +291,9 @@ type Repository interface {
 	// FMintTokenBalance loads balance of a single DeFi token by it's address.
 	FMintTokenBalance(*common.Address, *common.Address, types.DefiTokenType) (hexutil.Big, error)
 
+	// FMintTokenTotalBalance loads total balance of a single DeFi token by it's address.
+	FMintTokenTotalBalance(*common.Address, types.DefiTokenType) (hexutil.Big, error)
+
 	// FMintTokenValue loads value of a single DeFi token by it's address in fUSD.
 	FMintTokenValue(*common.Address, *common.Address, types.DefiTokenType) (hexutil.Big, error)
 
@@ -475,6 +479,9 @@ type proxy struct {
 	rpc   *rpc.FtmBridge
 	log   logger.Logger
 	cfg   *config.Config
+
+	// we need a Group to use single flight to control price pulls
+	apiRequestGroup singleflight.Group
 
 	// governance contracts reference
 	govContracts map[string]*config.GovernanceContract

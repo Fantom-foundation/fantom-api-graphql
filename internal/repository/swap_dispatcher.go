@@ -17,63 +17,55 @@ import (
 // swapDispatcher implements dispatcher of swap events in the blockchain.
 type swapDispatcher struct {
 	service
-	buffer chan *evtSwap
-}
-
-// evtSwap represents a single incoming swap event to be processed.
-type evtSwap struct {
-	swp *types.Swap
+	buffer chan *types.Swap
 }
 
 // newSwapDispatcher creates a new swap dispatcher instance.
-func newSwapDispatcher(buffer chan *evtSwap, repo Repository, log logger.Logger, wg *sync.WaitGroup) *swapDispatcher {
+func newSwapDispatcher(buffer chan *types.Swap, repo Repository, log logger.Logger, wg *sync.WaitGroup) *swapDispatcher {
 	// create new dispatcher
 	return &swapDispatcher{
-		service: newService("swapDispatcher", repo, log, wg),
+		service: newService("swap dispatcher", repo, log, wg),
 		buffer:  buffer,
 	}
 }
 
 // run starts the transaction dispatcher job
-func (sd *swapDispatcher) run() {
-	// inform about the action
-	sd.log.Notice("starting uniswap dispatcher")
-
+func (swd *swapDispatcher) run() {
 	// add self to the wait group and run the dispatch routine
-	sd.wg.Add(1)
-	go sd.dispatch()
+	swd.wg.Add(1)
+	go swd.dispatch()
 }
 
 // dispatch implements the dispatcher reader and router routine.
-func (sd *swapDispatcher) dispatch() {
+func (swd *swapDispatcher) dispatch() {
+	// log action
+	swd.log.Notice("uniswap dispatcher is running")
+
 	// don't forget to sign off after we are done
 	defer func() {
 		// log finish
-		sd.log.Notice("swap dispatcher done")
-		sd.wg.Done()
+		swd.log.Notice("uniswap dispatcher is closed")
+		swd.wg.Done()
 	}()
-
-	// what we dispatch
-	var toDispatch *evtSwap
 
 	// wait for swap and process it
 	for {
 		// try to read next swap
 		select {
-		case toDispatch = <-sd.buffer:
+		case toDispatch := <-swd.buffer:
 			// validate
-			if toDispatch.swp == nil {
-				sd.log.Critical("swap dispatcher received invalid data")
+			if toDispatch == nil {
+				swd.log.Critical("swap dispatcher received invalid data")
 				continue
 			}
 
 			// dispatch the received
-			err := sd.repo.UniswapAdd(toDispatch.swp)
+			err := swd.repo.UniswapAdd(toDispatch)
 			if err != nil {
-				sd.log.Error("could not dispatch swap")
-				sd.log.Error(err)
+				swd.log.Error("could not dispatch swap")
+				swd.log.Error(err)
 			}
-		case <-sd.sigStop:
+		case <-swd.sigStop:
 			// stop the routine
 			return
 		}

@@ -49,18 +49,28 @@ type Config struct {
 	// Governance configuration
 	Governance Governance `mapstructure:"governance"`
 
-	// KnownTokens is a list of known ERC20 tokens
+	// TokenLogoFilePath contains the path to JSON file with the map
+	// of known ERC20 tokens to their logo URLs.
+	// The file will be loaded on configuration loading.
+	TokenLogoFilePath string `mapstructure:"erc20_tokens_file"`
+
+	// TokenLogo is a list of known ERC20 tokens
 	// mapped to URL addresses of their logos.
-	TokenLogo map[common.Address]string `mapstructure:"erc20_logos"`
+	TokenLogo map[common.Address]string
 }
 
 // Server represents the GraphQL server configuration
 type Server struct {
-	BindAddress   string   `mapstructure:"bind"`
-	DomainAddress string   `mapstructure:"domain"`
-	Origin        string   `mapstructure:"origin"`
-	Peers         []string `mapstructure:"peers"`
-	CorsOrigin    []string `mapstructure:"cors_origins"`
+	BindAddress     string   `mapstructure:"bind"`
+	DomainAddress   string   `mapstructure:"domain"`
+	Origin          string   `mapstructure:"origin"`
+	Peers           []string `mapstructure:"peers"`
+	CorsOrigin      []string `mapstructure:"cors_origins"`
+	ReadTimeout     int64    `mapstructure:"read_timeout"`
+	WriteTimeout    int64    `mapstructure:"write_timeout"`
+	IdleTimeout     int64    `mapstructure:"idle_timeout"`
+	HeaderTimeout   int64    `mapstructure:"header_timeout"`
+	ResolverTimeout int64    `mapstructure:"resolver_timeout"`
 }
 
 // ServerSignature represents the signature used by this server
@@ -113,9 +123,10 @@ type Staking struct {
 
 // DeFi represents the DeFi and financial contracts configuration.
 type DeFi struct {
-	FMint   DeFiFMint   `mapstructure:"fmint"`
-	Uniswap DeFiUniswap `mapstructure:"uniswap"`
-	FLend   DeFiFLend   `mapstructure:"flend"`
+	FMint        DeFiFMint   `mapstructure:"fmint"`
+	Uniswap      DeFiUniswap `mapstructure:"uniswap"`
+	FLend        DeFiFLend   `mapstructure:"flend"`
+	PriceSymbols []string    `mapstructure:"symbols"`
 }
 
 // DeFiFMint represents the fMint DeFi module configuration.
@@ -125,8 +136,9 @@ type DeFiFMint struct {
 
 // DeFiUniswap represents the Uniswap protocol DeFi module configuration.
 type DeFiUniswap struct {
-	Core   common.Address `mapstructure:"core"`
-	Router common.Address `mapstructure:"router"`
+	Core           common.Address   `mapstructure:"core"`
+	Router         common.Address   `mapstructure:"router"`
+	PairsWhiteList []common.Address `mapstructure:"whitelist"`
 }
 
 // Voting represents the simple voting/ballots module configuration.

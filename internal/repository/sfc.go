@@ -25,9 +25,21 @@ func (p *proxy) CurrentEpoch() (hexutil.Uint64, error) {
 	return p.rpc.CurrentEpoch()
 }
 
-// Epoch returns the id of the current epoch.
-func (p *proxy) Epoch(id hexutil.Uint64) (types.Epoch, error) {
-	return p.rpc.Epoch(id)
+// Epoch returns the structure of the current epoch.
+func (p *proxy) Epoch(id *hexutil.Uint64) (types.Epoch, error) {
+	// get the current epoch if the id has not been provided
+	if id == nil || *id == 0 {
+		// ask for the sealed epoch id
+		val, err := p.rpc.CurrentSealedEpoch()
+		if err != nil {
+			return types.Epoch{}, err
+		}
+
+		// use this id instead of nil
+		id = &val
+	}
+
+	return p.rpc.Epoch(*id)
 }
 
 // LastStakerId returns the last staker id in Opera blockchain.

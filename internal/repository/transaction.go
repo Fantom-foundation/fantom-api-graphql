@@ -71,7 +71,7 @@ func (p *proxy) TransactionMarkPropagated(trx *types.Transaction) {
 
 		// sign this transaction for additional analysis so we can detect
 		// and sort out what type of contract call is this, if any
-		p.orc.contractCallsQueue <- trx
+		p.orc.contractCallQueue <- trx
 	}
 }
 
@@ -258,7 +258,7 @@ func (p *proxy) queueAccount(
 	}
 
 	// push the request
-	p.orc.accountQueue <- &accountQueueRequest{
+	p.orc.accountQueue <- &accountEvent{
 		blk: block,
 		trx: trx,
 		acc: &types.Account{
@@ -352,7 +352,7 @@ func (p *proxy) transactionRescanContractCalls(con *types.Contract) {
 			continue
 		}
 
-		// add the transaction to the scanner; this will pause the thread if the queue is clogged
-		p.orc.contractCallsQueue <- trx
+		// add the transaction to the blockScanner; this will pause the thread if the queue is clogged
+		p.orc.contractCallQueue <- trx
 	}
 }

@@ -82,3 +82,13 @@ func (dt *DefiToken) CanWrapFTM() bool {
 func (dt *DefiToken) TotalSupply() (hexutil.Big, error) {
 	return dt.repo.Erc20TotalSupply(&dt.Address)
 }
+
+// TotalDeposit represents the total amount of tokens deposited to fMint as collateral.
+func (dt *DefiToken) TotalDeposit() (hexutil.Big, error) {
+	return dt.repo.FMintTokenTotalBalance(&dt.Address, types.DefiTokenTypeCollateral)
+}
+
+// TotalDebt represents the total amount of tokens borrowed/minted on fMint.
+func (dt *DefiToken) TotalDebt() (hexutil.Big, error) {
+	return dt.repo.FMintTokenTotalBalance(&dt.Address, types.DefiTokenTypeDebt)
+}

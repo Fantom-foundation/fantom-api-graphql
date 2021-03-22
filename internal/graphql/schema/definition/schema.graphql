@@ -54,7 +54,7 @@ type Query {
 
     # Get information about specified epoch. Returns current epoch information
     # if id is not provided.
-    epoch(id: Long!): Epoch!
+    epoch(id: Long): Epoch!
 
     # The last staker id in Opera blockchain.
     lastStakerId: Long!
@@ -179,11 +179,11 @@ type Query {
     # defiTimePrices returns prices for specified pair, time resolution and interval.
     # Address is pair address and is mandatory.
     # Resolution can be {month, day, 4h, 1h, 30m 15m, 5m, 1m}, is optional, default is a day.
-    # Direction specifies price calculation, default 0 is for TokenA/TokenB otherwise TokenB/TokenA 
+    # Direction specifies price calculation, default 0 is for TokenA/TokenB otherwise TokenB/TokenA
     # Dates are in unix UTC number and are optional. When not provided
     # then it takes period for last month till now.
     defiTimePrices(address:Address!, resolution:String, fromDate:Int, toDate:Int, direction:Int):[DefiTimePrice!]!
-    
+
     # defiTimeReserves returns reserves for specified pair, time resolution and interval.
     # Address is pair address and is mandatory.
     # Resolution can be {month, day, 4h, 1h, 30m 15m, 5m, 1m}, is optional, default is a day.
@@ -196,11 +196,11 @@ type Query {
     # if negative, return edges before the cursor.
     # For undefined cursor, positive <count> starts the list from top,
     # negative <count> starts the list from bottom.
-    # Address can be used for specifying actions for one Uniswap pair. 
+    # Address can be used for specifying actions for one Uniswap pair.
     # ActionType represents action type:
-    # 0 - swap, 
-    # 1 - mint, 
-    # 2 - burn, 
+    # 0 - swap,
+    # 1 - mint,
+    # 2 - burn,
     defiUniswapActions(pairAddress:Address, cursor:Cursor, count:Int!, actionType:Int):UniswapActionList!
 
     # erc20Token provides the information about an ERC20 token specified by it's
@@ -210,6 +210,10 @@ type Query {
     # erc20TokenList provides list of the most active ERC20 tokens
     # deployed on the block chain.
     erc20TokenList(count: Int = 50):[ERC20Token!]!
+
+    # erc20Assets provides list of tokens owned by the given
+    # account address.
+    erc20Assets(owner: Address!, count: Int = 50):[ERC20Token!]!
 
     # ercTotalSupply provides the current total supply amount of a specified ERC20 token
     # identified by it's ERC20 contract address.

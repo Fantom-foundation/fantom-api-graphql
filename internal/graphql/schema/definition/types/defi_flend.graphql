@@ -2,14 +2,14 @@
 type LendingPool {
 
     # Returns all assets reserve addresses
-    reserveList(): [Address!]!
+    reserveList: [Address!]!
 
-    # A list of all assets reserves with its data 
-    reserveDataList(): [ReserveData!]!
+    # A list of all assets reserves with its data
+    reserveDataList: [ReserveData!]!
 
     # Asset reserve data just for one asset address
 	reserveData(address: Address!): ReserveData!
-    
+
     # User account data for specified user address
     userAccountData(address: Address!): FLendUserData!
 
@@ -60,7 +60,7 @@ type ReserveData {
     # address of interest rate strategy
     interestRateStrategyAddress: Address!
 }
-    
+
 
 # FLendUserData represents a lendingpool user data.
 type FLendUserData {

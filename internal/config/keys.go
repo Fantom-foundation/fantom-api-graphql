@@ -16,6 +16,13 @@ const (
 	keyApiStateOrigin   = "server.origin"
 	keyCorsAllowOrigins = "server.cors_origins"
 
+	// server time out related keys
+	keyTimeoutRead     = "server.read_timeout"
+	keyTimeoutWrite    = "server.write_timeout"
+	keyTimeoutIdle     = "server.idle_timeout"
+	keyTimeoutHeader   = "server.header_timeout"
+	keyTimeoutResolver = "server.resolver_timeout"
+
 	// API server signature related keys
 	keySignatureAddress    = "me.address"
 	keySignaturePrivateKey = "me.pkey"
@@ -38,8 +45,9 @@ const (
 	keySolCompilerPath = "compiler.sol"
 
 	// utility options
-	keyVotingSources = "voting.sources"
-	keyErc20Logos    = "erc20_logos"
+	keyVotingSources         = "voting.sources"
+	keyErc20TokenMapFilePath = "erc20_tokens_file"
+	keyErc20Logos            = "erc20_logos"
 
 	// PoS staking configuration
 	keyStakingSfcContract       = "staking.sfc"

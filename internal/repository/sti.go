@@ -30,11 +30,11 @@ type stiMonitor struct {
 	topStaker     uint64
 }
 
-// newScanner creates new blockchain scanner service.
+// newBlockScanner creates new blockchain blockScanner service.
 func newStiMonitor(repo Repository, log logger.Logger, wg *sync.WaitGroup) *stiMonitor {
-	// create new scanner instance
+	// create new blockScanner instance
 	return &stiMonitor{
-		service: newService("sti monitor", repo, log, wg),
+		service: newService("stm monitor", repo, log, wg),
 		onInit:  true,
 	}
 }
@@ -44,7 +44,7 @@ func (sti *stiMonitor) run() {
 	// log what we do
 	sti.log.Notice("staker information monitor started")
 
-	// start scanner
+	// start blockScanner
 	sti.wg.Add(1)
 	go sti.monitor()
 }
