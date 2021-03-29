@@ -88,70 +88,23 @@ func (ftm *FtmBridge) CurrentSealedEpoch() (hexutil.Uint64, error) {
 	return hexutil.Uint64(epoch.Uint64()), nil
 }
 
-// LastStakerId returns the last staker id in Opera blockchain.
-func (ftm *FtmBridge) LastStakerId() (hexutil.Uint64, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
-		return 0, err
-	}
-
-	// get the value from the contract
-	sl, err := contract.LastValidatorID(nil)
-	if err != nil {
-		ftm.log.Errorf("failed to get the last staker ID: %s", err.Error())
-		return 0, err
-	}
-
-	// get the value
-	return hexutil.Uint64(sl.Uint64()), nil
-}
-
-// StakersNum returns the number of stakers in Opera blockchain.
-func (ftm *FtmBridge) StakersNum() (hexutil.Uint64, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
-		return 0, err
-	}
-
-	// get the current epoch
-	ep, err := contract.CurrentEpoch(nil)
-	if err != nil {
-		ftm.log.Errorf("failed to get the epoch; %s", err.Error())
-		return 0, err
-	}
-
-	// get the value from the contract
-	val, err := contract.GetEpochValidatorIDs(nil, ep)
-	if err != nil {
-		ftm.log.Errorf("failed to get the list of validators; %s", err.Error())
-		return 0, err
-	}
-
-	// get the value
-	return hexutil.Uint64(len(val)), nil
-}
-
 // Epoch extract information about an epoch from SFC smart contract.
-func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (types.Epoch, error) {
+func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (*types.Epoch, error) {
 	// instantiate the contract and display its name
 	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
-		return types.Epoch{}, err
+		return nil, err
 	}
 
 	// extract epoch snapshot
 	epo, err := contract.GetEpochSnapshot(nil, big.NewInt(int64(id)))
 	if err != nil {
 		ftm.log.Errorf("failed to extract epoch information: %s", err.Error())
-		return types.Epoch{}, err
+		return nil, err
 	}
 
-	return types.Epoch{
+	return &types.Epoch{
 		Id:                    id,
 		EndTime:               (hexutil.Big)(*epo.EndTime),
 		EpochFee:              (hexutil.Big)(*epo.EpochFee),
