@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"sync"
 )
 
 // Account returns account at Opera blockchain for an address, nil if not found.
@@ -103,7 +104,8 @@ func (p *proxy) AccountTransactions(acc *types.Account, cursor *string, count in
 
 // AccountsActive returns total number of accounts known to repository.
 func (p *proxy) AccountsActive() (hexutil.Uint64, error) {
-	return p.db.AccountCount()
+	val, err := p.db.AccountCount()
+	return hexutil.Uint64(val), err
 }
 
 // AccountIsKnown checks if the account of the given address is known to the API server.
@@ -129,12 +131,48 @@ func (p *proxy) AccountIsKnown(addr *common.Address) bool {
 }
 
 // AccountAdd adds specified account detail into the repository.
-func (p *proxy) AccountAdd(acc *types.Account) error {
+func (p *proxy) StoreAccount(acc *types.Account) error {
 	// add this account to the database and remember it's been added
 	err := p.db.AddAccount(acc)
 	if err == nil {
 		p.cache.PushAccountKnown(&acc.Address)
 	}
-
 	return err
+}
+
+// QueueAccount queues the given account for processing.
+func (p *proxy) QueueAccount(block *types.Block, trx *types.Transaction, addr *common.Address, ctCreationHash *types.Hash, wg *sync.WaitGroup) {
+	// address known?
+	if addr == nil {
+		p.log.Error("account not given for processing")
+		return
+	}
+
+	// make sure we have the block and transaction details
+	if block == nil || trx == nil {
+		p.log.Errorf("unknown block or transaction for the account %s", addr.String())
+		return
+	}
+
+	// what account type is it?
+	t := types.AccountTypeWallet
+	if ctCreationHash != nil {
+		t = types.AccountTypeContract
+	}
+
+	// push the request
+	p.orc.accountQueue <- &accountEvent{
+		blk: block,
+		trx: trx,
+		acc: &types.Account{
+			Address:      *addr,
+			ContractTx:   ctCreationHash,
+			Type:         t,
+			LastActivity: block.TimeStamp,
+		},
+		wg: wg,
+	}
+
+	// log what we do here
+	p.log.Debugf("%s %s queued from trx %s", t, addr.String(), trx.Hash.String())
 }

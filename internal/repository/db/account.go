@@ -94,12 +94,6 @@ func (db *MongoDbBridge) Account(addr *common.Address) (*types.Account, error) {
 // initAccountsCollection initializes the account collection with
 // indexes and additional parameters needed by the app.
 func (db *MongoDbBridge) initAccountsCollection() {
-	if !db.initAccounts {
-		return
-	}
-
-	// log we are done here
-	db.initAccounts = false
 	db.log.Debugf("accounts collection initialized")
 }
 
@@ -136,7 +130,10 @@ func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 	}
 
 	// check init state
-	db.initAccountsCollection()
+	// make sure transactions collection is initialized
+	if db.initAccounts != nil {
+		db.initAccounts.Do(func() { db.initAccountsCollection(); db.initAccounts = nil })
+	}
 
 	// log what we have done
 	db.log.Debugf("added account at %s", acc.Address.String())
@@ -168,7 +165,7 @@ func (db *MongoDbBridge) IsAccountKnown(addr *common.Address) (bool, error) {
 }
 
 // AccountCount calculates total number of accounts in the database.
-func (db *MongoDbBridge) AccountCount() (hexutil.Uint64, error) {
+func (db *MongoDbBridge) AccountCount() (uint64, error) {
 	// get the collection for transactions
 	col := db.client.Database(db.dbName).Collection(coAccounts)
 
@@ -179,7 +176,7 @@ func (db *MongoDbBridge) AccountCount() (hexutil.Uint64, error) {
 		return 0, err
 	}
 
-	return hexutil.Uint64(uint64(val)), nil
+	return uint64(val), nil
 }
 
 // AccountTransactions loads list of transaction hashes of an account.

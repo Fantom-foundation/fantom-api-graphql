@@ -33,10 +33,10 @@ var testAddress = common.HexToAddress("0xabc00FA001230012300aBc0012300Fa00FACE00
 // This can be a simple account existence verification, or an extended
 // contract analyze.
 type accountEvent struct {
-	acc         *types.Account
-	blk         *types.Block
-	trx         *types.Transaction
-	trxCallback func(*types.Transaction)
+	acc *types.Account
+	blk *types.Block
+	trx *types.Transaction
+	wg  *sync.WaitGroup
 }
 
 // accountDispatcher implements account analyzer queue
@@ -85,13 +85,12 @@ func (acd *accountDispatcher) dispatch() {
 			acd.log.Debugf("account %s received for processing", req.acc.Address.String())
 
 			// process the account request into the database
-			err = acd.processAccount(req.acc, req.blk, req.trx)
-
-			// any callback? notify the transaction to be done
-			if err == nil && req.trxCallback != nil {
-				acd.log.Debugf("account %s callback for trx %s", req.acc.Address.String(), req.trx.Hash.String())
-				req.trxCallback(req.trx)
+			if err = acd.processAccount(req.acc, req.blk, req.trx); err != nil {
+				acd.log.Errorf("can not process account %s; %s", req.acc.Address.String(), err.Error())
 			}
+
+			// we are done with the account
+			req.wg.Done()
 		case <-acd.sigStop:
 			// stop signal received?
 			return
@@ -125,12 +124,11 @@ func (acd *accountDispatcher) processSimple(acc *types.Account, block *types.Blo
 	acd.checkSfcContract(acc, block, trx)
 
 	// add the account into the database
-	err := acd.repo.AccountAdd(acc)
+	err := acd.repo.StoreAccount(acc)
 	if err != nil {
 		acd.log.Errorf("can not add account %s; %s", acc.Address.String(), err.Error())
 		return err
 	}
-
 	return nil
 }
 
@@ -149,7 +147,7 @@ func (acd *accountDispatcher) checkSfcContract(acc *types.Account, block *types.
 			acd.log.Debugf("detected SFC contract %d.%d.%d", byte((ver>>16)&255), byte((ver>>8)&255), byte(ver&255))
 
 			// add the contract
-			if err := acd.repo.ContractAdd(types.NewSfcContract(&acc.Address, uint64(ver), block, trx)); err != nil {
+			if err := acd.repo.StoreContract(types.NewSfcContract(&acc.Address, uint64(ver), block, trx)); err != nil {
 				acd.log.Errorf("can not add the SFC contract at %s; %s", acc.Address.String(), err.Error())
 			}
 		}
@@ -170,7 +168,7 @@ func (acd *accountDispatcher) processContract(acc *types.Account, block *types.B
 
 	// insert the contract record if possible
 	if con != nil {
-		err = acd.repo.ContractAdd(con)
+		err = acd.repo.StoreContract(con)
 		if err != nil {
 			acd.log.Errorf("can not add contract at %s; %s", acc.Address.String(), err.Error())
 			return err
@@ -178,12 +176,11 @@ func (acd *accountDispatcher) processContract(acc *types.Account, block *types.B
 	}
 
 	// add the account identified into the database
-	err = acd.repo.AccountAdd(acc)
+	err = acd.repo.StoreAccount(acc)
 	if err != nil {
 		acd.log.Errorf("can not add account %s; %s", acc.Address.String(), err.Error())
 		return err
 	}
-
 	return nil
 }
 
