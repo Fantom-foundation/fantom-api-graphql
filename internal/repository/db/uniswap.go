@@ -55,10 +55,6 @@ func getHash(swap *types.Swap) *types.Hash {
 // initUniswapCollection initializes the swap collection with
 // indexes and additional parameters needed by the app.
 func (db *MongoDbBridge) initUniswapCollection(col *mongo.Collection) {
-	if !db.initSwaps {
-		return
-	}
-
 	// prepare index models
 	ix := make([]mongo.IndexModel, 0)
 
@@ -78,7 +74,6 @@ func (db *MongoDbBridge) initUniswapCollection(col *mongo.Collection) {
 	}
 
 	// log we done that
-	db.initSwaps = false
 	db.log.Debugf("swap collection initialized")
 }
 
@@ -160,8 +155,10 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 	// add transaction to the db
 	db.log.Debugf("swap %s added to database", swapHash.String())
 
-	// check init state
-	db.initUniswapCollection(col)
+	// make sure uniswap collection is initialized
+	if db.initSwaps != nil {
+		db.initSwaps.Do(func() { db.initUniswapCollection(col); db.initSwaps = nil })
+	}
 	return nil
 }
 
