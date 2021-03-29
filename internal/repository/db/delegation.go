@@ -5,6 +5,8 @@ import (
 	"context"
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -33,9 +35,9 @@ func (db *MongoDbBridge) initDelegationCollection(col *mongo.Collection) {
 		},
 	})
 
-	// index delegator and receiving validator
-	// ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiDelegationAddress, 1}}})
-	// ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiDelegationToValidator, 1}}})
+	// index delegator, receiving validator, and creation time stamp
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiDelegationAddress, 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiDelegationToValidator, 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiDelegationCreated, -1}}})
 
 	// create indexes
@@ -47,13 +49,34 @@ func (db *MongoDbBridge) initDelegationCollection(col *mongo.Collection) {
 	db.log.Debugf("delegation collection initialized")
 }
 
-// AddDelegation stores a delegation in the database if it doesn't exist.
-func (db *MongoDbBridge) AddDelegation(dl *types.Delegation) error {
-	// get the collection for transactions
+// Delegation returns details of a delegation from an address to a validator ID.
+func (db *MongoDbBridge) Delegation(addr *common.Address, valID *hexutil.Big) (*types.Delegation, error) {
+	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colDelegations)
 
-	// if the transaction already exists, we don't need to add it
-	// just make sure the transaction accounts were processed
+	// try to find the delegation in the database
+	sr := col.FindOne(context.Background(), bson.D{
+		{fiDelegationAddress, addr.String()},
+		{fiDelegationToValidator, valID.String()},
+	})
+
+	// try to decode
+	var dlg types.Delegation
+
+	err := sr.Decode(&dlg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dlg, nil
+}
+
+// AddDelegation stores a delegation in the database if it doesn't exist.
+func (db *MongoDbBridge) AddDelegation(dl *types.Delegation) error {
+	// get the collection for delegations
+	col := db.client.Database(db.dbName).Collection(colDelegations)
+
+	// if the delegation already exists, update it with the new one
 	if db.isDelegationKnown(col, dl) {
 		return db.UpdateDelegation(dl)
 	}
@@ -64,7 +87,7 @@ func (db *MongoDbBridge) AddDelegation(dl *types.Delegation) error {
 		return err
 	}
 
-	// make sure contracts collection is initialized
+	// make sure delegation collection is initialized
 	if db.initDelegation != nil {
 		db.initDelegation.Do(func() { db.initDelegationCollection(col); db.initDelegation = nil })
 	}
@@ -73,11 +96,15 @@ func (db *MongoDbBridge) AddDelegation(dl *types.Delegation) error {
 
 // UpdateDelegation updates the given delegation in database.
 func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
-	// get the collection for transactions
+	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colDelegations)
 
 	// try to update a delegation by replacing it in the database
-	er, err := col.ReplaceOne(context.Background(), bson.D{{fiDelegationPk, dl.Uid()}}, dl)
+	// we use address and validator ID to identify unique delegation
+	er, err := col.ReplaceOne(context.Background(), bson.D{
+		{fiDelegationAddress, dl.Address.String()},
+		{fiDelegationToValidator, dl.ToStakerId.String()},
+	}, dl)
 	if err != nil {
 		db.log.Critical(err)
 		return err
@@ -92,11 +119,12 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 
 // isDelegationKnown checks if the given delegation exists in the database.
 func (db *MongoDbBridge) isDelegationKnown(col *mongo.Collection, dl *types.Delegation) bool {
-	// try to find the contract in the database (it may already exist)
+	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{fiDelegationPk, dl.Uid()},
+		{fiDelegationAddress, dl.Address.String()},
+		{fiDelegationToValidator, dl.ToStakerId.String()},
 	}, options.FindOne().SetProjection(bson.D{
-		{fiContractPk, true},
+		{fiDelegationPk, true},
 	}))
 
 	// error on lookup?
@@ -115,18 +143,28 @@ func (db *MongoDbBridge) isDelegationKnown(col *mongo.Collection, dl *types.Dele
 }
 
 // DelegationsCount calculates total number of delegations in the database.
-func (db *MongoDbBridge) DelegationsCount() (uint64, error) {
-	// get the collection for transactions
+func (db *MongoDbBridge) DelegationsCountFiltered(filter *bson.D) (uint64, error) {
+	// make sure some filter is used
+	if nil == filter {
+		filter = &bson.D{}
+	}
+
+	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colDelegations)
 
 	// do the counting
-	val, err := col.CountDocuments(context.Background(), bson.D{})
+	val, err := col.CountDocuments(context.Background(), *filter)
 	if err != nil {
 		db.log.Errorf("can not count documents in delegations collection; %s", err.Error())
 		return 0, err
 	}
 
 	return uint64(val), nil
+}
+
+// DelegationsCount calculates total number of delegations in the database.
+func (db *MongoDbBridge) DelegationsCount() (uint64, error) {
+	return db.DelegationsCountFiltered(nil)
 }
 
 // dlgListInit initializes list of delegations based on provided cursor, count, and filter.
