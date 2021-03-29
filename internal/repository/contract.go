@@ -174,8 +174,8 @@ func (p *proxy) ValidateContract(sc *types.Contract) error {
 	return fmt.Errorf("contract source code does not match with the deployed byte code")
 }
 
-// ContractAdd adds new contract into the repository.
-func (p *proxy) ContractAdd(con *types.Contract) error {
+// StoreContract adds new contract into the repository.
+func (p *proxy) StoreContract(con *types.Contract) error {
 	// is the a known contract which will be updated?
 	isUpdate := p.db.IsContractKnown(&con.Address)
 
@@ -194,6 +194,5 @@ func (p *proxy) ContractAdd(con *types.Contract) error {
 		p.cache.EvictContract(&con.Address)
 		go p.transactionRescanContractCalls(con)
 	}
-
 	return nil
 }

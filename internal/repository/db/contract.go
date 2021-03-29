@@ -74,10 +74,6 @@ const (
 // initContractsCollection initializes the contracts collection with
 // indexes and additional parameters needed by the app.
 func (db *MongoDbBridge) initContractsCollection(col *mongo.Collection) {
-	if !db.initContracts {
-		return
-	}
-
 	// prepare index models
 	ix := make([]mongo.IndexModel, 0)
 
@@ -96,7 +92,6 @@ func (db *MongoDbBridge) initContractsCollection(col *mongo.Collection) {
 	}
 
 	// log we done that
-	db.initContracts = false
 	db.log.Debugf("contracts collection initialized")
 }
 
@@ -138,8 +133,10 @@ func (db *MongoDbBridge) AddContract(con *types.Contract) error {
 		return err
 	}
 
-	// init the collection
-	db.initContractsCollection(col)
+	// make sure contracts collection is initialized
+	if db.initContracts != nil {
+		db.initContracts.Do(func() { db.initContractsCollection(col); db.initContracts = nil })
+	}
 
 	db.log.Debugf("added smart contract at %s", con.Address.String())
 	return nil
