@@ -18,12 +18,12 @@ import (
 // blockScanner implements blockchain blockScanner used to extract blockchain data to off-chain storage.
 type blockScanner struct {
 	service
-	buffer chan *evtTransaction
+	buffer chan *eventTransaction
 	isDone chan bool
 }
 
 // newBlockScanner creates new blockchain blockScanner service.
-func newBlockScanner(buffer chan *evtTransaction, isDone chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *blockScanner {
+func newBlockScanner(buffer chan *eventTransaction, isDone chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *blockScanner {
 	// create new blockScanner instance
 	return &blockScanner{
 		service: newService("block scanner", repo, log, wg),
@@ -71,7 +71,7 @@ func (bls *blockScanner) scan(lnb uint64) {
 		err     error
 		index   int
 		trx     *types.Transaction
-		toSend  *evtTransaction
+		toSend  *eventTransaction
 	)
 
 	// do the scan
@@ -106,7 +106,7 @@ func (bls *blockScanner) scan(lnb uint64) {
 				}
 
 				// prep sending struct and advance transaction index
-				toSend = &evtTransaction{block: block, trx: trx}
+				toSend = &eventTransaction{block: block, trx: trx}
 				index++
 			}
 

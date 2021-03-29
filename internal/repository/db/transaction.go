@@ -43,29 +43,11 @@ const (
 
 	// fiTransactionTimestamp is the name of the transaction time stamp field.
 	fiTransactionTimestamp = "ts"
-
-	// fiTransactionPropagated is the name of the field indicating processed transaction.
-	fiTransactionPropagated = "isok"
-
-	// fiTransactionIsERC20Call is the name of the field indicating an ERC20 call.
-	fiTransactionIsERC20Call = "iserc"
-
-	// fiTransactionTargetContract is the name of the field of target smart contract type
-	// this transaction addressed. If undetected, or not a contract address, the field is empty.
-	fiTransactionTargetContract = "tc"
-
-	// fiTransactionTargetCall is the name of the field of target smart contract function name.
-	// If the function has not been detected yet, the field is empty.
-	fiTransactionTargetCall = "call"
 )
 
 // initTransactionsCollection initializes the transaction collection with
 // indexes and additional parameters needed by the app.
 func (db *MongoDbBridge) initTransactionsCollection(col *mongo.Collection) {
-	if !db.initTransactions {
-		return
-	}
-
 	// prepare index models
 	ix := make([]mongo.IndexModel, 0)
 
@@ -88,7 +70,6 @@ func (db *MongoDbBridge) initTransactionsCollection(col *mongo.Collection) {
 	}
 
 	// log we done that
-	db.initTransactions = false
 	db.log.Debugf("transactions collection initialized")
 }
 
@@ -131,10 +112,6 @@ func (db *MongoDbBridge) TransactionDetails(trx *types.Transaction) error {
 		bson.D{{fiTransactionPk, trx.Hash.String()}},
 		options.FindOne().SetProjection(bson.D{
 			{fiTransactionOrdinalIndex, true},
-			{fiTransactionTargetCall, true},
-			{fiTransactionTargetContract, true},
-			{fiTransactionPropagated, true},
-			{fiTransactionIsERC20Call, true},
 		}))
 	if sr.Err() != nil {
 		// may be ErrNoDocuments, which we seek
@@ -154,12 +131,6 @@ func (db *MongoDbBridge) TransactionDetails(trx *types.Transaction) error {
 		// log issue here
 		db.log.Error("can not decode transaction data from DB; %s", sr.Err().Error())
 		return sr.Err()
-	}
-
-	// reset the target call
-	if trx.TargetContractType != nil && *trx.TargetContractType == "" {
-		trx.TargetContractType = nil
-		trx.TargetFunctionCall = nil
 	}
 
 	// log the ordinal index of the found transaction
@@ -201,8 +172,10 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	// add transaction to the db
 	db.log.Infof("transaction %s added to database", trx.Hash.String())
 
-	// check init state
-	db.initTransactionsCollection(col)
+	// make sure transactions collection is initialized
+	if db.initTransactions != nil {
+		db.initTransactions.Do(func() { db.initTransactionsCollection(col); db.initTransactions = nil })
+	}
 	return nil
 }
 
@@ -242,10 +215,6 @@ func transactionData(base *bson.D, trx *types.Transaction) bson.D {
 		bson.E{Key: fiTransactionRecipient, Value: decodeOptAddresses(trx.To)},
 		bson.E{Key: fiTransactionContract, Value: decodeOptAddresses(trx.ContractAddress)},
 		bson.E{Key: fiTransactionValue, Value: trx.Value.String()},
-		bson.E{Key: fiTransactionTargetContract, Value: trx.TargetContractType},
-		bson.E{Key: fiTransactionTargetCall, Value: trx.TargetFunctionCall},
-		bson.E{Key: fiTransactionPropagated, Value: trx.IsProcessed},
-		bson.E{Key: fiTransactionIsERC20Call, Value: trx.IsErc20Call},
 	)
 	return *base
 }
@@ -277,28 +246,6 @@ func (db *MongoDbBridge) IsTransactionKnown(col *mongo.Collection, hash *types.H
 	return true, nil
 }
 
-// TransactionMarkPropagated marks given transaction as processed
-// and ready to be served full to API users.
-// AccountQueue processor call this function as a callback.
-func (db *MongoDbBridge) TransactionMarkPropagated(trx *types.Transaction) error {
-	// get the collection for transactions
-	col := db.client.Database(db.dbName).Collection(coTransactions)
-
-	// update the transaction details
-	if _, err := col.UpdateOne(context.Background(),
-		bson.D{{fiTransactionPk, trx.Hash.String()}},
-		bson.D{{"$set", bson.D{{fiTransactionPropagated, true}}}}); err != nil {
-		// log the issue
-		db.log.Criticalf("transaction %s can not be updated; %s", trx.Hash.String(), err.Error())
-		return err
-	}
-
-	// update local state and log we are done with the trx
-	trx.IsProcessed = true
-	db.log.Debugf("transaction %s state changed", trx.Hash.String())
-	return nil
-}
-
 // LastKnownBlock returns number of the last known block stored in the database.
 func (db *MongoDbBridge) LastKnownBlock() (uint64, error) {
 	// prep search options
@@ -308,7 +255,7 @@ func (db *MongoDbBridge) LastKnownBlock() (uint64, error) {
 
 	// get the collection for account transactions
 	col := db.client.Database(db.dbName).Collection(coTransactions)
-	res := col.FindOne(context.Background(), bson.D{{fiTransactionPropagated, true}}, opt)
+	res := col.FindOne(context.Background(), bson.D{}, opt)
 	if res.Err() != nil {
 		// may be no block at all
 		if res.Err() == mongo.ErrNoDocuments {

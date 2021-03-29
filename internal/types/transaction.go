@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	retypes "github.com/ethereum/go-ethereum/core/types"
 	"math/rand"
 )
 
@@ -63,19 +64,8 @@ type Transaction struct {
 	// Status represents transaction status; value is either 1 (success) or 0 (failure)
 	Status *hexutil.Uint64 `json:"status" bson:"-"`
 
-	// TargetContractType represents the type of the contract the transaction
-	// calls, if this is a contract call.
-	TargetContractType *string `json:"tContract" bson:"tc"`
-
-	// TargetFunctionCall represents the function the transaction addresses
-	// byt the call, if this is a contract call.
-	TargetFunctionCall *string `json:"tFunction" bson:"call"`
-
-	// IsErc20Call marks an ERC20 call
-	IsErc20Call bool `json:"isErc" bson:"iserc"`
-
-	// IsProcessed mars the transaction as processed through the internal scanner
-	IsProcessed bool `json:"isProc" bson:"isok"`
+	// Logs represents a list of log records created along with the transaction
+	Logs []retypes.Log `json:"logs"`
 }
 
 // mustTransactionIndex always calculate the index of the current transaction

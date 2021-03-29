@@ -14,20 +14,23 @@ import (
 	"sync"
 )
 
+// trxDispatchQueueCapacity is the number of transactions kept in the dispatch buffer.
+const trxDispatchQueueCapacity = 1000
+
 // trxDispatcher implements dispatcher of new transactions in the blockchain.
 type trxDispatcher struct {
 	service
-	buffer chan *evtTransaction
+	buffer chan *eventTransaction
 }
 
-// evtTransaction represents a single incoming transaction event to be processed.
-type evtTransaction struct {
+// eventTransaction represents a single incoming transaction event to be processed.
+type eventTransaction struct {
 	block *types.Block
 	trx   *types.Transaction
 }
 
 // NewTrxDispatcher creates a new transaction dispatcher instance.
-func newTrxDispatcher(buffer chan *evtTransaction, repo Repository, log logger.Logger, wg *sync.WaitGroup) *trxDispatcher {
+func newTrxDispatcher(buffer chan *eventTransaction, repo Repository, log logger.Logger, wg *sync.WaitGroup) *trxDispatcher {
 	// create new dispatcher
 	return &trxDispatcher{
 		service: newService("trx dispatcher", repo, log, wg),
@@ -42,7 +45,7 @@ func (td *trxDispatcher) run() {
 	go td.dispatch()
 }
 
-// Dispatch implements the dispatcher reader and router routine.
+// dispatch implements the dispatcher reader and router routine.
 func (td *trxDispatcher) dispatch() {
 	// log action
 	td.log.Notice("trx dispatcher is running")
@@ -66,15 +69,66 @@ func (td *trxDispatcher) dispatch() {
 			}
 
 			// dispatch the received
-			err := td.repo.TransactionAdd(toDispatch.block, toDispatch.trx)
-			if err != nil {
-				td.log.Error("could not dispatch transaction")
-				td.log.Error(err)
-			}
+			td.process(toDispatch)
 		case <-td.sigStop:
 			// stop the routine
 			td.log.Info("trx dispatcher received stop signal")
 			return
 		}
 	}
+}
+
+// process processes the given transaction event into the required targets.
+func (td *trxDispatcher) process(evt *eventTransaction) {
+	// make the work group for this trx
+	var wg sync.WaitGroup
+
+	// process transaction into the accounts
+	td.propagateTrxToAccounts(evt, &wg)
+
+	// process transaction logs
+	for _, lg := range evt.trx.Logs {
+		wg.Add(1)
+		td.repo.QueueTrxLog(&lg, &wg)
+	}
+
+	// store the transaction into the database once the processing is done
+	// we spawn a lot of go-routines here so we should test the optimal queue length above
+	go td.waitAndStore(evt.block, evt.trx, &wg)
+}
+
+// waitAndStore waits for the transaction processing to finish and stores the transaction into db.
+func (td *trxDispatcher) waitAndStore(blk *types.Block, trx *types.Transaction, wg *sync.WaitGroup) {
+	wg.Wait()
+	if err := td.repo.StoreTransaction(blk, trx); err != nil {
+		td.log.Errorf("can not store transaction %s from block %d", trx.Hash.String(), blk.Number)
+	}
+}
+
+// propagateTrxToAccounts pushes given transaction to accounts on both sides.
+// The function is executed in a separate thread so it doesn't block
+func (td *trxDispatcher) propagateTrxToAccounts(evt *eventTransaction, wg *sync.WaitGroup) {
+	// log what we do here
+	td.log.Debugf("analyzing accounts involved in trx %s", evt.trx.Hash.String())
+
+	// the sender is always present
+	wg.Add(1)
+	td.repo.QueueAccount(evt.block, evt.trx, &evt.trx.From, nil, wg)
+
+	// do we have a recipient?
+	if evt.trx.To != nil {
+		wg.Add(1)
+		td.repo.QueueAccount(evt.block, evt.trx, evt.trx.To, nil, wg)
+	}
+
+	// no contract creation? we are done
+	if evt.trx.ContractAddress == nil {
+		return
+	}
+
+	// queue the new contract to be processed as well
+	td.log.Debugf("contract %s found at trx %s", evt.trx.ContractAddress.String(), evt.trx.Hash.String())
+	wg.Add(1)
+	td.repo.QueueAccount(evt.block, evt.trx, evt.trx.ContractAddress, &evt.trx.Hash, wg)
+	return
 }

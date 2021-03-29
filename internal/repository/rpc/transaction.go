@@ -17,6 +17,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	retypes "github.com/ethereum/go-ethereum/core/types"
 )
 
 // Transaction returns information about a blockchain transaction by hash.
@@ -41,6 +42,7 @@ func (ftm *FtmBridge) Transaction(hash *types.Hash) (*types.Transaction, error) 
 			GasUsed           hexutil.Uint64  `json:"gasUsed"`
 			ContractAddress   *common.Address `json:"contractAddress"`
 			Status            hexutil.Uint64  `json:"status"`
+			Logs              []retypes.Log   `json:"logs"`
 		}
 
 		// call for the transaction receipt data
@@ -56,6 +58,7 @@ func (ftm *FtmBridge) Transaction(hash *types.Hash) (*types.Transaction, error) 
 		trx.GasUsed = &rec.GasUsed
 		trx.ContractAddress = rec.ContractAddress
 		trx.Status = &rec.Status
+		trx.Logs = rec.Logs
 	}
 
 	// keep track of the operation
