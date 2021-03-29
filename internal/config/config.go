@@ -43,9 +43,6 @@ type Config struct {
 	// DeFi configuration
 	DeFi DeFi `mapstructure:"defi"`
 
-	// Voting configuration
-	Voting Voting `mapstructure:"voting"`
-
 	// Governance configuration
 	Governance Governance `mapstructure:"governance"`
 
@@ -139,11 +136,6 @@ type DeFiUniswap struct {
 	Core           common.Address   `mapstructure:"core"`
 	Router         common.Address   `mapstructure:"router"`
 	PairsWhiteList []common.Address `mapstructure:"whitelist"`
-}
-
-// Voting represents the simple voting/ballots module configuration.
-type Voting struct {
-	Sources []string `mapstructure:"sources"`
 }
 
 // Governance represents the governance module configuration.
