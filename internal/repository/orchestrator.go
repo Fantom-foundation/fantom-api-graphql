@@ -16,13 +16,10 @@ import (
 	"time"
 )
 
-// trxDispatchQueueCapacity is the number of transactions kept in the dispatch buffer.
-const trxDispatchQueueCapacity = 20000
-
 // swapDispatchQueueCapacity is the number of Uniswap swap kept in the dispatch buffer.
 const swapDispatchQueueCapacity = 20000
 
-// orScannersCount is the number of scanner services running concurently.
+// orScannersCount is the number of scanner services running concurrently.
 const orScannersCount = 2
 
 // Orchestrator implements repository synchronization and monitoring control
@@ -30,10 +27,10 @@ type orchestrator struct {
 	service
 
 	// orchestrator managed channels
-	trxDispatcherQueue  chan *evtTransaction
+	trxDispatcherQueue  chan *eventTransaction
 	swapDispatcherQueue chan *types.Swap
 	accountQueue        chan *accountEvent
-	contractCallQueue   chan *types.Transaction
+	logsQueue           chan *eventTrxLog
 
 	// orchestration related events
 	blkScanDone   chan bool
@@ -48,8 +45,8 @@ type orchestrator struct {
 	// and process them into the database, and/or any other way needed
 	txd *trxDispatcher
 	acd *accountDispatcher
-	ccd *contractCallDispatcher
 	uwd *swapDispatcher
+	lod *logsDispatcher
 
 	// scanners synchronize content of the database with the current
 	// chain state to catch up after the API service restarted
@@ -74,10 +71,10 @@ func newOrchestrator(repo Repository, log logger.Logger, cfg *config.Repository)
 		service: newService("orchestrator", repo, log, &wg),
 
 		// make queues for dispatchers; scanners and monitors will use them to push new objects
-		trxDispatcherQueue:  make(chan *evtTransaction, trxDispatchQueueCapacity),
+		trxDispatcherQueue:  make(chan *eventTransaction, trxDispatchQueueCapacity),
 		swapDispatcherQueue: make(chan *types.Swap, swapDispatchQueueCapacity),
 		accountQueue:        make(chan *accountEvent, accountQueueLength),
-		contractCallQueue:   make(chan *types.Transaction, contractCallQueueLength),
+		logsQueue:           make(chan *eventTrxLog, logQueueLength),
 
 		// make sure to accept all the incoming signals
 		reScanSigStop: make(chan bool, 1),
@@ -93,8 +90,8 @@ func (or *orchestrator) init(cfg *config.Repository) {
 	// make all the dispatchers first so they can receive and process objects
 	or.txd = newTrxDispatcher(or.trxDispatcherQueue, or.repo, or.log, or.wg)
 	or.acd = newAccountDispatcher(or.accountQueue, or.repo, or.log, or.wg)
-	or.ccd = newContractCallDispatcher(or.contractCallQueue, or.repo, or.log, or.wg)
 	or.uwd = newSwapDispatcher(or.swapDispatcherQueue, or.repo, or.log, or.wg)
+	or.lod = newLogsDispatcher(or.logsQueue, or.repo, or.log, or.wg)
 
 	// create sync blockScanner; it starts scanning immediately
 	or.blkScanDone = make(chan bool, 1)
@@ -123,7 +120,7 @@ func (or *orchestrator) run() {
 	or.txd.run()
 	or.uwd.run()
 	or.acd.run()
-	or.ccd.run()
+	or.lod.run()
 
 	// now the scanners so we sync the off-chain database
 	or.bls.run()
@@ -145,7 +142,6 @@ func (or *orchestrator) run() {
 
 // close signals orchestrator to terminate all orchestrated services.
 func (or *orchestrator) close() {
-
 	// close all the services
 	or.closeServices()
 
@@ -190,7 +186,7 @@ func (or *orchestrator) closeServices() {
 	or.uwd.close()
 	or.txd.close()
 	or.acd.close()
-	or.ccd.close()
+	or.lod.close()
 }
 
 // setBlockChannel registers a channel for notifying new block events.
