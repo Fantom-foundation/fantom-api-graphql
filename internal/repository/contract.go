@@ -160,10 +160,7 @@ func (p *proxy) ValidateContract(sc *types.Contract) error {
 
 			// inform about success
 			p.log.Debugf("contract %s [%s] validated", sc.Address.String(), name)
-
-			// re-scan contract transactions so they are up-to-date with their calls analysis
 			p.cache.EvictContract(&sc.Address)
-			go p.transactionRescanContractCalls(sc)
 
 			// inform the upper instance we have a winner
 			return nil
@@ -189,10 +186,7 @@ func (p *proxy) StoreContract(con *types.Contract) error {
 	if isUpdate {
 		// log what we have done here
 		p.log.Debugf("updated known contract at %s", con.Address.String())
-
-		// initiate re-scan
 		p.cache.EvictContract(&con.Address)
-		go p.transactionRescanContractCalls(con)
 	}
 	return nil
 }

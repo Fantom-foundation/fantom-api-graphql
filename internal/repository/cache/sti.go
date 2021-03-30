@@ -35,7 +35,7 @@ func (b *MemBridge) PullStakerInfo(id hexutil.Uint64) *types.StakerInfo {
 }
 
 // PushStakerInfo stores provided staker information in the in-memory cache.
-func (b *MemBridge) PushStakerInfo(id hexutil.Uint64, sti types.StakerInfo) error {
+func (b *MemBridge) PushStakerInfo(id hexutil.Uint64, sti *types.StakerInfo) error {
 	// encode account
 	data, err := sti.Marshal()
 	if err != nil {

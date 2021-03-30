@@ -9,7 +9,9 @@ results. BigCache for in-memory object storage to speed up loading of frequently
 package repository
 
 import (
+	"bytes"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
@@ -38,32 +40,6 @@ func (p *proxy) Epoch(id *hexutil.Uint64) (*types.Epoch, error) {
 	}
 
 	return p.rpc.Epoch(*id)
-}
-
-// TotalStaked calculates current total staked amount for all stakers.
-func (p *proxy) TotalStaked() (*hexutil.Big, error) {
-	// try cache first
-	value := p.cache.PullTotalStaked()
-	if value != nil {
-		p.log.Debugf("total staked amount loaded from memory cache")
-		return value, nil
-	}
-
-	// get the actual live value
-	total, err := p.rpc.TotalStaked()
-	if err != nil {
-		p.log.Errorf("can not get the total staked amount; %s", err.Error())
-		return nil, err
-	}
-
-	// store in cache
-	if err := p.cache.PushTotalStaked((*hexutil.Big)(total)); err != nil {
-		// log issue
-		p.log.Errorf("can not store total staked amount in memory; %s", err.Error())
-	}
-
-	// return the value
-	return (*hexutil.Big)(total), nil
 }
 
 // CurrentSealedEpoch returns the data of the latest sealed epoch.
@@ -109,6 +85,32 @@ func (p *proxy) CurrentSealedEpoch() (*types.Epoch, error) {
 	return ep, nil
 }
 
+// TotalStaked calculates current total staked amount for all stakers.
+func (p *proxy) TotalStaked() (*hexutil.Big, error) {
+	// try cache first
+	value := p.cache.PullTotalStaked()
+	if value != nil {
+		p.log.Debugf("total staked amount loaded from memory cache")
+		return value, nil
+	}
+
+	// get the actual live value
+	total, err := p.rpc.TotalStaked()
+	if err != nil {
+		p.log.Errorf("can not get the total staked amount; %s", err.Error())
+		return nil, err
+	}
+
+	// store in cache
+	if err := p.cache.PushTotalStaked((*hexutil.Big)(total)); err != nil {
+		// log issue
+		p.log.Errorf("can not store total staked amount in memory; %s", err.Error())
+	}
+
+	// return the value
+	return (*hexutil.Big)(total), nil
+}
+
 // RewardsAllowed returns the reward lock status from SFC.
 func (p *proxy) RewardsAllowed() (bool, error) {
 	return p.rpc.RewardsAllowed()
@@ -117,4 +119,9 @@ func (p *proxy) RewardsAllowed() (bool, error) {
 // LockingAllowed indicates if the stake locking has been enabled in SFC.
 func (p *proxy) LockingAllowed() (bool, error) {
 	return p.rpc.LockingAllowed()
+}
+
+// IsSfcContract returns true if the given address points to the SFC contract.
+func (p *proxy) IsSfcContract(addr *common.Address) bool {
+	return bytes.Equal(addr.Bytes(), p.cfg.Staking.SFCContract.Bytes())
 }

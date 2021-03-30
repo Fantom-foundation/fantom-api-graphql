@@ -87,14 +87,14 @@ func (sti *stiMonitor) next() {
 	// make sure we have the right ceiling
 	if sti.currentStaker == 0 {
 		// try to get the last staker id
-		ls, err := sti.repo.LastStakerId()
+		ls, err := sti.repo.LastValidatorId()
 		if err != nil {
 			sti.log.Errorf("could not get the last staker id; %s", err.Error())
 			return
 		}
 
 		// remember the ceiling for this loop
-		sti.topStaker = uint64(ls)
+		sti.topStaker = ls
 		sti.currentStaker++
 	}
 
@@ -105,7 +105,7 @@ func (sti *stiMonitor) next() {
 	info, err := sti.repo.PullStakerInfo(hexutil.Uint64(sti.currentStaker))
 	if err == nil && info != nil {
 		// got info? store it in cache
-		err = sti.repo.StoreStakerInfo(hexutil.Uint64(sti.currentStaker), *info)
+		err = sti.repo.StoreStakerInfo(hexutil.Uint64(sti.currentStaker), info)
 	}
 
 	// anything failed?
@@ -130,7 +130,7 @@ func (p *proxy) PullStakerInfo(id hexutil.Uint64) (*types.StakerInfo, error) {
 }
 
 // StoreStakerInfo stores staker information to in-memory cache for future use.
-func (p *proxy) StoreStakerInfo(id hexutil.Uint64, sti types.StakerInfo) error {
+func (p *proxy) StoreStakerInfo(id hexutil.Uint64, sti *types.StakerInfo) error {
 	// push to in-memory cache
 	err := p.cache.PushStakerInfo(id, sti)
 	if err != nil {

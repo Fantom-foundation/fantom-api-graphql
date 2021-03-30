@@ -8,6 +8,11 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
+// DefiConfiguration resolves the current DeFi contract settings.
+func (p *proxy) DefiConfiguration() (*types.DefiSettings, error) {
+	return p.rpc.DefiConfiguration()
+}
+
 // DefiToken loads details of a single DeFi token by it's address.
 func (p *proxy) DefiToken(token *common.Address) (*types.DefiToken, error) {
 	return p.rpc.DefiToken(token)
@@ -16,11 +21,6 @@ func (p *proxy) DefiToken(token *common.Address) (*types.DefiToken, error) {
 // DefiTokens resolves list of DeFi tokens available for the DeFi functions.
 func (p *proxy) DefiTokens() ([]types.DefiToken, error) {
 	return p.rpc.DefiTokens()
-}
-
-// DefiConfiguration resolves the current DeFi contract settings.
-func (p *proxy) DefiConfiguration() (*types.DefiSettings, error) {
-	return p.rpc.DefiConfiguration()
 }
 
 // DefiTokenPrice loads the current price of the given token

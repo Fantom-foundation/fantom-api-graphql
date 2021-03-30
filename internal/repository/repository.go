@@ -9,7 +9,6 @@ results. BigCache for in-memory object storage to speed up loading of frequently
 package repository
 
 import (
-	"bytes"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository/cache"
@@ -17,8 +16,9 @@ import (
 	"fantom-api-graphql/internal/repository/rpc"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
+	retypes "github.com/ethereum/go-ethereum/core/types"
 	"golang.org/x/sync/singleflight"
-	"math/big"
+	"sync"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/compiler"
@@ -65,16 +65,14 @@ type Repository interface {
 	// AccountIsKnown checks if the account of the given address is known to the API server.
 	AccountIsKnown(*common.Address) bool
 
-	// AccountAdd adds specified account detail into the repository.
-	AccountAdd(*types.Account) error
+	// StoreAccount adds specified account detail into the repository.
+	StoreAccount(*types.Account) error
 
 	// AccountMarkActivity marks the latest account activity in the repository.
 	AccountMarkActivity(*types.Account, uint64) error
 
-	// Block returns a block at Opera blockchain represented by a number.
-	// Top block is returned if the number is not provided.
-	// If the block is not found, ErrBlockNotFound error is returned.
-	BlockByNumber(*hexutil.Uint64) (*types.Block, error)
+	// QueueAccount puts the given account into the account processing queue.
+	QueueAccount(*types.Block, *types.Transaction, *common.Address, *types.Hash, *sync.WaitGroup)
 
 	// BlockHeight returns the current height of the Opera blockchain in blocks.
 	BlockHeight() (*hexutil.Big, error)
@@ -82,71 +80,102 @@ type Repository interface {
 	// LastKnownBlock returns number of the last block known to the repository.
 	LastKnownBlock() (uint64, error)
 
-	// IsSfcContract returns true if the given address points to the SFC contract.
-	IsSfcContract(*common.Address) bool
-
-	// IsStiContract returns true if the given address points to the STI contract.
-	IsStiContract(*common.Address) bool
-
-	// CurrentEpoch returns the id of the current epoch.
-	CurrentEpoch() (hexutil.Uint64, error)
-
-	// CurrentSealedEpoch returns the data of the latest sealed epoch.
-	CurrentSealedEpoch() (*types.Epoch, error)
-
-	// Epoch returns the id of the current epoch.
-	Epoch(*hexutil.Uint64) (types.Epoch, error)
+	// Block returns a block at Opera blockchain represented by a number.
+	// Top block is returned if the number is not provided.
+	// If the block is not found, ErrBlockNotFound error is returned.
+	BlockByNumber(*hexutil.Uint64) (*types.Block, error)
 
 	// Block returns a block at Opera blockchain represented by a hash.
 	// Top block is returned if the hash is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
 	BlockByHash(*types.Hash) (*types.Block, error)
 
-	// AddTransaction adds a new incoming transaction from blockchain to the repository.
-	TransactionAdd(*types.Block, *types.Transaction) error
-
-	// TransactionUpdate modifies a transaction record in the repository.
-	TransactionUpdate(*types.Transaction) error
-
-	// Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
-	Transaction(*types.Hash) (*types.Transaction, error)
-
-	// TransactionsCount returns total number of transactions in the block chain.
-	TransactionsCount() (hexutil.Uint64, error)
-
-	// Transactions returns list of transaction hashes at Opera blockchain.
-	Transactions(*string, int32) (*types.TransactionHashList, error)
-
 	// Collection pulls list of blocks starting on the specified block number
 	// and going up, or down based on count number.
 	Blocks(*uint64, int32) (*types.BlockList, error)
 
-	// LastStakerId returns the last staker id in Opera blockchain.
-	LastStakerId() (hexutil.Uint64, error)
+	// Contract extract a smart contract information by address if available.
+	Contract(*common.Address) (*types.Contract, error)
 
-	// StakersNum returns the number of stakers in Opera blockchain.
-	StakersNum() (hexutil.Uint64, error)
+	// Contracts returns list of smart contracts at Opera blockchain.
+	Contracts(bool, *string, int32) (*types.ContractList, error)
 
-	// IsStaker returns if the given address is an SFC staker.
-	IsStaker(*common.Address) (bool, error)
+	// ValidateContract tries to validate contract byte code using
+	// provided source code. If successful, the contract information
+	// is updated the the repository.
+	ValidateContract(*types.Contract) error
 
-	// Staker extract a staker information from SFC smart contract.
-	Staker(hexutil.Uint64) (*types.Staker, error)
+	// ContractAdd adds new contract into the repository.
+	StoreContract(*types.Contract) error
 
-	// StakerAddress extract a staker address for the given staker ID.
-	StakerAddress(hexutil.Uint64) (common.Address, error)
+	// SfcVersion returns current version of the SFC contract.
+	SfcVersion() (hexutil.Uint64, error)
 
-	// Staker extract a staker information by address.
-	StakerByAddress(common.Address) (*types.Staker, error)
+	// CurrentEpoch returns the id of the current epoch.
+	CurrentEpoch() (hexutil.Uint64, error)
+
+	// Epoch returns the id of the current epoch.
+	Epoch(*hexutil.Uint64) (*types.Epoch, error)
+
+	// CurrentSealedEpoch returns the data of the latest sealed epoch.
+	CurrentSealedEpoch() (*types.Epoch, error)
 
 	// TotalStaked calculates current total staked amount for all stakers.
 	TotalStaked() (*hexutil.Big, error)
+
+	// RewardsAllowed returns the reward lock status from SFC.
+	RewardsAllowed() (bool, error)
+
+	// LockingAllowed indicates if the stake locking has been enabled in SFC.
+	LockingAllowed() (bool, error)
+
+	// IsSfcContract returns true if the given address points to the SFC contract.
+	IsSfcContract(*common.Address) bool
+
+	// IsStiContract returns true if the given address points to the STI contract.
+	IsStiContract(*common.Address) bool
+
+	// StoreTransaction adds a new incoming transaction from blockchain to the repository.
+	StoreTransaction(*types.Block, *types.Transaction) error
+
+	// Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
+	Transaction(*types.Hash) (*types.Transaction, error)
+
+	// Transactions returns list of transaction hashes at Opera blockchain.
+	Transactions(*string, int32) (*types.TransactionHashList, error)
+
+	// TransactionsCount returns total number of transactions in the block chain.
+	TransactionsCount() (hexutil.Uint64, error)
+
+	// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
+	SendTransaction(hexutil.Bytes) (*types.Transaction, error)
+
+	// QueueTrxLog pushes a transaction log record into the log processing queue.
+	QueueTrxLog(log *retypes.Log, wg *sync.WaitGroup)
+
+	// LastValidatorId returns the last validator id in Opera blockchain.
+	LastValidatorId() (uint64, error)
+
+	// ValidatorsCount returns the number of stakers in Opera blockchain.
+	ValidatorsCount() (uint64, error)
+
+	// IsStaker returns if the given address is an SFC staker.
+	IsValidator(*common.Address) (bool, error)
+
+	// ValidatorAddress extract a staker address for the given staker ID.
+	ValidatorAddress(hexutil.Uint64) (*common.Address, error)
+
+	// Validator extract a staker information from SFC smart contract.
+	Validator(hexutil.Uint64) (*types.Validator, error)
+
+	// Staker extract a staker information by address.
+	ValidatorByAddress(*common.Address) (*types.Validator, error)
 
 	// StakerInfo extracts an extended staker information from smart contact.
 	PullStakerInfo(hexutil.Uint64) (*types.StakerInfo, error)
 
 	// StoreStakerInfo stores staker information to in-memory cache for future use.
-	StoreStakerInfo(hexutil.Uint64, types.StakerInfo) error
+	StoreStakerInfo(hexutil.Uint64, *types.StakerInfo) error
 
 	// RetrieveStakerInfo gets staker information from in-memory if available.
 	RetrieveStakerInfo(hexutil.Uint64) *types.StakerInfo
@@ -154,62 +183,43 @@ type Repository interface {
 	// IsDelegating returns if the given address is an SFC delegator.
 	IsDelegating(*common.Address) (bool, error)
 
-	// Delegation returns a detail of delegation for the given address.
-	Delegation(common.Address, hexutil.Uint64) (*types.Delegation, error)
+	// StoreDelegation stores a delegation in the persistent repository.
+	StoreDelegation(*types.Delegation) error
 
-	// DelegationsByAddress returns a list of all delegations
-	// of a given delegator address.
-	DelegationsByAddress(common.Address) ([]types.Delegation, error)
+	// Delegation returns a detail of delegation for the given address and validator ID.
+	Delegation(*common.Address, *hexutil.Big) (*types.Delegation, error)
 
-	// DelegationsOf extracts a list of delegations for a given staker.
-	DelegationsOf(hexutil.Uint64) ([]types.Delegation, error)
+	// DelegationsByAddress returns a list of all delegations of a given delegator address.
+	DelegationsByAddress(*common.Address, *string, int32) (*types.DelegationList, error)
+
+	// DelegationsOfValidator extracts a list of delegations for a validator by its ID.
+	DelegationsOfValidator(*hexutil.Big, *string, int32) (*types.DelegationList, error)
 
 	// DelegationLock returns delegation lock information using SFC contract binding.
 	DelegationLock(*types.Delegation) (*types.DelegationLock, error)
 
 	// Delegation returns a detail of delegation for the given address.
-	DelegationRewards(string, hexutil.Uint64) (types.PendingRewards, error)
+	PendingRewards(*common.Address, *hexutil.Big) (*types.PendingRewards, error)
 
 	// DelegationOutstandingSFTM returns the amount of sFTM tokens for the delegation
 	// identified by the delegator address and the staker id.
-	DelegationOutstandingSFTM(*common.Address, *hexutil.Uint64) (hexutil.Big, error)
+	DelegationOutstandingSFTM(*common.Address, *hexutil.Big) (*hexutil.Big, error)
 
 	// DelegationTokenizerUnlocked returns the status of SFC Tokenizer lock
 	// for a delegation identified by the address and staker id.
-	DelegationTokenizerUnlocked(*common.Address, *hexutil.Uint64) (bool, error)
-
-	// WithdrawRequests extracts a list of partial withdraw requests
-	// for the given address.
-	WithdrawRequests(*common.Address, *hexutil.Uint64) ([]*types.WithdrawRequest, error)
-
-	// DeactivatedDelegation extracts a list of deactivated delegation requests
-	// for the given address.
-	DeactivatedDelegation(*common.Address, *hexutil.Uint64) ([]*types.DeactivatedDelegation, error)
-
-	// SfcVersion returns current version of the SFC contract.
-	SfcVersion() (hexutil.Uint64, error)
-
-	// LockingAllowed indicates if the stake locking has been enabled in SFC.
-	LockingAllowed() (bool, error)
-
-	// RewardsAllowed returns the reward lock status from SFC.
-	RewardsAllowed() (bool, error)
-
-	// RewardsStash returns the amount of WEI stashed for the given address.
-	RewardsStash(*common.Address) (*big.Int, error)
-
-	// delegatedAmount calculates total amount currently delegated
-	// and amount locked in pending un-delegation.
-	// Partial Un-delegations are subtracted during the preparation
-	// phase, but total un-delegations are subtracted only when
-	// the delegation is closed.
-	DelegatedAmountExtended(*types.Delegation) (*big.Int, *big.Int, error)
+	DelegationTokenizerUnlocked(*common.Address, *hexutil.Big) (bool, error)
 
 	// DelegationFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
-	DelegationFluidStakingActive(*types.Delegation) (bool, error)
+	DelegationFluidStakingActive(dl *types.Delegation) (bool, error)
 
-	// DelegationPaidUntilEpoch resolves the id of the last epoch rewards has been paid to."
-	DelegationPaidUntilEpoch(*types.Delegation) (hexutil.Uint64, error)
+	// StoreWithdrawRequest stores the given withdraw request in persistent storage.
+	StoreWithdrawRequest(*types.WithdrawRequest) error
+
+	// WithdrawRequest extracts details of a withdraw request specified by the delegator, validator and request ID.
+	WithdrawRequest(*common.Address, *hexutil.Big, *hexutil.Big) (*types.WithdrawRequest, error)
+
+	// WithdrawRequests extracts a list of withdraw requests for the given address and validator.
+	WithdrawRequests(*common.Address, *hexutil.Big, *string, int32) (*types.WithdrawRequestList, error)
 
 	// Price returns a price information for the given target symbol.
 	Price(sym string) (types.Price, error)
@@ -226,51 +236,11 @@ type Repository interface {
 		Data  *string
 	}) *hexutil.Uint64
 
-	// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
-	SendTransaction(hexutil.Bytes) (*types.Transaction, error)
-
 	// SetBlockChannel registers a channel for notifying new block events.
 	SetBlockChannel(chan *types.Block)
 
 	// SetTrxChannel registers a channel for notifying new transaction events.
 	SetTrxChannel(chan *types.Transaction)
-
-	// Contract extract a smart contract information by address if available.
-	Contract(*common.Address) (*types.Contract, error)
-
-	// ContractAdd adds new contract into the repository.
-	ContractAdd(*types.Contract) error
-
-	// Contracts returns list of smart contracts at Opera blockchain.
-	Contracts(bool, *string, int32) (*types.ContractList, error)
-
-	// ValidateContract tries to validate contract byte code using
-	// provided source code. If successful, the contract information
-	// is updated the the repository.
-	ValidateContract(*types.Contract) error
-
-	// Ballots returns list of ballots at Opera blockchain.
-	Ballots(*string, int32) (*types.BallotList, error)
-
-	// BallotsClosed returns a list of <count> recently closed Ballots.
-	// If the finalized is set to false, the list contains Ballots waiting
-	// to be resolved.
-	BallotsClosed(bool, uint32) ([]types.Ballot, error)
-
-	// BallotsActive returns a list of at most <count> currently active Ballots.
-	BallotsActive(uint32) ([]types.Ballot, error)
-
-	// BallotByAddress returns a ballot information by the contract address.
-	BallotByAddress(*common.Address) (*types.Ballot, error)
-
-	// BallotIsFinalized returns the finalized status of a ballot.
-	BallotIsFinalized(*common.Address) (bool, error)
-
-	// BallotWinner returns the winning proposal index, or nil if not decided.
-	BallotWinner(*common.Address) (*uint64, error)
-
-	// Votes returns a list of votes for the given votes and list of ballots.
-	Votes(common.Address, []common.Address) ([]types.Vote, error)
 
 	// DefiConfiguration loads the current DeFi contract settings.
 	DefiConfiguration() (*types.DefiSettings, error)
@@ -489,9 +459,6 @@ type proxy struct {
 	// smart contract compilers
 	solCompiler string
 
-	// official ballot source addresses
-	ballotSources []string
-
 	// service orchestrator reference
 	orc *orchestrator
 }
@@ -517,9 +484,6 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 
 		// keep reference to the SOL compiler
 		solCompiler: cfg.Compiler.DefaultSolCompilerPath,
-
-		// keep the ballot sources ref
-		ballotSources: cfg.Voting.Sources,
 	}
 
 	// make the service orchestrator and start it's job
@@ -609,9 +573,4 @@ func (p *proxy) SetBlockChannel(ch chan *types.Block) {
 // SetTrxChannel registers a channel for notifying new transactions events.
 func (p *proxy) SetTrxChannel(ch chan *types.Transaction) {
 	p.orc.setTrxChannel(ch)
-}
-
-// IsSfcContract returns true if the given address points to the SFC contract.
-func (p *proxy) IsSfcContract(addr *common.Address) bool {
-	return bytes.Equal(addr.Bytes(), p.cfg.Staking.SFCContract.Bytes())
 }

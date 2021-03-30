@@ -27,18 +27,6 @@ func (p *proxy) IsDelegating(addr *common.Address) (bool, error) {
 	return 0 < count, nil
 }
 
-// DelegationsOfValidator extract a list of delegations for a given validator.
-func (p *proxy) DelegationsOfValidator(valID *hexutil.Big, cursor *string, count int32) (*types.DelegationList, error) {
-	p.log.Debugf("loading delegations of #%d", valID.ToInt().Uint64())
-	return p.db.Delegations(cursor, count, &bson.D{{"to", valID.String()}})
-}
-
-// DelegationsByAddress returns a list of all delegations of a given delegator address.
-func (p *proxy) DelegationsByAddress(addr *common.Address, cursor *string, count int32) (*types.DelegationList, error) {
-	p.log.Debugf("loading delegations of %s", addr.String())
-	return p.db.Delegations(cursor, count, &bson.D{{"addr", addr.String()}})
-}
-
 // StoreDelegation stores the delegation in persistent database.
 func (p *proxy) StoreDelegation(dl *types.Delegation) error {
 	return p.db.AddDelegation(dl)
@@ -48,6 +36,18 @@ func (p *proxy) StoreDelegation(dl *types.Delegation) error {
 func (p *proxy) Delegation(addr *common.Address, valID *hexutil.Big) (*types.Delegation, error) {
 	p.log.Debugf("loading delegation of %s to #%d", addr.String(), valID.ToInt().Uint64())
 	return p.db.Delegation(addr, valID)
+}
+
+// DelegationsByAddress returns a list of all delegations of a given delegator address.
+func (p *proxy) DelegationsByAddress(addr *common.Address, cursor *string, count int32) (*types.DelegationList, error) {
+	p.log.Debugf("loading delegations of %s", addr.String())
+	return p.db.Delegations(cursor, count, &bson.D{{"addr", addr.String()}})
+}
+
+// DelegationsOfValidator extract a list of delegations for a given validator.
+func (p *proxy) DelegationsOfValidator(valID *hexutil.Big, cursor *string, count int32) (*types.DelegationList, error) {
+	p.log.Debugf("loading delegations of #%d", valID.ToInt().Uint64())
+	return p.db.Delegations(cursor, count, &bson.D{{"to", valID.String()}})
 }
 
 // DelegationLock returns delegation lock information using SFC contract binding.

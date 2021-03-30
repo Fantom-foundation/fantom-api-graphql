@@ -17,13 +17,12 @@ import (
 )
 
 // Account returns account at Opera blockchain for an address, nil if not found.
-func (p *proxy) Account(addr *common.Address) (*types.Account, error) {
+func (p *proxy) Account(addr *common.Address) (acc *types.Account, err error) {
 	// try to get the account from cache
-	acc := p.cache.PullAccount(addr)
+	acc = p.cache.PullAccount(addr)
 
 	// we still don't know the account? try to manually construct it if possible
 	if acc == nil {
-		var err error
 		acc, err = p.getAccount(addr)
 		if err != nil {
 			return nil, err
@@ -34,16 +33,10 @@ func (p *proxy) Account(addr *common.Address) (*types.Account, error) {
 	return acc, nil
 }
 
-// AccountMarkActivity marks the latest account activity in the repository.
-func (p *proxy) AccountMarkActivity(acc *types.Account, ts uint64) error {
-	return p.db.AccountMarkActivity(acc, ts)
-}
-
 // getAccount builds the account representation after validating it against Lachesis node.
 func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 	// any address given?
 	if addr == nil {
-		// log an unknown address
 		p.log.Error("no address given")
 		return nil, fmt.Errorf("no address given")
 	}
@@ -138,6 +131,11 @@ func (p *proxy) StoreAccount(acc *types.Account) error {
 		p.cache.PushAccountKnown(&acc.Address)
 	}
 	return err
+}
+
+// AccountMarkActivity marks the latest account activity in the repository.
+func (p *proxy) AccountMarkActivity(acc *types.Account, ts uint64) error {
+	return p.db.AccountMarkActivity(acc, ts)
 }
 
 // QueueAccount queues the given account for processing.

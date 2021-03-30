@@ -106,11 +106,10 @@ func (acd *accountDispatcher) processAccount(acc *types.Account, block *types.Bl
 		return acd.repo.AccountMarkActivity(acc, uint64(block.TimeStamp))
 	}
 
-	// is this a simple account?
+	// is this a simple wallet/account?
 	if acc.ContractTx == nil {
 		return acd.processSimple(acc, block, trx)
 	}
-
 	return acd.processContract(acc, block, trx)
 }
 
