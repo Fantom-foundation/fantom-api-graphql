@@ -2,11 +2,8 @@ package repository
 
 import (
 	"fantom-api-graphql/internal/logger"
-	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	retypes "github.com/ethereum/go-ethereum/core/types"
-	"math/big"
 	"sync"
 )
 
@@ -28,8 +25,20 @@ type logsDispatcher struct {
 
 // trxLogKnownTopics represents a map of known transaction log topics to their handlers.
 var trxLogKnownTopics = map[common.Hash]func(*retypes.Log, *logsDispatcher){
-	/* SFC1::CreatedDelegation(#address, #toStakerID, amount) */
+	/* SFC1::CreatedDelegation(address indexed delegator, uint256 indexed toStakerID, uint256 amount) */
 	common.HexToHash("0xfd8c857fb9acd6f4ad59b8621a2a77825168b7b4b76de9586d08e00d4ed462be"): handleSfcCreatedDelegation,
+
+	/* SFC1::CreatedStake(uint256 indexed stakerID, address indexed dagSfcAddress, uint256 amount) */
+	common.HexToHash("0x0697dfe5062b9db8108e4b31254f47a912ae6bbb78837667b2e923a6f5160d39"): handleSfcCreatedStake,
+
+	/* SFC3::Delegated(address indexed delegator, uint256 indexed toValidatorID, uint256 amount) */
+	common.HexToHash("0x9a8f44850296624dadfd9c246d17e47171d35727a181bd090aa14bbbe00238bb"): handleSfcCreatedDelegation,
+
+	/* SFC3::Undelegated(address indexed delegator, uint256 indexed toValidatorID, uint256 indexed wrID, uint256 amount) */
+	common.HexToHash("0xd3bb4e423fbea695d16b982f9f682dc5f35152e5411646a8a5a79a6b02ba8d57"): handleSfcUndelegated,
+
+	/* SFC3::Withdrawn(address indexed delegator, uint256 indexed toValidatorID, uint256 indexed wrID, uint256 amount) */
+	common.HexToHash("0x75e161b3e824b114fc1a33274bd7091918dd4e639cede50b78b15a4eea956a21"): handleSfcWithdrawn,
 }
 
 // newLogsDispatcher creates a new transaction logs dispatcher instance.
@@ -77,35 +86,5 @@ func (ld *logsDispatcher) dispatch() {
 		case <-ld.sigStop:
 			return
 		}
-	}
-}
-
-// handleSfcCreatedDelegation handles a new delegation event from SFC v1 and SFC v2 contract.
-// event CreatedDelegation(address indexed delegator, uint256 indexed toStakerID, uint256 amount)
-func handleSfcCreatedDelegation(log *retypes.Log, ld *logsDispatcher) {
-	// get the block
-	bn := hexutil.Uint64(log.BlockNumber)
-	block, err := ld.repo.BlockByNumber(&bn)
-	if err != nil {
-		ld.log.Errorf("can not decode CreateDelegation log record; %s", err.Error())
-		return
-	}
-
-	// decode staker ID (3rd topic) and amount (non-indexed => data)
-	stakerID := new(big.Int).SetBytes(log.Topics[2].Bytes())
-	amount := new(big.Int).SetBytes(log.Data)
-
-	// make the delegation record
-	dl := types.Delegation{
-		Transaction:     log.TxHash,
-		Address:         common.BytesToAddress(log.Topics[1].Bytes()),
-		ToStakerId:      (*hexutil.Big)(stakerID),
-		AmountDelegated: (*hexutil.Big)(amount),
-		CreatedTime:     block.TimeStamp,
-	}
-
-	// store the delegation
-	if err := ld.repo.StoreDelegation(&dl); err != nil {
-		ld.log.Errorf("failed to store delegation; %s", err.Error())
 	}
 }

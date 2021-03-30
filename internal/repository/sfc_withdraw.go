@@ -15,6 +15,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+// StoreWithdrawRequest stores the given withdraw request in persistent storage.
+func (p *proxy) StoreWithdrawRequest(wr *types.WithdrawRequest) error {
+	return p.db.AddWithdrawal(wr)
+}
+
+// WithdrawRequest extracts details of a withdraw request specified by the delegator, validator and request ID.
+func (p *proxy) WithdrawRequest(addr *common.Address, valID *hexutil.Big, reqID *hexutil.Big) (*types.WithdrawRequest, error) {
+	return p.db.Withdrawal(addr, valID, reqID)
+}
+
 // WithdrawRequests extracts a list of partial withdraw requests for the given address.
 func (p *proxy) WithdrawRequests(addr *common.Address, stakerID *hexutil.Big, cursor *string, count int32) (*types.WithdrawRequestList, error) {
 	// get all the requests for the given delegator address

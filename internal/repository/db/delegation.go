@@ -17,7 +17,7 @@ const (
 	fiDelegationPk          = "_id"
 	fiDelegationAddress     = "addr"
 	fiDelegationToValidator = "to"
-	fiDelegationCreated     = "createdTime"
+	fiDelegationCreated     = "cr_time"
 )
 
 // initDelegationCollection initializes the delegation collection with
@@ -88,8 +88,8 @@ func (db *MongoDbBridge) AddDelegation(dl *types.Delegation) error {
 	}
 
 	// make sure delegation collection is initialized
-	if db.initDelegation != nil {
-		db.initDelegation.Do(func() { db.initDelegationCollection(col); db.initDelegation = nil })
+	if db.initDelegations != nil {
+		db.initDelegations.Do(func() { db.initDelegationCollection(col); db.initDelegations = nil })
 	}
 	return nil
 }
@@ -112,7 +112,7 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 
 	// do we actually have the document
 	if 0 == er.MatchedCount {
-		return fmt.Errorf("can not update, the delegation does not exist in database")
+		return fmt.Errorf("can not update, the delegation not found in database")
 	}
 	return nil
 }
@@ -142,7 +142,7 @@ func (db *MongoDbBridge) isDelegationKnown(col *mongo.Collection, dl *types.Dele
 	return true
 }
 
-// DelegationsCount calculates total number of delegations in the database.
+// DelegationsCountFiltered calculates total number of delegations in the database for the given filter.
 func (db *MongoDbBridge) DelegationsCountFiltered(filter *bson.D) (uint64, error) {
 	// make sure some filter is used
 	if nil == filter {
@@ -203,7 +203,7 @@ func (db *MongoDbBridge) dlgListInit(col *mongo.Collection, cursor *string, coun
 	return &list, nil
 }
 
-// trxListWithRangeMarks returns the transaction list with proper First/Last marks of the transaction range.
+// trxListWithRangeMarks returns a list of delegations with proper First/Last marks.
 func (db *MongoDbBridge) dlgListCollectRangeMarks(col *mongo.Collection, list *types.DelegationList, cursor *string, count int32) (*types.DelegationList, error) {
 	var err error
 
@@ -357,7 +357,7 @@ func (db *MongoDbBridge) dlgListLoad(col *mongo.Collection, cursor *string, coun
 	return nil
 }
 
-// Delegations pulls list of transaction hashes starting on the specified cursor.
+// Delegations pulls list of delegations starting at the specified cursor.
 func (db *MongoDbBridge) Delegations(cursor *string, count int32, filter *bson.D) (*types.DelegationList, error) {
 	// nothing to load?
 	if count == 0 {

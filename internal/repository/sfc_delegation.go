@@ -12,7 +12,9 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	retypes "github.com/ethereum/go-ethereum/core/types"
 	"go.mongodb.org/mongo-driver/bson"
+	"math/big"
 )
 
 // IsDelegating returns if the given address is an SFC delegator.
@@ -79,4 +81,118 @@ func (p *proxy) DelegationTokenizerUnlocked(addr *common.Address, toStaker *hexu
 // DelegationFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
 func (p *proxy) DelegationFluidStakingActive(dl *types.Delegation) (bool, error) {
 	return p.rpc.DelegationFluidStakingActive(dl)
+}
+
+// handleDelegationLog handles a new delegation event from logs.
+func handleDelegationLog(blk hexutil.Uint64, trx *common.Hash, stakerID *big.Int, addr common.Address, amo *big.Int, ld *logsDispatcher) {
+	// get the block
+	block, err := ld.repo.BlockByNumber(&blk)
+	if err != nil {
+		ld.log.Errorf("can not decode delegation log record; %s", err.Error())
+		return
+	}
+
+	// make the delegation record
+	dl := types.Delegation{
+		Transaction:     *trx,
+		Address:         addr,
+		ToStakerId:      (*hexutil.Big)(stakerID),
+		AmountDelegated: (*hexutil.Big)(amo),
+		CreatedTime:     block.TimeStamp,
+	}
+
+	// store the delegation
+	if err := ld.repo.StoreDelegation(&dl); err != nil {
+		ld.log.Errorf("failed to store delegation; %s", err.Error())
+	}
+}
+
+// handleSfcCreatedDelegation handles a new delegation event from SFC v1 and SFC v2 contract
+// and also the new delegation event from SFC3 contract with the same structure.
+// (SFCv1, SFCv2) event CreatedDelegation(address indexed delegator, uint256 indexed toStakerID, uint256 amount)
+// (SFCv3) event Delegated(address indexed delegator, uint256 indexed toValidatorID, uint256 amount)
+func handleSfcCreatedDelegation(log *retypes.Log, ld *logsDispatcher) {
+	handleDelegationLog(
+		hexutil.Uint64(log.BlockNumber),
+		&log.TxHash,
+		new(big.Int).SetBytes(log.Topics[2].Bytes()),
+		common.BytesToAddress(log.Topics[1].Bytes()),
+		new(big.Int).SetBytes(log.Data),
+		ld,
+	)
+}
+
+// handleSfcCreatedStake handles a new stake event from SFC v1 and SFC v2 contract.
+// event CreatedStake(uint256 indexed stakerID, address indexed dagSfcAddress, uint256 amount);
+func handleSfcCreatedStake(log *retypes.Log, ld *logsDispatcher) {
+	handleDelegationLog(
+		hexutil.Uint64(log.BlockNumber),
+		&log.TxHash,
+		new(big.Int).SetBytes(log.Topics[1].Bytes()),
+		common.BytesToAddress(log.Topics[2].Bytes()),
+		new(big.Int).SetBytes(log.Data),
+		ld,
+	)
+}
+
+// handleSfcUndelegated handles new withdrawal request from SFCv3 contract.
+// We ignore withdrawals from previous SFC versions since after the upgrade all the pending
+// withdrawals will be settled.
+// event Undelegated(address indexed delegator, uint256 indexed toValidatorID, uint256 indexed wrID, uint256 amount)
+func handleSfcUndelegated(log *retypes.Log, ld *logsDispatcher) {
+	// get the block
+	blk := hexutil.Uint64(log.BlockNumber)
+	block, err := ld.repo.BlockByNumber(&blk)
+	if err != nil {
+		ld.log.Errorf("can not decode un-delegation log record; %s", err.Error())
+		return
+	}
+
+	// make the request
+	wr := types.WithdrawRequest{
+		RequestTrx:        log.TxHash,
+		WithdrawRequestID: (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[3].Bytes())),
+		Address:           common.BytesToAddress(log.Topics[1].Bytes()),
+		StakerID:          (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[2].Bytes())),
+		CreatedTime:       block.TimeStamp,
+		Amount:            (*hexutil.Big)(new(big.Int).SetBytes(log.Data)),
+	}
+
+	// store the request
+	if err := ld.repo.StoreWithdrawRequest(&wr); err != nil {
+		ld.log.Errorf("failed to store new withdraw request; %s", err.Error())
+	}
+}
+
+// handleSfcWithdrawn handles a withdrawal request finalization event.
+// event Withdrawn(address indexed delegator, uint256 indexed toValidatorID, uint256 indexed wrID, uint256 amount)
+func handleSfcWithdrawn(log *retypes.Log, ld *logsDispatcher) {
+	// extract the basic info about the request
+	addr := common.BytesToAddress(log.Topics[1].Bytes())
+	valID := (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[2].Bytes()))
+	reqID := (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[3].Bytes()))
+
+	// try to get the request from database
+	req, err := ld.repo.WithdrawRequest(&addr, valID, reqID)
+	if err != nil {
+		ld.log.Errorf("can not load withdraw requests to process finalization; %s", err.Error())
+		return
+	}
+
+	// get the block
+	blk := hexutil.Uint64(log.BlockNumber)
+	block, err := ld.repo.BlockByNumber(&blk)
+	if err != nil {
+		ld.log.Errorf("can not decode un-delegation log record; %s", err.Error())
+		return
+	}
+
+	// update the request to have the finalization details
+	req.WithdrawTime = &block.TimeStamp
+	req.WithdrawTrx = &log.TxHash
+
+	// store the updated request
+	if err := ld.repo.StoreWithdrawRequest(req); err != nil {
+		ld.log.Errorf("failed to store finalized withdraw request; %s", err.Error())
+	}
 }
