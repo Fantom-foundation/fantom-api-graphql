@@ -140,3 +140,15 @@ func (ftm *FtmBridge) LockingAllowed() (bool, error) {
 
 	return epoch.Uint64() >= sfcFirstLockEpoch, nil
 }
+
+// TotalStaked returns the total amount of staked tokens.
+func (ftm *FtmBridge) TotalStaked() (*big.Int, error) {
+	// instantiate the contract and display its name
+	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
+		return nil, err
+	}
+
+	return contract.TotalStake(nil)
+}
