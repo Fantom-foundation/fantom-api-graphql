@@ -24,7 +24,8 @@ type MongoDbBridge struct {
 	initTransactions *sync.Once
 	initContracts    *sync.Once
 	initSwaps        *sync.Once
-	initDelegation   *sync.Once
+	initDelegations  *sync.Once
+	initWithdrawals  *sync.Once
 }
 
 // New creates a new Mongo Db connection bridge.
@@ -149,7 +150,8 @@ func (db *MongoDbBridge) CheckDatabaseInitState() {
 	db.collectionNeedInit("transactions", db.TransactionsCount, &db.initTransactions)
 	db.collectionNeedInit("contracts", db.ContractCount, &db.initContracts)
 	db.collectionNeedInit("swaps", db.SwapCount, &db.initSwaps)
-	db.collectionNeedInit("delegations", db.DelegationsCount, &db.initDelegation)
+	db.collectionNeedInit("delegations", db.DelegationsCount, &db.initDelegations)
+	db.collectionNeedInit("withdrawals", db.WithdrawalsCount, &db.initWithdrawals)
 }
 
 // checkAccountCollectionState checks the Accounts collection state.
