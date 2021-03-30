@@ -197,7 +197,7 @@ func (ftm *FtmBridge) ValidatorByAddress(addr *common.Address) (*types.Validator
 	// do we have the ID?
 	if 0 == id.Uint64() {
 		ftm.log.Debugf("validator not found for address %s", addr.String())
-		return nil, fmt.Errorf("unknown validator %s", addr.String())
+		return nil, nil
 	}
 	return ftm.validatorById(contract, id)
 }

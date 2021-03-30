@@ -68,13 +68,13 @@ func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 }
 
 // AccountBalance returns the current balance of an account at Opera blockchain.
-func (p *proxy) AccountBalance(acc *types.Account) (*hexutil.Big, error) {
-	return p.rpc.AccountBalance(&acc.Address)
+func (p *proxy) AccountBalance(addr *common.Address) (*hexutil.Big, error) {
+	return p.rpc.AccountBalance(addr)
 }
 
 // AccountNonce returns the current number of sent transactions of an account at Opera blockchain.
-func (p *proxy) AccountNonce(acc *types.Account) (*hexutil.Uint64, error) {
-	val, err := p.rpc.AccountNonce(&acc.Address)
+func (p *proxy) AccountNonce(addr *common.Address) (*hexutil.Uint64, error) {
+	val, err := p.rpc.AccountNonce(addr)
 	if err != nil {
 		return nil, err
 	}
@@ -85,14 +85,14 @@ func (p *proxy) AccountNonce(acc *types.Account) (*hexutil.Uint64, error) {
 }
 
 // AccountTransactions returns slice of AccountTransaction structure for a given account at Opera blockchain.
-func (p *proxy) AccountTransactions(acc *types.Account, cursor *string, count int32) (*types.TransactionHashList, error) {
+func (p *proxy) AccountTransactions(addr *common.Address, cursor *string, count int32) (*types.TransactionHashList, error) {
 	// do we have an account?
-	if acc == nil {
+	if addr == nil {
 		return nil, fmt.Errorf("can not get transaction list for empty account")
 	}
 
 	// go to the database for the list of hashes of transaction searched
-	return p.db.AccountTransactions(acc, cursor, count)
+	return p.db.AccountTransactions(addr, cursor, count)
 }
 
 // AccountsActive returns total number of accounts known to repository.
@@ -134,8 +134,8 @@ func (p *proxy) StoreAccount(acc *types.Account) error {
 }
 
 // AccountMarkActivity marks the latest account activity in the repository.
-func (p *proxy) AccountMarkActivity(acc *types.Account, ts uint64) error {
-	return p.db.AccountMarkActivity(acc, ts)
+func (p *proxy) AccountMarkActivity(addr *common.Address, ts uint64) error {
+	return p.db.AccountMarkActivity(addr, ts)
 }
 
 // QueueAccount queues the given account for processing.

@@ -58,8 +58,9 @@ func (ftm *FtmBridge) AmountStakeLocked(addr *common.Address, valID *big.Int) (*
 func (ftm *FtmBridge) PendingRewards(addr *common.Address, valID *big.Int) (*types.PendingRewards, error) {
 	// prep the empty value
 	pr := types.PendingRewards{
-		Staker: hexutil.Uint64(valID.Uint64()),
-		Amount: hexutil.Big{},
+		Address: *addr,
+		Staker:  hexutil.Big(*valID),
+		Amount:  hexutil.Big{},
 	}
 
 	// instantiate the contract and display its name

@@ -14,7 +14,8 @@ type Delegation struct {
 	Transaction     common.Hash    `json:"trx"`
 	Address         common.Address `json:"address"`
 	ToStakerId      *hexutil.Big   `json:"toStakerID"`
-	AmountDelegated *hexutil.Big   `json:"amount"`
+	AmountStaked    *hexutil.Big   `json:"amountStaked"`
+	AmountDelegated *hexutil.Big   `json:"amountDelegated"`
 	CreatedTime     hexutil.Uint64 `json:"createdTime"`
 }
 
@@ -33,14 +34,16 @@ func (dl *Delegation) MarshalBSON() ([]byte, error) {
 		Addr   string `bson:"addr"`
 		To     string `bson:"to"`
 		CrTime uint64 `bson:"cr_time"`
-		Amount string `bson:"amount"`
+		Staked string `bson:"amount"`
+		Active string `bson:"active"`
 	}{
 		Uid:    dl.Uid(),
 		Trx:    dl.Transaction.String(),
 		Addr:   dl.Address.String(),
 		To:     dl.ToStakerId.String(),
 		CrTime: uint64(dl.CreatedTime),
-		Amount: dl.AmountDelegated.String(),
+		Staked: dl.AmountStaked.String(),
+		Active: dl.AmountDelegated.String(),
 	}
 	return bson.Marshal(pom)
 }
@@ -60,7 +63,8 @@ func (dl *Delegation) UnmarshalBSON(data []byte) (err error) {
 		Addr   string `bson:"addr"`
 		To     string `bson:"to"`
 		CrTime uint64 `bson:"cr_time"`
-		Amount string `bson:"amount"`
+		Staked string `bson:"amount"`
+		Active string `bson:"active"`
 	}
 	if err = bson.Unmarshal(data, &row); err != nil {
 		return err
@@ -71,6 +75,7 @@ func (dl *Delegation) UnmarshalBSON(data []byte) (err error) {
 	dl.Address = common.HexToAddress(row.Addr)
 	dl.ToStakerId = (*hexutil.Big)(hexutil.MustDecodeBig(row.To))
 	dl.CreatedTime = hexutil.Uint64(row.CrTime)
-	dl.AmountDelegated = (*hexutil.Big)(hexutil.MustDecodeBig(row.Amount))
+	dl.AmountStaked = (*hexutil.Big)(hexutil.MustDecodeBig(row.Staked))
+	dl.AmountDelegated = (*hexutil.Big)(hexutil.MustDecodeBig(row.Active))
 	return nil
 }

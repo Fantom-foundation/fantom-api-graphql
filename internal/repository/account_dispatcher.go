@@ -103,7 +103,7 @@ func (acd *accountDispatcher) dispatch() {
 func (acd *accountDispatcher) processAccount(acc *types.Account, block *types.Block, trx *types.Transaction) error {
 	// check if the account is new; if we already know it, we are done
 	if acd.repo.AccountIsKnown(&acc.Address) {
-		return acd.repo.AccountMarkActivity(acc, uint64(block.TimeStamp))
+		return acd.repo.AccountMarkActivity(&acc.Address, uint64(block.TimeStamp))
 	}
 
 	// is this a simple wallet/account?

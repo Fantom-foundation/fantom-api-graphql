@@ -10,14 +10,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"math/big"
 )
 
 const (
-	colDelegations          = "delegations"
-	fiDelegationPk          = "_id"
-	fiDelegationAddress     = "addr"
-	fiDelegationToValidator = "to"
-	fiDelegationCreated     = "cr_time"
+	colDelegations           = "delegations"
+	fiDelegationPk           = "_id"
+	fiDelegationAddress      = "addr"
+	fiDelegationToValidator  = "to"
+	fiDelegationCreated      = "cr_time"
+	fiDelegationAmountActive = "active"
 )
 
 // initDelegationCollection initializes the delegation collection with
@@ -114,6 +116,26 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 	if 0 == er.MatchedCount {
 		return fmt.Errorf("can not update, the delegation not found in database")
 	}
+	return nil
+}
+
+// UpdateDelegationBalance updates the given delegation active balance in database to the given amount.
+func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *big.Int, amo *hexutil.Big) error {
+	// get the collection for delegations
+	col := db.client.Database(db.dbName).Collection(colDelegations)
+
+	// update the transaction details
+	if _, err := col.UpdateOne(context.Background(),
+		bson.D{
+			{fiDelegationAddress, addr.String()},
+			{fiDelegationToValidator, valID.String()},
+		},
+		bson.D{{"$set", bson.D{{fiDelegationAmountActive, amo.String()}}}}); err != nil {
+		// log the issue
+		db.log.Criticalf("delegation balance can not be updated; %s", err.Error())
+		return err
+	}
+
 	return nil
 }
 
@@ -388,5 +410,40 @@ func (db *MongoDbBridge) Delegations(cursor *string, count int32, filter *bson.D
 		}
 	}
 
+	return list, nil
+}
+
+// DelegationsAll pulls list of delegations for the given filter un-paged.
+func (db *MongoDbBridge) DelegationsAll(filter *bson.D) ([]*types.Delegation, error) {
+	// get the collection and context
+	col := db.client.Database(db.dbName).Collection(colDelegations)
+	list := make([]*types.Delegation, 0)
+	ctx := context.Background()
+
+	// load the data
+	ld, err := col.Find(ctx, filter, options.Find().SetSort(bson.D{{fiDelegationCreated, -1}}))
+	if err != nil {
+		db.log.Errorf("error loading full delegations list; %s", err.Error())
+		return nil, err
+	}
+
+	// close the cursor as we leave
+	defer func() {
+		if err = ld.Close(ctx); err != nil {
+			db.log.Errorf("error closing full delegations list cursor; %s", err.Error())
+		}
+	}()
+
+	for ld.Next(ctx) {
+		// try to decode the next row
+		var row types.Delegation
+		if err = ld.Decode(&row); err != nil {
+			db.log.Errorf("can not decode the full delegation list row; %s", err.Error())
+			return nil, err
+		}
+
+		// use this row as the next item
+		list = append(list, &row)
+	}
 	return list, nil
 }

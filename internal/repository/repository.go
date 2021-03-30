@@ -38,10 +38,10 @@ type Repository interface {
 	Account(*common.Address) (*types.Account, error)
 
 	// AccountBalance returns the current balance of an account at Opera blockchain.
-	AccountBalance(*types.Account) (*hexutil.Big, error)
+	AccountBalance(*common.Address) (*hexutil.Big, error)
 
 	// AccountNonce returns the current number of sent transactions of an account at Opera blockchain.
-	AccountNonce(*types.Account) (*hexutil.Uint64, error)
+	AccountNonce(*common.Address) (*hexutil.Uint64, error)
 
 	// AccountTransactions returns list of transaction hashes for account at Opera blockchain.
 	//
@@ -57,7 +57,7 @@ type Repository interface {
 	// of transactions newer than that.
 	//
 	// Transactions are always sorted from newer to older.
-	AccountTransactions(*types.Account, *string, int32) (*types.TransactionHashList, error)
+	AccountTransactions(*common.Address, *string, int32) (*types.TransactionHashList, error)
 
 	// Returns total number of accounts known to repository.
 	AccountsActive() (hexutil.Uint64, error)
@@ -69,7 +69,7 @@ type Repository interface {
 	StoreAccount(*types.Account) error
 
 	// AccountMarkActivity marks the latest account activity in the repository.
-	AccountMarkActivity(*types.Account, uint64) error
+	AccountMarkActivity(*common.Address, uint64) error
 
 	// QueueAccount puts the given account into the account processing queue.
 	QueueAccount(*types.Block, *types.Transaction, *common.Address, *types.Hash, *sync.WaitGroup)
@@ -192,6 +192,9 @@ type Repository interface {
 	// DelegationsByAddress returns a list of all delegations of a given delegator address.
 	DelegationsByAddress(*common.Address, *string, int32) (*types.DelegationList, error)
 
+	// DelegationsByAddressAll returns a list of all delegations of the given address un-paged.
+	DelegationsByAddressAll(addr *common.Address) ([]*types.Delegation, error)
+
 	// DelegationsOfValidator extracts a list of delegations for a validator by its ID.
 	DelegationsOfValidator(*hexutil.Big, *string, int32) (*types.DelegationList, error)
 
@@ -211,6 +214,9 @@ type Repository interface {
 
 	// DelegationFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
 	DelegationFluidStakingActive(dl *types.Delegation) (bool, error)
+
+	// UpdateDelegationActiveAmount updates active delegation amount to the current SFC registered value.
+	UpdateDelegationActiveAmount(addr *common.Address, valID *hexutil.Big)
 
 	// StoreWithdrawRequest stores the given withdraw request in persistent storage.
 	StoreWithdrawRequest(*types.WithdrawRequest) error
@@ -386,7 +392,7 @@ type Repository interface {
 	// GovernanceContractBy provides governance contract details by its address.
 	GovernanceContractBy(*common.Address) (*config.GovernanceContract, error)
 
-	// GovernanceProposalsCount provides the total number of prpoposals
+	// GovernanceProposalsCount provides the total number of proposals
 	// in a given Governance contract.
 	GovernanceProposalsCount(*common.Address) (hexutil.Big, error)
 
@@ -418,8 +424,8 @@ type Repository interface {
 	// in the governance contract identified by the address.
 	GovernanceTotalWeight(*common.Address) (hexutil.Big, error)
 
-	// FLendGetLendingPool resolves lending pool contract instace
-	// to be able to get calls and informations from this contract
+	// FLendGetLendingPool resolves lending pool contract instance
+	// to be able to get calls and information from this contract
 	FLendGetLendingPool() (*contracts.ILendingPool, error)
 
 	// FLendGetLendingPoolReserveData resolves reserve data
@@ -439,6 +445,41 @@ type Repository interface {
 
 	// Close and cleanup the repository.
 	Close()
+}
+
+// repo represents an instance of the Repository manager.
+var repo Repository
+
+// onceRepo is the sync object used to make sure the Repository
+// is instantiated only once on the first demand.
+var onceRepo sync.Once
+
+// config represents the configuration setup used by the repository
+// to establish and maintain required connectivity to external services
+// as needed.
+var cfg *config.Config
+
+// SetConfig sets the repository configuration to be used to establish
+// and maintain external repository connections.
+func SetConfig(c *config.Config) {
+	cfg = c
+}
+
+// log represents the logger to be used by the repository.
+var log logger.Logger
+
+// SetLogger sets the repository logger to be used to collect logging info.
+func SetLogger(l logger.Logger) {
+	log = l
+}
+
+// R provides access to the singleton instance of the Repository.
+func R() Repository {
+	// make sure to instantiate the Repository only once
+	onceRepo.Do(func() {
+		repo = newRepository()
+	})
+	return repo
 }
 
 // Proxy represents Repository interface implementation and controls access to data
@@ -463,13 +504,13 @@ type proxy struct {
 	orc *orchestrator
 }
 
-// New creates new instance of Repository implementation, namely proxy structure.
-func New(cfg *config.Config, log logger.Logger) (Repository, error) {
+// newRepository creates new instance of Repository implementation, namely proxy structure.
+func newRepository() Repository {
 	// create new in-memory cache bridge
 	caBridge, dbBridge, rpcBridge, err := connect(cfg, log)
 	if err != nil {
-		log.Criticalf("repository init failed")
-		return nil, err
+		log.Fatal("repository init failed")
+		return nil
 	}
 
 	// construct the proxy instance
@@ -480,6 +521,7 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 		log:   log,
 		cfg:   cfg,
 
+		// get the map of governance contracts
 		govContracts: governanceContractsMap(&cfg.Governance),
 
 		// keep reference to the SOL compiler
@@ -491,7 +533,7 @@ func New(cfg *config.Config, log logger.Logger) (Repository, error) {
 	p.orc.run()
 
 	// return the proxy
-	return &p, nil
+	return &p
 }
 
 // governanceContractsMap creates map of governance contracts keyed

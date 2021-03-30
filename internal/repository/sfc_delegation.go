@@ -44,6 +44,12 @@ func (p *proxy) DelegationsByAddress(addr *common.Address, cursor *string, count
 	return p.db.Delegations(cursor, count, &bson.D{{"addr", addr.String()}})
 }
 
+// DelegationsByAddressAll returns a list of all delegations of the given address un-paged.
+func (p *proxy) DelegationsByAddressAll(addr *common.Address) ([]*types.Delegation, error) {
+	p.log.Debugf("loading all delegations of %s", addr.String())
+	return p.db.DelegationsAll(&bson.D{{"addr", addr.String()}})
+}
+
 // DelegationsOfValidator extract a list of delegations for a given validator.
 func (p *proxy) DelegationsOfValidator(valID *hexutil.Big, cursor *string, count int32) (*types.DelegationList, error) {
 	p.log.Debugf("loading delegations of #%d", valID.ToInt().Uint64())
@@ -83,6 +89,21 @@ func (p *proxy) DelegationFluidStakingActive(dl *types.Delegation) (bool, error)
 	return p.rpc.DelegationFluidStakingActive(dl)
 }
 
+// UpdateDelegationActiveAmount updates active delegation amount to the current SFC registered value.
+func (p *proxy) UpdateDelegationActiveAmount(addr *common.Address, valID *hexutil.Big) {
+	// pull the current value
+	val, err := p.rpc.AmountStaked(addr, (*big.Int)(valID))
+	if err != nil {
+		p.log.Errorf("can not update active delegation balance; %s", err.Error())
+		return
+	}
+
+	// do the update
+	if err := p.db.UpdateDelegationBalance(addr, (*big.Int)(valID), (*hexutil.Big)(val)); err != nil {
+		p.log.Errorf("can not update active delegation balance; %s", err.Error())
+	}
+}
+
 // handleDelegationLog handles a new delegation event from logs.
 func handleDelegationLog(blk hexutil.Uint64, trx *common.Hash, stakerID *big.Int, addr common.Address, amo *big.Int, ld *logsDispatcher) {
 	// get the block
@@ -97,6 +118,7 @@ func handleDelegationLog(blk hexutil.Uint64, trx *common.Hash, stakerID *big.Int
 		Transaction:     *trx,
 		Address:         addr,
 		ToStakerId:      (*hexutil.Big)(stakerID),
+		AmountStaked:    (*hexutil.Big)(amo),
 		AmountDelegated: (*hexutil.Big)(amo),
 		CreatedTime:     block.TimeStamp,
 	}
@@ -195,4 +217,7 @@ func handleSfcWithdrawn(log *retypes.Log, ld *logsDispatcher) {
 	if err := ld.repo.StoreWithdrawRequest(req); err != nil {
 		ld.log.Errorf("failed to store finalized withdraw request; %s", err.Error())
 	}
+
+	// check active amount on the delegation
+	go ld.repo.UpdateDelegationActiveAmount(&addr, valID)
 }

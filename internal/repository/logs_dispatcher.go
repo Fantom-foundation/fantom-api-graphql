@@ -39,6 +39,9 @@ var trxLogKnownTopics = map[common.Hash]func(*retypes.Log, *logsDispatcher){
 
 	/* SFC3::Withdrawn(address indexed delegator, uint256 indexed toValidatorID, uint256 indexed wrID, uint256 amount) */
 	common.HexToHash("0x75e161b3e824b114fc1a33274bd7091918dd4e639cede50b78b15a4eea956a21"): handleSfcWithdrawn,
+
+	/* SFC3::event RestakedRewards(address indexed delegator, uint256 indexed toValidatorID, uint256 lockupExtraReward, uint256 lockupBaseReward, uint256 unlockedReward); */
+	common.HexToHash("0x4119153d17a36f9597d40e3ab4148d03261a439dddbec4e91799ab7159608e26"): handleSfcRestake,
 }
 
 // newLogsDispatcher creates a new transaction logs dispatcher instance.
