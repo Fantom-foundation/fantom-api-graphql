@@ -3,6 +3,7 @@ package resolvers
 
 import (
 	"crypto/rand"
+	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,12 +21,12 @@ func (rs *rootResolver) Price(args *struct{ To string }) (types.Price, error) {
 	if !reExpectedPriceSymbol.Match([]byte(args.To)) {
 		return types.Price{}, fmt.Errorf("invalid denomination received")
 	}
-	return rs.repo.Price(args.To)
+	return repository.R().Price(args.To)
 }
 
 // GasPrice resolves the current amount of WEI for single Gas.
 func (rs *rootResolver) GasPrice() (hexutil.Uint64, error) {
-	return rs.repo.GasPrice()
+	return repository.R().GasPrice()
 }
 
 // EstimateGas resolves the estimated amount of Gas required to perform
@@ -36,7 +37,7 @@ func (rs *rootResolver) EstimateGas(args struct {
 	Value *hexutil.Big
 	Data  *string
 }) *hexutil.Uint64 {
-	return rs.repo.GasEstimate(&args)
+	return repository.R().GasEstimate(&args)
 }
 
 // uuid generates new random subscription UUID

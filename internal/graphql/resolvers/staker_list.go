@@ -1,39 +1,39 @@
 package resolvers
 
 import (
+	"fantom-api-graphql/internal/repository"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 	"sort"
 )
 
 // Resolves a staker information from SFC smart contract.
-func (rs *rootResolver) Stakers() ([]Staker, error) {
+func (rs *rootResolver) Stakers() ([]*Staker, error) {
 	// get the number
-	num, err := rs.repo.LastStakerId()
+	num, err := repository.R().LastValidatorId()
 	if err != nil {
 		rs.log.Errorf("can not get the highest staker id; %s", err.Error())
 		return nil, err
 	}
 
 	// make the list
-	list := make([]Staker, 0)
-
-	// loop to get the data
-	for i := uint64(0); i < uint64(num); i++ {
+	list := make([]*Staker, 0)
+	for i := uint64(1); i <= num; i++ {
 		// extract the staker info
-		st, err := rs.repo.Staker(hexutil.Uint64(i + 1))
+		st, err := repository.R().Validator((*hexutil.Big)(new(big.Int).SetUint64(i)))
 		if err != nil {
 			rs.log.Criticalf("can not extract staker #%d information; %s", i, err.Error())
 			continue
 		}
 
 		// staker not valid?
-		if st.Id == 0 {
-			rs.log.Debugf("staker #%d has been deactivated", i)
+		if st.Id.ToInt().Uint64() == 0 {
+			rs.log.Debugf("staker #%d has invalid ID", i)
 			continue
 		}
 
 		// store the staker into the list
-		list = append(list, *NewStaker(st, rs.repo))
+		list = append(list, NewStaker(st))
 	}
 
 	// inform
@@ -45,7 +45,7 @@ func (rs *rootResolver) Stakers() ([]Staker, error) {
 }
 
 // StakesByTotalStaked represents a list of staking sortable by their total staked amount.
-type StakesByTotalStaked []Staker
+type StakesByTotalStaked []*Staker
 
 // Len returns size of the stakers list.
 func (s StakesByTotalStaked) Len() int {

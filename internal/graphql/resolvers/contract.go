@@ -33,7 +33,6 @@ var scVersionSyntaxRegexp = regexp.MustCompile("^\\w?(\\d+\\.)+\\d+$")
 
 // Contract represents resolvable blockchain smart contract structure.
 type Contract struct {
-	repo repository.Repository
 	types.Contract
 }
 
@@ -74,23 +73,14 @@ type ContractValidationInput struct {
 }
 
 // NewContract builds new resolvable smart contract structure.
-func NewContract(con *types.Contract, repo repository.Repository) *Contract {
-	return &Contract{
-		repo:     repo,
-		Contract: *con,
-	}
+func NewContract(con *types.Contract) *Contract {
+	return &Contract{Contract: *con}
 }
 
 // DeployedBy resolves the deployment transaction of the contract.
 func (con *Contract) DeployedBy() (*Transaction, error) {
-	tr, err := con.repo.Transaction(&con.TransactionHash)
-	if err != nil {
-		return nil, err
-	}
-
-	// make the resolvable transaction object
-	trx := NewTransaction(tr, con.repo)
-	return trx, nil
+	tr, err := repository.R().Transaction(&con.TransactionHash)
+	return NewTransaction(tr), err
 }
 
 // sanitizeStringOption sanitizes and validates optional string value from the
@@ -196,7 +186,7 @@ func (rs *rootResolver) ValidateContract(args *struct{ Contract ContractValidati
 	}
 
 	// get a contract to be validated if any
-	sc, err := rs.repo.Contract(&args.Contract.Address)
+	sc, err := repository.R().Contract(&args.Contract.Address)
 	if err != nil {
 		rs.log.Errorf("contract [%s] not found", args.Contract.Address.String())
 		return nil, err
@@ -206,7 +196,7 @@ func (rs *rootResolver) ValidateContract(args *struct{ Contract ContractValidati
 	hash := sourceHash(args.Contract.SourceCode)
 	if sc.SourceCodeHash != nil && hash.String() == sc.SourceCodeHash.String() {
 		rs.log.Debugf("contract [%s] source code is already known", sc.Address.String())
-		return NewContract(sc, rs.repo), nil
+		return NewContract(sc), nil
 	}
 
 	// copy relevant information from input into the contract struct
@@ -214,7 +204,7 @@ func (rs *rootResolver) ValidateContract(args *struct{ Contract ContractValidati
 	updateContractFromInput(&args.Contract, sc)
 
 	// do the validation
-	if err := rs.repo.ValidateContract(sc); err != nil {
+	if err := repository.R().ValidateContract(sc); err != nil {
 		rs.log.Errorf("contract validation failed; %s", err.Error())
 		return nil, err
 	}
@@ -224,5 +214,5 @@ func (rs *rootResolver) ValidateContract(args *struct{ Contract ContractValidati
 	go rs.syncContract(*sc)
 
 	// return the final updated contract
-	return NewContract(sc, rs.repo), nil
+	return NewContract(sc), nil
 }

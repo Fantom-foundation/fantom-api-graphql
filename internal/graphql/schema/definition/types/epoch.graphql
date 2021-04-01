@@ -1,32 +1,30 @@
 # Represents epoch information.
 type Epoch {
-    "Number the epoch end."
+    # Identifier of the epoch.
     id: Long!
 
-    "Timestamp of the epoch end."
-    endTime: BigInt!
+    # Timestamp of the epoch end.
+    endTime: Long!
 
-    "Epoch duration in seconds."
-    duration: BigInt!
+    # Epoch duration in seconds.
+    duration: Long!
 
-    "Fee at the epoch."
+    # Fee at the epoch.
     epochFee: BigInt!
 
-    "Total base reward weight on epoch."
+    # Total base reward weight on epoch.
     totalBaseRewardWeight: BigInt!
 
-    "Total transaction reward weight on epoch."
+    # Total transaction reward weight on epoch.
     totalTxRewardWeight: BigInt!
 
-    "Base reward per second of epoch."
+    # Base reward per second of epoch.
     baseRewardPerSecond: BigInt!
 
-    "Total amount staked."
+    # Total amount staked. This includes all the staked
+    # amount including validators' self stake.
     stakeTotalAmount: BigInt!
 
-    "Total amount delegated."
-    delegationsTotalAmount: BigInt!
-
-    "Total supply amount."
+    # Total supply amount.
     totalSupply: BigInt!
 }

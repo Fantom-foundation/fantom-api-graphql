@@ -9,7 +9,6 @@ import (
 
 // BlockList represents resolvable list of blockchain block edges structure.
 type BlockList struct {
-	repo       repository.Repository
 	list       *types.BlockList
 	TotalCount hexutil.Big
 }
@@ -21,9 +20,8 @@ type BlockListEdge struct {
 }
 
 // NewBlockList builds new resolvable list of blocks.
-func NewBlockList(blocks *types.BlockList, totalCount *hexutil.Big, repo repository.Repository) *BlockList {
+func NewBlockList(blocks *types.BlockList, totalCount *hexutil.Big) *BlockList {
 	return &BlockList{
-		repo:       repo,
 		list:       blocks,
 		TotalCount: *totalCount,
 	}
@@ -34,10 +32,8 @@ func (rs *rootResolver) Blocks(args *struct {
 	Cursor *Cursor
 	Count  int32
 }) (*BlockList, error) {
-	// find the cursor
-	var num *uint64
-
 	// do we have a cursor? try to decode it into an actual block number
+	var num *uint64
 	if args.Cursor != nil {
 		val, err := hexutil.DecodeUint64(string(*args.Cursor))
 		if err != nil {
@@ -47,7 +43,7 @@ func (rs *rootResolver) Blocks(args *struct {
 	}
 
 	// get the first block so we know the total
-	bh, err := rs.repo.BlockHeight()
+	bh, err := repository.R().BlockHeight()
 	if err != nil {
 		return nil, err
 	}
@@ -57,13 +53,13 @@ func (rs *rootResolver) Blocks(args *struct {
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get the block list from repository
-	bl, err := rs.repo.Blocks(num, args.Count)
+	bl, err := repository.R().Blocks(num, args.Count)
 	if err != nil {
 		rs.log.Errorf("can not get blocks list; %s", err.Error())
 		return nil, err
 	}
 
-	return NewBlockList(bl, bh, rs.repo), nil
+	return NewBlockList(bl, bh), nil
 }
 
 // PageInfo resolves the current page information for the blocks list.
@@ -89,18 +85,14 @@ func (bl *BlockList) Edges() []*BlockListEdge {
 	// make the list
 	edges := make([]*BlockListEdge, len(bl.list.Collection))
 	for i, b := range bl.list.Collection {
-		// get the resolvable block
-		blk := NewBlock(b, bl.repo)
-
 		// make the element
 		edge := BlockListEdge{
-			Block:  blk,
+			Block:  NewBlock(b),
 			Cursor: Cursor(b.Number.String()),
 		}
 
 		// add it to the list
 		edges[i] = &edge
 	}
-
 	return edges
 }

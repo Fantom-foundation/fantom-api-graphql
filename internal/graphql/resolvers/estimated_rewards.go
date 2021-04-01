@@ -19,16 +19,17 @@ const (
 
 // EstimatedRewards represents resolvable estimated rewards structure.
 type EstimatedRewards struct {
-	repo        repository.Repository
 	Staked      hexutil.Uint64
 	TotalStaked hexutil.Big
 	LastEpoch   types.Epoch
 }
 
+// weiToFtmDecimals represents decimal conversion between WEI and FTM units.
+var weiToFtmDecimals = new(big.Int).SetUint64(1000000000000000000)
+
 // NewEstimatedRewards builds new resolvable estimated rewards structure.
-func NewEstimatedRewards(ep *types.Epoch, amount *hexutil.Uint64, total *hexutil.Big, repo repository.Repository) EstimatedRewards {
+func NewEstimatedRewards(ep *types.Epoch, amount *hexutil.Uint64, total *hexutil.Big) EstimatedRewards {
 	return EstimatedRewards{
-		repo:        repo,
 		Staked:      *amount,
 		TotalStaked: *total,
 		LastEpoch:   *ep,
@@ -38,9 +39,8 @@ func NewEstimatedRewards(ep *types.Epoch, amount *hexutil.Uint64, total *hexutil
 // estimateRewardsByAddress instantiates the estimated rewards for specified address if possible.
 func (rs *rootResolver) estimateRewardsByAddress(addr *common.Address, ep *types.Epoch, total *hexutil.Big) (EstimatedRewards, error) {
 	// try to get the address involved
-	acc, err := rs.repo.Account(addr)
+	acc, err := repository.R().Account(addr)
 	if err != nil {
-		// log issue and return empty data
 		rs.log.Error("invalid address or address not found")
 		return EstimatedRewards{}, fmt.Errorf("address not found")
 	}
@@ -49,16 +49,15 @@ func (rs *rootResolver) estimateRewardsByAddress(addr *common.Address, ep *types
 	rs.log.Debugf("calculating rewards estimation for address [%s]", acc.Address.String())
 
 	// get the address balance
-	balance, err := rs.repo.AccountBalance(acc)
+	balance, err := repository.R().AccountBalance(&acc.Address)
 	if err != nil {
-		// log issue and return empty data
 		rs.log.Errorf("can not get balance for address [%s]", acc.Address.String())
 		return EstimatedRewards{}, fmt.Errorf("address balance not found")
 	}
 
 	// get the value of the balance as Uint64 value
-	val := hexutil.Uint64(new(big.Int).Div(balance.ToInt(), new(big.Int).SetUint64(1000000000000000000)).Uint64())
-	return NewEstimatedRewards(ep, &val, total, rs.repo), nil
+	val := hexutil.Uint64(new(big.Int).Div(balance.ToInt(), weiToFtmDecimals).Uint64())
+	return NewEstimatedRewards(ep, &val, total), nil
 }
 
 // EstimateRewards resolves reward estimation for the given address or amount staked.
@@ -68,7 +67,6 @@ func (rs *rootResolver) EstimateRewards(args *struct {
 }) (EstimatedRewards, error) {
 	// at least one of the parameters must be present
 	if args == nil || (args.Address == nil && args.Amount == nil) {
-		// log issue and return empty data
 		rs.log.Error("can not calculate estimated rewards without parameters")
 		return EstimatedRewards{}, fmt.Errorf("missing both address and amount")
 	}
@@ -76,17 +74,15 @@ func (rs *rootResolver) EstimateRewards(args *struct {
 	// get the latest sealed epoch
 	// the data could be delayed behind the real-time sealed epoch due to caching,
 	// but we don't need that precise reflection here
-	ep, err := rs.repo.CurrentSealedEpoch()
+	ep, err := repository.R().CurrentSealedEpoch()
 	if err != nil {
-		// log issue and return empty data
 		rs.log.Errorf("can not get the current sealed epoch information; %s", err.Error())
 		return EstimatedRewards{}, fmt.Errorf("current sealed epoch not found")
 	}
 
 	// get the current total staked amount
-	total, err := rs.repo.TotalStaked()
+	total, err := repository.R().TotalStaked()
 	if err != nil {
-		// log issue and return empty data
 		rs.log.Errorf("can not get the current total staked amount; %s", err.Error())
 		return EstimatedRewards{}, fmt.Errorf("current total staked amount not found")
 	}
@@ -95,9 +91,7 @@ func (rs *rootResolver) EstimateRewards(args *struct {
 	if args.Address != nil {
 		return rs.estimateRewardsByAddress(args.Address, ep, total)
 	}
-
-	// get the value directly from the provided amount
-	return NewEstimatedRewards(ep, args.Amount, total, rs.repo), nil
+	return NewEstimatedRewards(ep, args.Amount, total), nil
 }
 
 // canCalculateRewards checks if the reward can actually be calculated

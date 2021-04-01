@@ -4,79 +4,67 @@ package resolvers
 import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/repository"
-	"fantom-api-graphql/internal/types"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // CurrentState represents resolvable state detail.
 type CurrentState struct {
-	sfc  *config.Staking
-	repo repository.Repository
+	config.Staking
 }
 
 // State resolves details of the current state of the blockchain and network.
 func (rs *rootResolver) State() (CurrentState, error) {
-	return CurrentState{
-		sfc:  &rs.cfg.Staking,
-		repo: rs.repo,
-	}, nil
+	return CurrentState{rs.cfg.Staking}, nil
 }
 
 // SealedEpoch resolves the most recent sealed epoch details.
-func (cst CurrentState) SealedEpoch() (types.Epoch, error) {
+func (cst CurrentState) SealedEpoch() (Epoch, error) {
 	// get the sealed epoch
-	e, err := cst.repo.CurrentSealedEpoch()
+	e, err := repository.R().CurrentSealedEpoch()
 	if err != nil {
-		return types.Epoch{}, err
+		return Epoch{}, err
 	}
-
-	return *e, nil
+	return Epoch{*e}, nil
 }
 
 // Validators resolves the number of validators active in the network.
 func (cst CurrentState) Validators() (hexutil.Uint64, error) {
-	return cst.repo.StakersNum()
+	val, err := repository.R().ValidatorsCount()
+	return hexutil.Uint64(val), err
 }
 
 // Accounts resolves the number of accounts participating on chain transactions.
 func (cst CurrentState) Accounts() (hexutil.Uint64, error) {
-	return cst.repo.AccountsActive()
+	return repository.R().AccountsActive()
 }
 
 // Blocks resolves the total number of blocks in the chain.
-func (cst CurrentState) Blocks() (hexutil.Uint64, error) {
+func (cst CurrentState) Blocks() (hexutil.Big, error) {
 	// get the block height of the chain
-	h, err := cst.repo.BlockHeight()
+	h, err := repository.R().BlockHeight()
 	if err != nil {
-		return hexutil.Uint64(0), err
+		return hexutil.Big{}, err
 	}
-
-	// do we have the block?
-	if nil == h || !h.ToInt().IsInt64() {
-		return hexutil.Uint64(0), fmt.Errorf("block height not available")
-	}
-
-	return hexutil.Uint64(h.ToInt().Uint64()), nil
+	return *h, nil
 }
 
 // Transactions resolves the total number of transactions in the chain.
 func (cst CurrentState) Transactions() (hexutil.Uint64, error) {
-	return cst.repo.TransactionsCount()
+	return repository.R().TransactionsCount()
 }
 
 // SfcContractAddress resolves address of the SFC contract.
 func (cst CurrentState) SfcContractAddress() common.Address {
-	return cst.sfc.SFCContract
+	return cst.SFCContract
 }
 
 // SfcLockingEnabled indicates if the stake locking has been enabled in SFC contract.
 func (cst CurrentState) SfcLockingEnabled() (bool, error) {
-	return cst.repo.LockingAllowed()
+	return repository.R().LockingAllowed()
 }
 
 // SfcVersion resolves the current version of the SFC contract on the connected node.
 func (cst CurrentState) SfcVersion() (hexutil.Uint64, error) {
-	return cst.repo.SfcVersion()
+	return repository.R().SfcVersion()
 }

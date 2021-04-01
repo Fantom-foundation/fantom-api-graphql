@@ -1,74 +1,30 @@
 # WithdrawRequest represents a request for partial stake withdraw.
 type WithdrawRequest {
-    "Address of the authorized request."
+    # Cursor is the internal cursor ID of the withdraw request.
+    id: Cursor!
+
+    # Address of the authorized request.
     address: Address!
 
-    "Address of the receiving account."
-    receiver: Address!
-
-    "Account receiving the withdraw request."
+    # Accountof the authorized request.
     account: Account!
 
-    "Staker Id of the staker involved in the withdraw request."
+    # Staker Id of the staker involved in the withdraw request.
     stakerID: Long!
 
-    "Details of the staker involved in the withdraw request."
+    # Details of the staker involved in the withdraw request.
     staker: Staker!
 
-    "Unique withdraw request identifier."
+    # Unique withdraw request identifier.
     withdrawRequestID: BigInt!
 
-    "Is this a partial delegation withdraw, or staker withdraw?"
-    isDelegation: Boolean!
-
-    "Amount of WEI requested to be withdrawn."
+    # Amount of tokens to be withdrawn in WEI.
     amount: BigInt!
 
-    "Block in which the withdraw request was registered."
-    requestBlock: Block!
+    # CreatedTime represents the time stamp of the request creation.
+    createdTime: Long!
 
-    """
-    Block in which the withdraw request was finalized.
-    The value is NULL for pending request.
-    """
-    withdrawBlock: Block
-
-    """
-    Amount of WEI slashed as a penalty for cheating.
-    The penalty is applied not only to staker withdraw,
-    but also to delegations of a cheating staker.
-    The value is NULL for pending requests.
-    """
-    withdrawPenalty: BigInt
-}
-
-# DeactivatedDelegation represents a prepared delegation full withdraw.
-# Fully withdrawn delegations must be prepared first and finalized
-# only after the lock down period passes.
-type DeactivatedDelegation {
-    "Address of the delegator."
-    address: Address!
-
-    "Staker Id of the staker involved in the withdraw request."
-    stakerID: Long!
-
-    "Details of the staker involved in the withdraw request."
-    staker: Staker!
-
-    "Block in which the delegation deactivation was registered."
-    requestBlock: Block!
-
-    """
-    Block in which the delegation was withdrawn.
-    The value is NULL for pending request.
-    """
-    withdrawBlock: Block
-
-    """
-    Amount of WEI slashed as a penalty for cheating.
-    The penalty is applied to delegators' rewards
-    in case their staker is flagged.
-    The value is NULL for pending requests.
-    """
-    withdrawPenalty: BigInt
+    # WithdrawTime represents the time stamp of the request finalisation.
+    # If the request is pending, the withdrawTime will be NULL.
+    withdrawTime: Long
 }

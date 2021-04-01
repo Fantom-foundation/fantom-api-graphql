@@ -65,12 +65,4 @@ type Transaction {
     # running out of gas). If the transaction has not yet been processed, this
     # field will be null.
     status: Long
-
-    # isErc20Call indicates if this is an ERC20 call.
-    isErc20Call: Boolean!
-
-    # relayToken represents the reference of the token being referenced
-    # by the relay call. It's null if the transaction is actually not a relay
-    # call.
-    relayToken: ERC20Token
 }

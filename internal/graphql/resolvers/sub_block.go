@@ -26,7 +26,6 @@ func (rs *rootResolver) OnBlock(ctx context.Context) <-chan *Block {
 		stop:   ctx.Done(),
 		events: c,
 	}
-
 	return c
 }
 
@@ -46,13 +45,12 @@ func (rs *rootResolver) addBlockSubscriber(sub *subscriptOnBlock) {
 // dispatchOnBlock dispatches onBlock event to registered subscribers.
 func (rs *rootResolver) dispatchOnBlock(blk *types.Block) {
 	// prep the block
-	block := NewBlock(blk, rs.repo)
+	block := NewBlock(blk)
 
 	// broadcast the event in separate go routines so we don't block here
 	for id, sub := range rs.blockSubscribers {
 		go rs.notifyOnBlock(block, sub, id)
 	}
-
 }
 
 // notifyOnBlock broadcasts onBlock event to given subscriber.

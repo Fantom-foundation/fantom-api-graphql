@@ -9,14 +9,12 @@ import (
 
 // Transaction represents resolvable blockchain transaction structure.
 type Transaction struct {
-	repo repository.Repository
 	types.Transaction
 }
 
 // NewTransaction builds new resolvable transaction structure.
-func NewTransaction(trx *types.Transaction, repo repository.Repository) *Transaction {
+func NewTransaction(trx *types.Transaction) *Transaction {
 	return &Transaction{
-		repo:        repo,
 		Transaction: *trx,
 	}
 }
@@ -24,36 +22,36 @@ func NewTransaction(trx *types.Transaction, repo repository.Repository) *Transac
 // Transaction resolves blockchain transaction by transaction hash.
 func (rs *rootResolver) Transaction(args *struct{ Hash types.Hash }) (*Transaction, error) {
 	// get the transaction from repository
-	trx, err := rs.repo.Transaction(&args.Hash)
+	trx, err := repository.R().Transaction(&args.Hash)
 	if err != nil {
 		rs.log.Warningf("can not get transaction %s", args.Hash)
 		return nil, err
 	}
 
-	return NewTransaction(trx, rs.repo), nil
+	return NewTransaction(trx), nil
 }
 
 // SendTransaction sends raw signed and RLP encoded transaction to the block chain.
 func (rs *rootResolver) SendTransaction(args *struct{ Tx hexutil.Bytes }) (*Transaction, error) {
 	// get the transaction from repository
-	trx, err := rs.repo.SendTransaction(args.Tx)
+	trx, err := repository.R().SendTransaction(args.Tx)
 	if err != nil {
 		rs.log.Warningf("can not send transaction %s", err.Error())
 		return nil, err
 	}
 
-	return NewTransaction(trx, rs.repo), nil
+	return NewTransaction(trx), nil
 }
 
 // Sender resolves sender's account of the transaction.
 func (trx *Transaction) Sender() (*Account, error) {
 	// get the sender by address
-	acc, err := trx.repo.Account(&trx.From)
+	acc, err := repository.R().Account(&trx.From)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewAccount(acc, trx.repo), nil
+	return NewAccount(acc), nil
 }
 
 // Recipient resolves recipient's account of the transaction.
@@ -64,12 +62,12 @@ func (trx *Transaction) Recipient() (*Account, error) {
 	}
 
 	// get the recipient by address
-	acc, err := trx.repo.Account(trx.To)
+	acc, err := repository.R().Account(trx.To)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewAccount(acc, trx.repo), nil
+	return NewAccount(acc), nil
 }
 
 // Block resolves block the transaction is bundled in, nil if it's pending and not added to a block yet.
@@ -80,20 +78,10 @@ func (trx *Transaction) Block() (*Block, error) {
 	}
 
 	// get the sender by address
-	blk, err := trx.repo.BlockByNumber(trx.BlockNumber)
+	blk, err := repository.R().BlockByNumber(trx.BlockNumber)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewBlock(blk, trx.repo), nil
-}
-
-// RelayToken resolves the ERC20 token addressed by this transaction.
-func (trx *Transaction) RelayToken() (*ERC20Token, error) {
-	// not the ERC20 call?
-	if !trx.IsErc20Call {
-		return nil, nil
-	}
-
-	return NewErc20Token(trx.To, trx.repo), nil
+	return NewBlock(blk), nil
 }

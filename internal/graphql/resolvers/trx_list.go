@@ -10,8 +10,7 @@ import (
 
 // TransactionList represents resolvable list of blockchain transaction edges structure.
 type TransactionList struct {
-	repo repository.Repository
-	list *types.TransactionHashList
+	types.TransactionHashList
 }
 
 // TransactionListEdge represents a single edge of a transaction list structure.
@@ -21,10 +20,9 @@ type TransactionListEdge struct {
 }
 
 // NewTransactionList builds new resolvable list of transactions.
-func NewTransactionList(txs *types.TransactionHashList, repo repository.Repository) *TransactionList {
+func NewTransactionList(txs *types.TransactionHashList) *TransactionList {
 	return &TransactionList{
-		repo: repo,
-		list: txs,
+		TransactionHashList: *txs,
 	}
 }
 
@@ -38,58 +36,52 @@ func (rs *rootResolver) Transactions(args *struct {
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get the transaction hash list from repository
-	txs, err := rs.repo.Transactions((*string)(args.Cursor), args.Count)
+	txs, err := repository.R().Transactions((*string)(args.Cursor), args.Count)
 	if err != nil {
 		rs.log.Errorf("can not get transactions list; %s", err.Error())
 		return nil, err
 	}
 
-	return NewTransactionList(txs, rs.repo), nil
+	return NewTransactionList(txs), nil
 }
 
 // TotalCount resolves the total number of transactions in the list.
 func (tl *TransactionList) TotalCount() hexutil.Big {
-	val := (*hexutil.Big)(big.NewInt(int64(tl.list.Total)))
+	val := (*hexutil.Big)(big.NewInt(int64(tl.Total)))
 	return *val
 }
 
 // PageInfo resolves the current page information for the transaction list.
 func (tl *TransactionList) PageInfo() (*ListPageInfo, error) {
 	// do we have any items?
-	if tl.list == nil || tl.list.Collection == nil || len(tl.list.Collection) == 0 {
+	if tl.Collection == nil || len(tl.Collection) == 0 {
 		return NewListPageInfo(nil, nil, false, false)
 	}
 
 	// get the first and last elements
-	first := Cursor(tl.list.Collection[0].String())
-	last := Cursor(tl.list.Collection[len(tl.list.Collection)-1].String())
-	return NewListPageInfo(&first, &last, !tl.list.IsEnd, !tl.list.IsStart)
+	first := Cursor(tl.Collection[0].String())
+	last := Cursor(tl.Collection[len(tl.Collection)-1].String())
+	return NewListPageInfo(&first, &last, !tl.IsEnd, !tl.IsStart)
 }
 
 // Edges resolves list of transaction list edges for the linked transaction list.
 func (tl *TransactionList) Edges() []*TransactionListEdge {
 	// do we have any items? return empty list if not
-	if tl.list == nil || tl.list.Collection == nil || len(tl.list.Collection) == 0 {
+	if tl.Collection == nil || len(tl.Collection) == 0 {
 		return make([]*TransactionListEdge, 0)
 	}
 
 	// make the list
-	edges := make([]*TransactionListEdge, len(tl.list.Collection))
-	for i, t := range tl.list.Collection {
+	edges := make([]*TransactionListEdge, len(tl.Collection))
+	for i, t := range tl.Collection {
 		// get the transaction
-		tx, err := tl.repo.Transaction(t)
+		tx, err := repository.R().Transaction(t)
 		if err == nil {
-			// get the resolvable transaction
-			trx := NewTransaction(tx, tl.repo)
-
 			// make the element
-			edge := TransactionListEdge{
-				Transaction: trx,
+			edges[i] = &TransactionListEdge{
+				Transaction: NewTransaction(tx),
 				Cursor:      Cursor(t.String()),
 			}
-
-			// add it to the list
-			edges[i] = &edge
 		}
 	}
 
