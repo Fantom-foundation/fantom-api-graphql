@@ -8,7 +8,7 @@ import (
 
 // Validator represents a validator information.
 type Validator struct {
-	Id               hexutil.Uint64  `json:"id"`
+	Id               hexutil.Big     `json:"id"`
 	StakerAddress    common.Address  `json:"address"`
 	TotalStake       *hexutil.Big    `json:"totalStake"`
 	Status           hexutil.Uint64  `json:"status"`
