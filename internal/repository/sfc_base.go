@@ -13,7 +13,17 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 )
+
+// sfcDecimalUnit represents decimal units adjustment used by SFC contract
+// on certain values calculation to preserve calculations precision.
+var sfcDecimalUnit = new(big.Int).SetUint64(1e18)
+
+// SfcDecimalUnit returns the decimal unit adjustment used by the SFC contract.
+func (p *proxy) SfcDecimalUnit() *big.Int {
+	return sfcDecimalUnit
+}
 
 // SfcVersion returns current version of the SFC contract.
 func (p *proxy) SfcVersion() (hexutil.Uint64, error) {
@@ -34,12 +44,24 @@ func (p *proxy) Epoch(id *hexutil.Uint64) (*types.Epoch, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		// use this id instead of nil
 		id = &val
 	}
 
-	return p.rpc.Epoch(*id)
+	// try the cache first
+	ep := p.cache.PullEpoch(id)
+	if ep != nil {
+		return ep, nil
+	}
+
+	// pull from remote
+	ep, err := p.rpc.Epoch(*id)
+	if err != nil {
+		return nil, err
+	}
+
+	// cache for future use
+	p.cache.PushEpoch(ep)
+	return ep, nil
 }
 
 // CurrentSealedEpoch returns the data of the latest sealed epoch.
@@ -52,37 +74,13 @@ func (p *proxy) CurrentSealedEpoch() (*types.Epoch, error) {
 	// inform what we do
 	p.log.Debug("latest sealed epoch requested")
 
-	// try to use the in-memory cache
-	if ep := p.cache.PullLastEpoch(); ep != nil {
-		// inform what we do
-		p.log.Debug("latest sealed epoch loaded from cache")
-		return ep, nil
-	}
-
 	// we need to go the slow path
 	id, err := p.rpc.CurrentSealedEpoch()
 	if err != nil {
-		// inform what we do
 		p.log.Errorf("can not get the id of the last sealed epoch; %s", err.Error())
 		return nil, err
 	}
-
-	// get the epoch from SFC
-	ep, err := p.rpc.Epoch(id)
-	if err != nil {
-		p.log.Errorf("can not get data of the last sealed epoch; %s", err.Error())
-		return nil, err
-	}
-
-	// try to store the epoch in cache for future use
-	err = p.cache.PushLastEpoch(ep)
-	if err != nil {
-		p.log.Error(err)
-	}
-
-	// inform what we do
-	p.log.Debugf("epoch %s loaded from sfc", id.String())
-	return ep, nil
+	return p.Epoch(&id)
 }
 
 // TotalStaked calculates current total staked amount for all stakers.

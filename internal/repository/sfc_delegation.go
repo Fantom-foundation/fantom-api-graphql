@@ -19,7 +19,11 @@ import (
 
 // IsDelegating returns if the given address is an SFC delegator.
 func (p *proxy) IsDelegating(addr *common.Address) (bool, error) {
-	count, err := p.db.DelegationsCountFiltered(&bson.D{{"addr", addr.String()}})
+	// count only active delegations (with non-zero value)
+	count, err := p.db.DelegationsCountFiltered(&bson.D{
+		{"addr", addr.String()},
+		{"value", bson.D{{"$gt", 0}}},
+	})
 	if err != nil {
 		p.log.Errorf("can not check delegation by address; %s", addr.String())
 		return false, err
@@ -36,6 +40,11 @@ func (p *proxy) StoreDelegation(dl *types.Delegation) error {
 func (p *proxy) Delegation(addr *common.Address, valID *hexutil.Big) (*types.Delegation, error) {
 	p.log.Debugf("loading delegation of %s to #%d", addr.String(), valID.ToInt().Uint64())
 	return p.db.Delegation(addr, valID)
+}
+
+// DelegationAmountStaked returns the current amount of staked tokens for the given delegation.
+func (p *proxy) DelegationAmountStaked(addr *common.Address, valID *hexutil.Big) (*big.Int, error) {
+	return p.rpc.AmountStaked(addr, (*big.Int)(valID))
 }
 
 // DelegationsByAddress returns a list of all delegations of a given delegator address.
@@ -57,9 +66,9 @@ func (p *proxy) DelegationsOfValidator(valID *hexutil.Big, cursor *string, count
 }
 
 // DelegationLock returns delegation lock information using SFC contract binding.
-func (p *proxy) DelegationLock(dlg *types.Delegation) (*types.DelegationLock, error) {
-	p.log.Debugf("loading lock information for %s to #%d", dlg.Address.String(), dlg.ToStakerId.ToInt().Uint64())
-	return p.rpc.DelegationLock(dlg)
+func (p *proxy) DelegationLock(addr *common.Address, valID *hexutil.Big) (*types.DelegationLock, error) {
+	p.log.Debugf("loading lock information for %s to #%d", addr.String(), valID.ToInt().Uint64())
+	return p.rpc.DelegationLock(addr, valID)
 }
 
 // PendingRewards returns a detail of pending rewards for the given delegation address and validator ID.
@@ -85,8 +94,8 @@ func (p *proxy) DelegationTokenizerUnlocked(addr *common.Address, toStaker *hexu
 }
 
 // DelegationFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
-func (p *proxy) DelegationFluidStakingActive(dl *types.Delegation) (bool, error) {
-	return p.rpc.DelegationFluidStakingActive(dl)
+func (p *proxy) DelegationFluidStakingActive(_ *common.Address, _ *hexutil.Big) (bool, error) {
+	return true, nil
 }
 
 // UpdateDelegationActiveAmount updates active delegation amount to the current SFC registered value.
@@ -113,11 +122,19 @@ func handleDelegationLog(blk hexutil.Uint64, trx *common.Hash, stakerID *big.Int
 		return
 	}
 
+	// get the validator address
+	val, err := R().ValidatorAddress((*hexutil.Big)(stakerID))
+	if err != nil {
+		ld.log.Errorf("unknown validator #%d; %s", stakerID.Uint64(), err.Error())
+		return
+	}
+
 	// make the delegation record
 	dl := types.Delegation{
 		Transaction:     *trx,
 		Address:         addr,
 		ToStakerId:      (*hexutil.Big)(stakerID),
+		ToStakerAddress: *val,
 		AmountStaked:    (*hexutil.Big)(amo),
 		AmountDelegated: (*hexutil.Big)(amo),
 		CreatedTime:     block.TimeStamp,

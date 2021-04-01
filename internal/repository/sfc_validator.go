@@ -31,16 +31,40 @@ func (p *proxy) IsValidator(addr *common.Address) (bool, error) {
 }
 
 // StakerAddress extract a staker address for the given staker ID.
-func (p *proxy) ValidatorAddress(id hexutil.Uint64) (*common.Address, error) {
-	return p.rpc.ValidatorAddress(new(big.Int).SetUint64(uint64(id)))
+func (p *proxy) ValidatorAddress(id *hexutil.Big) (*common.Address, error) {
+	return p.rpc.ValidatorAddress((*big.Int)(id))
 }
 
 // Staker extract a staker information from SFC smart contract.
-func (p *proxy) Validator(id hexutil.Uint64) (*types.Validator, error) {
-	return p.rpc.Validator(new(big.Int).SetUint64(uint64(id)))
+func (p *proxy) Validator(id *hexutil.Big) (*types.Validator, error) {
+	return p.rpc.Validator((*big.Int)(id))
 }
 
 // Staker extract a staker information by address.
 func (p *proxy) ValidatorByAddress(addr *common.Address) (*types.Validator, error) {
 	return p.rpc.ValidatorByAddress(addr)
+}
+
+// SfcMaxDelegatedRatio extracts a ratio between self delegation and received stake.
+func (p *proxy) SfcMaxDelegatedRatio() (*big.Int, error) {
+	// try cache first
+	val := p.cache.PullSfcMaxDelegatedRatio()
+	if val != nil {
+		return val, nil
+	}
+
+	// pull from the SFC contract
+	val, err := p.rpc.SfcMaxDelegatedRatio()
+	if err != nil {
+		return nil, err
+	}
+
+	// store for future use
+	p.cache.PushSfcMaxDelegatedRatio(val)
+	return val, nil
+}
+
+// ValidatorDowntime pulls information about validator downtime from the RPC interface.
+func (p *proxy) ValidatorDowntime(valID *hexutil.Big) (uint64, uint64, error) {
+	return p.rpc.ValidatorDowntime(valID)
 }

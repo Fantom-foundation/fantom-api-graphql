@@ -20,6 +20,7 @@ const (
 	fiDelegationToValidator  = "to"
 	fiDelegationCreated      = "cr_time"
 	fiDelegationAmountActive = "active"
+	fiDelegationValue        = "value"
 )
 
 // initDelegationCollection initializes the delegation collection with
@@ -123,6 +124,7 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *big.Int, amo *hexutil.Big) error {
 	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colDelegations)
+	val := new(big.Int).Div(amo.ToInt(), types.DelegationDecimalsCorrection)
 
 	// update the transaction details
 	if _, err := col.UpdateOne(context.Background(),
@@ -130,7 +132,10 @@ func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *bi
 			{fiDelegationAddress, addr.String()},
 			{fiDelegationToValidator, valID.String()},
 		},
-		bson.D{{"$set", bson.D{{fiDelegationAmountActive, amo.String()}}}}); err != nil {
+		bson.D{{"$set", bson.D{
+			{fiDelegationAmountActive, amo.String()},
+			{fiDelegationValue, val.Uint64()},
+		}}}); err != nil {
 		// log the issue
 		db.log.Criticalf("delegation balance can not be updated; %s", err.Error())
 		return err
@@ -208,8 +213,8 @@ func (db *MongoDbBridge) dlgListInit(col *mongo.Collection, cursor *string, coun
 	list := types.DelegationList{
 		Collection: make([]*types.Delegation, 0),
 		Total:      uint64(total),
-		First:      "",
-		Last:       "",
+		First:      0,
+		Last:       0,
 		IsStart:    total == 0,
 		IsEnd:      total == 0,
 		Filter:     *filter,
@@ -263,10 +268,10 @@ func (db *MongoDbBridge) dlgListCollectRangeMarks(col *mongo.Collection, list *t
 }
 
 // dlgListBorderPk finds the top PK of the delegations collection based on given filter and options.
-func (db *MongoDbBridge) dlgListBorderPk(col *mongo.Collection, filter bson.D, opt *options.FindOneOptions) (string, error) {
+func (db *MongoDbBridge) dlgListBorderPk(col *mongo.Collection, filter bson.D, opt *options.FindOneOptions) (uint64, error) {
 	// prep container
 	var row struct {
-		Value string `bson:"_id"`
+		Value uint64 `bson:"_id"`
 	}
 
 	// make sure we pull only what we need
@@ -276,7 +281,7 @@ func (db *MongoDbBridge) dlgListBorderPk(col *mongo.Collection, filter bson.D, o
 	// try to decode
 	err := sr.Decode(&row)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	return row.Value, nil

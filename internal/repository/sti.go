@@ -14,6 +14,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 	"sync"
 	"time"
 )
@@ -102,10 +103,11 @@ func (sti *stiMonitor) next() {
 	sti.log.Debugf("updating information about staker #%d", sti.currentStaker)
 
 	// request current staker
-	info, err := sti.repo.PullStakerInfo(hexutil.Uint64(sti.currentStaker))
+	stakerID := new(big.Int).SetUint64(sti.currentStaker)
+	info, err := sti.repo.PullStakerInfo((*hexutil.Big)(stakerID))
 	if err == nil && info != nil {
 		// got info? store it in cache
-		err = sti.repo.StoreStakerInfo(hexutil.Uint64(sti.currentStaker), info)
+		err = sti.repo.StoreStakerInfo((*hexutil.Big)(stakerID), info)
 	}
 
 	// anything failed?
@@ -125,12 +127,12 @@ func (sti *stiMonitor) next() {
 }
 
 // StakerInfo extracts an extended staker information from smart contact.
-func (p *proxy) PullStakerInfo(id hexutil.Uint64) (*types.StakerInfo, error) {
+func (p *proxy) PullStakerInfo(id *hexutil.Big) (*types.StakerInfo, error) {
 	return p.rpc.StakerInfo(id)
 }
 
 // StoreStakerInfo stores staker information to in-memory cache for future use.
-func (p *proxy) StoreStakerInfo(id hexutil.Uint64, sti *types.StakerInfo) error {
+func (p *proxy) StoreStakerInfo(id *hexutil.Big, sti *types.StakerInfo) error {
 	// push to in-memory cache
 	err := p.cache.PushStakerInfo(id, sti)
 	if err != nil {
@@ -142,7 +144,7 @@ func (p *proxy) StoreStakerInfo(id hexutil.Uint64, sti *types.StakerInfo) error 
 }
 
 // RetrieveStakerInfo gets staker information from in-memory if available.
-func (p *proxy) RetrieveStakerInfo(id hexutil.Uint64) *types.StakerInfo {
+func (p *proxy) RetrieveStakerInfo(id *hexutil.Big) *types.StakerInfo {
 	return p.cache.PullStakerInfo(id)
 }
 

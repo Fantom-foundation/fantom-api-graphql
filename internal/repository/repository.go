@@ -18,6 +18,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	retypes "github.com/ethereum/go-ethereum/core/types"
 	"golang.org/x/sync/singleflight"
+	"math/big"
 	"sync"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -111,6 +112,9 @@ type Repository interface {
 	// SfcVersion returns current version of the SFC contract.
 	SfcVersion() (hexutil.Uint64, error)
 
+	// SfcDecimalUnit returns the decimal unit adjustment used by the SFC contract.
+	SfcDecimalUnit() *big.Int
+
 	// CurrentEpoch returns the id of the current epoch.
 	CurrentEpoch() (hexutil.Uint64, error)
 
@@ -163,22 +167,28 @@ type Repository interface {
 	IsValidator(*common.Address) (bool, error)
 
 	// ValidatorAddress extract a staker address for the given staker ID.
-	ValidatorAddress(hexutil.Uint64) (*common.Address, error)
+	ValidatorAddress(*hexutil.Big) (*common.Address, error)
 
 	// Validator extract a staker information from SFC smart contract.
-	Validator(hexutil.Uint64) (*types.Validator, error)
+	Validator(*hexutil.Big) (*types.Validator, error)
 
 	// Staker extract a staker information by address.
 	ValidatorByAddress(*common.Address) (*types.Validator, error)
 
+	// ValidatorDowntime pulls information about validator downtime from the RPC interface.
+	ValidatorDowntime(*hexutil.Big) (uint64, uint64, error)
+
+	// SfcMaxDelegatedRatio extracts a ratio between self delegation and received stake.
+	SfcMaxDelegatedRatio() (*big.Int, error)
+
 	// StakerInfo extracts an extended staker information from smart contact.
-	PullStakerInfo(hexutil.Uint64) (*types.StakerInfo, error)
+	PullStakerInfo(*hexutil.Big) (*types.StakerInfo, error)
 
 	// StoreStakerInfo stores staker information to in-memory cache for future use.
-	StoreStakerInfo(hexutil.Uint64, *types.StakerInfo) error
+	StoreStakerInfo(*hexutil.Big, *types.StakerInfo) error
 
 	// RetrieveStakerInfo gets staker information from in-memory if available.
-	RetrieveStakerInfo(hexutil.Uint64) *types.StakerInfo
+	RetrieveStakerInfo(*hexutil.Big) *types.StakerInfo
 
 	// IsDelegating returns if the given address is an SFC delegator.
 	IsDelegating(*common.Address) (bool, error)
@@ -188,6 +198,10 @@ type Repository interface {
 
 	// Delegation returns a detail of delegation for the given address and validator ID.
 	Delegation(*common.Address, *hexutil.Big) (*types.Delegation, error)
+
+	// DelegationAmountStaked returns the current amount of staked tokens
+	// for the given delegation.
+	DelegationAmountStaked(*common.Address, *hexutil.Big) (*big.Int, error)
 
 	// DelegationsByAddress returns a list of all delegations of a given delegator address.
 	DelegationsByAddress(*common.Address, *string, int32) (*types.DelegationList, error)
@@ -199,7 +213,7 @@ type Repository interface {
 	DelegationsOfValidator(*hexutil.Big, *string, int32) (*types.DelegationList, error)
 
 	// DelegationLock returns delegation lock information using SFC contract binding.
-	DelegationLock(*types.Delegation) (*types.DelegationLock, error)
+	DelegationLock(*common.Address, *hexutil.Big) (*types.DelegationLock, error)
 
 	// Delegation returns a detail of delegation for the given address.
 	PendingRewards(*common.Address, *hexutil.Big) (*types.PendingRewards, error)
@@ -213,7 +227,7 @@ type Repository interface {
 	DelegationTokenizerUnlocked(*common.Address, *hexutil.Big) (bool, error)
 
 	// DelegationFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
-	DelegationFluidStakingActive(dl *types.Delegation) (bool, error)
+	DelegationFluidStakingActive(*common.Address, *hexutil.Big) (bool, error)
 
 	// UpdateDelegationActiveAmount updates active delegation amount to the current SFC registered value.
 	UpdateDelegationActiveAmount(addr *common.Address, valID *hexutil.Big)
@@ -226,6 +240,10 @@ type Repository interface {
 
 	// WithdrawRequests extracts a list of withdraw requests for the given address and validator.
 	WithdrawRequests(*common.Address, *hexutil.Big, *string, int32) (*types.WithdrawRequestList, error)
+
+	// WithdrawRequestsPendingTotal is the total value of all pending withdrawal requests
+	// for the given delegator and target staker ID.
+	WithdrawRequestsPendingTotal(*common.Address, *hexutil.Big) (*big.Int, error)
 
 	// Price returns a price information for the given target symbol.
 	Price(sym string) (types.Price, error)

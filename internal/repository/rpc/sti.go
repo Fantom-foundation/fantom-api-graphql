@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"io/ioutil"
 	"math/big"
@@ -35,9 +36,13 @@ const stiRequestTimeout = 15
 var stiNameCheckRegex = regexp.MustCompile(`^[\w\d\s.\-_'$()]+$`)
 
 // StakerInfo extracts an extended staker information from smart contact by their id.
-func (ftm *FtmBridge) StakerInfo(id hexutil.Uint64) (*types.StakerInfo, error) {
+func (ftm *FtmBridge) StakerInfo(id *hexutil.Big) (*types.StakerInfo, error) {
+	if id == nil {
+		return nil, fmt.Errorf("validator ID not given")
+	}
+
 	// keep track of the operation
-	ftm.log.Debugf("loading staker information for staker #%d", id)
+	ftm.log.Debugf("loading staker information for staker #%d", id.ToInt().Uint64())
 
 	// instantiate the contract and display its name
 	contract, err := contracts.NewStakerInfoContract(ftm.sfcConfig.StiContract, ftm.eth)
@@ -47,7 +52,7 @@ func (ftm *FtmBridge) StakerInfo(id hexutil.Uint64) (*types.StakerInfo, error) {
 	}
 
 	// call for data
-	stUrl, err := contract.GetInfo(nil, big.NewInt(int64(id)))
+	stUrl, err := contract.GetInfo(nil, (*big.Int)(id))
 	if err != nil {
 		ftm.log.Errorf("failed to get the staker information: %v", err)
 		return nil, err
@@ -55,7 +60,7 @@ func (ftm *FtmBridge) StakerInfo(id hexutil.Uint64) (*types.StakerInfo, error) {
 
 	// var url string
 	if len(stUrl) == 0 {
-		ftm.log.Debugf("no information for staker #%d", id)
+		ftm.log.Debugf("no information for staker #%d", id.ToInt().Uint64())
 		return nil, nil
 	}
 

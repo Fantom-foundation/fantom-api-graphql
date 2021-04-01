@@ -10,9 +10,11 @@ package repository
 
 import (
 	"fantom-api-graphql/internal/types"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
+	"math/big"
 )
 
 // StoreWithdrawRequest stores the given withdraw request in persistent storage.
@@ -27,6 +29,10 @@ func (p *proxy) WithdrawRequest(addr *common.Address, valID *hexutil.Big, reqID 
 
 // WithdrawRequests extracts a list of partial withdraw requests for the given address.
 func (p *proxy) WithdrawRequests(addr *common.Address, stakerID *hexutil.Big, cursor *string, count int32) (*types.WithdrawRequestList, error) {
+	if addr == nil {
+		return nil, fmt.Errorf("address not given")
+	}
+
 	// get all the requests for the given delegator address
 	if stakerID == nil {
 		// log the action and pull the list for all vals
@@ -37,4 +43,27 @@ func (p *proxy) WithdrawRequests(addr *common.Address, stakerID *hexutil.Big, cu
 	// log the action and pull the list for specific address and val
 	p.log.Debugf("loading withdraw requests of %s to #%d", addr.String(), stakerID.ToInt().Uint64())
 	return p.db.Withdrawals(cursor, count, &bson.D{{"addr", addr.String()}, {"to", stakerID.String()}})
+}
+
+// WithdrawRequestsPendingTotal is the total value of all pending withdrawal requests
+// for the given delegator and target staker ID.
+func (p *proxy) WithdrawRequestsPendingTotal(addr *common.Address, stakerID *hexutil.Big) (*big.Int, error) {
+	if addr == nil {
+		return nil, fmt.Errorf("address not given")
+	}
+
+	// all withdrawals for the address regardless of the target staker
+	if stakerID == nil {
+		return p.db.WithdrawalsSumValue(&bson.D{
+			{"addr", addr.String()},
+			{"fin_trx", bson.D{{"$type", 10}}},
+		})
+	}
+
+	// specific delegation withdrawal
+	return p.db.WithdrawalsSumValue(&bson.D{
+		{"addr", addr.String()},
+		{"to", stakerID.String()},
+		{"fin_trx", bson.D{{"$type", 10}}},
+	})
 }

@@ -50,22 +50,15 @@ func (ftm *FtmBridge) SfcVersion() (hexutil.Uint64, error) {
 
 // CurrentEpoch extract the current epoch id from SFC smart contract.
 func (ftm *FtmBridge) CurrentEpoch() (hexutil.Uint64, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
-		return 0, err
-	}
-
-	// get the value from the contract
-	epoch, err := contract.CurrentEpoch(nil)
-	if err != nil {
-		ftm.log.Errorf("failed to get the current epoch: %s", err.Error())
+	// use rather the public API, it should be faster since it does not involve contract call
+	var ep hexutil.Big
+	if err := ftm.rpc.Call(&ep, "ftm_CurrentEpoch"); err != nil {
+		ftm.log.Errorf("failed to get the current epoch; %s", err.Error())
 		return 0, err
 	}
 
 	// get the value
-	return hexutil.Uint64(epoch.Uint64()), nil
+	return hexutil.Uint64(ep.ToInt().Uint64()), nil
 }
 
 // CurrentSealedEpoch extract the current sealed epoch id from SFC smart contract.
@@ -106,7 +99,7 @@ func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (*types.Epoch, error) {
 
 	return &types.Epoch{
 		Id:                    id,
-		EndTime:               (hexutil.Big)(*epo.EndTime),
+		EndTime:               hexutil.Uint64(epo.EndTime.Uint64()),
 		EpochFee:              (hexutil.Big)(*epo.EpochFee),
 		TotalBaseRewardWeight: (hexutil.Big)(*epo.TotalBaseRewardWeight),
 		TotalTxRewardWeight:   (hexutil.Big)(*epo.TotalTxRewardWeight),

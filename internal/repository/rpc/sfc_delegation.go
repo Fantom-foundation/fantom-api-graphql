@@ -83,11 +83,11 @@ func (ftm *FtmBridge) PendingRewards(addr *common.Address, valID *big.Int) (*typ
 }
 
 // DelegationLock returns delegation lock information using SFC contract binding.
-func (ftm *FtmBridge) DelegationLock(dlg *types.Delegation) (dll *types.DelegationLock, err error) {
+func (ftm *FtmBridge) DelegationLock(addr *common.Address, valID *hexutil.Big) (dll *types.DelegationLock, err error) {
 	// recover from panic here
 	defer func() {
 		if r := recover(); r != nil {
-			ftm.log.Criticalf("can not get SFC lock status on delegation %s to %d; SFC call panic", dlg.Address.String(), dlg.ToStakerId.String())
+			ftm.log.Criticalf("can not get SFC lock status on delegation %s to %d; SFC call panic", addr.String(), valID.String())
 			dll = &types.DelegationLock{}
 		}
 	}()
@@ -100,7 +100,7 @@ func (ftm *FtmBridge) DelegationLock(dlg *types.Delegation) (dll *types.Delegati
 	}
 
 	// get staker locking detail
-	lock, err := contract.GetLockupInfo(nil, dlg.Address, dlg.ToStakerId.ToInt())
+	lock, err := contract.GetLockupInfo(nil, *addr, valID.ToInt())
 	if err != nil {
 		ftm.log.Errorf("delegation lock query failed; %v", err)
 		return nil, err
@@ -119,12 +119,6 @@ func (ftm *FtmBridge) DelegationLock(dlg *types.Delegation) (dll *types.Delegati
 		LockedUntil:     hexutil.Uint64(lock.EndTime.Uint64()),
 		Duration:        hexutil.Uint64(lock.Duration.Uint64()),
 	}, nil
-}
-
-// DelegationFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
-func (ftm *FtmBridge) DelegationFluidStakingActive(_ *types.Delegation) (bool, error) {
-	ftm.log.Debug("fluid staking is always on with SFCv3")
-	return true, nil
 }
 
 // DelegationOutstandingSFTM returns the amount of sFTM tokens for the delegation

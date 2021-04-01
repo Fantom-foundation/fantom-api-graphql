@@ -22,6 +22,33 @@ import (
 	"math/big"
 )
 
+// ValidatorDowntime pulls information about validator downtime from the RPC interface.
+func (ftm *FtmBridge) ValidatorDowntime(valID *hexutil.Big) (uint64, uint64, error) {
+	// use rather the public API, it should be faster since it does not involve contract call
+	var dt struct {
+		Blocks hexutil.Uint64 `json:"offlineBlocks"`
+		Time   hexutil.Uint64 `json:"offlineTime"`
+	}
+	if err := ftm.rpc.Call(&dt, "abft_GetDowntime", valID); err != nil {
+		ftm.log.Errorf("failed to get downtime of validator #%d; %s", valID.ToInt().Uint64(), err.Error())
+		return 0, 0, err
+	}
+	// get the values
+	return uint64(dt.Time), uint64(dt.Blocks), nil
+}
+
+// ValidatorEpochUptime pulls information about validator uptime on the given epoch.
+func (ftm *FtmBridge) ValidatorEpochUptime(valID *hexutil.Big) (uint64, error) {
+	// use rather the public API, it should be faster since it does not involve contract call
+	var ut hexutil.Uint64
+	if err := ftm.rpc.Call(&ut, "abft_GetEpochUptime", valID); err != nil {
+		ftm.log.Errorf("failed to get epoch uptime of validator #%d; %s", valID.ToInt().Uint64(), err.Error())
+		return 0, err
+	}
+	// get the values
+	return uint64(ut), nil
+}
+
 // LastValidatorId returns the last staker id in Opera blockchain.
 func (ftm *FtmBridge) LastValidatorId() (uint64, error) {
 	// instantiate the contract and display its name
@@ -51,15 +78,14 @@ func (ftm *FtmBridge) ValidatorsCount() (uint64, error) {
 		return 0, err
 	}
 
-	// get the current epoch
-	ep, err := contract.CurrentEpoch(nil)
-	if err != nil {
-		ftm.log.Errorf("failed to get the epoch; %s", err.Error())
+	var ep hexutil.Big
+	if err := ftm.rpc.Call(&ep, "ftm_CurrentEpoch"); err != nil {
+		ftm.log.Errorf("failed to get the current epoch; %s", err.Error())
 		return 0, err
 	}
 
 	// get the value from the contract
-	val, err := contract.GetEpochValidatorIDs(nil, ep)
+	val, err := contract.GetEpochValidatorIDs(nil, ep.ToInt())
 	if err != nil {
 		ftm.log.Errorf("failed to get the list of validators; %s", err.Error())
 		return 0, err
@@ -71,6 +97,11 @@ func (ftm *FtmBridge) ValidatorsCount() (uint64, error) {
 
 // Validator extract a staker information by numeric id.
 func (ftm *FtmBridge) Validator(valID *big.Int) (*types.Validator, error) {
+	// no validator id?
+	if valID == nil {
+		return nil, fmt.Errorf("validator ID not provided")
+	}
+
 	// keep track of the operation
 	ftm.log.Debugf("loading validator #%d", valID.Uint64())
 
@@ -100,23 +131,21 @@ func (ftm *FtmBridge) validatorById(contract *contracts.SfcContract, valID *big.
 	}
 
 	// any deactivation epoch?
-	var deaEpoch *hexutil.Uint64
+	var deaEpoch hexutil.Uint64
 	if nil != val.DeactivatedEpoch {
-		dea := hexutil.Uint64(val.DeactivatedEpoch.Uint64())
-		deaEpoch = &dea
+		deaEpoch = hexutil.Uint64(val.DeactivatedEpoch.Uint64())
 	}
 
 	// any deactivation time?
-	var deaTime *hexutil.Uint64
+	var deaTime hexutil.Uint64
 	if nil != val.DeactivatedTime {
-		dea := hexutil.Uint64(val.DeactivatedTime.Uint64())
-		deaTime = &dea
+		deaTime = hexutil.Uint64(val.DeactivatedTime.Uint64())
 	}
 
 	// keep track of the operation
 	ftm.log.Debugf("validator #%d is %s", valID.Uint64(), val.Auth.String())
 	return &types.Validator{
-		Id:               hexutil.Uint64(valID.Uint64()),
+		Id:               (hexutil.Big)(*valID),
 		StakerAddress:    val.Auth,
 		TotalStake:       (*hexutil.Big)(val.ReceivedStake),
 		Status:           hexutil.Uint64(val.Status.Uint64()),
@@ -177,6 +206,11 @@ func (ftm *FtmBridge) IsValidator(addr *common.Address) (bool, error) {
 
 // ValidatorByAddress extracts a validator information by address.
 func (ftm *FtmBridge) ValidatorByAddress(addr *common.Address) (*types.Validator, error) {
+	// no validator id?
+	if addr == nil {
+		return nil, fmt.Errorf("validator address not provided")
+	}
+
 	// keep track of the operation
 	ftm.log.Debugf("loading validator with address %s", addr.String())
 
@@ -200,4 +234,16 @@ func (ftm *FtmBridge) ValidatorByAddress(addr *common.Address) (*types.Validator
 		return nil, nil
 	}
 	return ftm.validatorById(contract, id)
+}
+
+// SfcMaxDelegatedRatio extracts a ratio between self delegation and received stake.
+func (ftm *FtmBridge) SfcMaxDelegatedRatio() (*big.Int, error) {
+	// instantiate the contract and display its name
+	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
+		return nil, err
+	}
+
+	return contract.MaxDelegatedRatio(nil)
 }
