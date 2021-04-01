@@ -50,17 +50,15 @@ func main() {
 	lg := logger.New(cfg)
 
 	// create repository for data exchange with the blockchain full node and local persistent storage
-	repo, err := repository.New(cfg, lg)
-	if err != nil {
-		log.Fatal(err)
-	}
+	repository.SetConfig(cfg)
+	repository.SetLogger(lg)
 
 	// start the HTTP server
-	startHttpServer(cfg, lg, repo)
+	startHttpServer(cfg, lg)
 }
 
 // startHttpServer starts the HTTP server and begins resolving incoming requests.
-func startHttpServer(cfg *config.Config, log logger.Logger, repo repository.Repository) {
+func startHttpServer(cfg *config.Config, log logger.Logger) {
 	// create request MUXer
 	srvMux := new(http.ServeMux)
 
@@ -75,7 +73,7 @@ func startHttpServer(cfg *config.Config, log logger.Logger, repo repository.Repo
 	}
 
 	// capture termination signals and start listening
-	setupSignals(repo, setupHandlers(srvMux, cfg, log, repo), log)
+	setupSignals(setupHandlers(srvMux, cfg, log), log)
 
 	// log the server opening info
 	log.Infof("welcome to Fantom GraphQL API server network interface.")
@@ -86,9 +84,9 @@ func startHttpServer(cfg *config.Config, log logger.Logger, repo repository.Repo
 }
 
 // setupHandlers initializes an array of handlers for our HTTP API end-points.
-func setupHandlers(mux *http.ServeMux, cfg *config.Config, log logger.Logger, repo repository.Repository) resolvers.ApiResolver {
+func setupHandlers(mux *http.ServeMux, cfg *config.Config, log logger.Logger) resolvers.ApiResolver {
 	// create root resolver
-	rs := resolvers.New(cfg, log, repo)
+	rs := resolvers.New(cfg, log)
 	log.Notice("initialized, going live")
 
 	// setup GraphQL API handler
@@ -103,7 +101,7 @@ func setupHandlers(mux *http.ServeMux, cfg *config.Config, log logger.Logger, re
 }
 
 // setupSignals creates a system signal listener and handles graceful termination upon receiving one.
-func setupSignals(repo repository.Repository, rs resolvers.ApiResolver, log logger.Logger) {
+func setupSignals(rs resolvers.ApiResolver, log logger.Logger) {
 	// log what we do
 	log.Info("os signals captured")
 
@@ -116,11 +114,16 @@ func setupSignals(repo repository.Repository, rs resolvers.ApiResolver, log logg
 		// wait for the signal
 		<-ts
 
-		// log nad close
+		// log nad close repository
 		log.Notice("server is terminating")
-		repo.Close()
+		if repo := repository.R(); repo != nil {
+			repo.Close()
+		}
+
+		// close resolvers
 		rs.Close()
 
+		// we are done
 		log.Info("done")
 		os.Exit(0)
 	}()
