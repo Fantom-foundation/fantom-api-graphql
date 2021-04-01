@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"math/big"
 )
 
 const (
@@ -19,6 +20,7 @@ const (
 	fiWithdrawalAddress     = "addr"
 	fiWithdrawalToValidator = "to"
 	fiWithdrawalCreated     = "cr_time"
+	fiWithdrawalValue       = "value"
 )
 
 // initWithdrawalsCollection initializes the withdraw requests collection with
@@ -189,8 +191,8 @@ func (db *MongoDbBridge) wrListInit(col *mongo.Collection, cursor *string, count
 	list := types.WithdrawRequestList{
 		Collection: make([]*types.WithdrawRequest, 0),
 		Total:      uint64(total),
-		First:      "",
-		Last:       "",
+		First:      0,
+		Last:       0,
 		IsStart:    total == 0,
 		IsEnd:      total == 0,
 		Filter:     *filter,
@@ -244,10 +246,10 @@ func (db *MongoDbBridge) wrListCollectRangeMarks(col *mongo.Collection, list *ty
 }
 
 // wrListBorderPk finds the top PK of the withdraw requests collection based on given filter and options.
-func (db *MongoDbBridge) wrListBorderPk(col *mongo.Collection, filter bson.D, opt *options.FindOneOptions) (string, error) {
+func (db *MongoDbBridge) wrListBorderPk(col *mongo.Collection, filter bson.D, opt *options.FindOneOptions) (uint64, error) {
 	// prep container
 	var row struct {
-		Value string `bson:"_id"`
+		Value uint64 `bson:"_id"`
 	}
 
 	// make sure we pull only what we need
@@ -257,7 +259,7 @@ func (db *MongoDbBridge) wrListBorderPk(col *mongo.Collection, filter bson.D, op
 	// try to decode
 	err := sr.Decode(&row)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	return row.Value, nil
@@ -392,4 +394,55 @@ func (db *MongoDbBridge) Withdrawals(cursor *string, count int32, filter *bson.D
 	}
 
 	return list, nil
+}
+
+// WithdrawalsSumValue calculates sum of values for all the withdrawals by a filter.
+func (db *MongoDbBridge) WithdrawalsSumValue(filter *bson.D) (*big.Int, error) {
+	// make sure we have at least some filter
+	if filter == nil {
+		filter = &bson.D{}
+	}
+
+	// get the collection
+	col := db.client.Database(db.dbName).Collection(colWithdrawals)
+	cr, err := col.Aggregate(context.Background(), mongo.Pipeline{
+		{{"$match", filter}},
+		{{"$group", bson.D{
+			{"_id", nil},
+			{"total", bson.D{{"$sum", fiWithdrawalValue}}},
+		}}},
+	})
+	if err != nil {
+		db.log.Errorf("can not calculate withdrawal sum value; %s", err.Error())
+		return nil, err
+	}
+
+	// read the data and return result
+	return db.readAggregatedSum(cr)
+}
+
+// readAggregatedValue extract the aggregated value from the given result set.
+func (db *MongoDbBridge) readAggregatedSum(cr *mongo.Cursor) (*big.Int, error) {
+	// make sure to close the cursor after we got the data
+	defer func() {
+		if err := cr.Close(context.Background()); err != nil {
+			db.log.Errorf("can not close aggregate cursor; %s", err.Error())
+		}
+	}()
+
+	// do we have any data to read?
+	if !cr.Next(context.Background()) {
+		return new(big.Int), nil
+	}
+
+	// try to get the calculated value
+	var row struct {
+		Total uint64 `bson:"total"`
+	}
+	if err := cr.Decode(&row); err != nil {
+		db.log.Errorf("can not read withdrawal sum value; %s", err.Error())
+		return nil, err
+	}
+
+	return new(big.Int).Mul(new(big.Int).SetUint64(row.Total), types.WithdrawDecimalsCorrection), nil
 }
