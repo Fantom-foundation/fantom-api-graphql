@@ -22,7 +22,6 @@ import (
 	"sync"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ftm "github.com/ethereum/go-ethereum/rpc"
 )
@@ -588,12 +587,6 @@ func connect(cfg *config.Config, log logger.Logger) (*cache.MemBridge, *db.Mongo
 	if err != nil {
 		log.Criticalf("can not connect Lachesis RPC interface, %s", err.Error())
 		return nil, nil, nil, err
-	}
-
-	// try to validate the solidity compiler by asking for it's version
-	if _, err := compiler.SolidityVersion(cfg.Compiler.DefaultSolCompilerPath); err != nil {
-		log.Criticalf("can not invoke the Solidity compiler, %s", err.Error())
-		// return nil, nil, nil, err
 	}
 
 	return caBridge, dbBridge, rpcBridge, nil
