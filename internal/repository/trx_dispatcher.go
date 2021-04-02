@@ -15,7 +15,7 @@ import (
 )
 
 // trxDispatchQueueCapacity is the number of transactions kept in the dispatch buffer.
-const trxDispatchQueueCapacity = 1000
+const trxDispatchQueueCapacity = 10000
 
 // trxDispatcher implements dispatcher of new transactions in the blockchain.
 type trxDispatcher struct {

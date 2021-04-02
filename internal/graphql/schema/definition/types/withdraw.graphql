@@ -6,11 +6,12 @@ type WithdrawRequest {
     # Address of the authorized request.
     address: Address!
 
-    # Accountof the authorized request.
+    # Account of the authorized request.
     account: Account!
 
-    # Staker Id of the staker involved in the withdraw request.
-    stakerID: Long!
+    # StakerID represents the identifier of the validator
+    # the withdraw request points to.
+    stakerID: BigInt!
 
     # Details of the staker involved in the withdraw request.
     staker: Staker!
@@ -24,7 +25,7 @@ type WithdrawRequest {
     # CreatedTime represents the time stamp of the request creation.
     createdTime: Long!
 
-    # WithdrawTime represents the time stamp of the request finalisation.
+    # WithdrawTime represents the time stamp of the request finalization.
     # If the request is pending, the withdrawTime will be NULL.
     withdrawTime: Long
 }

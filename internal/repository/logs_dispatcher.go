@@ -9,7 +9,7 @@ import (
 
 // logQueueLength represents the amount og transaction logs
 // allowed to be queued at a time before queue writer is slowed down
-const logQueueLength = 10000
+const logQueueLength = 25000
 
 // eventTrxLog represents a log record to be processed.
 type eventTrxLog struct {

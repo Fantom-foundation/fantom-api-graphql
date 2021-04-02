@@ -346,7 +346,7 @@ type DelegationListEdge {
     delegation: Delegation!
 }
 
-# Delegation represents a delegation on Opera blockchain.
+# Delegation represents a delegation on Opera block chain.
 type Delegation {
     # Address of the delegator account.
     address: Address!
@@ -354,7 +354,7 @@ type Delegation {
     # Identifier of the staker the delegation belongs to.
     toStakerId: BigInt!
 
-    # Timestamp of the delegation creation.
+    # Time stamp of the delegation creation.
     createdTime: Long!
 
     # Amount delegated in WEI. The value includes all the pending un-delegations.
@@ -385,7 +385,8 @@ type Delegation {
     # lockedFromEpoch represents the id of epoch the lock has been created.
     lockedFromEpoch: Long
 
-    # lockedUntil represents the timestamp up to which the delegation is locked, zero if not locked.
+    # lockedUntil represents the time stamp up to which
+    # the delegation is locked, zero if not locked.
     lockedUntil: Long
 
     # lockedAmount represents the amount of delegation stake locked.
@@ -393,11 +394,11 @@ type Delegation {
     # unlocked amount is lower than demanded amount to undelegate.
     lockedAmount: BigInt!
 
-    # outstandingSFTM represents the amount of sFTM tokens representing the tokenised stake
+    # outstandingSFTM represents the amount of sFTM tokens representing the tokenized stake
     # minted and un-repaid on this delegation.
     outstandingSFTM: BigInt!
 
-    # tokenizerAllowedToWithdraw indicates if the stake tokeniser allows the stake
+    # tokenizerAllowedToWithdraw indicates if the stake tokenizer allows the stake
     # to be withdrawn. That means all the sFTM tokens have been repaid and the sFTM
     # debt is effectively zero for the delegation.
     tokenizerAllowedToWithdraw: Boolean!
@@ -919,11 +920,12 @@ type WithdrawRequest {
     # Address of the authorized request.
     address: Address!
 
-    # Accountof the authorized request.
+    # Account of the authorized request.
     account: Account!
 
-    # Staker Id of the staker involved in the withdraw request.
-    stakerID: Long!
+    # StakerID represents the identifier of the validator
+    # the withdraw request points to.
+    stakerID: BigInt!
 
     # Details of the staker involved in the withdraw request.
     staker: Staker!
@@ -937,7 +939,7 @@ type WithdrawRequest {
     # CreatedTime represents the time stamp of the request creation.
     createdTime: Long!
 
-    # WithdrawTime represents the time stamp of the request finalisation.
+    # WithdrawTime represents the time stamp of the request finalization.
     # If the request is pending, the withdrawTime will be NULL.
     withdrawTime: Long
 }

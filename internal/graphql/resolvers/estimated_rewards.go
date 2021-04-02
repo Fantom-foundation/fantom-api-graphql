@@ -21,7 +21,7 @@ const (
 type EstimatedRewards struct {
 	Staked      hexutil.Uint64
 	TotalStaked hexutil.Big
-	LastEpoch   types.Epoch
+	LastEpoch   Epoch
 }
 
 // weiToFtmDecimals represents decimal conversion between WEI and FTM units.
@@ -32,7 +32,7 @@ func NewEstimatedRewards(ep *types.Epoch, amount *hexutil.Uint64, total *hexutil
 	return EstimatedRewards{
 		Staked:      *amount,
 		TotalStaked: *total,
-		LastEpoch:   *ep,
+		LastEpoch:   Epoch{*ep},
 	}
 }
 

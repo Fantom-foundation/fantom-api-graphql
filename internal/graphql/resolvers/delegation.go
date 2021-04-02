@@ -11,9 +11,6 @@ import (
 	"time"
 )
 
-// dlgWithdrawalsListDefaultLength is the default max len of withdrawals list.
-const dlgWithdrawalsListDefaultLength = 25
-
 // Delegator represents resolvable delegator detail.
 type Delegation struct {
 	types.Delegation
@@ -39,10 +36,26 @@ func (rs *rootResolver) Delegation(args *struct {
 	return NewDelegation(d), nil
 }
 
+// AmountDelegated resolves the active amount the delegation stands for.
+func (del Delegation) AmountDelegated() hexutil.Big {
+	if del.Delegation.AmountDelegated == nil {
+		return hexutil.Big{}
+	}
+	return *del.Delegation.AmountDelegated
+}
+
+// ToStakerId resolves validator ID the delegation belongs to.
+func (del Delegation) ToStakerId() hexutil.Big {
+	if del.Delegation.ToStakerId == nil {
+		return hexutil.Big{}
+	}
+	return *del.Delegation.ToStakerId
+}
+
 // Amount returns total delegated amount for the delegator.
 func (del Delegation) Amount() (hexutil.Big, error) {
 	// get the base amount delegated
-	base, err := repository.R().DelegationAmountStaked(&del.Address, del.ToStakerId)
+	base, err := repository.R().DelegationAmountStaked(&del.Address, del.Delegation.ToStakerId)
 	if err != nil {
 		return hexutil.Big{}, err
 	}
@@ -61,7 +74,7 @@ func (del Delegation) Amount() (hexutil.Big, error) {
 func (del Delegation) pendingWithdrawalsValue() (*big.Int, error) {
 	// call for it only once
 	val, err, _ := del.cg.Do("withdraw-total", func() (interface{}, error) {
-		return repository.R().WithdrawRequestsPendingTotal(&del.Address, del.ToStakerId)
+		return repository.R().WithdrawRequestsPendingTotal(&del.Address, del.Delegation.ToStakerId)
 	})
 	if err != nil {
 		return nil, err
@@ -80,7 +93,7 @@ func (del Delegation) AmountInWithdraw() (hexutil.Big, error) {
 
 // PendingRewards resolves pending rewards for the delegator account.
 func (del Delegation) PendingRewards() (types.PendingRewards, error) {
-	r, err := repository.R().PendingRewards(&del.Address, del.ToStakerId)
+	r, err := repository.R().PendingRewards(&del.Address, del.Delegation.ToStakerId)
 	if err != nil {
 		return types.PendingRewards{}, err
 	}
@@ -93,9 +106,16 @@ func (del Delegation) ClaimedReward() (hexutil.Big, error) {
 }
 
 // WithdrawRequests resolves partial withdraw requests of the delegator.
-func (del Delegation) WithdrawRequests() ([]WithdrawRequest, error) {
+func (del Delegation) WithdrawRequests(args struct {
+	Cursor *Cursor
+	Count  int32
+}) ([]WithdrawRequest, error) {
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
+
 	// pull list of withdrawals
-	wr, err := repository.R().WithdrawRequests(&del.Address, del.ToStakerId, nil, dlgWithdrawalsListDefaultLength)
+	wr, err := repository.R().WithdrawRequests(&del.Address, del.Delegation.ToStakerId, (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +134,7 @@ func (del Delegation) WithdrawRequests() ([]WithdrawRequest, error) {
 func (del Delegation) DelegationLock() (*types.DelegationLock, error) {
 	// load the delegations lock only once
 	dl, err, _ := del.cg.Do("lock", func() (interface{}, error) {
-		return repository.R().DelegationLock(&del.Address, del.ToStakerId)
+		return repository.R().DelegationLock(&del.Address, del.Delegation.ToStakerId)
 	})
 	if err != nil {
 		return nil, err
@@ -133,31 +153,40 @@ func (del Delegation) IsDelegationLocked() (bool, error) {
 
 // IsFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
 func (del Delegation) IsFluidStakingActive() (bool, error) {
-	return repository.R().DelegationFluidStakingActive(&del.Address, del.ToStakerId)
+	return repository.R().DelegationFluidStakingActive(&del.Address, del.Delegation.ToStakerId)
 }
 
 // LockedUntil resolves the end time of delegation.
-func (del Delegation) LockedUntil() (hexutil.Uint64, error) {
+func (del Delegation) LockedUntil() (*hexutil.Uint64, error) {
 	lock, err := del.DelegationLock()
 	if err != nil {
-		return hexutil.Uint64(0), err
+		return nil, err
 	}
-	return lock.LockedUntil, nil
+	return &lock.LockedUntil, nil
 }
 
 // LockedFromEpoch resolves the epoch om which the lock has been created.
-func (del Delegation) LockedFromEpoch() (hexutil.Uint64, error) {
+func (del Delegation) LockedFromEpoch() (*hexutil.Uint64, error) {
 	lock, err := del.DelegationLock()
 	if err != nil {
-		return hexutil.Uint64(0), err
+		return nil, err
 	}
-	return lock.LockedFromEpoch, nil
+	return &lock.LockedFromEpoch, nil
+}
+
+// LockedFromEpoch resolves the epoch om which the lock has been created.
+func (del Delegation) LockedAmount() (hexutil.Big, error) {
+	lock, err := del.DelegationLock()
+	if err != nil {
+		return hexutil.Big{}, err
+	}
+	return lock.LockedAmount, nil
 }
 
 // OutstandingSFTM resolves the amount of outstanding sFTM tokens
 // minted for this account.
 func (del Delegation) OutstandingSFTM() (hexutil.Big, error) {
-	val, err := repository.R().DelegationOutstandingSFTM(&del.Address, del.ToStakerId)
+	val, err := repository.R().DelegationOutstandingSFTM(&del.Address, del.Delegation.ToStakerId)
 	if err != nil {
 		return hexutil.Big{}, err
 	}
@@ -168,7 +197,7 @@ func (del Delegation) OutstandingSFTM() (hexutil.Big, error) {
 // of the delegation withdrawal.
 func (del Delegation) TokenizerAllowedToWithdraw() (bool, error) {
 	// check the tokenizer lock status
-	lock, err := repository.R().DelegationTokenizerUnlocked(&del.Address, del.ToStakerId)
+	lock, err := repository.R().DelegationTokenizerUnlocked(&del.Address, del.Delegation.ToStakerId)
 	if err != nil {
 		return false, err
 	}
