@@ -244,6 +244,9 @@ type Repository interface {
 	// for the given delegator and target staker ID.
 	WithdrawRequestsPendingTotal(*common.Address, *hexutil.Big) (*big.Int, error)
 
+	// StoreRewardClaim stores reward claim record in the persistent repository.
+	StoreRewardClaim(*types.RewardClaim) error
+
 	// Price returns a price information for the given target symbol.
 	Price(sym string) (types.Price, error)
 
