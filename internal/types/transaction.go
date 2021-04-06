@@ -15,52 +15,52 @@ import (
 // Transaction represents a basic information provided by the API about transaction inside Opera blockchain.
 type Transaction struct {
 	// BlockHash represents hash of the block where this transaction was in. nil when its pending.
-	BlockHash *common.Hash `json:"blockHash" bson:"-"`
+	BlockHash *common.Hash `json:"blockHash"`
 
 	// BlockNumber represents number of the block where this transaction was in. nil when its pending.
-	BlockNumber *hexutil.Uint64 `json:"blockNumber" bson:"-"`
+	BlockNumber *hexutil.Uint64 `json:"blockNumber"`
 
 	// From represents address of the sender.
-	From common.Address `json:"from" bson:"-"`
+	From common.Address `json:"from"`
 
 	// Gas represents gas provided by the sender.
-	Gas hexutil.Uint64 `json:"gas" bson:"-"`
+	Gas hexutil.Uint64 `json:"gas"`
 
 	// Gas represents gas provided by the sender.
-	GasUsed *hexutil.Uint64 `json:"gasUsed" bson:"-"`
+	GasUsed *hexutil.Uint64 `json:"gasUsed"`
 
 	// CumulativeGasUsed represents the total amount of gas used when this transaction was executed in the block.
-	CumulativeGasUsed *hexutil.Uint64 `json:"-" bson:"-"`
+	CumulativeGasUsed *hexutil.Uint64 `json:"-"`
 
 	// GasPrice represents gas price provided by the sender in Wei.
-	GasPrice hexutil.Big `json:"gasPrice" bson:"-"`
+	GasPrice hexutil.Big `json:"gasPrice"`
 
 	// Hash represents 32 bytes hash of the transaction.
-	Hash common.Hash `json:"hash" bson:"-"`
+	Hash common.Hash `json:"hash"`
 
 	// Nonce represents the number of transactions made by the sender prior to this one.
-	Nonce hexutil.Uint64 `json:"nonce" bson:"-"`
+	Nonce hexutil.Uint64 `json:"nonce"`
 
 	// To represents the address of the receiver. nil when its a contract creation transaction.
-	To *common.Address `json:"to" bson:"-"`
+	To *common.Address `json:"to"`
 
 	// ContractAddress represents the address of contract created, if a contract creation transaction, otherwise nil.
-	ContractAddress *common.Address `json:"contract" bson:"-"`
+	ContractAddress *common.Address `json:"contract"`
 
 	// TrxIndex represents integer of the transaction's index position in the block. nil when its pending.
-	TrxIndex *hexutil.Uint `json:"transactionIndex" bson:"-"`
+	TrxIndex *hexutil.Uint `json:"transactionIndex"`
 
 	// Value represents value transferred in Wei.
-	Value hexutil.Big `json:"value" bson:"-"`
+	Value hexutil.Big `json:"value"`
 
 	// Input represents the data send along with the transaction.
-	InputData hexutil.Bytes `json:"input" bson:"-"`
+	InputData hexutil.Bytes `json:"input"`
 
 	// Index represents integer of the transaction's index position in the block.
-	Index *hexutil.Uint64 `json:"index" bson:"-"`
+	Index *hexutil.Uint64 `json:"index"`
 
 	// Status represents transaction status; value is either 1 (success) or 0 (failure)
-	Status *hexutil.Uint64 `json:"status" bson:"-"`
+	Status *hexutil.Uint64 `json:"status"`
 
 	// Logs represents a list of log records created along with the transaction
 	Logs []retypes.Log `json:"logs"`

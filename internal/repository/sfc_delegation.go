@@ -44,7 +44,14 @@ func (p *proxy) Delegation(addr *common.Address, valID *hexutil.Big) (*types.Del
 
 // DelegationAmountStaked returns the current amount of staked tokens for the given delegation.
 func (p *proxy) DelegationAmountStaked(addr *common.Address, valID *hexutil.Big) (*big.Int, error) {
-	return p.rpc.AmountStaked(addr, (*big.Int)(valID))
+	val, err := p.rpc.AmountStaked(addr, (*big.Int)(valID))
+	if err != nil {
+		p.log.Errorf("can not get amount delegated by %s to %d; %s", addr.String(), valID.ToInt().Uint64(), err.Error())
+		return nil, err
+	}
+	// log and return
+	p.log.Debugf("%s delegated %d to %d", addr.String(), val.Uint64(), valID.ToInt().Uint64())
+	return val, nil
 }
 
 // DelegationsByAddress returns a list of all delegations of a given delegator address.
