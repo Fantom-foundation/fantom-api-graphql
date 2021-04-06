@@ -71,7 +71,7 @@ func (ftm *FtmBridge) CurrentSealedEpoch() (hexutil.Uint64, error) {
 	}
 
 	// get the value from the contract
-	epoch, err := contract.CurrentSealedEpoch(nil)
+	epoch, err := contract.CurrentSealedEpoch(ftm.DefaultCallOpts())
 	if err != nil {
 		ftm.log.Errorf("failed to get the current sealed epoch: %s", err.Error())
 		return 0, err

@@ -35,7 +35,7 @@ func (ftm *FtmBridge) AmountStaked(addr *common.Address, valID *big.Int) (*big.I
 	}
 
 	// get the amount staked
-	return contract.GetStake(nil, *addr, valID)
+	return contract.GetStake(ftm.DefaultCallOpts(), *addr, valID)
 }
 
 // AmountStakeLocked returns the current locked amount at stake for the given staker address and target validator
@@ -51,7 +51,7 @@ func (ftm *FtmBridge) AmountStakeLocked(addr *common.Address, valID *big.Int) (*
 	}
 
 	// get the amount staked
-	return contract.GetLockedStake(nil, *addr, valID)
+	return contract.GetLockedStake(ftm.DefaultCallOpts(), *addr, valID)
 }
 
 // PendingRewards returns a detail of delegation rewards waiting to be claimed for the given delegation.
@@ -71,7 +71,7 @@ func (ftm *FtmBridge) PendingRewards(addr *common.Address, valID *big.Int) (*typ
 	}
 
 	// get the pending rewards amount
-	amo, err := contract.PendingRewards(nil, *addr, valID)
+	amo, err := contract.PendingRewards(ftm.DefaultCallOpts(), *addr, valID)
 	if err != nil {
 		ftm.log.Criticalf("can not calculate pending rewards of %s to %d; %s", addr.String(), valID.Uint64(), err.Error())
 		return &pr, nil
@@ -100,7 +100,7 @@ func (ftm *FtmBridge) DelegationLock(addr *common.Address, valID *hexutil.Big) (
 	}
 
 	// get staker locking detail
-	lock, err := contract.GetLockupInfo(nil, *addr, valID.ToInt())
+	lock, err := contract.GetLockupInfo(ftm.DefaultCallOpts(), *addr, valID.ToInt())
 	if err != nil {
 		ftm.log.Errorf("delegation lock query failed; %v", err)
 		return nil, err
@@ -135,7 +135,7 @@ func (ftm *FtmBridge) DelegationOutstandingSFTM(addr *common.Address, valID *big
 	}
 
 	// get the amount of outstanding sFTM
-	return contract.OutstandingSFTM(nil, *addr, valID)
+	return contract.OutstandingSFTM(ftm.DefaultCallOpts(), *addr, valID)
 }
 
 // DelegationTokenizerUnlocked returns the status of SFC Tokenizer lock
@@ -152,7 +152,7 @@ func (ftm *FtmBridge) DelegationTokenizerUnlocked(addr *common.Address, valID *b
 	}
 
 	// get the lock status
-	lock, err := contract.AllowedToWithdrawStake(nil, *addr, valID)
+	lock, err := contract.AllowedToWithdrawStake(ftm.DefaultCallOpts(), *addr, valID)
 	if err != nil {
 		ftm.log.Criticalf("failed to get SFC Tokenizer lock status of %s to %d; %s", addr.String(), valID.Uint64(), err.Error())
 		return false, err
