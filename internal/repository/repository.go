@@ -57,7 +57,7 @@ type Repository interface {
 	// of transactions newer than that.
 	//
 	// Transactions are always sorted from newer to older.
-	AccountTransactions(*common.Address, *string, int32) (*types.TransactionHashList, error)
+	AccountTransactions(*common.Address, *string, int32) (*types.TransactionList, error)
 
 	// Returns total number of accounts known to repository.
 	AccountsActive() (hexutil.Uint64, error)
@@ -72,7 +72,7 @@ type Repository interface {
 	AccountMarkActivity(*common.Address, uint64) error
 
 	// QueueAccount puts the given account into the account processing queue.
-	QueueAccount(*types.Block, *types.Transaction, *common.Address, *types.Hash, *sync.WaitGroup)
+	QueueAccount(*types.Block, *types.Transaction, *common.Address, *common.Hash, *sync.WaitGroup)
 
 	// BlockHeight returns the current height of the Opera blockchain in blocks.
 	BlockHeight() (*hexutil.Big, error)
@@ -88,7 +88,7 @@ type Repository interface {
 	// Block returns a block at Opera blockchain represented by a hash.
 	// Top block is returned if the hash is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
-	BlockByHash(*types.Hash) (*types.Block, error)
+	BlockByHash(*common.Hash) (*types.Block, error)
 
 	// Collection pulls list of blocks starting on the specified block number
 	// and going up, or down based on count number.
@@ -142,10 +142,10 @@ type Repository interface {
 	StoreTransaction(*types.Block, *types.Transaction) error
 
 	// Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
-	Transaction(*types.Hash) (*types.Transaction, error)
+	Transaction(*common.Hash) (*types.Transaction, error)
 
 	// Transactions returns list of transaction hashes at Opera blockchain.
-	Transactions(*string, int32) (*types.TransactionHashList, error)
+	Transactions(*string, int32) (*types.TransactionList, error)
 
 	// TransactionsCount returns total number of transactions in the block chain.
 	TransactionsCount() (hexutil.Uint64, error)
@@ -243,6 +243,9 @@ type Repository interface {
 	// WithdrawRequestsPendingTotal is the total value of all pending withdrawal requests
 	// for the given delegator and target staker ID.
 	WithdrawRequestsPendingTotal(*common.Address, *hexutil.Big) (*big.Int, error)
+
+	// StoreRewardClaim stores reward claim record in the persistent repository.
+	StoreRewardClaim(*types.RewardClaim) error
 
 	// Price returns a price information for the given target symbol.
 	Price(sym string) (types.Price, error)

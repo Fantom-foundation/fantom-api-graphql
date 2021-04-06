@@ -40,12 +40,12 @@ const (
 
 // the account base row
 type AccountRow struct {
-	Address  string      `bson:"_id"`
-	Type     string      `bson:"type"`
-	Sc       *string     `bson:"sc"`
-	Activity uint64      `bson:"ats"`
-	Counter  uint64      `bson:"atc"`
-	ScHash   *types.Hash `bson:"-"`
+	Address  string       `bson:"_id"`
+	Type     string       `bson:"type"`
+	Sc       *string      `bson:"sc"`
+	Activity uint64       `bson:"ats"`
+	Counter  uint64       `bson:"atc"`
+	ScHash   *common.Hash `bson:"-"`
 }
 
 // Account tries to load an account identified by the address given from
@@ -78,7 +78,7 @@ func (db *MongoDbBridge) Account(addr *common.Address) (*types.Account, error) {
 
 	// any hash?
 	if row.Sc != nil {
-		h := types.HexToHash(*row.Sc)
+		h := common.HexToHash(*row.Sc)
 		row.ScHash = &h
 	}
 
@@ -180,7 +180,7 @@ func (db *MongoDbBridge) AccountCount() (uint64, error) {
 }
 
 // AccountTransactions loads list of transaction hashes of an account.
-func (db *MongoDbBridge) AccountTransactions(addr *common.Address, cursor *string, count int32) (*types.TransactionHashList, error) {
+func (db *MongoDbBridge) AccountTransactions(addr *common.Address, cursor *string, count int32) (*types.TransactionList, error) {
 	// nothing to load?
 	if count == 0 {
 		return nil, fmt.Errorf("nothing to do, zero blocks requested")

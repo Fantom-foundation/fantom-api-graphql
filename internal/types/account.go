@@ -24,7 +24,7 @@ const (
 // Account represents an Opera account at the blockchain.
 type Account struct {
 	Address      common.Address `json:"address"`
-	ContractTx   *Hash          `json:"contract"`
+	ContractTx   *common.Hash   `json:"contract"`
 	Type         string         `json:"type"`
 	LastActivity hexutil.Uint64 `json:"ats"`
 	TrxCounter   hexutil.Uint64 `json:"trc"`

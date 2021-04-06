@@ -11,7 +11,7 @@ package repository
 import (
 	"errors"
 	"fantom-api-graphql/internal/types"
-	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/rpc"
 )
@@ -26,7 +26,7 @@ func (p *proxy) StoreTransaction(block *types.Block, trx *types.Transaction) err
 
 // Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
 // If the transaction is not found, ErrTransactionNotFound error is returned.
-func (p *proxy) Transaction(hash *types.Hash) (*types.Transaction, error) {
+func (p *proxy) Transaction(hash *common.Hash) (*types.Transaction, error) {
 	// log
 	p.log.Debugf("requested transaction %s", hash.String())
 
@@ -42,7 +42,7 @@ func (p *proxy) Transaction(hash *types.Hash) (*types.Transaction, error) {
 }
 
 // loadTransaction loads the transaction hard way using RPC and DB.
-func (p *proxy) loadTransaction(hash *types.Hash) (*types.Transaction, error) {
+func (p *proxy) loadTransaction(hash *common.Hash) (*types.Transaction, error) {
 	// we need to go to RPC
 	trx, err := p.rpc.Transaction(hash)
 	if err != nil {
@@ -57,38 +57,8 @@ func (p *proxy) loadTransaction(hash *types.Hash) (*types.Transaction, error) {
 		return trx, nil
 	}
 
-	return p.confirmedTransaction(trx)
-}
-
-// extendConfirmedTransaction loads additional transaction information if available for transaction
-// confirmed inside the blockchain.
-func (p *proxy) confirmedTransaction(trx *types.Transaction) (*types.Transaction, error) {
-	// do we have the transaction at all?
-	if trx == nil {
-		p.log.Criticalf("invalid transaction reference received")
-		return nil, fmt.Errorf("nil transaction received")
-	}
-
-	// pull details of the transaction if available
-	err := p.db.TransactionDetails(trx)
-	if err != nil {
-		p.log.Errorf("can not get transaction %s details from database; %s", trx.Hash.String(), err.Error())
-		return trx, err
-	}
-
-	// cache the transaction if it has been found in the db already
-	if trx.OrdinalIndex > 0 {
-		// push the TRX to the cache
-		err = p.cache.PushTransaction(trx)
-		if err != nil {
-			p.log.Errorf("can not store transaction %s in cache; %s", trx.Hash.String(), err.Error())
-		}
-
-		// log we have it all
-		p.log.Debugf("transaction %s details loaded", trx.Hash.String())
-	}
-
-	// log and return
+	// store to cache
+	p.cache.PushTransaction(trx)
 	return trx, nil
 }
 
@@ -131,7 +101,7 @@ func (p *proxy) SendTransaction(tx hexutil.Bytes) (*types.Transaction, error) {
 // No-number boundaries are handled as follows:
 // 	- For positive count we start from the most recent transaction and scan to older transactions.
 // 	- For negative count we start from the first transaction and scan to newer transactions.
-func (p *proxy) Transactions(cursor *string, count int32) (*types.TransactionHashList, error) {
+func (p *proxy) Transactions(cursor *string, count int32) (*types.TransactionList, error) {
 	// go to the database for the list of hashes of transaction searched
 	return p.db.Transactions(cursor, count, nil)
 }

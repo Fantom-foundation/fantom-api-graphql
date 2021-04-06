@@ -85,7 +85,7 @@ func (p *proxy) AccountNonce(addr *common.Address) (*hexutil.Uint64, error) {
 }
 
 // AccountTransactions returns slice of AccountTransaction structure for a given account at Opera blockchain.
-func (p *proxy) AccountTransactions(addr *common.Address, cursor *string, count int32) (*types.TransactionHashList, error) {
+func (p *proxy) AccountTransactions(addr *common.Address, cursor *string, count int32) (*types.TransactionList, error) {
 	// do we have an account?
 	if addr == nil {
 		return nil, fmt.Errorf("can not get transaction list for empty account")
@@ -139,7 +139,7 @@ func (p *proxy) AccountMarkActivity(addr *common.Address, ts uint64) error {
 }
 
 // QueueAccount queues the given account for processing.
-func (p *proxy) QueueAccount(block *types.Block, trx *types.Transaction, addr *common.Address, ctCreationHash *types.Hash, wg *sync.WaitGroup) {
+func (p *proxy) QueueAccount(block *types.Block, trx *types.Transaction, addr *common.Address, ctCreationHash *common.Hash, wg *sync.WaitGroup) {
 	// address known?
 	if addr == nil {
 		p.log.Error("account not given for processing")

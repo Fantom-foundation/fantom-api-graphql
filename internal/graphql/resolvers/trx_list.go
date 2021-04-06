@@ -10,7 +10,7 @@ import (
 
 // TransactionList represents resolvable list of blockchain transaction edges structure.
 type TransactionList struct {
-	types.TransactionHashList
+	types.TransactionList
 }
 
 // TransactionListEdge represents a single edge of a transaction list structure.
@@ -20,9 +20,9 @@ type TransactionListEdge struct {
 }
 
 // NewTransactionList builds new resolvable list of transactions.
-func NewTransactionList(txs *types.TransactionHashList) *TransactionList {
+func NewTransactionList(txs *types.TransactionList) *TransactionList {
 	return &TransactionList{
-		TransactionHashList: *txs,
+		TransactionList: *txs,
 	}
 }
 
@@ -41,7 +41,6 @@ func (rs *rootResolver) Transactions(args *struct {
 		rs.log.Errorf("can not get transactions list; %s", err.Error())
 		return nil, err
 	}
-
 	return NewTransactionList(txs), nil
 }
 
@@ -59,8 +58,8 @@ func (tl *TransactionList) PageInfo() (*ListPageInfo, error) {
 	}
 
 	// get the first and last elements
-	first := Cursor(tl.Collection[0].String())
-	last := Cursor(tl.Collection[len(tl.Collection)-1].String())
+	first := Cursor(tl.Collection[0].Hash.String())
+	last := Cursor(tl.Collection[len(tl.Collection)-1].Hash.String())
 	return NewListPageInfo(&first, &last, !tl.IsEnd, !tl.IsStart)
 }
 
@@ -74,16 +73,11 @@ func (tl *TransactionList) Edges() []*TransactionListEdge {
 	// make the list
 	edges := make([]*TransactionListEdge, len(tl.Collection))
 	for i, t := range tl.Collection {
-		// get the transaction
-		tx, err := repository.R().Transaction(t)
-		if err == nil {
-			// make the element
-			edges[i] = &TransactionListEdge{
-				Transaction: NewTransaction(tx),
-				Cursor:      Cursor(t.String()),
-			}
+		// make the element
+		edges[i] = &TransactionListEdge{
+			Transaction: NewTransaction(t),
+			Cursor:      Cursor(t.Hash.String()),
 		}
 	}
-
 	return edges
 }

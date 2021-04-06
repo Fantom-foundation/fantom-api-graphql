@@ -3,7 +3,6 @@ package config
 import (
 	"crypto/ecdsa"
 	"encoding/json"
-	"fantom-api-graphql/internal/types"
 	"flag"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -84,7 +83,11 @@ func loadErc20LogMap(cfg *Config) {
 	}
 
 	// make sure to close the file
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Printf("config file can not be closed; %s", err.Error())
+		}
+	}()
 
 	// inform about tokens loading
 	log.Printf("loading ERC20 tokens from %s", cfg.TokenLogoFilePath)
@@ -166,7 +169,7 @@ func StringToAddressHookFunc() mapstructure.DecodeHookFuncType {
 		}
 
 		// typed address is expected here?
-		if t == reflect.TypeOf(types.Address{}) {
+		if t == reflect.TypeOf(common.Address{}) {
 			raw := data.(string)
 			if raw == "" {
 				return stringToAddress(EmptyAddress)
@@ -186,7 +189,7 @@ func stringToCommonAddress(str string) (interface{}, error) {
 
 // stringToAddress converts the given String to typed Address.
 func stringToAddress(str string) (interface{}, error) {
-	return types.Address(common.HexToAddress(str)), nil
+	return common.Address(common.HexToAddress(str)), nil
 }
 
 // reader provides instance of the config reader.

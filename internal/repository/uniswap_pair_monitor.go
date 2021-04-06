@@ -214,7 +214,7 @@ func (pam *UniswapPairMonitor) monitor() {
 // getOrdinalIndex resolves ordinal index for block and transaction input
 func (pam *UniswapPairMonitor) getOrdinalIndex(blk *types.Block, txHash *common.Hash) uint64 {
 	// get transaction
-	th := types.BytesToHash(txHash.Bytes())
+	th := common.BytesToHash(txHash.Bytes())
 	tx, err := pam.repo.Transaction(&th)
 	if err != nil {
 		pam.log.Errorf("transaction not found for block %s and hash %s; %s", blk.Number.String(), txHash.String(), err.Error())
@@ -246,7 +246,7 @@ func (pam *UniswapPairMonitor) getSwapData(swapEvent *contracts.UniswapPairSwap)
 		TimeStamp:   &blk.TimeStamp,
 		Pair:        pam.pair,
 		Sender:      swapEvent.To,
-		Hash:        types.BytesToHash(swapEvent.Raw.TxHash.Bytes()),
+		Hash:        common.BytesToHash(swapEvent.Raw.TxHash.Bytes()),
 		Amount0In:   swapEvent.Amount0In,
 		Amount0Out:  swapEvent.Amount0Out,
 		Amount1In:   swapEvent.Amount1In,
@@ -269,7 +269,7 @@ func (pam *UniswapPairMonitor) getMintData(mintEvent *contracts.UniswapPairMint)
 	}
 
 	// get actual transaction
-	th := types.BytesToHash(mintEvent.Raw.TxHash.Bytes())
+	th := common.BytesToHash(mintEvent.Raw.TxHash.Bytes())
 	tx, err := pam.repo.Transaction(&th)
 	if err != nil {
 		pam.log.Errorf("Transaction was not found for uniswap mint event on pair %s; %s", pam.pair.String(), err.Error())
@@ -287,7 +287,7 @@ func (pam *UniswapPairMonitor) getMintData(mintEvent *contracts.UniswapPairMint)
 		TimeStamp:   &blk.TimeStamp,
 		Pair:        pam.pair,
 		Sender:      tx.From,
-		Hash:        types.BytesToHash(mintEvent.Raw.TxHash.Bytes()),
+		Hash:        common.BytesToHash(mintEvent.Raw.TxHash.Bytes()),
 		Amount0In:   mintEvent.Amount0,
 		Amount0Out:  zero,
 		Amount1In:   mintEvent.Amount1,
@@ -313,7 +313,7 @@ func (pam *UniswapPairMonitor) getBurnData(burnEvent *contracts.UniswapPairBurn)
 	pam.log.Debugf("loading burn event data from block nr# %d, tx: %s", burnEvent.Raw.BlockNumber, burnEvent.Raw.TxHash.String())
 
 	// get actual transaction
-	th := types.BytesToHash(burnEvent.Raw.TxHash.Bytes())
+	th := common.BytesToHash(burnEvent.Raw.TxHash.Bytes())
 	tx, err := pam.repo.Transaction(&th)
 	if err != nil {
 		pam.log.Errorf("Transaction was not found for uniswap burn event on pair %s; %s", pam.pair.String(), err.Error())
@@ -328,7 +328,7 @@ func (pam *UniswapPairMonitor) getBurnData(burnEvent *contracts.UniswapPairBurn)
 		TimeStamp:   &blk.TimeStamp,
 		Pair:        pam.pair,
 		Sender:      tx.From,
-		Hash:        types.BytesToHash(burnEvent.Raw.TxHash.Bytes()),
+		Hash:        common.BytesToHash(burnEvent.Raw.TxHash.Bytes()),
 		Amount0In:   zero,
 		Amount0Out:  burnEvent.Amount0,
 		Amount1In:   zero,
@@ -362,7 +362,7 @@ func (pam *UniswapPairMonitor) getSyncData(syncEvent *contracts.UniswapPairSync)
 		BlockNumber: &blk.Number,
 		TimeStamp:   &blk.TimeStamp,
 		Pair:        pam.pair,
-		Hash:        types.BytesToHash(syncEvent.Raw.TxHash.Bytes()),
+		Hash:        common.BytesToHash(syncEvent.Raw.TxHash.Bytes()),
 		Amount0In:   zero,
 		Amount0Out:  zero,
 		Amount1In:   zero,
