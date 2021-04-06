@@ -19,56 +19,13 @@ const (
 	// fiContractPk is the name of the primary key field of the contract collection.
 	fiContractPk = "_id"
 
-	// fiContractType is the name of the field of the contract type.
-	fiContractType = "type"
-
 	// fiContractOrdinalIndex is the name of the contract ordinal index in the blockchain.
 	// db.contract.createIndex({_id:1,orx:-1},{unique:true})
 	fiContractOrdinalIndex = "orx"
 
-	// fiContractAddress is the name of the address field of the contract.
-	fiContractAddress = "adr"
-
-	// fiContractTransaction is the name of the contract creation transaction
-	// field of the sender's account.
-	fiContractTransaction = "trx"
-
-	// fiContractTimestamp is the name of the contract time stamp field.
-	fiContractTimestamp = "ts"
-
-	// fiContractName is the name of the contract name field.
-	fiContractName = "name"
-
-	// fiContractSupport is the name of the contract support contact field.
-	fiContractSupport = "url"
-
-	// fiContractVersion is the name of the contract version id field.
-	fiContractVersion = "ver"
-
-	// fiContractCompiler is the name of the contract compiler id field.
-	fiContractCompiler = "comp"
-
-	// fiContractLicense is the name of the contract open source license field.
-	fiContractLicense = "lic"
-
-	// fiContractIsOptimized is the name of the contract compiler optimizer enabled field.
-	fiContractIsOptimized = "is_opt"
-
-	// fiContractOptimizationRuns is the name of the contract compiler optimization runs field.
-	fiContractOptimizationRuns = "opt_run"
-
-	// fiContractSource is the name of the contract source code field.
-	fiContractSource = "src"
-
-	// fiContractSourceHash is the name of the contract source code hash field.
-	fiContractSourceHash = "src_hash"
-
-	// fiContractAbi is the name of the contract ABI field.
-	fiContractAbi = "abi"
-
 	// fiContractSourceValidated is the name of the contract source code
 	// validation timestamp field.
-	fiContractSourceValidated = "is_ok"
+	fiContractSourceValidated = "val"
 )
 
 // initContractsCollection initializes the contracts collection with
@@ -96,9 +53,9 @@ func (db *MongoDbBridge) initContractsCollection(col *mongo.Collection) {
 }
 
 // AddContract stores a smart contract reference in connected persistent storage.
-func (db *MongoDbBridge) AddContract(con *types.Contract) error {
+func (db *MongoDbBridge) AddContract(sc *types.Contract) error {
 	// do we have all needed data?
-	if con == nil {
+	if sc == nil {
 		return fmt.Errorf("can not add empty contract")
 	}
 
@@ -106,7 +63,7 @@ func (db *MongoDbBridge) AddContract(con *types.Contract) error {
 	col := db.client.Database(db.dbName).Collection(coContract)
 
 	// check if the contract already exists
-	exists, err := db.isContractKnown(col, &con.Address)
+	exists, err := db.isContractKnown(col, &sc.Address)
 	if err != nil {
 		db.log.Critical(err)
 		return err
@@ -114,21 +71,12 @@ func (db *MongoDbBridge) AddContract(con *types.Contract) error {
 
 	// if the contract already exists, we update it to match the new content
 	if exists {
-		db.log.Debugf("contract %s known, updating", con.Address.String())
-		return db.UpdateContract(con)
-	}
-
-	// get base contract data
-	base := bson.D{
-		{fiContractPk, con.Address.String()},
-		{fiContractOrdinalIndex, con.OrdinalIndex},
-		{fiContractAddress, con.Address.String()},
-		{fiContractTransaction, con.TransactionHash.String()},
-		{fiContractTimestamp, uint64(con.TimeStamp)},
+		db.log.Debugf("contract %s known, updating", sc.Address.String())
+		return db.UpdateContract(sc)
 	}
 
 	// try to do the insert
-	if _, err = col.InsertOne(context.Background(), contractData(con, &base)); err != nil {
+	if _, err = col.InsertOne(context.Background(), sc); err != nil {
 		db.log.Critical(err)
 		return err
 	}
@@ -138,7 +86,7 @@ func (db *MongoDbBridge) AddContract(con *types.Contract) error {
 		db.initContracts.Do(func() { db.initContractsCollection(col); db.initContracts = nil })
 	}
 
-	db.log.Debugf("added smart contract at %s", con.Address.String())
+	db.log.Debugf("added smart contract at %s", sc.Address.String())
 	return nil
 }
 
@@ -157,7 +105,7 @@ func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
 	// update the contract details
 	if _, err := col.UpdateOne(context.Background(),
 		bson.D{{fiContractPk, sc.Address.String()}},
-		bson.D{{"$set", contractData(sc, nil)}}); err != nil {
+		bson.D{{"$set", sc}}); err != nil {
 		// log the issue
 		db.log.Errorf("can not update contract details at %s; %s", sc.Address.String(), err.Error())
 		return err
@@ -166,47 +114,8 @@ func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
 	return nil
 }
 
-// contractData collects the contract data into the db structure we use
-// for insert/update operations.
-func contractData(sc *types.Contract, data *bson.D) bson.D {
-	// make sure we have the container
-	if data == nil {
-		data = &bson.D{}
-	}
-
-	// append common data
-	*data = append(*data,
-		bson.E{Key: fiContractType, Value: sc.Type},
-		bson.E{Key: fiContractName, Value: sc.Name},
-		bson.E{Key: fiContractSupport, Value: sc.SupportContact},
-		bson.E{Key: fiContractVersion, Value: sc.Version},
-		bson.E{Key: fiContractCompiler, Value: sc.Compiler},
-		bson.E{Key: fiContractLicense, Value: sc.License},
-		bson.E{Key: fiContractIsOptimized, Value: sc.IsOptimized},
-		bson.E{Key: fiContractOptimizationRuns, Value: sc.OptimizeRuns},
-		bson.E{Key: fiContractSource, Value: sc.SourceCode},
-		bson.E{Key: fiContractAbi, Value: sc.Abi},
-	)
-
-	// do we have the source code hash?
-	if sc.SourceCodeHash != nil {
-		*data = append(*data, bson.E{Key: fiContractSourceHash, Value: sc.SourceCodeHash.String()})
-	} else {
-		*data = append(*data, bson.E{Key: fiContractSourceHash, Value: nil})
-	}
-
-	// do we have the validation mark?
-	if sc.Validated != nil {
-		*data = append(*data, bson.E{Key: fiContractSourceValidated, Value: uint64(*sc.Validated)})
-	} else {
-		*data = append(*data, bson.E{Key: fiContractSourceValidated, Value: nil})
-	}
-
-	return *data
-}
-
 // IsContractKnown checks if a smart contract document already exists in the database.
-func (db *MongoDbBridge) IsContractKnown(addr *types.Address) bool {
+func (db *MongoDbBridge) IsContractKnown(addr *common.Address) bool {
 	// check the contract existence in the database
 	known, err := db.isContractKnown(db.client.Database(db.dbName).Collection(coContract), addr)
 	if err != nil {
@@ -217,7 +126,7 @@ func (db *MongoDbBridge) IsContractKnown(addr *types.Address) bool {
 }
 
 // isContractKnown checks if a smart contract document already exists in the database.
-func (db *MongoDbBridge) isContractKnown(col *mongo.Collection, addr *types.Address) (bool, error) {
+func (db *MongoDbBridge) isContractKnown(col *mongo.Collection, addr *common.Address) (bool, error) {
 	// try to find the contract in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
 		{fiContractPk, addr.String()},
@@ -241,7 +150,7 @@ func (db *MongoDbBridge) isContractKnown(col *mongo.Collection, addr *types.Addr
 }
 
 // ContractTransaction returns contract creation transaction hash if available.
-func (db *MongoDbBridge) ContractTransaction(addr *common.Address) (*types.Hash, error) {
+func (db *MongoDbBridge) ContractTransaction(addr *common.Address) (*common.Hash, error) {
 	// get the contract details from database
 	c, err := db.Contract(addr)
 	if err != nil {
@@ -287,20 +196,6 @@ func (db *MongoDbBridge) Contract(addr *common.Address) (*types.Contract, error)
 		return nil, err
 	}
 
-	// decode special data
-	con.Address = types.Address(common.HexToAddress(con.RawAddress))
-	con.TransactionHash = types.Hash(common.HexToHash(con.RawTransactionHash))
-	if nil != con.RawSourceCodeHash {
-		hs := types.HexToHash(*con.RawSourceCodeHash)
-		con.SourceCodeHash = &hs
-	}
-
-	// reset some pre-initialized and empty data
-	if nil != con.Validated && 0 == *con.Validated {
-		con.Validated = nil
-		con.SourceCodeHash = nil
-	}
-
 	// inform
 	db.log.Debugf("loaded contract %s", addr.String())
 	return &con, nil
@@ -323,12 +218,10 @@ func (db *MongoDbBridge) ContractCount() (uint64, error) {
 
 // contractListTotal find the total amount of contracts for the criteria and populates the list
 func (db *MongoDbBridge) contractListTotal(col *mongo.Collection, validatedOnly bool, list *types.ContractList) error {
-	// prep the empty filter
-	filter := bson.D{}
-
 	// validation filter
+	filter := bson.D{}
 	if validatedOnly {
-		filter = bson.D{{db.dbName, bson.D{{"$ne", nil}}}}
+		filter = bson.D{{fiContractSourceValidated, bson.D{{"$ne", nil}}}}
 	}
 
 	// find how many contracts do we have in the database
@@ -358,10 +251,8 @@ func contractListTopFilter(validatedOnly bool, cursor *string) (*bson.D, error) 
 		}
 	}
 
-	// prep the empty filter (no cursor and any validation status)
-	filter := bson.D{}
-
 	// with cursor and any validation status
+	filter := bson.D{}
 	if cursor != nil && !validatedOnly {
 		filter = bson.D{{fiContractOrdinalIndex, ix}}
 	}
@@ -375,7 +266,6 @@ func contractListTopFilter(validatedOnly bool, cursor *string) (*bson.D, error) 
 	if cursor != nil && validatedOnly {
 		filter = bson.D{{fiContractSourceValidated, bson.D{{"$ne", nil}}}, {fiContractOrdinalIndex, ix}}
 	}
-
 	return &filter, nil
 }
 
@@ -415,7 +305,6 @@ func (db *MongoDbBridge) contractListTop(col *mongo.Collection, validatedOnly bo
 		db.log.Errorf("can not find the initial contract")
 		return err
 	}
-
 	return nil
 }
 
@@ -453,8 +342,6 @@ func (db *MongoDbBridge) contractListInit(col *mongo.Collection, validatedOnly b
 func (db *MongoDbBridge) contractListFilter(validatedOnly bool, cursor *string, count int32, list *types.ContractList) *bson.D {
 	// inform what we are about to do
 	db.log.Debugf("contract filter starts from index %d", list.First)
-
-	// prep base operator
 	ordinalOp := "$lte"
 
 	// no cursor and bottom up list
@@ -484,7 +371,6 @@ func (db *MongoDbBridge) contractListFilter(validatedOnly bool, cursor *string, 
 		// filter all contracts
 		filter = bson.D{{fiContractOrdinalIndex, bson.D{{ordinalOp, list.First}}}}
 	}
-
 	return &filter
 }
 
@@ -530,8 +416,7 @@ func (db *MongoDbBridge) contractListLoad(col *mongo.Collection, validatedOnly b
 
 	// close the cursor as we leave
 	defer func() {
-		err := ld.Close(ctx)
-		if err != nil {
+		if err := ld.Close(ctx); err != nil {
 			db.log.Errorf("error closing contract list cursor; %s", err.Error())
 		}
 	}()
@@ -542,7 +427,7 @@ func (db *MongoDbBridge) contractListLoad(col *mongo.Collection, validatedOnly b
 		// process the last found hash
 		if contract != nil {
 			list.Collection = append(list.Collection, contract)
-			list.Last = contract.OrdinalIndex
+			list.Last = contract.Uid()
 		}
 
 		// try to decode the next row
@@ -550,14 +435,6 @@ func (db *MongoDbBridge) contractListLoad(col *mongo.Collection, validatedOnly b
 		if err := ld.Decode(&con); err != nil {
 			db.log.Errorf("can not decode contract the list row; %s", err.Error())
 			return err
-		}
-
-		// decode special data
-		con.Address = types.Address(common.HexToAddress(con.RawAddress))
-		con.TransactionHash = types.Hash(common.HexToHash(con.RawTransactionHash))
-		if nil != con.RawSourceCodeHash {
-			hs := types.HexToHash(*con.RawSourceCodeHash)
-			con.SourceCodeHash = &hs
 		}
 
 		// keep this one
@@ -572,7 +449,7 @@ func (db *MongoDbBridge) contractListLoad(col *mongo.Collection, validatedOnly b
 		// add the last item as well
 		if list.IsStart || list.IsEnd {
 			list.Collection = append(list.Collection, contract)
-			list.Last = contract.OrdinalIndex
+			list.Last = contract.Uid()
 		}
 	}
 
@@ -605,13 +482,12 @@ func (db *MongoDbBridge) Contracts(validatedOnly bool, cursor *string, count int
 
 	// shift the first item on cursor
 	if cursor != nil {
-		list.First = list.Collection[0].OrdinalIndex
+		list.First = list.Collection[0].Uid()
 	}
 
 	// reverse on negative so new-er contracts will be on top
 	if count < 0 {
 		list.Reverse()
 	}
-
 	return list, nil
 }

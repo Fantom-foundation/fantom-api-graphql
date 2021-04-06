@@ -44,11 +44,11 @@ const (
 var decChange = new(big.Int).SetUint64(1000000000)
 
 // getHash generates hash for swap from transaction hash and pair address
-func getHash(swap *types.Swap) *types.Hash {
+func getHash(swap *types.Swap) *common.Hash {
 	hashBytes := swap.Hash.Big().Bytes()
 	pairBytes := swap.Pair.Bytes()
 	sum := sha256.Sum256(append(hashBytes, pairBytes...))
-	swapHash := types.BytesToHash(sum[:])
+	swapHash := common.BytesToHash(sum[:])
 	return &swapHash
 }
 
@@ -116,9 +116,9 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 	// get the collection for transactions
 	col := db.client.Database(db.dbName).Collection(coUniswap)
 
-	// check for zero amounts in the swap, because of future div by 0 during agregation in db
+	// check for zero amounts in the swap, because of future div by 0 during aggregation in db
 	if isZeroSwap(swap) {
-		db.log.Debugf("Swap from block %v will not be added, because swap amount is 0 ater removing decimals", uint64(*swap.BlockNumber))
+		db.log.Debugf("Swap from block %v will not be added, because swap amount is 0 after removing decimals", uint64(*swap.BlockNumber))
 		return nil
 	}
 
@@ -164,13 +164,13 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 
 // removeDecimals for a big.Int of the 1e18 wei
 func removeDecimals(nr1 *big.Int) uint64 {
-	// making amount numbrs smaller to be able to call agregate functions in database
+	// making amount numbers smaller to be able to call aggregate functions in database
 	return nr1.Div(nr1, decChange).Uint64()
 }
 
 // return Decimals for a big.Int of the 1e18 wei
 func returnDecimals(nr1 *big.Int) *big.Int {
-	// making amount numbrs bigger again
+	// making amount numbers bigger again
 	return nr1.Mul(nr1, decChange)
 }
 
@@ -198,7 +198,7 @@ func swapData(base *bson.D, swap *types.Swap) bson.D {
 }
 
 // IsSwapKnown checks if swap document already exists in the database.
-func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *types.Hash, swap *types.Swap) (bool, error) {
+func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *common.Hash, swap *types.Swap) (bool, error) {
 	// try to find swap in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
 		{Key: fiSwapPk, Value: hash.String()}})
@@ -241,11 +241,18 @@ func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *types.Hash, sw
 			Reserve1 int64 `bson:"reserve1"`
 		}
 		var values Values
-		sr.Decode(&values)
+		if err := sr.Decode(&values); err != nil {
+			db.log.Criticalf("can not decode swap; %s", err.Error())
+			return false, err
+		}
 
 		if types.SwapSync == values.Type {
-			db.log.Debugf("Updating reserve for swap: %s, reserve0: %v, reserve1: %v", hash.String(), values.Reserve0, values.Reserve1)
-			col.DeleteOne(context.Background(), bson.D{{Key: fiSwapPk, Value: hash.String()}})
+			// log issue
+			db.log.Debugf("updating reserve for swap: %s, reserve0: %v, reserve1: %v", hash.String(), values.Reserve0, values.Reserve1)
+			if _, err := col.DeleteOne(context.Background(), bson.D{{Key: fiSwapPk, Value: hash.String()}}); err != nil {
+				db.log.Errorf("can not delete swap data; %s", err.Error())
+			}
+
 			swap.Reserve0 = returnDecimals(big.NewInt(values.Reserve0))
 			swap.Reserve1 = returnDecimals(big.NewInt(values.Reserve1))
 			return false, nil
@@ -267,7 +274,7 @@ func (db *MongoDbBridge) SwapCount() (uint64, error) {
 		return 0, err
 	}
 
-	// -1 is for confuiguration document with last correct swap block number
+	// -1 is for configuration document with last correct swap block number
 	if total > 1 {
 		total--
 	}
@@ -318,10 +325,9 @@ func (db *MongoDbBridge) LastKnownSwapBlock() (uint64, error) {
 
 // UniswapUpdateLastKnownSwapBlock stores a last correctly saved swap block number into persistent storage.
 func (db *MongoDbBridge) UniswapUpdateLastKnownSwapBlock(blkNumber uint64) error {
-
 	// is valid block number
 	if blkNumber == 0 {
-		return fmt.Errorf("No need to store zero value, will start from 0 next time")
+		return fmt.Errorf("no need to store zero value, will start from 0 next time")
 	}
 
 	// document for update with last swap block number
@@ -395,8 +401,13 @@ func (db *MongoDbBridge) UniswapVolume(pairAddress *common.Address, fromTime int
 		db.log.Errorf("Can not get swap volumes: %s", err.Error())
 		return def, err
 	} else {
+		// make sure to close the cursor
+		defer func() {
+			if err := cursor.Close(context.Background()); err != nil {
+				db.log.Errorf("can not close cursor; %s", err.Error())
+			}
+		}()
 
-		defer cursor.Close(context.Background())
 		// get result and fill return data
 		for cursor.Next(context.Background()) {
 			var val Volume
@@ -453,7 +464,11 @@ func (db *MongoDbBridge) UniswapTimeVolumes(pairAddress *common.Address, resolut
 		db.log.Errorf(err.Error())
 		return list, nil
 	} else {
-		defer cursor.Close(context.Background())
+		defer func() {
+			if err := cursor.Close(context.Background()); err != nil {
+				db.log.Errorf("can not close cursor; %s", err.Error())
+			}
+		}()
 
 		// iterate thru results and construct data
 		for cursor.Next(context.Background()) {
@@ -591,7 +606,11 @@ func (db *MongoDbBridge) UniswapTimePrices(pairAddress *common.Address, resoluti
 		db.log.Errorf(err.Error())
 		return list, nil
 	} else {
-		defer cursor.Close(context.Background())
+		defer func() {
+			if err := cursor.Close(context.Background()); err != nil {
+				db.log.Errorf("can not close cursor; %s", err.Error())
+			}
+		}()
 
 		// iterate thru results and construct data
 		for cursor.Next(context.Background()) {
@@ -652,7 +671,11 @@ func (db *MongoDbBridge) UniswapTimeReserves(pairAddress *common.Address, resolu
 		db.log.Errorf(err.Error())
 		return list, nil
 	} else {
-		defer cursor.Close(context.Background())
+		defer func() {
+			if err := cursor.Close(context.Background()); err != nil {
+				db.log.Errorf("can not close cursor; %s", err.Error())
+			}
+		}()
 
 		// iterate thru results and construct data
 		for cursor.Next(context.Background()) {
@@ -726,7 +749,7 @@ func (db *MongoDbBridge) uniswapActionListInit(col *mongo.Collection, pairAddres
 	}
 
 	// inform what we are about to do
-	db.log.Debugf("Found %d uniswap actions in off-chain database for secified criteria", list.Total)
+	db.log.Debugf("Found %d uniswap actions in off-chain database for specified criteria", list.Total)
 
 	// find the top uniswap action of the list
 	if err := db.uniswapActionListTop(col, pairAddress, actionType, cursor, count, &list); err != nil {
@@ -903,13 +926,13 @@ func (db *MongoDbBridge) uniswapActionListLoad(col *mongo.Collection, pairAddres
 		}
 
 		// decode data
-		ua.ID = types.HexToHash(uadb.ID)
+		ua.ID = common.HexToHash(uadb.ID)
 		ua.OrdIndex = uadb.OrdIndex
 		ua.BlockNr = uadb.BlockNr
 		ua.Type = uadb.Type
 		ua.PairAddress = common.HexToAddress(uadb.PairAddress)
 		ua.Sender = common.HexToAddress(uadb.Sender)
-		ua.TransactionHash = types.HexToHash(uadb.TransactionHash)
+		ua.TransactionHash = common.HexToHash(uadb.TransactionHash)
 		ua.Time = hexutil.Uint64(uadb.Time.UTC().Unix())
 		ua.Amount0in = *(*hexutil.Big)(returnDecimals(big.NewInt(uadb.Amount0in)))
 		ua.Amount0out = *(*hexutil.Big)(returnDecimals(big.NewInt(uadb.Amount0out)))

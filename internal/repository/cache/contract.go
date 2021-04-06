@@ -13,7 +13,7 @@ import (
 const contractCacheIdPrefix = "sc_"
 
 // contractId generates cache id for storing smart contract details.
-func contractId(addr *types.Address) string {
+func contractId(addr *common.Address) string {
 	var sb strings.Builder
 
 	// add the prefix and actual address
@@ -26,7 +26,7 @@ func contractId(addr *types.Address) string {
 // PullContract extracts smart contract information from the in-memory cache if available.
 func (b *MemBridge) PullContract(addr *common.Address) *types.Contract {
 	// try to get the account data from the cache
-	data, err := b.cache.Get(contractId((*types.Address)(addr)))
+	data, err := b.cache.Get(contractId((*common.Address)(addr)))
 	if err != nil {
 		// cache returns ErrEntryNotFound if the key does not exist
 		return nil
@@ -62,7 +62,7 @@ func (b *MemBridge) PushContract(sc *types.Contract) error {
 
 // EvictContract makes sure the contract of the given address
 // is not kept in the cache.
-func (b *MemBridge) EvictContract(addr *types.Address) {
+func (b *MemBridge) EvictContract(addr *common.Address) {
 	// make sure the request makes sense
 	if nil == addr {
 		b.log.Errorf("can not evict empty contract")
