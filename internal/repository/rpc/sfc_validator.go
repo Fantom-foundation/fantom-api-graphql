@@ -29,7 +29,7 @@ func (ftm *FtmBridge) ValidatorDowntime(valID *hexutil.Big) (uint64, uint64, err
 		Blocks hexutil.Uint64 `json:"offlineBlocks"`
 		Time   hexutil.Uint64 `json:"offlineTime"`
 	}
-	if err := ftm.rpc.Call(&dt, "abft_GetDowntime", valID); err != nil {
+	if err := ftm.rpc.Call(&dt, "abft_getDowntime", valID); err != nil {
 		ftm.log.Errorf("failed to get downtime of validator #%d; %s", valID.ToInt().Uint64(), err.Error())
 		return 0, 0, err
 	}
@@ -41,7 +41,7 @@ func (ftm *FtmBridge) ValidatorDowntime(valID *hexutil.Big) (uint64, uint64, err
 func (ftm *FtmBridge) ValidatorEpochUptime(valID *hexutil.Big) (uint64, error) {
 	// use rather the public API, it should be faster since it does not involve contract call
 	var ut hexutil.Uint64
-	if err := ftm.rpc.Call(&ut, "abft_GetEpochUptime", valID); err != nil {
+	if err := ftm.rpc.Call(&ut, "abft_getEpochUptime", valID); err != nil {
 		ftm.log.Errorf("failed to get epoch uptime of validator #%d; %s", valID.ToInt().Uint64(), err.Error())
 		return 0, err
 	}
@@ -79,7 +79,7 @@ func (ftm *FtmBridge) ValidatorsCount() (uint64, error) {
 	}
 
 	var ep hexutil.Big
-	if err := ftm.rpc.Call(&ep, "ftm_CurrentEpoch"); err != nil {
+	if err := ftm.rpc.Call(&ep, "ftm_currentEpoch"); err != nil {
 		ftm.log.Errorf("failed to get the current epoch; %s", err.Error())
 		return 0, err
 	}

@@ -52,7 +52,7 @@ func (ftm *FtmBridge) SfcVersion() (hexutil.Uint64, error) {
 func (ftm *FtmBridge) CurrentEpoch() (hexutil.Uint64, error) {
 	// use rather the public API, it should be faster since it does not involve contract call
 	var ep hexutil.Big
-	if err := ftm.rpc.Call(&ep, "ftm_CurrentEpoch"); err != nil {
+	if err := ftm.rpc.Call(&ep, "ftm_currentEpoch"); err != nil {
 		ftm.log.Errorf("failed to get the current epoch; %s", err.Error())
 		return 0, err
 	}
