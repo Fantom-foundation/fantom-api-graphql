@@ -4,6 +4,7 @@ package resolvers
 import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
@@ -20,7 +21,7 @@ func NewTransaction(trx *types.Transaction) *Transaction {
 }
 
 // Transaction resolves blockchain transaction by transaction hash.
-func (rs *rootResolver) Transaction(args *struct{ Hash types.Hash }) (*Transaction, error) {
+func (rs *rootResolver) Transaction(args *struct{ Hash common.Hash }) (*Transaction, error) {
 	// get the transaction from repository
 	trx, err := repository.R().Transaction(&args.Hash)
 	if err != nil {

@@ -76,7 +76,7 @@ func (cl *ContractList) Edges() []*ContractListEdge {
 		// make the element
 		edge := ContractListEdge{
 			Contract: NewContract(c),
-			Cursor:   Cursor(strconv.FormatUint(c.OrdinalIndex, 10)),
+			Cursor:   Cursor(strconv.FormatUint(c.Uid(), 10)),
 		}
 
 		// add it to the list

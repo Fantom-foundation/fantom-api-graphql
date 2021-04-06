@@ -141,10 +141,10 @@ func isValidationValid(in *ContractValidationInput) error {
 
 // sourceHash calculates hash of the given source code so we can verify that
 // incoming validation source code is not the same one we already know.
-func sourceHash(sc string) types.Hash {
+func sourceHash(sc string) common.Hash {
 	// calculate SHA256 hash of the source code
 	sum := sha256.Sum256([]byte(sc))
-	return types.BytesToHash(sum[:])
+	return common.BytesToHash(sum[:])
 }
 
 // updateContractFromInput update Contract data from provided input structure.
