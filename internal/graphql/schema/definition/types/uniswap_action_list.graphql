@@ -20,7 +20,7 @@ type UniswapActionListEdge {
 type UniswapAction {
 
     # id of the action in the persistent db
-    id: Hash!
+    id: Bytes32!
 
     # UniswapPair represents the information about single
     # Uniswap pair managed by the Uniswap Core.
@@ -30,7 +30,7 @@ type UniswapAction {
     pairAddress: Address!
 
     # transactionHash represents the hash for this acstion transaction
-    transactionHash: Hash!
+    transactionHash: Bytes32!
 
     # sender is address of action owner account
     sender: Address!

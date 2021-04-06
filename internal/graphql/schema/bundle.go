@@ -186,7 +186,7 @@ type ListPageInfo {
 # Transaction is an Opera block chain transaction.
 type Transaction {
     # Hash is the unique hash of this transaction.
-    hash: Hash!
+    hash: Bytes32!
 
     # Nonce is the number of transactions sent by the account prior to this transaction.
     nonce: Long!
@@ -235,7 +235,7 @@ type Transaction {
 
     # BlockHash is the hash of the block this transaction was assigned to.
     # Null if the transaction is pending.
-    blockHash: Hash
+    blockHash: Bytes32
 
     # BlockHash is the hash of the block this transaction was assigned to.
     # Null if the transaction is pending.
@@ -258,7 +258,7 @@ type Block {
     number: Long!
 
     # Hash is the unique block hash of this block.
-    hash: Hash!
+    hash: Bytes32!
 
     # Parent is the parent block of this block.
     parent: Block
@@ -277,7 +277,7 @@ type Block {
 
     # txHashList is the list of unique hash values of transaction
     # assigned to the block.
-    txHashList: [Hash!]!
+    txHashList: [Bytes32!]!
 
     # txList is a list of transactions assigned to the block.
     txList: [Transaction!]!
@@ -456,7 +456,7 @@ type Contract {
     deployedBy: Transaction!
 
     "transactionHash represents the smart contract deployment transaction hash."
-    transactionHash: Hash!
+    transactionHash: Bytes32!
 
     "Smart contract name. Empty if not available."
     name: String!
@@ -544,8 +544,8 @@ type ContractListEdge {
     contract: Contract!
 }
 
-# Hash is a 32 byte binary string, represented by 0x prefixed hexadecimal.
-scalar Hash
+# Bytes32 is a 32 byte binary string, represented by 0x prefixed hexadecimal hash.
+scalar Bytes32
 
 # Address is a 20 byte Opera address, represented as 0x prefixed hexadecimal number.
 scalar Address
@@ -617,7 +617,7 @@ type UniswapActionListEdge {
 type UniswapAction {
 
     # id of the action in the persistent db
-    id: Hash!
+    id: Bytes32!
 
     # UniswapPair represents the information about single
     # Uniswap pair managed by the Uniswap Core.
@@ -627,7 +627,7 @@ type UniswapAction {
     pairAddress: Address!
 
     # transactionHash represents the hash for this acstion transaction
-    transactionHash: Hash!
+    transactionHash: Bytes32!
 
     # sender is address of action owner account
     sender: Address!
@@ -1496,7 +1496,7 @@ type Query {
 
     # Get block information by number or by hash.
     # If neither is provided, the most recent block is given.
-    block(number:Long, hash: Hash):Block
+    block(number:Long, hash: Bytes32):Block
 
     # Get list of Blocks with at most <count> edges.
     # If <count> is positive, return edges after the cursor,
@@ -1506,7 +1506,7 @@ type Query {
     blocks(cursor:Cursor, count:Int!):BlockList!
 
     # Get transaction information for given transaction hash.
-    transaction(hash:Hash!):Transaction
+    transaction(hash:Bytes32!):Transaction
 
     # Get list of Transactions with at most <count> edges.
     # If <count> is positive, return edges after the cursor,

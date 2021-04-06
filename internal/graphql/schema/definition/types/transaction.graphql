@@ -1,7 +1,7 @@
 # Transaction is an Opera block chain transaction.
 type Transaction {
     # Hash is the unique hash of this transaction.
-    hash: Hash!
+    hash: Bytes32!
 
     # Nonce is the number of transactions sent by the account prior to this transaction.
     nonce: Long!
@@ -50,7 +50,7 @@ type Transaction {
 
     # BlockHash is the hash of the block this transaction was assigned to.
     # Null if the transaction is pending.
-    blockHash: Hash
+    blockHash: Bytes32
 
     # BlockHash is the hash of the block this transaction was assigned to.
     # Null if the transaction is pending.

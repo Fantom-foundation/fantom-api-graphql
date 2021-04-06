@@ -30,7 +30,7 @@ type Query {
 
     # Get block information by number or by hash.
     # If neither is provided, the most recent block is given.
-    block(number:Long, hash: Hash):Block
+    block(number:Long, hash: Bytes32):Block
 
     # Get list of Blocks with at most <count> edges.
     # If <count> is positive, return edges after the cursor,
@@ -40,7 +40,7 @@ type Query {
     blocks(cursor:Cursor, count:Int!):BlockList!
 
     # Get transaction information for given transaction hash.
-    transaction(hash:Hash!):Transaction
+    transaction(hash:Bytes32!):Transaction
 
     # Get list of Transactions with at most <count> edges.
     # If <count> is positive, return edges after the cursor,
