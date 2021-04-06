@@ -13,10 +13,10 @@ type Block struct {
 	Number hexutil.Uint64 `json:"number"`
 
 	// Hash represents hash of the block. nil when its pending block.
-	Hash Hash `json:"hash"`
+	Hash common.Hash `json:"hash"`
 
 	// ParentHash represents hash of the parent block.
-	ParentHash Hash `json:"parentHash"`
+	ParentHash common.Hash `json:"parentHash"`
 
 	// Miner represents the address of the beneficiary to whom the mining rewards were given.
 	Miner common.Address `json:"miner"`
@@ -37,7 +37,7 @@ type Block struct {
 	TimeStamp hexutil.Uint64 `json:"timestamp"`
 
 	// Txs represents array of 32 bytes hashes of transactions included in the block.
-	Txs []*Hash `json:"transactions"`
+	Txs []*common.Hash `json:"transactions"`
 }
 
 // UnmarshalBlock parses the JSON-encoded block data.

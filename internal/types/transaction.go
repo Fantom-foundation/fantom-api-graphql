@@ -9,17 +9,13 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	retypes "github.com/ethereum/go-ethereum/core/types"
 	"go.mongodb.org/mongo-driver/bson"
+	"math/rand"
 )
 
 // Transaction represents a basic information provided by the API about transaction inside Opera blockchain.
 type Transaction struct {
-	// OrdinalIndex represents the ordinal index of the transaction inside the block chain.
-	// It's build from the block number and the index of the transaction inside the block
-	// when the transaction is stored in off-chain database.
-	OrdinalIndex uint64 `json:"orx" bson:"orx"`
-
 	// BlockHash represents hash of the block where this transaction was in. nil when its pending.
-	BlockHash *Hash `json:"blockHash" bson:"-"`
+	BlockHash *common.Hash `json:"blockHash" bson:"-"`
 
 	// BlockNumber represents number of the block where this transaction was in. nil when its pending.
 	BlockNumber *hexutil.Uint64 `json:"blockNumber" bson:"-"`
@@ -40,7 +36,7 @@ type Transaction struct {
 	GasPrice hexutil.Big `json:"gasPrice" bson:"-"`
 
 	// Hash represents 32 bytes hash of the transaction.
-	Hash Hash `json:"hash" bson:"-"`
+	Hash common.Hash `json:"hash" bson:"-"`
 
 	// Nonce represents the number of transactions made by the sender prior to this one.
 	Nonce hexutil.Uint64 `json:"nonce" bson:"-"`
@@ -70,7 +66,7 @@ type Transaction struct {
 	Logs []retypes.Log `json:"logs"`
 }
 
-// bsonLog represents the transaction log record data structure for BSON formatting.
+// BsonLog represents the transaction log record data structure for BSON formatting.
 type BsonLog struct {
 	Address string   `bson:"addr"`
 	Topics  []string `bson:"top"`
@@ -79,7 +75,7 @@ type BsonLog struct {
 	Removed bool     `bson:"rm"`
 }
 
-// bsonTransaction represents the transaction data structure for BSON formatting.
+// BsonTransaction represents the transaction data structure for BSON formatting.
 type BsonTransaction struct {
 	Hash      string    `bson:"_id"`
 	Ordinal   uint64    `bson:"orx"`
@@ -103,17 +99,27 @@ type BsonTransaction struct {
 // The calculation gives us about 700 years of index space with 50k blocks per second
 // rate + 10 years to fix than. Max number of transactions in a block here is 14bits = 16383.
 func TransactionIndex(block *Block, trx *Transaction) uint64 {
+	// what is the transaction index
+	var txIndex uint64
 	if trx.TrxIndex != nil {
-		return (uint64(block.Number) << 14) | (uint64(*trx.TrxIndex) & 0x3fff)
+		txIndex = uint64(*trx.TrxIndex)
+	} else {
+		txIndex = uint64((rand.Uint32()<<10)|0xff) & 0x3fff
 	}
-	return (uint64(block.Number) << 14) | (binary.BigEndian.Uint64(trx.Hash[:8]) & 0x3FFF)
+	return (uint64(block.Number) << 14) | txIndex
 }
 
-// UnmarshalTransaction parses the JSON-encoded block data.
-func UnmarshalTransaction(data []byte) (*Transaction, error) {
-	var trx Transaction
-	err := json.Unmarshal(data, &trx)
-	return &trx, err
+// mustTransactionIndex always calculate the index of the current transaction
+// The ordinal index of a transaction should be unique across a consistent block chain.
+// The calculation gives us about 700 years of index space with 50k blocks per second
+// rate + 10 years to fix than. Max number of transactions in a block here is 14bits = 16383.
+func (trx *Transaction) Uid() uint64 {
+	// is this a processed transaction?
+	if trx.TrxIndex != nil {
+		return (uint64(*trx.BlockNumber) << 14) | (uint64(*trx.TrxIndex) & 0x3fff)
+	}
+	// pending transaction
+	return binary.BigEndian.Uint64(trx.Hash[:8])
 }
 
 // Marshal returns the JSON encoding of transaction.
@@ -126,7 +132,7 @@ func (trx *Transaction) MarshalBSON() ([]byte, error) {
 	// prep the structure for saving
 	pom := BsonTransaction{
 		Hash:     trx.Hash.String(),
-		Ordinal:  trx.OrdinalIndex,
+		Ordinal:  trx.Uid(),
 		From:     trx.From.String(),
 		Gas:      uint64(trx.Gas),
 		GasPrice: trx.GasPrice.String(),
@@ -207,8 +213,7 @@ func (trx *Transaction) UnmarshalBSON(data []byte) (err error) {
 	}
 
 	// transfer values
-	trx.Hash = HexToHash(row.Hash)
-	trx.OrdinalIndex = row.Ordinal
+	trx.Hash = common.HexToHash(row.Hash)
 	trx.From = common.HexToAddress(row.From)
 	trx.Gas = hexutil.Uint64(row.Gas)
 	trx.GasPrice = (hexutil.Big)(*hexutil.MustDecodeBig(row.GasPrice))
@@ -218,7 +223,7 @@ func (trx *Transaction) UnmarshalBSON(data []byte) (err error) {
 	// pointers
 	if row.BlockHash != nil {
 		// block hash
-		bh := HexToHash(*row.BlockHash)
+		bh := common.HexToHash(*row.BlockHash)
 		trx.BlockHash = &bh
 
 		// block number
