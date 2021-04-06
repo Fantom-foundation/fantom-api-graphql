@@ -3,10 +3,10 @@ package types
 
 import "go.mongodb.org/mongo-driver/bson"
 
-// TransactionHashList represents a list of transaction hashes.
-type TransactionHashList struct {
+// TransactionList represents a list of transactions.
+type TransactionList struct {
 	// Collection represent list of transactions' hash.
-	Collection []*Hash
+	Collection []*Transaction
 
 	// Total indicates total number of transaction in the whole collection.
 	Total uint64
@@ -28,7 +28,7 @@ type TransactionHashList struct {
 }
 
 // Reverse reverses the order of transactions in the list.
-func (b *TransactionHashList) Reverse() {
+func (b *TransactionList) Reverse() {
 	// anything to swap at all?
 	if b.Collection == nil || len(b.Collection) < 2 {
 		return
