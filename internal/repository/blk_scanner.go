@@ -61,7 +61,7 @@ func (bls *blockScanner) scan(lnb uint64) {
 		index   int
 		trx     *types.Transaction
 		toSend  *eventTransaction
-		stopLog chan bool
+		stopLog = make(chan bool, 1)
 	)
 
 	// don't forget to sign off after we are done
