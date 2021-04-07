@@ -24,15 +24,6 @@ func (db *MongoDbBridge) initRewardsCollection(col *mongo.Collection) {
 	// prepare index models
 	ix := make([]mongo.IndexModel, 0)
 
-	// index ordinal key along with the primary key
-	unique := true
-	ix = append(ix, mongo.IndexModel{
-		Keys: bson.D{{fiRewardClaimAddress, 1}, {fiRewardClaimToValidator, 1}},
-		Options: &options.IndexOptions{
-			Unique: &unique,
-		},
-	})
-
 	// index delegator, receiving validator, and creation time stamp
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiRewardClaimAddress, 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiRewardClaimToValidator, 1}}})
