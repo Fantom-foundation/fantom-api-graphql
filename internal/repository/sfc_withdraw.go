@@ -33,7 +33,7 @@ func (p *proxy) WithdrawRequest(addr *common.Address, valID *hexutil.Big, reqID 
 }
 
 // WithdrawRequests extracts a list of partial withdraw requests for the given address.
-func (p *proxy) WithdrawRequests(addr *common.Address, stakerID *hexutil.Big, cursor *string, count int32) (*types.WithdrawRequestList, error) {
+func (p *proxy) WithdrawRequests(addr *common.Address, stakerID *hexutil.Big, cursor *hexutil.Uint64, count int32) (*types.WithdrawRequestList, error) {
 	if addr == nil {
 		return nil, fmt.Errorf("address not given")
 	}

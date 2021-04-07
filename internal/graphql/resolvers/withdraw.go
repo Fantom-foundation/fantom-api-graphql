@@ -5,7 +5,6 @@ import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"strconv"
 )
 
 // WithdrawRequest represents resolvable partial withdraw request
@@ -21,7 +20,7 @@ func NewWithdrawRequest(wr *types.WithdrawRequest) WithdrawRequest {
 
 // Id resolves unique internal identifier of the Withdraw request.
 func (wr WithdrawRequest) Id() Cursor {
-	return Cursor(strconv.FormatUint(wr.Uid(), 10))
+	return Cursor(hexutil.Uint64(wr.Uid()).String())
 }
 
 // WithdrawRequestID resolves the SFC identifier of the request

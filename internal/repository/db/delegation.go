@@ -211,7 +211,7 @@ func (db *MongoDbBridge) DelegationsCount() (uint64, error) {
 }
 
 // dlgListInit initializes list of delegations based on provided cursor, count, and filter.
-func (db *MongoDbBridge) dlgListInit(col *mongo.Collection, cursor *string, count int32, filter *bson.D) (*types.DelegationList, error) {
+func (db *MongoDbBridge) dlgListInit(col *mongo.Collection, cursor *hexutil.Uint64, count int32, filter *bson.D) (*types.DelegationList, error) {
 	// make sure some filter is used
 	if nil == filter {
 		filter = &bson.D{}
@@ -247,7 +247,7 @@ func (db *MongoDbBridge) dlgListInit(col *mongo.Collection, cursor *string, coun
 }
 
 // trxListWithRangeMarks returns a list of delegations with proper First/Last marks.
-func (db *MongoDbBridge) dlgListCollectRangeMarks(col *mongo.Collection, list *types.DelegationList, cursor *string, count int32) (*types.DelegationList, error) {
+func (db *MongoDbBridge) dlgListCollectRangeMarks(col *mongo.Collection, list *types.DelegationList, cursor *hexutil.Uint64, count int32) (*types.DelegationList, error) {
 	var err error
 
 	// find out the cursor ordinal index
@@ -268,7 +268,7 @@ func (db *MongoDbBridge) dlgListCollectRangeMarks(col *mongo.Collection, list *t
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.dlgListBorderPk(col,
-			bson.D{{fiDelegationPk, *cursor}},
+			bson.D{{fiDelegationPk, uint64(*cursor)}},
 			options.FindOne())
 	}
 
@@ -304,7 +304,7 @@ func (db *MongoDbBridge) dlgListBorderPk(col *mongo.Collection, filter bson.D, o
 }
 
 // dlgListFilter creates a filter for delegations list loading.
-func (db *MongoDbBridge) dlgListFilter(cursor *string, count int32, list *types.DelegationList) *bson.D {
+func (db *MongoDbBridge) dlgListFilter(cursor *hexutil.Uint64, count int32, list *types.DelegationList) *bson.D {
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
@@ -351,7 +351,7 @@ func (db *MongoDbBridge) dlgListOptions(count int32) *options.FindOptions {
 }
 
 // dlgListLoad load the initialized list of delegations from database.
-func (db *MongoDbBridge) dlgListLoad(col *mongo.Collection, cursor *string, count int32, list *types.DelegationList) (err error) {
+func (db *MongoDbBridge) dlgListLoad(col *mongo.Collection, cursor *hexutil.Uint64, count int32, list *types.DelegationList) (err error) {
 	// get the context for loader
 	ctx := context.Background()
 
@@ -401,7 +401,7 @@ func (db *MongoDbBridge) dlgListLoad(col *mongo.Collection, cursor *string, coun
 }
 
 // Delegations pulls list of delegations starting at the specified cursor.
-func (db *MongoDbBridge) Delegations(cursor *string, count int32, filter *bson.D) (*types.DelegationList, error) {
+func (db *MongoDbBridge) Delegations(cursor *hexutil.Uint64, count int32, filter *bson.D) (*types.DelegationList, error) {
 	// nothing to load?
 	if count == 0 {
 		return nil, fmt.Errorf("nothing to do, zero delegations requested")

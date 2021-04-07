@@ -56,7 +56,7 @@ func (p *proxy) DelegationAmountStaked(addr *common.Address, valID *hexutil.Big)
 }
 
 // DelegationsByAddress returns a list of all delegations of a given delegator address.
-func (p *proxy) DelegationsByAddress(addr *common.Address, cursor *string, count int32) (*types.DelegationList, error) {
+func (p *proxy) DelegationsByAddress(addr *common.Address, cursor *hexutil.Uint64, count int32) (*types.DelegationList, error) {
 	p.log.Debugf("loading delegations of %s", addr.String())
 	return p.db.Delegations(cursor, count, &bson.D{{"addr", addr.String()}})
 }
@@ -68,7 +68,7 @@ func (p *proxy) DelegationsByAddressAll(addr *common.Address) ([]*types.Delegati
 }
 
 // DelegationsOfValidator extract a list of delegations for a given validator.
-func (p *proxy) DelegationsOfValidator(valID *hexutil.Big, cursor *string, count int32) (*types.DelegationList, error) {
+func (p *proxy) DelegationsOfValidator(valID *hexutil.Big, cursor *hexutil.Uint64, count int32) (*types.DelegationList, error) {
 	p.log.Debugf("loading delegations of #%d", valID.ToInt().Uint64())
 	return p.db.Delegations(cursor, count, &bson.D{{"to", valID.String()}})
 }

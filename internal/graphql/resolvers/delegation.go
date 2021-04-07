@@ -114,8 +114,18 @@ func (del Delegation) WithdrawRequests(args struct {
 	// this controls the loading direction
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
+	// decode cursor
+	var cr *uint64 = nil
+	if args.Cursor != nil {
+		cv, err := hexutil.DecodeUint64(string(*args.Cursor))
+		if err != nil {
+			return nil, err
+		}
+		cr = &cv
+	}
+
 	// pull list of withdrawals
-	wr, err := repository.R().WithdrawRequests(&del.Address, del.Delegation.ToStakerId, (*string)(args.Cursor), args.Count)
+	wr, err := repository.R().WithdrawRequests(&del.Address, del.Delegation.ToStakerId, (*hexutil.Uint64)(cr), args.Count)
 	if err != nil {
 		return nil, err
 	}

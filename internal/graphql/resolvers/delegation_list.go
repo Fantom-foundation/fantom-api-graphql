@@ -6,7 +6,6 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"strconv"
 )
 
 // DelegationList represents resolvable list of blockchain delegation edges structure.
@@ -38,8 +37,8 @@ func (dl *DelegationList) PageInfo() (*ListPageInfo, error) {
 	}
 
 	// get the first and last elements
-	first := Cursor(strconv.FormatUint(dl.First, 10))
-	last := Cursor(strconv.FormatUint(dl.Last, 10))
+	first := Cursor(hexutil.Uint64(dl.First).String())
+	last := Cursor(hexutil.Uint64(dl.Last).String())
 
 	return NewListPageInfo(&first, &last, !dl.IsEnd, !dl.IsStart)
 }
@@ -56,7 +55,7 @@ func (dl *DelegationList) Edges() []*DelegationListEdge {
 	for i, d := range dl.Collection {
 		edges[i] = &DelegationListEdge{
 			Delegation: NewDelegation(d),
-			Cursor:     Cursor(strconv.FormatUint(d.Uid(), 10)),
+			Cursor:     Cursor(hexutil.Uint64(d.Uid()).String()),
 		}
 	}
 
@@ -73,8 +72,18 @@ func (rs *rootResolver) DelegationsOf(args *struct {
 	// this controls the loading direction
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
+	// decode cursor
+	var cr *uint64 = nil
+	if args.Cursor != nil {
+		cv, err := hexutil.DecodeUint64(string(*args.Cursor))
+		if err != nil {
+			return nil, err
+		}
+		cr = &cv
+	}
+
 	// get the list
-	dl, err := repository.R().DelegationsOfValidator(&args.Staker, (*string)(args.Cursor), args.Count)
+	dl, err := repository.R().DelegationsOfValidator(&args.Staker, (*hexutil.Uint64)(cr), args.Count)
 	if err != nil {
 		return nil, err
 	}
@@ -93,8 +102,18 @@ func (rs *rootResolver) DelegationsByAddress(args *struct {
 	// this controls the loading direction
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
+	// decode cursor
+	var cr *uint64 = nil
+	if args.Cursor != nil {
+		cv, err := hexutil.DecodeUint64(string(*args.Cursor))
+		if err != nil {
+			return nil, err
+		}
+		cr = &cv
+	}
+
 	// get the list of delegations
-	dl, err := repository.R().DelegationsByAddress(&args.Address, (*string)(args.Cursor), args.Count)
+	dl, err := repository.R().DelegationsByAddress(&args.Address, (*hexutil.Uint64)(cr), args.Count)
 	if err != nil {
 		return nil, err
 	}

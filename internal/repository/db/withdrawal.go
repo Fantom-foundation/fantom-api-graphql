@@ -198,7 +198,7 @@ func (db *MongoDbBridge) WithdrawalsCount() (uint64, error) {
 }
 
 // wrListInit initializes list of withdraw requests based on provided cursor, count, and filter.
-func (db *MongoDbBridge) wrListInit(col *mongo.Collection, cursor *string, count int32, filter *bson.D) (*types.WithdrawRequestList, error) {
+func (db *MongoDbBridge) wrListInit(col *mongo.Collection, cursor *hexutil.Uint64, count int32, filter *bson.D) (*types.WithdrawRequestList, error) {
 	// make sure some filter is used
 	if nil == filter {
 		filter = &bson.D{}
@@ -234,7 +234,7 @@ func (db *MongoDbBridge) wrListInit(col *mongo.Collection, cursor *string, count
 }
 
 // wrListCollectRangeMarks returns the list of withdraw requests with proper First/Last marks.
-func (db *MongoDbBridge) wrListCollectRangeMarks(col *mongo.Collection, list *types.WithdrawRequestList, cursor *string, count int32) (*types.WithdrawRequestList, error) {
+func (db *MongoDbBridge) wrListCollectRangeMarks(col *mongo.Collection, list *types.WithdrawRequestList, cursor *hexutil.Uint64, count int32) (*types.WithdrawRequestList, error) {
 	var err error
 
 	// find out the cursor ordinal index
@@ -255,7 +255,7 @@ func (db *MongoDbBridge) wrListCollectRangeMarks(col *mongo.Collection, list *ty
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.wrListBorderPk(col,
-			bson.D{{fiWithdrawalPk, *cursor}},
+			bson.D{{fiWithdrawalPk, uint64(*cursor)}},
 			options.FindOne())
 	}
 
@@ -291,7 +291,7 @@ func (db *MongoDbBridge) wrListBorderPk(col *mongo.Collection, filter bson.D, op
 }
 
 // wrListFilter creates a filter for withdraw requests list loading.
-func (db *MongoDbBridge) wrListFilter(cursor *string, count int32, list *types.WithdrawRequestList) *bson.D {
+func (db *MongoDbBridge) wrListFilter(cursor *hexutil.Uint64, count int32, list *types.WithdrawRequestList) *bson.D {
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
@@ -338,7 +338,7 @@ func (db *MongoDbBridge) wrListOptions(count int32) *options.FindOptions {
 }
 
 // wrListLoad load the initialized list of withdraw requests from database.
-func (db *MongoDbBridge) wrListLoad(col *mongo.Collection, cursor *string, count int32, list *types.WithdrawRequestList) (err error) {
+func (db *MongoDbBridge) wrListLoad(col *mongo.Collection, cursor *hexutil.Uint64, count int32, list *types.WithdrawRequestList) (err error) {
 	// get the context for loader
 	ctx := context.Background()
 
@@ -388,7 +388,7 @@ func (db *MongoDbBridge) wrListLoad(col *mongo.Collection, cursor *string, count
 }
 
 // Withdrawals pulls list of withdraw requests starting at the specified cursor.
-func (db *MongoDbBridge) Withdrawals(cursor *string, count int32, filter *bson.D) (*types.WithdrawRequestList, error) {
+func (db *MongoDbBridge) Withdrawals(cursor *hexutil.Uint64, count int32, filter *bson.D) (*types.WithdrawRequestList, error) {
 	// nothing to load?
 	if count == 0 {
 		return nil, fmt.Errorf("nothing to do, zero withdrawals requested")
