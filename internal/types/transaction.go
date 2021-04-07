@@ -85,7 +85,7 @@ type BsonTransaction struct {
 	From      string    `bson:"from"`
 	To        *string   `bson:"to"`
 	Gas       uint64    `bson:"gas"`
-	UsedGas   *uint64   `bson:"gas_use"`
+	UsedGas   *string   `bson:"gas_use"`
 	CumGas    *uint64   `bson:"gas_all"`
 	GasPrice  string    `bson:"gas_pri"`
 	Nonce     uint64    `bson:"nonce"`
@@ -113,10 +113,10 @@ func TransactionIndex(block *Block, trx *Transaction) uint64 {
 func (trx *Transaction) Uid() uint64 {
 	// is this a processed transaction?
 	if trx.Index != nil {
-		return (uint64(*trx.BlockNumber) << 14) | (uint64(*trx.Index)&0x3fff)&0x1FFFFFFFFFFFFFFF
+		return (uint64(*trx.BlockNumber) << 14) | (uint64(*trx.Index)&0x3fff)&0x7FFFFFFFFFFFFFFF
 	}
 	// pending transaction
-	return binary.BigEndian.Uint64(trx.Hash[:8]) & 0x1FFFFFFFFFFFFFFF
+	return binary.BigEndian.Uint64(trx.Hash[:8]) & 0x7FFFFFFFFFFFFFFF
 }
 
 // Marshal returns the JSON encoding of transaction.
@@ -151,7 +151,7 @@ func (trx *Transaction) MarshalBSON() ([]byte, error) {
 		pom.BlkIndex = &bx
 
 		// used gas
-		gu := uint64(*trx.GasUsed)
+		gu := trx.GasUsed.String()
 		pom.UsedGas = &gu
 
 		// cumulative gas
@@ -234,7 +234,7 @@ func (trx *Transaction) UnmarshalBSON(data []byte) (err error) {
 		trx.TrxIndex = &bi
 
 		// used gas
-		gu := hexutil.Uint64(*row.UsedGas)
+		gu := hexutil.Uint64(hexutil.MustDecodeUint64(*row.UsedGas))
 		trx.GasUsed = &gu
 
 		// cumulative gas
