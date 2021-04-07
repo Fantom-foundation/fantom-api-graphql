@@ -83,7 +83,11 @@ func (db *MongoDbBridge) AddWithdrawal(wr *types.WithdrawRequest) error {
 
 	// try to do the insert
 	if _, err := col.InsertOne(context.Background(), wr); err != nil {
-		db.log.Critical(err)
+		db.log.Criticalf("failed to store %s to %d, %s, %s; %s",
+			wr.Address.String(),
+			wr.StakerID.ToInt().Uint64(),
+			wr.WithdrawRequestID.String(),
+			wr.WithdrawTrx.String(), err.Error())
 		return err
 	}
 
