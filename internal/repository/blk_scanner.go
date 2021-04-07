@@ -76,14 +76,15 @@ func (bls *blockScanner) scan(lnb uint64) {
 		stopLog chan bool
 	)
 
-	// inform about block scanner progress
+	// inform about block scanner progress sparsely to prevent log flood
 	go func() {
+		bls.log.Infof("block scanner on block #%d", uint64(current))
 		for {
 			select {
 			case <-stopLog:
 				return
 			case <-time.After(5 * time.Second):
-				bls.log.Infof("blockScanner reached block #%d", uint64(current))
+				bls.log.Infof("block scanner reached block #%d", uint64(current))
 			}
 		}
 	}()

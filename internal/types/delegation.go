@@ -35,7 +35,7 @@ func (dl *Delegation) Uid() uint64 {
 // MarshalBSON creates a BSON representation of the delegation record.
 func (dl *Delegation) MarshalBSON() ([]byte, error) {
 	// calculate the value to 9 digits (and 18 billions remain available)
-	val := new(big.Int).Div(dl.AmountDelegated.ToInt(), DelegationDecimalsCorrection)
+	val := new(big.Int).Div(dl.AmountDelegated.ToInt(), DelegationDecimalsCorrection).Uint64()
 
 	pom := struct {
 		Uid    uint64 `bson:"_id"`
@@ -56,7 +56,7 @@ func (dl *Delegation) MarshalBSON() ([]byte, error) {
 		CrTime: uint64(dl.CreatedTime),
 		Staked: dl.AmountStaked.String(),
 		Active: dl.AmountDelegated.String(),
-		Value:  val.Uint64(),
+		Value:  val,
 	}
 	return bson.Marshal(pom)
 }

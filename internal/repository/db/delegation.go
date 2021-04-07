@@ -106,7 +106,7 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 	col := db.client.Database(db.dbName).Collection(colDelegations)
 
 	// calculate the value to 9 digits (and 18 billions remain available)
-	val := new(big.Int).Div(dl.AmountDelegated.ToInt(), types.DelegationDecimalsCorrection)
+	val := new(big.Int).Div(dl.AmountDelegated.ToInt(), types.DelegationDecimalsCorrection).Uint64()
 
 	// try to update a delegation by replacing it in the database
 	// we use address and validator ID to identify unique delegation
@@ -137,10 +137,10 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *big.Int, amo *hexutil.Big) error {
 	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colDelegations)
-	val := new(big.Int).Div(amo.ToInt(), types.DelegationDecimalsCorrection)
+	val := new(big.Int).Div(amo.ToInt(), types.DelegationDecimalsCorrection).Uint64()
 
 	// notify
-	db.log.Infof("updating delegation %s to %d value to %d", addr.String(), valID.Uint64(), val.Uint64())
+	db.log.Infof("updating delegation %s to %d value to %d", addr.String(), valID.Uint64(), val)
 
 	// update the transaction details
 	if _, err := col.UpdateOne(context.Background(),
@@ -150,7 +150,7 @@ func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *bi
 		},
 		bson.D{{"$set", bson.D{
 			{fiDelegationAmountActive, amo.String()},
-			{fiDelegationValue, val.Uint64()},
+			{fiDelegationValue, val},
 		}}}); err != nil {
 		// log the issue
 		db.log.Criticalf("delegation balance can not be updated; %s", err.Error())
