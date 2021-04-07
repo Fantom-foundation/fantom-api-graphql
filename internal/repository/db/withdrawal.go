@@ -104,11 +104,11 @@ func (db *MongoDbBridge) UpdateWithdrawal(wr *types.WithdrawRequest) error {
 
 	// try to update a withdraw request by replacing it in the database
 	// we use request ID identify unique withdrawal
-	er, err := col.ReplaceOne(context.Background(), bson.D{
+	er, err := col.UpdateOne(context.Background(), bson.D{
 		{fiWithdrawalAddress, wr.Address.String()},
 		{fiWithdrawalToValidator, wr.StakerID.String()},
 		{fiWithdrawalRequestID, wr.WithdrawRequestID.String()},
-	}, wr)
+	}, bson.D{{"$set", wr}}, new(options.UpdateOptions).SetUpsert(true))
 	if err != nil {
 		db.log.Critical(err)
 		return err
