@@ -13,6 +13,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"sync"
+	"time"
 )
 
 // blockScanner implements blockchain blockScanner used to extract blockchain data to off-chain storage.
@@ -72,15 +73,25 @@ func (bls *blockScanner) scan(lnb uint64) {
 		index   int
 		trx     *types.Transaction
 		toSend  *eventTransaction
+		stopLog chan bool
 	)
+
+	// inform about block scanner progress
+	go func() {
+		for {
+			select {
+			case <-stopLog:
+				return
+			case <-time.After(5 * time.Second):
+				bls.log.Infof("blockScanner reached block #%d", uint64(current))
+			}
+		}
+	}()
 
 	// do the scan
 	for {
 		// do we need a new block?
 		if block == nil || block.Txs == nil || len(block.Txs) <= index {
-			// log action
-			bls.log.Infof("blockScanner reached block #%d", uint64(current))
-
 			// try to get the next block
 			block, err = bls.repo.BlockByNumber(&current)
 			if err != nil {
@@ -114,6 +125,7 @@ func (bls *blockScanner) scan(lnb uint64) {
 			select {
 			case <-bls.sigStop:
 				// stop signal received?
+				stopLog <- true
 				return
 			case bls.buffer <- toSend:
 				// we did send it and now we need next one
