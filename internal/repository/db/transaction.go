@@ -99,7 +99,7 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	}
 
 	// add transaction to the db
-	db.log.Infof("transaction %s added to database", trx.Hash.String())
+	db.log.Debugf("transaction %s added to database", trx.Hash.String())
 
 	// make sure transactions collection is initialized
 	if db.initTransactions != nil {

@@ -40,7 +40,7 @@ func (ftm *FtmBridge) Transaction(hash *common.Hash) (*types.Transaction, error)
 			Index             hexutil.Uint64  `json:"transactionIndex"`
 			CumulativeGasUsed hexutil.Uint64  `json:"cumulativeGasUsed"`
 			GasUsed           hexutil.Uint64  `json:"gasUsed"`
-			ContractAddress   *common.Address `json:"contractAddress"`
+			ContractAddress   *common.Address `json:"contractAddress,omitempty"`
 			Status            hexutil.Uint64  `json:"status"`
 			Logs              []retypes.Log   `json:"logs"`
 		}

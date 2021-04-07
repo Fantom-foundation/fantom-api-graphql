@@ -42,13 +42,13 @@ type Transaction struct {
 	Nonce hexutil.Uint64 `json:"nonce"`
 
 	// To represents the address of the receiver. nil when its a contract creation transaction.
-	To *common.Address `json:"to"`
+	To *common.Address `json:"to,omitempty"`
 
 	// ContractAddress represents the address of contract created, if a contract creation transaction, otherwise nil.
-	ContractAddress *common.Address `json:"contract"`
+	ContractAddress *common.Address `json:"contract,omitempty"`
 
 	// TrxIndex represents integer of the transaction's index position in the block. nil when its pending.
-	TrxIndex *hexutil.Uint `json:"transactionIndex"`
+	TrxIndex *hexutil.Uint `json:"transactionIndex,omitempty"`
 
 	// Value represents value transferred in Wei.
 	Value hexutil.Big `json:"value"`
@@ -57,10 +57,10 @@ type Transaction struct {
 	InputData hexutil.Bytes `json:"input"`
 
 	// Index represents integer of the transaction's index position in the block.
-	Index *hexutil.Uint64 `json:"index"`
+	Index *hexutil.Uint64 `json:"index,omitempty"`
 
 	// Status represents transaction status; value is either 1 (success) or 0 (failure)
-	Status *hexutil.Uint64 `json:"status"`
+	Status *hexutil.Uint64 `json:"status,omitempty"`
 
 	// Logs represents a list of log records created along with the transaction
 	Logs []retypes.Log `json:"logs"`
@@ -95,9 +95,6 @@ type BsonTransaction struct {
 }
 
 // mustTransactionIndex always calculate the index of the current transaction
-// The ordinal index of a transaction should be unique across a consistent block chain.
-// The calculation gives us about 700 years of index space with 50k blocks per second
-// rate + 10 years to fix than. Max number of transactions in a block here is 14bits = 16383.
 func TransactionIndex(block *Block, trx *Transaction) uint64 {
 	// what is the transaction index
 	var txIndex uint64
@@ -115,11 +112,11 @@ func TransactionIndex(block *Block, trx *Transaction) uint64 {
 // rate + 10 years to fix than. Max number of transactions in a block here is 14bits = 16383.
 func (trx *Transaction) Uid() uint64 {
 	// is this a processed transaction?
-	if trx.TrxIndex != nil {
-		return (uint64(*trx.BlockNumber) << 14) | (uint64(*trx.TrxIndex) & 0x3fff)
+	if trx.Index != nil {
+		return (uint64(*trx.BlockNumber) << 14) | (uint64(*trx.Index)&0x3fff)&0x1FFFFFFFFFFFFFFF
 	}
 	// pending transaction
-	return binary.BigEndian.Uint64(trx.Hash[:8])
+	return binary.BigEndian.Uint64(trx.Hash[:8]) & 0x1FFFFFFFFFFFFFFF
 }
 
 // Marshal returns the JSON encoding of transaction.
