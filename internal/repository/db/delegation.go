@@ -104,10 +104,10 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 
 	// try to update a delegation by replacing it in the database
 	// we use address and validator ID to identify unique delegation
-	er, err := col.ReplaceOne(context.Background(), bson.D{
+	er, err := col.UpdateOne(context.Background(), bson.D{
 		{fiDelegationAddress, dl.Address.String()},
 		{fiDelegationToValidator, dl.ToStakerId.String()},
-	}, dl)
+	}, bson.D{{"$set", dl}}, new(options.UpdateOptions).SetUpsert(true))
 	if err != nil {
 		db.log.Critical(err)
 		return err
