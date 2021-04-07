@@ -139,6 +139,9 @@ func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *bi
 	col := db.client.Database(db.dbName).Collection(colDelegations)
 	val := new(big.Int).Div(amo.ToInt(), types.DelegationDecimalsCorrection)
 
+	// notify
+	db.log.Infof("updating delegation %s to %d value to %d", addr.String(), valID.Uint64(), val.Uint64())
+
 	// update the transaction details
 	if _, err := col.UpdateOne(context.Background(),
 		bson.D{

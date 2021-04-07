@@ -15,6 +15,7 @@ import (
 	retypes "github.com/ethereum/go-ethereum/core/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
+	"strings"
 )
 
 // IsDelegating returns if the given address is an SFC delegator.
@@ -107,16 +108,29 @@ func (p *proxy) DelegationFluidStakingActive(_ *common.Address, _ *hexutil.Big) 
 
 // UpdateDelegationActiveAmount updates active delegation amount to the current SFC registered value.
 func (p *proxy) UpdateDelegationActiveAmount(addr *common.Address, valID *hexutil.Big) {
-	// pull the current value
-	val, err := p.rpc.AmountStaked(addr, (*big.Int)(valID))
-	if err != nil {
-		p.log.Errorf("can not update active delegation balance; %s", err.Error())
-		return
-	}
+	// key the specific update
+	var sb strings.Builder
+	sb.WriteString(addr.String())
+	sb.WriteString(valID.String())
 
-	// do the update
-	if err := p.db.UpdateDelegationBalance(addr, (*big.Int)(valID), (*hexutil.Big)(val)); err != nil {
-		p.log.Errorf("can not update active delegation balance; %s", err.Error())
+	// make sure not to do it more than once in parallel
+	if _, err, _ := p.apiRequestGroup.Do(sb.String(), func() (interface{}, error) {
+		// pull the current value
+		val, err := p.rpc.AmountStaked(addr, (*big.Int)(valID))
+		if err != nil {
+			p.log.Errorf("can not update active delegation balance; %s", err.Error())
+			return nil, err
+		}
+
+		// do the update
+		if err := p.db.UpdateDelegationBalance(addr, (*big.Int)(valID), (*hexutil.Big)(val)); err != nil {
+			p.log.Errorf("can not update active delegation balance; %s", err.Error())
+			return nil, err
+		}
+		return nil, nil
+	}); err != nil {
+		// log issue
+		p.log.Errorf("delegation %s to %d balance update failed; %s", addr.String(), valID.ToInt().Uint64(), err.Error())
 	}
 }
 
