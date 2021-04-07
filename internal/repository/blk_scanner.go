@@ -53,18 +53,6 @@ func (bls *blockScanner) run() {
 // scan performs the actual blockScanner operation on the missing blocks starting
 // from the identified last known block id/number.
 func (bls *blockScanner) scan(lnb uint64) {
-	// don't forget to sign off after we are done
-	defer func() {
-		// signal we are done with the sync
-		bls.isDone <- true
-
-		// log finish
-		bls.log.Notice("block scanner done")
-
-		// signal to wait group we are done
-		bls.wg.Done()
-	}()
-
 	// what is the current block
 	var (
 		current = hexutil.Uint64(lnb)
@@ -76,12 +64,26 @@ func (bls *blockScanner) scan(lnb uint64) {
 		stopLog chan bool
 	)
 
+	// don't forget to sign off after we are done
+	defer func() {
+		// signal we are done with the sync
+		bls.isDone <- true
+		stopLog <- true
+
+		// log finish
+		bls.log.Notice("block scanner done")
+
+		// signal to wait group we are done
+		bls.wg.Done()
+	}()
+
 	// inform about block scanner progress sparsely to prevent log flood
 	go func() {
 		bls.log.Infof("block scanner on block #%d", uint64(current))
 		for {
 			select {
 			case <-stopLog:
+				bls.log.Infof("block scanner finished on block #%d", uint64(current))
 				return
 			case <-time.After(5 * time.Second):
 				bls.log.Infof("block scanner reached block #%d", uint64(current))
@@ -114,7 +116,6 @@ func (bls *blockScanner) scan(lnb uint64) {
 				// get transaction
 				trx, err = bls.repo.Transaction(block.Txs[index])
 				if err != nil {
-					stopLog <- true
 					return
 				}
 
@@ -127,7 +128,6 @@ func (bls *blockScanner) scan(lnb uint64) {
 			select {
 			case <-bls.sigStop:
 				// stop signal received?
-				stopLog <- true
 				return
 			case bls.buffer <- toSend:
 				// we did send it and now we need next one

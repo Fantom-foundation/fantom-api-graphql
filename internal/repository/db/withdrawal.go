@@ -83,7 +83,7 @@ func (db *MongoDbBridge) AddWithdrawal(wr *types.WithdrawRequest) error {
 
 	// do we already know this withdraw request
 	if db.isWithdrawalKnown(col, wr) {
-		db.log.Infof("known withdraw by %s to %d, %s, %s; %s",
+		db.log.Infof("known withdraw by %s to %d, request ID %s, by trx %s",
 			wr.Address.String(),
 			wr.StakerID.ToInt().Uint64(),
 			wr.WithdrawRequestID.String(),
