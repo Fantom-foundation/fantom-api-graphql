@@ -125,9 +125,9 @@ func (ftm *FtmBridge) validatorById(contract *contracts.SfcContract, valID *big.
 	}
 
 	// any creation record?
-	if 0 == val.CreatedEpoch.Uint64() {
-		ftm.log.Errorf("invalid validator request for #%d", valID.Uint64())
-		return nil, fmt.Errorf("unknown validator #%d", valID.Uint64())
+	if 0 == val.CreatedTime.Uint64() {
+		ftm.log.Errorf("validator #%d has zero created time, assuming empty record", valID.Uint64())
+		return nil, fmt.Errorf("validator #%d not found", valID.Uint64())
 	}
 
 	// any deactivation epoch?
@@ -172,10 +172,10 @@ func (ftm *FtmBridge) ValidatorAddress(valID *big.Int) (*common.Address, error) 
 		return nil, err
 	}
 
-	// do we have the val of this number?
-	if 0 == val.CreatedEpoch.Uint64() {
-		ftm.log.Errorf("invalid validator request for #%d", valID.Uint64())
-		return nil, fmt.Errorf("unknown validator #%d", valID.Uint64())
+	// any creation record?
+	if 0 == val.CreatedTime.Uint64() {
+		ftm.log.Errorf("validator #%d has zero created time, assuming empty record", valID.Uint64())
+		return nil, fmt.Errorf("validator #%d not found", valID.Uint64())
 	}
 
 	ftm.log.Debugf("validator #%d is %s", valID.Uint64(), val.Auth.String())
