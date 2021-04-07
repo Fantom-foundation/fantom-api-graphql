@@ -34,7 +34,7 @@ func (db *MongoDbBridge) initWithdrawalsCollection(col *mongo.Collection) {
 	// index delegator + validator
 	unique := true
 	ix = append(ix, mongo.IndexModel{
-		Keys: bson.D{{fiWithdrawalAddress, 1}, {fiWithdrawalToValidator, 1}},
+		Keys: bson.D{{fiWithdrawalAddress, 1}, {fiWithdrawalToValidator, 1}, {fiWithdrawalRequestID, 1}},
 		Options: &options.IndexOptions{
 			Unique: &unique,
 		},
@@ -81,6 +81,16 @@ func (db *MongoDbBridge) AddWithdrawal(wr *types.WithdrawRequest) error {
 	// get the collection for withdrawals
 	col := db.client.Database(db.dbName).Collection(colWithdrawals)
 
+	// do we already know this withdraw request
+	if db.isWithdrawalKnown(col, wr) {
+		db.log.Infof("known withdraw by %s to %d, %s, %s; %s",
+			wr.Address.String(),
+			wr.StakerID.ToInt().Uint64(),
+			wr.WithdrawRequestID.String(),
+			wr.RequestTrx.String())
+		return db.UpdateWithdrawal(wr)
+	}
+
 	// try to do the insert
 	if _, err := col.InsertOne(context.Background(), wr); err != nil {
 		db.log.Criticalf("failed to store %s to %d, %s, %s; %s",
@@ -103,6 +113,9 @@ func (db *MongoDbBridge) UpdateWithdrawal(wr *types.WithdrawRequest) error {
 	// get the collection for withdrawals
 	col := db.client.Database(db.dbName).Collection(colWithdrawals)
 
+	// calculate the value to 9 digits (and 18 billions remain available)
+	val := new(big.Int).Div(wr.Amount.ToInt(), types.WithdrawDecimalsCorrection).Uint64()
+
 	// withdraw transaction
 	var trx *string = nil
 	if wr.WithdrawTrx != nil {
@@ -119,6 +132,8 @@ func (db *MongoDbBridge) UpdateWithdrawal(wr *types.WithdrawRequest) error {
 	}, bson.D{{"$set", bson.D{
 		{fiWithdrawalFinTrx, trx},
 		{fiWithdrawalFinTime, (*uint64)(wr.WithdrawTime)},
+		{fiWithdrawalValue, val},
+		{fiWithdrawalCreated, uint64(wr.CreatedTime)},
 	}}}, new(options.UpdateOptions).SetUpsert(true))
 	if err != nil {
 		db.log.Critical(err)
@@ -154,7 +169,6 @@ func (db *MongoDbBridge) isWithdrawalKnown(col *mongo.Collection, wr *types.With
 		db.log.Errorf("can not get existing withdraw request pk; %s", sr.Err().Error())
 		return false
 	}
-
 	return true
 }
 
