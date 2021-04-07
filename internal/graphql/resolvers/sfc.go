@@ -38,9 +38,15 @@ func (rs *rootResolver) Staker(args struct {
 	// by ID or by address?
 	if args.Id != nil {
 		st, err := repository.R().Validator(args.Id)
+		if err != nil {
+			return nil, err
+		}
 		return NewStaker(st), err
 	}
 
 	st, err := repository.R().ValidatorByAddress(args.Address)
+	if err != nil {
+		return nil, err
+	}
 	return NewStaker(st), err
 }

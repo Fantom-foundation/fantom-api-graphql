@@ -44,8 +44,18 @@ func (st Staker) Delegations(args struct {
 	// this controls the loading direction
 	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
 
+	// decode cursor
+	var cr *uint64 = nil
+	if args.Cursor != nil {
+		cv, err := hexutil.DecodeUint64(string(*args.Cursor))
+		if err != nil {
+			return nil, err
+		}
+		cr = &cv
+	}
+
 	// get delegations
-	dl, err := repository.R().DelegationsOfValidator(&st.Id, (*string)(args.Cursor), args.Count)
+	dl, err := repository.R().DelegationsOfValidator(&st.Id, (*hexutil.Uint64)(cr), args.Count)
 	if err != nil {
 		return nil, err
 	}
