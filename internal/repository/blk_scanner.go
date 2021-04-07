@@ -114,6 +114,7 @@ func (bls *blockScanner) scan(lnb uint64) {
 				// get transaction
 				trx, err = bls.repo.Transaction(block.Txs[index])
 				if err != nil {
+					stopLog <- true
 					return
 				}
 
