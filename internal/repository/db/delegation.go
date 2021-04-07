@@ -279,7 +279,7 @@ func (db *MongoDbBridge) dlgListCollectRangeMarks(col *mongo.Collection, list *t
 	}
 
 	// inform what we are about to do
-	db.log.Debugf("delegation list initialized with PK %s", list.First)
+	db.log.Debugf("delegation list initialized with PK %d", list.First)
 	return list, nil
 }
 
@@ -308,15 +308,15 @@ func (db *MongoDbBridge) dlgListFilter(cursor *string, count int32, list *types.
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: fiDelegationPk, Value: bson.D{{"$gte", list.First}}})
-		} else {
 			list.Filter = append(list.Filter, bson.E{Key: fiDelegationPk, Value: bson.D{{"$lte", list.First}}})
+		} else {
+			list.Filter = append(list.Filter, bson.E{Key: fiDelegationPk, Value: bson.D{{"$gte", list.First}}})
 		}
 	} else {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: fiDelegationPk, Value: bson.D{{"$gt", list.First}}})
-		} else {
 			list.Filter = append(list.Filter, bson.E{Key: fiDelegationPk, Value: bson.D{{"$lt", list.First}}})
+		} else {
+			list.Filter = append(list.Filter, bson.E{Key: fiDelegationPk, Value: bson.D{{"$gt", list.First}}})
 		}
 	}
 

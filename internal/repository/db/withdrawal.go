@@ -295,15 +295,15 @@ func (db *MongoDbBridge) wrListFilter(cursor *string, count int32, list *types.W
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: fiWithdrawalPk, Value: bson.D{{"$gte", list.First}}})
-		} else {
 			list.Filter = append(list.Filter, bson.E{Key: fiWithdrawalPk, Value: bson.D{{"$lte", list.First}}})
+		} else {
+			list.Filter = append(list.Filter, bson.E{Key: fiWithdrawalPk, Value: bson.D{{"$gte", list.First}}})
 		}
 	} else {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: fiWithdrawalPk, Value: bson.D{{"$gt", list.First}}})
-		} else {
 			list.Filter = append(list.Filter, bson.E{Key: fiWithdrawalPk, Value: bson.D{{"$lt", list.First}}})
+		} else {
+			list.Filter = append(list.Filter, bson.E{Key: fiWithdrawalPk, Value: bson.D{{"$gt", list.First}}})
 		}
 	}
 
