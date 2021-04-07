@@ -87,7 +87,7 @@ func (db *MongoDbBridge) AddWithdrawal(wr *types.WithdrawRequest) error {
 			wr.Address.String(),
 			wr.StakerID.ToInt().Uint64(),
 			wr.WithdrawRequestID.String(),
-			wr.WithdrawTrx.String(), err.Error())
+			wr.RequestTrx.String(), err.Error())
 		return err
 	}
 
