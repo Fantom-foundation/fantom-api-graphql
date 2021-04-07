@@ -234,6 +234,9 @@ type Repository interface {
 	// StoreWithdrawRequest stores the given withdraw request in persistent storage.
 	StoreWithdrawRequest(*types.WithdrawRequest) error
 
+	// UpdateWithdrawRequest stores the updated withdraw request in persistent storage.
+	UpdateWithdrawRequest(*types.WithdrawRequest) error
+
 	// WithdrawRequest extracts details of a withdraw request specified by the delegator, validator and request ID.
 	WithdrawRequest(*common.Address, *hexutil.Big, *hexutil.Big) (*types.WithdrawRequest, error)
 

@@ -238,7 +238,7 @@ func handleSfcWithdrawn(log *retypes.Log, ld *logsDispatcher) {
 	req.WithdrawTrx = &log.TxHash
 
 	// store the updated request
-	if err := ld.repo.StoreWithdrawRequest(req); err != nil {
+	if err := ld.repo.UpdateWithdrawRequest(req); err != nil {
 		ld.log.Errorf("failed to store finalized withdraw request; %s", err.Error())
 	}
 

@@ -14,13 +14,16 @@ import (
 )
 
 const (
-	colDelegations           = "delegations"
-	fiDelegationPk           = "_id"
-	fiDelegationAddress      = "addr"
-	fiDelegationToValidator  = "to"
-	fiDelegationCreated      = "cr_time"
-	fiDelegationAmountActive = "active"
-	fiDelegationValue        = "value"
+	colDelegations                 = "delegations"
+	fiDelegationPk                 = "_id"
+	fiDelegationAddress            = "addr"
+	fiDelegationToValidator        = "to"
+	fiDelegationTransaction        = "trx"
+	fiDelegationToValidatorAddress = "to_adr"
+	fiDelegationCreated            = "cr_time"
+	fiDelegationAmount             = "amount"
+	fiDelegationAmountActive       = "active"
+	fiDelegationValue              = "value"
 )
 
 // initDelegationCollection initializes the delegation collection with
@@ -102,12 +105,22 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colDelegations)
 
+	// calculate the value to 9 digits (and 18 billions remain available)
+	val := new(big.Int).Div(dl.AmountDelegated.ToInt(), types.DelegationDecimalsCorrection)
+
 	// try to update a delegation by replacing it in the database
 	// we use address and validator ID to identify unique delegation
 	er, err := col.UpdateOne(context.Background(), bson.D{
 		{fiDelegationAddress, dl.Address.String()},
 		{fiDelegationToValidator, dl.ToStakerId.String()},
-	}, bson.D{{"$set", dl}}, new(options.UpdateOptions).SetUpsert(true))
+	}, bson.D{{"$set", bson.D{
+		{fiDelegationTransaction, dl.Transaction.String()},
+		{fiDelegationToValidatorAddress, dl.ToStakerAddress.String()},
+		{fiDelegationCreated, uint64(dl.CreatedTime)},
+		{fiDelegationAmount, dl.AmountStaked.String()},
+		{fiDelegationAmountActive, dl.AmountDelegated.String()},
+		{fiDelegationValue, val},
+	}}}, new(options.UpdateOptions).SetUpsert(true))
 	if err != nil {
 		db.log.Critical(err)
 		return err

@@ -109,29 +109,6 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	return nil
 }
 
-// UpdateTransaction modifies the transaction data in the DB to match
-// the values of the record.
-func (db *MongoDbBridge) UpdateTransaction(trx *types.Transaction) error {
-	// any transaction given?
-	if trx == nil {
-		return fmt.Errorf("no transaction given")
-	}
-
-	// get the collection for transactions
-	col := db.client.Database(db.dbName).Collection(coTransactions)
-
-	// update the transaction details
-	if _, err := col.UpdateOne(context.Background(),
-		bson.D{{fiTransactionPk, trx.Hash.String()}},
-		bson.D{{"$set", trx}}); err != nil {
-		// log the issue
-		db.log.Criticalf("transaction %s can not be updated; %s", trx.Hash.String(), err.Error())
-		return err
-	}
-
-	return nil
-}
-
 // isTransactionKnown checks if a transaction document already exists in the database.
 func (db *MongoDbBridge) IsTransactionKnown(col *mongo.Collection, hash *common.Hash) (bool, error) {
 	// try to find the transaction in the database (it may already exist)

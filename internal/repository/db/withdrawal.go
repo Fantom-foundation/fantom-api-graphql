@@ -21,6 +21,8 @@ const (
 	fiWithdrawalToValidator = "to"
 	fiWithdrawalCreated     = "cr_time"
 	fiWithdrawalValue       = "value"
+	fiWithdrawalFinTrx      = "fin_trx"
+	fiWithdrawalFinTime     = "fin_time"
 )
 
 // initWithdrawalsCollection initializes the withdraw requests collection with
@@ -79,11 +81,6 @@ func (db *MongoDbBridge) AddWithdrawal(wr *types.WithdrawRequest) error {
 	// get the collection for withdrawals
 	col := db.client.Database(db.dbName).Collection(colWithdrawals)
 
-	// if the delegation already exists, update it with the new one
-	if db.isWithdrawalKnown(col, wr) {
-		return db.UpdateWithdrawal(wr)
-	}
-
 	// try to do the insert
 	if _, err := col.InsertOne(context.Background(), wr); err != nil {
 		db.log.Critical(err)
@@ -102,13 +99,23 @@ func (db *MongoDbBridge) UpdateWithdrawal(wr *types.WithdrawRequest) error {
 	// get the collection for withdrawals
 	col := db.client.Database(db.dbName).Collection(colWithdrawals)
 
+	// withdraw transaction
+	var trx *string = nil
+	if wr.WithdrawTrx != nil {
+		t := wr.WithdrawTrx.String()
+		trx = &t
+	}
+
 	// try to update a withdraw request by replacing it in the database
 	// we use request ID identify unique withdrawal
 	er, err := col.UpdateOne(context.Background(), bson.D{
 		{fiWithdrawalAddress, wr.Address.String()},
 		{fiWithdrawalToValidator, wr.StakerID.String()},
 		{fiWithdrawalRequestID, wr.WithdrawRequestID.String()},
-	}, bson.D{{"$set", wr}}, new(options.UpdateOptions).SetUpsert(true))
+	}, bson.D{{"$set", bson.D{
+		{fiWithdrawalFinTrx, trx},
+		{fiWithdrawalFinTime, (*uint64)(wr.WithdrawTime)},
+	}}}, new(options.UpdateOptions).SetUpsert(true))
 	if err != nil {
 		db.log.Critical(err)
 		return err
