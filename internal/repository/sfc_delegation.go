@@ -22,8 +22,8 @@ import (
 func (p *proxy) IsDelegating(addr *common.Address) (bool, error) {
 	// count only active delegations (with non-zero value)
 	count, err := p.db.DelegationsCountFiltered(&bson.D{
-		{"addr", addr.String()},
-		{"value", bson.D{{"$gt", 0}}},
+		{types.FiDelegationAddress, addr.String()},
+		{types.FiDelegationValue, bson.D{{"$gt", 0}}},
 	})
 	if err != nil {
 		p.log.Errorf("can not check delegation by address; %s", addr.String())
@@ -56,21 +56,21 @@ func (p *proxy) DelegationAmountStaked(addr *common.Address, valID *hexutil.Big)
 }
 
 // DelegationsByAddress returns a list of all delegations of a given delegator address.
-func (p *proxy) DelegationsByAddress(addr *common.Address, cursor *hexutil.Uint64, count int32) (*types.DelegationList, error) {
+func (p *proxy) DelegationsByAddress(addr *common.Address, cursor *string, count int32) (*types.DelegationList, error) {
 	p.log.Debugf("loading delegations of %s", addr.String())
-	return p.db.Delegations(cursor, count, &bson.D{{"addr", addr.String()}})
+	return p.db.Delegations(cursor, count, &bson.D{{types.FiDelegationAddress, addr.String()}})
 }
 
 // DelegationsByAddressAll returns a list of all delegations of the given address un-paged.
 func (p *proxy) DelegationsByAddressAll(addr *common.Address) ([]*types.Delegation, error) {
 	p.log.Debugf("loading all delegations of %s", addr.String())
-	return p.db.DelegationsAll(&bson.D{{"addr", addr.String()}})
+	return p.db.DelegationsAll(&bson.D{{types.FiDelegationAddress, addr.String()}})
 }
 
 // DelegationsOfValidator extract a list of delegations for a given validator.
-func (p *proxy) DelegationsOfValidator(valID *hexutil.Big, cursor *hexutil.Uint64, count int32) (*types.DelegationList, error) {
+func (p *proxy) DelegationsOfValidator(valID *hexutil.Big, cursor *string, count int32) (*types.DelegationList, error) {
 	p.log.Debugf("loading delegations of #%d", valID.ToInt().Uint64())
-	return p.db.Delegations(cursor, count, &bson.D{{"to", valID.String()}})
+	return p.db.Delegations(cursor, count, &bson.D{{types.FiDelegationToValidator, valID.String()}})
 }
 
 // DelegationLock returns delegation lock information using SFC contract binding.

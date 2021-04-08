@@ -10,6 +10,19 @@ import (
 	"math/big"
 )
 
+const (
+	FiDelegationPk                 = "_id"
+	FiDelegationOrdinal            = "orx"
+	FiDelegationAddress            = "adr"
+	FiDelegationToValidator        = "to"
+	FiDelegationTransaction        = "trx"
+	FiDelegationToValidatorAddress = "toad"
+	FiDelegationCreated            = "crt"
+	FiDelegationAmount             = "amo"
+	FiDelegationAmountActive       = "act"
+	FiDelegationValue              = "val"
+)
+
 // Delegation represents a delegator in Opera blockchain.
 type Delegation struct {
 	Transaction     common.Hash    `json:"trx"`
@@ -21,15 +34,37 @@ type Delegation struct {
 	CreatedTime     hexutil.Uint64 `json:"createdTime"`
 }
 
+// BsonDelegation represents the BSON i/o struct for a delegation.
+type BsonDelegation struct {
+	ID     string `bson:"_id"`
+	Orx    uint64 `bson:"orx"`
+	Trx    string `bson:"trx"`
+	Addr   string `bson:"adr"`
+	To     string `bson:"to"`
+	ToAddr string `bson:"toad"`
+	CrTime uint64 `bson:"crt"`
+	Staked string `bson:"amo"`
+	Active string `bson:"act"`
+	Value  uint64 `bson:"val"`
+}
+
 // DelegationDecimalsCorrection is used to manipulate precision of a delegation active value
 // so it can be stored in database as UINT64 without loosing too much data
 var DelegationDecimalsCorrection = new(big.Int).SetUint64(1000000000)
 
-// Uid returns a unique identifier for the given delegation.
+// OrdinalIndex returns an ordinal index for the given delegation.
 // We construct the UID from the time the delegation was created (40 bits = 1099511627775s = 34000 years),
 // a part of the creation transaction hash and part of the target validator index (12 bits = 4096).
-func (dl *Delegation) Uid() uint64 {
-	return (uint64(dl.CreatedTime)&0xFFFFFFFFFF)<<24 | (dl.ToStakerId.ToInt().Uint64()&0xFFF)<<12 | (binary.BigEndian.Uint64(dl.Transaction[:8]) & 0xFFF)
+func (dl *Delegation) OrdinalIndex() uint64 {
+	return (uint64(dl.CreatedTime)&0x7FFFFFFFFF)<<24 | (dl.ToStakerId.ToInt().Uint64()&0xFFF)<<12 | (binary.BigEndian.Uint64(dl.Transaction[:8]) & 0xFFF)
+}
+
+// Pk generates primary key of the delegation.
+func (dl *Delegation) Pk() string {
+	pk := make([]byte, 32)
+	copy(pk, dl.Address[:])
+	pk = append(pk[20:], dl.ToStakerId.ToInt().Bytes()...)
+	return hexutil.Encode(pk)
 }
 
 // MarshalBSON creates a BSON representation of the delegation record.
@@ -37,18 +72,10 @@ func (dl *Delegation) MarshalBSON() ([]byte, error) {
 	// calculate the value to 9 digits (and 18 billions remain available)
 	val := new(big.Int).Div(dl.AmountDelegated.ToInt(), DelegationDecimalsCorrection).Uint64()
 
-	pom := struct {
-		Uid    uint64 `bson:"_id"`
-		Trx    string `bson:"trx"`
-		Addr   string `bson:"addr"`
-		To     string `bson:"to"`
-		ToAddr string `bson:"to_adr"`
-		CrTime uint64 `bson:"cr_time"`
-		Staked string `bson:"amount"`
-		Active string `bson:"active"`
-		Value  uint64 `bson:"value"`
-	}{
-		Uid:    dl.Uid(),
+	// do BSON encoding
+	return bson.Marshal(BsonDelegation{
+		ID:     dl.Pk(),
+		Orx:    dl.OrdinalIndex(),
 		Trx:    dl.Transaction.String(),
 		Addr:   dl.Address.String(),
 		To:     dl.ToStakerId.String(),
@@ -57,8 +84,7 @@ func (dl *Delegation) MarshalBSON() ([]byte, error) {
 		Staked: dl.AmountStaked.String(),
 		Active: dl.AmountDelegated.String(),
 		Value:  val,
-	}
-	return bson.Marshal(pom)
+	})
 }
 
 // UnmarshalBSON updates the value from BSON source.
@@ -70,17 +96,7 @@ func (dl *Delegation) UnmarshalBSON(data []byte) (err error) {
 	}()
 
 	// try to decode the BSON data
-	var row struct {
-		Uid    uint64 `bson:"_id"`
-		Trx    string `bson:"trx"`
-		Addr   string `bson:"addr"`
-		To     string `bson:"to"`
-		ToAddr string `bson:"to_adr"`
-		CrTime uint64 `bson:"cr_time"`
-		Staked string `bson:"amount"`
-		Active string `bson:"active"`
-		Value  uint64 `bson:"value"`
-	}
+	var row BsonDelegation
 	if err = bson.Unmarshal(data, &row); err != nil {
 		return err
 	}

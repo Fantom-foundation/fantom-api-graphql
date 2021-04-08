@@ -41,10 +41,10 @@ func (db *MongoDbBridge) initTransactionsCollection(col *mongo.Collection) {
 	// prepare index models
 	ix := make([]mongo.IndexModel, 0)
 
-	// index ordinal key along with the primary key
+	// index ordinal key sorted from high to low since this is the way we usually list
 	unique := true
 	ix = append(ix, mongo.IndexModel{
-		Keys: bson.D{{fiTransactionPk, 1}, {fiTransactionOrdinalIndex, -1}},
+		Keys: bson.D{{fiTransactionOrdinalIndex, -1}},
 		Options: &options.IndexOptions{
 			Unique: &unique,
 		},
