@@ -477,6 +477,7 @@ func (_ERCTwenty *ERCTwentyFilterer) ParseApproval(log types.Log) (*ERCTwentyApp
 	if err := _ERCTwenty.contract.UnpackLog(event, "Approval", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -630,5 +631,6 @@ func (_ERCTwenty *ERCTwentyFilterer) ParseTransfer(log types.Log) (*ERCTwentyTra
 	if err := _ERCTwenty.contract.UnpackLog(event, "Transfer", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }

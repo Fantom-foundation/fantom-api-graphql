@@ -630,5 +630,6 @@ func (_SfcTokenizer *SfcTokenizerFilterer) ParseOwnershipTransferred(log types.L
 	if err := _SfcTokenizer.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }

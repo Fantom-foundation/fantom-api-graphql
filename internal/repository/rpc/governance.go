@@ -22,9 +22,9 @@ import (
 	"strings"
 )
 
-//go:generate abigen --abi ./contracts/abi/gov_governance.abi --pkg contracts --type Governance --out ./contracts/governance.go
-//go:generate abigen --abi ./contracts/abi/gov_iproposal.abi --pkg contracts --type GovernanceProposal --out ./contracts/gov_iproposal.go
-//go:generate abigen --abi ./contracts/abi/gov_governable.abi --pkg contracts --type Governable --out ./contracts/gov_governable.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/gov_governance.abi --pkg contracts --type Governance --out ./contracts/governance.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/gov_iproposal.abi --pkg contracts --type GovernanceProposal --out ./contracts/gov_iproposal.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/gov_governable.abi --pkg contracts --type Governable --out ./contracts/gov_governable.go
 
 // proposalExtended represents the extended information
 // of a governance proposal.

@@ -218,10 +218,13 @@ func (_Governance *GovernanceCaller) CalculateVotingTally(opts *bind.CallOpts, p
 		WinnerID         *big.Int
 		Votes            *big.Int
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.ProposalResolved = out[0].(bool)
-	outstruct.WinnerID = out[1].(*big.Int)
-	outstruct.Votes = out[2].(*big.Int)
+	outstruct.ProposalResolved = *abi.ConvertType(out[0], new(bool)).(*bool)
+	outstruct.WinnerID = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.Votes = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
 
 	return *outstruct, err
 
@@ -265,10 +268,13 @@ func (_Governance *GovernanceCaller) GetTask(opts *bind.CallOpts, i *big.Int) (s
 		Assignment *big.Int
 		ProposalID *big.Int
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.Active = out[0].(bool)
-	outstruct.Assignment = out[1].(*big.Int)
-	outstruct.ProposalID = out[2].(*big.Int)
+	outstruct.Active = *abi.ConvertType(out[0], new(bool)).(*bool)
+	outstruct.Assignment = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.ProposalID = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
 
 	return *outstruct, err
 
@@ -310,9 +316,12 @@ func (_Governance *GovernanceCaller) GetVote(opts *bind.CallOpts, from common.Ad
 		Weight  *big.Int
 		Choices []*big.Int
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.Weight = out[0].(*big.Int)
-	outstruct.Choices = out[1].([]*big.Int)
+	outstruct.Weight = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.Choices = *abi.ConvertType(out[1], new([]*big.Int)).(*[]*big.Int)
 
 	return *outstruct, err
 
@@ -571,10 +580,13 @@ func (_Governance *GovernanceCaller) ProposalOptionState(opts *bind.CallOpts, pr
 		AgreementRatio *big.Int
 		Agreement      *big.Int
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.Votes = out[0].(*big.Int)
-	outstruct.AgreementRatio = out[1].(*big.Int)
-	outstruct.Agreement = out[2].(*big.Int)
+	outstruct.Votes = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.AgreementRatio = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.Agreement = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
 
 	return *outstruct, err
 
@@ -632,17 +644,20 @@ func (_Governance *GovernanceCaller) ProposalParams(opts *bind.CallOpts, proposa
 		VotingMinEndTime *big.Int
 		VotingMaxEndTime *big.Int
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.PType = out[0].(*big.Int)
-	outstruct.Executable = out[1].(uint8)
-	outstruct.MinVotes = out[2].(*big.Int)
-	outstruct.MinAgreement = out[3].(*big.Int)
-	outstruct.OpinionScales = out[4].([]*big.Int)
-	outstruct.Options = out[5].([][32]byte)
-	outstruct.ProposalContract = out[6].(common.Address)
-	outstruct.VotingStartTime = out[7].(*big.Int)
-	outstruct.VotingMinEndTime = out[8].(*big.Int)
-	outstruct.VotingMaxEndTime = out[9].(*big.Int)
+	outstruct.PType = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.Executable = *abi.ConvertType(out[1], new(uint8)).(*uint8)
+	outstruct.MinVotes = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+	outstruct.MinAgreement = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
+	outstruct.OpinionScales = *abi.ConvertType(out[4], new([]*big.Int)).(*[]*big.Int)
+	outstruct.Options = *abi.ConvertType(out[5], new([][32]byte)).(*[][32]byte)
+	outstruct.ProposalContract = *abi.ConvertType(out[6], new(common.Address)).(*common.Address)
+	outstruct.VotingStartTime = *abi.ConvertType(out[7], new(*big.Int)).(**big.Int)
+	outstruct.VotingMinEndTime = *abi.ConvertType(out[8], new(*big.Int)).(**big.Int)
+	outstruct.VotingMaxEndTime = *abi.ConvertType(out[9], new(*big.Int)).(**big.Int)
 
 	return *outstruct, err
 
@@ -700,10 +715,13 @@ func (_Governance *GovernanceCaller) ProposalState(opts *bind.CallOpts, proposal
 		Votes          *big.Int
 		Status         *big.Int
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.WinnerOptionID = out[0].(*big.Int)
-	outstruct.Votes = out[1].(*big.Int)
-	outstruct.Status = out[2].(*big.Int)
+	outstruct.WinnerOptionID = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.Votes = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.Status = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
 
 	return *outstruct, err
 
@@ -1153,6 +1171,7 @@ func (_Governance *GovernanceFilterer) ParseProposalCanceled(log types.Log) (*Go
 	if err := _Governance.contract.UnpackLog(event, "ProposalCanceled", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1286,6 +1305,7 @@ func (_Governance *GovernanceFilterer) ParseProposalCreated(log types.Log) (*Gov
 	if err := _Governance.contract.UnpackLog(event, "ProposalCreated", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1419,6 +1439,7 @@ func (_Governance *GovernanceFilterer) ParseProposalExecutionExpired(log types.L
 	if err := _Governance.contract.UnpackLog(event, "ProposalExecutionExpired", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1552,6 +1573,7 @@ func (_Governance *GovernanceFilterer) ParseProposalRejected(log types.Log) (*Go
 	if err := _Governance.contract.UnpackLog(event, "ProposalRejected", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1685,6 +1707,7 @@ func (_Governance *GovernanceFilterer) ParseProposalResolved(log types.Log) (*Go
 	if err := _Governance.contract.UnpackLog(event, "ProposalResolved", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1818,6 +1841,7 @@ func (_Governance *GovernanceFilterer) ParseTasksErased(log types.Log) (*Governa
 	if err := _Governance.contract.UnpackLog(event, "TasksErased", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1953,6 +1977,7 @@ func (_Governance *GovernanceFilterer) ParseTasksHandled(log types.Log) (*Govern
 	if err := _Governance.contract.UnpackLog(event, "TasksHandled", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2088,6 +2113,7 @@ func (_Governance *GovernanceFilterer) ParseVoteCanceled(log types.Log) (*Govern
 	if err := _Governance.contract.UnpackLog(event, "VoteCanceled", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2222,6 +2248,7 @@ func (_Governance *GovernanceFilterer) ParseVoteWeightOverridden(log types.Log) 
 	if err := _Governance.contract.UnpackLog(event, "VoteWeightOverridden", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2356,6 +2383,7 @@ func (_Governance *GovernanceFilterer) ParseVoteWeightUnOverridden(log types.Log
 	if err := _Governance.contract.UnpackLog(event, "VoteWeightUnOverridden", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2493,5 +2521,6 @@ func (_Governance *GovernanceFilterer) ParseVoted(log types.Log) (*GovernanceVot
 	if err := _Governance.contract.UnpackLog(event, "Voted", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }

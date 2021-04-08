@@ -575,14 +575,17 @@ func (_SfcV2Contract *SfcV2ContractCaller) Delegations(opts *bind.CallOpts, arg0
 		PaidUntilEpoch   *big.Int
 		ToStakerID       *big.Int
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.CreatedEpoch = out[0].(*big.Int)
-	outstruct.CreatedTime = out[1].(*big.Int)
-	outstruct.DeactivatedEpoch = out[2].(*big.Int)
-	outstruct.DeactivatedTime = out[3].(*big.Int)
-	outstruct.Amount = out[4].(*big.Int)
-	outstruct.PaidUntilEpoch = out[5].(*big.Int)
-	outstruct.ToStakerID = out[6].(*big.Int)
+	outstruct.CreatedEpoch = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.CreatedTime = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.DeactivatedEpoch = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+	outstruct.DeactivatedTime = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
+	outstruct.Amount = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
+	outstruct.PaidUntilEpoch = *abi.ConvertType(out[5], new(*big.Int)).(**big.Int)
+	outstruct.ToStakerID = *abi.ConvertType(out[6], new(*big.Int)).(**big.Int)
 
 	return *outstruct, err
 
@@ -708,16 +711,19 @@ func (_SfcV2Contract *SfcV2ContractCaller) EpochSnapshots(opts *bind.CallOpts, a
 		DelegationsTotalAmount *big.Int
 		TotalSupply            *big.Int
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.EndTime = out[0].(*big.Int)
-	outstruct.Duration = out[1].(*big.Int)
-	outstruct.EpochFee = out[2].(*big.Int)
-	outstruct.TotalBaseRewardWeight = out[3].(*big.Int)
-	outstruct.TotalTxRewardWeight = out[4].(*big.Int)
-	outstruct.BaseRewardPerSecond = out[5].(*big.Int)
-	outstruct.StakeTotalAmount = out[6].(*big.Int)
-	outstruct.DelegationsTotalAmount = out[7].(*big.Int)
-	outstruct.TotalSupply = out[8].(*big.Int)
+	outstruct.EndTime = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.Duration = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.EpochFee = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+	outstruct.TotalBaseRewardWeight = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
+	outstruct.TotalTxRewardWeight = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
+	outstruct.BaseRewardPerSecond = *abi.ConvertType(out[5], new(*big.Int)).(**big.Int)
+	outstruct.StakeTotalAmount = *abi.ConvertType(out[6], new(*big.Int)).(**big.Int)
+	outstruct.DelegationsTotalAmount = *abi.ConvertType(out[7], new(*big.Int)).(**big.Int)
+	outstruct.TotalSupply = *abi.ConvertType(out[8], new(*big.Int)).(**big.Int)
 
 	return *outstruct, err
 
@@ -775,11 +781,14 @@ func (_SfcV2Contract *SfcV2ContractCaller) EpochValidator(opts *bind.CallOpts, e
 		BaseRewardWeight *big.Int
 		TxRewardWeight   *big.Int
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.StakeAmount = out[0].(*big.Int)
-	outstruct.DelegatedMe = out[1].(*big.Int)
-	outstruct.BaseRewardWeight = out[2].(*big.Int)
-	outstruct.TxRewardWeight = out[3].(*big.Int)
+	outstruct.StakeAmount = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.DelegatedMe = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.BaseRewardWeight = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+	outstruct.TxRewardWeight = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
 
 	return *outstruct, err
 
@@ -1042,10 +1051,13 @@ func (_SfcV2Contract *SfcV2ContractCaller) LockedDelegations(opts *bind.CallOpts
 		EndTime   *big.Int
 		Duration  *big.Int
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.FromEpoch = out[0].(*big.Int)
-	outstruct.EndTime = out[1].(*big.Int)
-	outstruct.Duration = out[2].(*big.Int)
+	outstruct.FromEpoch = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.EndTime = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.Duration = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
 
 	return *outstruct, err
 
@@ -1089,10 +1101,13 @@ func (_SfcV2Contract *SfcV2ContractCaller) LockedStakes(opts *bind.CallOpts, arg
 		EndTime   *big.Int
 		Duration  *big.Int
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.FromEpoch = out[0].(*big.Int)
-	outstruct.EndTime = out[1].(*big.Int)
-	outstruct.Duration = out[2].(*big.Int)
+	outstruct.FromEpoch = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.EndTime = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.Duration = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
 
 	return *outstruct, err
 
@@ -1677,17 +1692,20 @@ func (_SfcV2Contract *SfcV2ContractCaller) Stakers(opts *bind.CallOpts, arg0 *bi
 		DagAddress       common.Address
 		SfcAddress       common.Address
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.Status = out[0].(*big.Int)
-	outstruct.CreatedEpoch = out[1].(*big.Int)
-	outstruct.CreatedTime = out[2].(*big.Int)
-	outstruct.DeactivatedEpoch = out[3].(*big.Int)
-	outstruct.DeactivatedTime = out[4].(*big.Int)
-	outstruct.StakeAmount = out[5].(*big.Int)
-	outstruct.PaidUntilEpoch = out[6].(*big.Int)
-	outstruct.DelegatedMe = out[7].(*big.Int)
-	outstruct.DagAddress = out[8].(common.Address)
-	outstruct.SfcAddress = out[9].(common.Address)
+	outstruct.Status = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.CreatedEpoch = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.CreatedTime = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+	outstruct.DeactivatedEpoch = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
+	outstruct.DeactivatedTime = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
+	outstruct.StakeAmount = *abi.ConvertType(out[5], new(*big.Int)).(**big.Int)
+	outstruct.PaidUntilEpoch = *abi.ConvertType(out[6], new(*big.Int)).(**big.Int)
+	outstruct.DelegatedMe = *abi.ConvertType(out[7], new(*big.Int)).(**big.Int)
+	outstruct.DagAddress = *abi.ConvertType(out[8], new(common.Address)).(*common.Address)
+	outstruct.SfcAddress = *abi.ConvertType(out[9], new(common.Address)).(*common.Address)
 
 	return *outstruct, err
 
@@ -1935,12 +1953,15 @@ func (_SfcV2Contract *SfcV2ContractCaller) WithdrawalRequests(opts *bind.CallOpt
 		Amount     *big.Int
 		Delegation bool
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.StakerID = out[0].(*big.Int)
-	outstruct.Epoch = out[1].(*big.Int)
-	outstruct.Time = out[2].(*big.Int)
-	outstruct.Amount = out[3].(*big.Int)
-	outstruct.Delegation = out[4].(bool)
+	outstruct.StakerID = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.Epoch = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.Time = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+	outstruct.Amount = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
+	outstruct.Delegation = *abi.ConvertType(out[4], new(bool)).(*bool)
 
 	return *outstruct, err
 
@@ -2691,6 +2712,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseClaimedDelegationReward(log ty
 	if err := _SfcV2Contract.contract.UnpackLog(event, "ClaimedDelegationReward", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2837,6 +2859,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseClaimedValidatorReward(log typ
 	if err := _SfcV2Contract.contract.UnpackLog(event, "ClaimedValidatorReward", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2990,6 +3013,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseCreatedDelegation(log types.Lo
 	if err := _SfcV2Contract.contract.UnpackLog(event, "CreatedDelegation", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -3143,6 +3167,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseCreatedStake(log types.Log) (*
 	if err := _SfcV2Contract.contract.UnpackLog(event, "CreatedStake", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -3307,6 +3332,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseCreatedWithdrawRequest(log typ
 	if err := _SfcV2Contract.contract.UnpackLog(event, "CreatedWithdrawRequest", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -3459,6 +3485,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseDeactivatedDelegation(log type
 	if err := _SfcV2Contract.contract.UnpackLog(event, "DeactivatedDelegation", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -3602,6 +3629,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseDeactivatedStake(log types.Log
 	if err := _SfcV2Contract.contract.UnpackLog(event, "DeactivatedStake", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -3756,6 +3784,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseIncreasedDelegation(log types.
 	if err := _SfcV2Contract.contract.UnpackLog(event, "IncreasedDelegation", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -3901,6 +3930,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseIncreasedStake(log types.Log) 
 	if err := _SfcV2Contract.contract.UnpackLog(event, "IncreasedStake", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -4055,6 +4085,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseLockingDelegation(log types.Lo
 	if err := _SfcV2Contract.contract.UnpackLog(event, "LockingDelegation", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -4200,6 +4231,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseLockingStake(log types.Log) (*
 	if err := _SfcV2Contract.contract.UnpackLog(event, "LockingStake", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -4333,6 +4365,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseNetworkUpgradeActivated(log ty
 	if err := _SfcV2Contract.contract.UnpackLog(event, "NetworkUpgradeActivated", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -4485,6 +4518,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseOwnershipTransferred(log types
 	if err := _SfcV2Contract.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -4649,6 +4683,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParsePartialWithdrawnByRequest(log 
 	if err := _SfcV2Contract.contract.UnpackLog(event, "PartialWithdrawnByRequest", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -4801,6 +4836,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParsePreparedToWithdrawDelegation(l
 	if err := _SfcV2Contract.contract.UnpackLog(event, "PreparedToWithdrawDelegation", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -4944,6 +4980,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParsePreparedToWithdrawStake(log ty
 	if err := _SfcV2Contract.contract.UnpackLog(event, "PreparedToWithdrawStake", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -5097,6 +5134,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseUnstashedRewards(log types.Log
 	if err := _SfcV2Contract.contract.UnpackLog(event, "UnstashedRewards", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -5230,6 +5268,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseUpdatedBaseRewardPerSec(log ty
 	if err := _SfcV2Contract.contract.UnpackLog(event, "UpdatedBaseRewardPerSec", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -5392,6 +5431,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseUpdatedDelegation(log types.Lo
 	if err := _SfcV2Contract.contract.UnpackLog(event, "UpdatedDelegation", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -5526,6 +5566,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseUpdatedGasPowerAllocationRate(
 	if err := _SfcV2Contract.contract.UnpackLog(event, "UpdatedGasPowerAllocationRate", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -5659,6 +5700,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseUpdatedMinGasPrice(log types.L
 	if err := _SfcV2Contract.contract.UnpackLog(event, "UpdatedMinGasPrice", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -5793,6 +5835,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseUpdatedOfflinePenaltyThreshold
 	if err := _SfcV2Contract.contract.UnpackLog(event, "UpdatedOfflinePenaltyThreshold", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -5938,6 +5981,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseUpdatedStake(log types.Log) (*
 	if err := _SfcV2Contract.contract.UnpackLog(event, "UpdatedStake", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -6091,6 +6135,7 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseWithdrawnDelegation(log types.
 	if err := _SfcV2Contract.contract.UnpackLog(event, "WithdrawnDelegation", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -6235,5 +6280,6 @@ func (_SfcV2Contract *SfcV2ContractFilterer) ParseWithdrawnStake(log types.Log) 
 	if err := _SfcV2Contract.contract.UnpackLog(event, "WithdrawnStake", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }

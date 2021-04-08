@@ -222,7 +222,7 @@ func (ftm *FtmBridge) ValidatorByAddress(addr *common.Address) (*types.Validator
 	}
 
 	// try to get the staker id
-	id, err := contract.GetStakerID(nil, *addr)
+	id, err := contract.GetStakerID(ftm.DefaultCallOpts(), *addr)
 	if err != nil {
 		ftm.log.Criticalf("can not check validator at %s; %s", addr.String(), err.Error())
 		return nil, err

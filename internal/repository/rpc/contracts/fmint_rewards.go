@@ -1781,6 +1781,7 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionFilterer) ParseOwnershi
 	if err := _FMintRewardsDistribution.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1914,6 +1915,7 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionFilterer) ParseRateUpda
 	if err := _FMintRewardsDistribution.contract.UnpackLog(event, "RateUpdated", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2047,6 +2049,7 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionFilterer) ParseRewardAd
 	if err := _FMintRewardsDistribution.contract.UnpackLog(event, "RewardAdded", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2191,5 +2194,6 @@ func (_FMintRewardsDistribution *FMintRewardsDistributionFilterer) ParseRewardPa
 	if err := _FMintRewardsDistribution.contract.UnpackLog(event, "RewardPaid", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }

@@ -821,6 +821,7 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseCollater
 	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "CollateralPoolChanged", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -954,6 +955,7 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseDebtPool
 	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "DebtPoolChanged", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1087,6 +1089,7 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseMinterCh
 	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "MinterChanged", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1239,6 +1242,7 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseOwnershi
 	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1372,6 +1376,7 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParsePriceOra
 	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "PriceOracleChanged", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1505,6 +1510,7 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseRewardDi
 	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "RewardDistributionChanged", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1638,6 +1644,7 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseRewardTo
 	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "RewardTokenChanged", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1771,5 +1778,6 @@ func (_DefiFMintAddressProvider *DefiFMintAddressProviderFilterer) ParseTokenReg
 	if err := _DefiFMintAddressProvider.contract.UnpackLog(event, "TokenRegistryChanged", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
