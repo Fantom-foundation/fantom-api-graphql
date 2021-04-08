@@ -147,8 +147,14 @@ func (st Staker) DelegatedMe() (hexutil.Big, error) {
 		return hexutil.Big{}, err
 	}
 
+	// any total stake?
+	if st.TotalStake == nil {
+		return hexutil.Big{}, err
+	}
+
 	// make a sanity check for the corner amounts
-	if sf.ToInt().Cmp(st.TotalStake.ToInt()) <= 0 {
+	// the self stake must be lower value than the total stake
+	if sf.ToInt().Cmp(st.TotalStake.ToInt()) >= 0 {
 		return hexutil.Big{}, err
 	}
 	return hexutil.Big(*new(big.Int).Sub(st.TotalStake.ToInt(), sf.ToInt())), nil
