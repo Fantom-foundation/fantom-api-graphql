@@ -222,6 +222,9 @@ func handleSfcUndelegated(log *retypes.Log, ld *logsDispatcher) {
 	if err := ld.repo.StoreWithdrawRequest(&wr); err != nil {
 		ld.log.Errorf("failed to store new withdraw request; %s", err.Error())
 	}
+
+	// check active amount on the delegation
+	go ld.repo.UpdateDelegationActiveAmount(&wr.Address, wr.StakerID)
 }
 
 // handleSfcWithdrawn handles a withdrawal request finalization event.
