@@ -79,9 +79,8 @@ func (bls *blockScanner) scan(lnb uint64) {
 
 	// inform about block scanner progress sparsely to prevent log flood
 	go func() {
-		// track the progress
 		start := time.Now()
-		tick := time.NewTicker(5 * time.Second)
+		tick := time.NewTicker(10 * time.Second)
 		bls.log.Infof("block scanner on block #%d of %d", uint64(current), lnb)
 
 		for {
@@ -91,8 +90,11 @@ func (bls *blockScanner) scan(lnb uint64) {
 				bls.log.Infof("block scanner finished on block #%d", uint64(current))
 				return
 			case <-tick.C:
-				eta := time.Now().Add(time.Duration(time.Now().Sub(start).Nanoseconds() * (int64(lnb) / int64(current))))
-				bls.log.Infof("block scanner reached block #%d of %d, ETA %s", uint64(current), lnb, eta.Format("15:04:05"))
+				// track the progress
+				if bh, err := bls.repo.BlockHeight(); err == nil && bh != nil {
+					eta := time.Now().Add(time.Duration(time.Now().Sub(start).Nanoseconds() * (bh.ToInt().Int64() / int64(current))))
+					bls.log.Infof("block scanner reached block #%d of %d, ETA %s", uint64(current), bh, eta.Format("15:04:05"))
+				}
 			}
 		}
 	}()
