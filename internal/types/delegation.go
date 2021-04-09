@@ -59,14 +59,6 @@ func (dl *Delegation) OrdinalIndex() uint64 {
 	return (uint64(dl.CreatedTime)&0x7FFFFFFFFF)<<24 | (dl.ToStakerId.ToInt().Uint64()&0xFFF)<<12 | (binary.BigEndian.Uint64(dl.Transaction[:8]) & 0xFFF)
 }
 
-// Pk generates primary key of the delegation.
-func (dl *Delegation) Pk() string {
-	pk := make([]byte, 32)
-	copy(pk, dl.Address[:])
-	pk = append(pk[20:], dl.ToStakerId.ToInt().Bytes()...)
-	return hexutil.Encode(pk)
-}
-
 // MarshalBSON creates a BSON representation of the delegation record.
 func (dl *Delegation) MarshalBSON() ([]byte, error) {
 	// calculate the value to 9 digits (and 18 billions remain available)
@@ -74,7 +66,7 @@ func (dl *Delegation) MarshalBSON() ([]byte, error) {
 
 	// do BSON encoding
 	return bson.Marshal(BsonDelegation{
-		ID:     dl.Pk(),
+		ID:     dl.Transaction.String(),
 		Orx:    dl.OrdinalIndex(),
 		Trx:    dl.Transaction.String(),
 		Addr:   dl.Address.String(),

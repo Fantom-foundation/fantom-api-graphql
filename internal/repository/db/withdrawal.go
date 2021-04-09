@@ -13,17 +13,8 @@ import (
 	"math/big"
 )
 
-const (
-	colWithdrawals          = "withdraws"
-	fiWithdrawalPk          = "_id"
-	fiWithdrawalRequestID   = "req_id"
-	fiWithdrawalAddress     = "addr"
-	fiWithdrawalToValidator = "to"
-	fiWithdrawalCreated     = "cr_time"
-	fiWithdrawalValue       = "value"
-	fiWithdrawalFinTrx      = "fin_trx"
-	fiWithdrawalFinTime     = "fin_time"
-)
+// colWithdrawals represents the name of the withdrawals collection in database.
+const colWithdrawals = "withdraws"
 
 // initWithdrawalsCollection initializes the withdraw requests collection with
 // indexes and additional parameters needed by the app.
@@ -34,16 +25,19 @@ func (db *MongoDbBridge) initWithdrawalsCollection(col *mongo.Collection) {
 	// index delegator + validator
 	unique := true
 	ix = append(ix, mongo.IndexModel{
-		Keys: bson.D{{fiWithdrawalAddress, 1}, {fiWithdrawalToValidator, 1}, {fiWithdrawalRequestID, 1}},
+		Keys: bson.D{
+			{types.FiWithdrawalAddress, 1},
+			{types.FiWithdrawalToValidator, 1},
+			{types.FiWithdrawalRequestID, 1},
+		},
 		Options: &options.IndexOptions{
 			Unique: &unique,
 		},
 	})
 
 	// index request ID, delegator address, and creation time stamp
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiWithdrawalRequestID, 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiWithdrawalAddress, 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiWithdrawalCreated, -1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiWithdrawalAddress, 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiWithdrawalOrdinal, -1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
@@ -61,18 +55,16 @@ func (db *MongoDbBridge) Withdrawal(addr *common.Address, valID *hexutil.Big, re
 
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{fiWithdrawalAddress, addr.String()},
-		{fiWithdrawalToValidator, valID.String()},
-		{fiWithdrawalRequestID, reqID.String()},
+		{types.FiWithdrawalAddress, addr.String()},
+		{types.FiWithdrawalToValidator, valID.String()},
+		{types.FiWithdrawalRequestID, reqID.String()},
 	})
 
 	// try to decode
 	var wr types.WithdrawRequest
-	err := sr.Decode(&wr)
-	if err != nil {
+	if err := sr.Decode(&wr); err != nil {
 		return nil, err
 	}
-
 	return &wr, nil
 }
 
@@ -126,14 +118,15 @@ func (db *MongoDbBridge) UpdateWithdrawal(wr *types.WithdrawRequest) error {
 	// try to update a withdraw request by replacing it in the database
 	// we use request ID identify unique withdrawal
 	er, err := col.UpdateOne(context.Background(), bson.D{
-		{fiWithdrawalAddress, wr.Address.String()},
-		{fiWithdrawalToValidator, wr.StakerID.String()},
-		{fiWithdrawalRequestID, wr.WithdrawRequestID.String()},
+		{types.FiWithdrawalAddress, wr.Address.String()},
+		{types.FiWithdrawalToValidator, wr.StakerID.String()},
+		{types.FiWithdrawalRequestID, wr.WithdrawRequestID.String()},
 	}, bson.D{{"$set", bson.D{
-		{fiWithdrawalFinTrx, trx},
-		{fiWithdrawalFinTime, (*uint64)(wr.WithdrawTime)},
-		{fiWithdrawalValue, val},
-		{fiWithdrawalCreated, uint64(wr.CreatedTime)},
+		{types.FiWithdrawalOrdinal, wr.OrdinalIndex()},
+		{types.FiWithdrawalCreated, uint64(wr.CreatedTime)},
+		{types.FiWithdrawalValue, val},
+		{types.FiWithdrawalFinTrx, trx},
+		{types.FiWithdrawalFinTime, (*uint64)(wr.WithdrawTime)},
 	}}}, new(options.UpdateOptions).SetUpsert(true))
 	if err != nil {
 		db.log.Critical(err)
@@ -151,11 +144,11 @@ func (db *MongoDbBridge) UpdateWithdrawal(wr *types.WithdrawRequest) error {
 func (db *MongoDbBridge) isWithdrawalKnown(col *mongo.Collection, wr *types.WithdrawRequest) bool {
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{fiWithdrawalAddress, wr.Address.String()},
-		{fiWithdrawalToValidator, wr.StakerID.String()},
-		{fiWithdrawalRequestID, wr.WithdrawRequestID.String()},
+		{types.FiWithdrawalAddress, wr.Address.String()},
+		{types.FiWithdrawalToValidator, wr.StakerID.String()},
+		{types.FiWithdrawalRequestID, wr.WithdrawRequestID.String()},
 	}, options.FindOne().SetProjection(bson.D{
-		{fiWithdrawalPk, true},
+		{types.FiWithdrawalPk, true},
 	}))
 
 	// error on lookup?
@@ -188,7 +181,6 @@ func (db *MongoDbBridge) WithdrawalCountFiltered(filter *bson.D) (uint64, error)
 		db.log.Errorf("can not count documents in withdrawals collection; %s", err.Error())
 		return 0, err
 	}
-
 	return uint64(val), nil
 }
 
@@ -198,7 +190,7 @@ func (db *MongoDbBridge) WithdrawalsCount() (uint64, error) {
 }
 
 // wrListInit initializes list of withdraw requests based on provided cursor, count, and filter.
-func (db *MongoDbBridge) wrListInit(col *mongo.Collection, cursor *hexutil.Uint64, count int32, filter *bson.D) (*types.WithdrawRequestList, error) {
+func (db *MongoDbBridge) wrListInit(col *mongo.Collection, cursor *string, count int32, filter *bson.D) (*types.WithdrawRequestList, error) {
 	// make sure some filter is used
 	if nil == filter {
 		filter = &bson.D{}
@@ -234,7 +226,7 @@ func (db *MongoDbBridge) wrListInit(col *mongo.Collection, cursor *hexutil.Uint6
 }
 
 // wrListCollectRangeMarks returns the list of withdraw requests with proper First/Last marks.
-func (db *MongoDbBridge) wrListCollectRangeMarks(col *mongo.Collection, list *types.WithdrawRequestList, cursor *hexutil.Uint64, count int32) (*types.WithdrawRequestList, error) {
+func (db *MongoDbBridge) wrListCollectRangeMarks(col *mongo.Collection, list *types.WithdrawRequestList, cursor *string, count int32) (*types.WithdrawRequestList, error) {
 	var err error
 
 	// find out the cursor ordinal index
@@ -242,20 +234,20 @@ func (db *MongoDbBridge) wrListCollectRangeMarks(col *mongo.Collection, list *ty
 		// get the highest available pk
 		list.First, err = db.wrListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{fiWithdrawalCreated, -1}, {fiWithdrawalPk, -1}}))
+			options.FindOne().SetSort(bson.D{{types.FiWithdrawalOrdinal, -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available pk
 		list.First, err = db.wrListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{fiWithdrawalCreated, 1}, {fiWithdrawalPk, 1}}))
+			options.FindOne().SetSort(bson.D{{types.FiWithdrawalOrdinal, 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.wrListBorderPk(col,
-			bson.D{{fiWithdrawalPk, uint64(*cursor)}},
+			bson.D{{types.FiWithdrawalPk, *cursor}},
 			options.FindOne())
 	}
 
@@ -278,32 +270,30 @@ func (db *MongoDbBridge) wrListBorderPk(col *mongo.Collection, filter bson.D, op
 	}
 
 	// make sure we pull only what we need
-	opt.SetProjection(bson.D{{fiWithdrawalPk, true}})
+	opt.SetProjection(bson.D{{types.FiWithdrawalOrdinal, true}})
 	sr := col.FindOne(context.Background(), filter, opt)
 
 	// try to decode
-	err := sr.Decode(&row)
-	if err != nil {
+	if err := sr.Decode(&row); err != nil {
 		return 0, err
 	}
-
 	return row.Value, nil
 }
 
 // wrListFilter creates a filter for withdraw requests list loading.
-func (db *MongoDbBridge) wrListFilter(cursor *hexutil.Uint64, count int32, list *types.WithdrawRequestList) *bson.D {
+func (db *MongoDbBridge) wrListFilter(cursor *string, count int32, list *types.WithdrawRequestList) *bson.D {
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: fiWithdrawalPk, Value: bson.D{{"$lte", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiWithdrawalOrdinal, Value: bson.D{{"$lte", list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: fiWithdrawalPk, Value: bson.D{{"$gte", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiWithdrawalOrdinal, Value: bson.D{{"$gte", list.First}}})
 		}
 	} else {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: fiWithdrawalPk, Value: bson.D{{"$lt", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiWithdrawalOrdinal, Value: bson.D{{"$lt", list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: fiWithdrawalPk, Value: bson.D{{"$gt", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiWithdrawalOrdinal, Value: bson.D{{"$gt", list.First}}})
 		}
 	}
 
@@ -324,7 +314,7 @@ func (db *MongoDbBridge) wrListOptions(count int32) *options.FindOptions {
 	}
 
 	// sort with the direction we want
-	opt.SetSort(bson.D{{fiWithdrawalCreated, sd}, {fiWithdrawalPk, sd}})
+	opt.SetSort(bson.D{{types.FiWithdrawalOrdinal, sd}})
 
 	// prep the loading limit
 	var limit = int64(count)
@@ -338,7 +328,7 @@ func (db *MongoDbBridge) wrListOptions(count int32) *options.FindOptions {
 }
 
 // wrListLoad load the initialized list of withdraw requests from database.
-func (db *MongoDbBridge) wrListLoad(col *mongo.Collection, cursor *hexutil.Uint64, count int32, list *types.WithdrawRequestList) (err error) {
+func (db *MongoDbBridge) wrListLoad(col *mongo.Collection, cursor *string, count int32, list *types.WithdrawRequestList) (err error) {
 	// get the context for loader
 	ctx := context.Background()
 
@@ -388,7 +378,7 @@ func (db *MongoDbBridge) wrListLoad(col *mongo.Collection, cursor *hexutil.Uint6
 }
 
 // Withdrawals pulls list of withdraw requests starting at the specified cursor.
-func (db *MongoDbBridge) Withdrawals(cursor *hexutil.Uint64, count int32, filter *bson.D) (*types.WithdrawRequestList, error) {
+func (db *MongoDbBridge) Withdrawals(cursor *string, count int32, filter *bson.D) (*types.WithdrawRequestList, error) {
 	// nothing to load?
 	if count == 0 {
 		return nil, fmt.Errorf("nothing to do, zero withdrawals requested")
@@ -434,7 +424,7 @@ func (db *MongoDbBridge) WithdrawalsSumValue(filter *bson.D) (*big.Int, error) {
 		{{"$match", filter}},
 		{{"$group", bson.D{
 			{"_id", nil},
-			{"total", bson.D{{"$sum", fiWithdrawalValue}}},
+			{"total", bson.D{{"$sum", types.FiWithdrawalValue}}},
 		}}},
 	})
 	if err != nil {
@@ -468,6 +458,5 @@ func (db *MongoDbBridge) readAggregatedSum(cr *mongo.Cursor) (*big.Int, error) {
 		db.log.Errorf("can not read withdrawal sum value; %s", err.Error())
 		return nil, err
 	}
-
 	return new(big.Int).Mul(new(big.Int).SetUint64(row.Total), types.WithdrawDecimalsCorrection), nil
 }

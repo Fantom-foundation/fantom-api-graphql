@@ -33,7 +33,7 @@ func (p *proxy) WithdrawRequest(addr *common.Address, valID *hexutil.Big, reqID 
 }
 
 // WithdrawRequests extracts a list of partial withdraw requests for the given address.
-func (p *proxy) WithdrawRequests(addr *common.Address, stakerID *hexutil.Big, cursor *hexutil.Uint64, count int32) (*types.WithdrawRequestList, error) {
+func (p *proxy) WithdrawRequests(addr *common.Address, stakerID *hexutil.Big, cursor *string, count int32) (*types.WithdrawRequestList, error) {
 	if addr == nil {
 		return nil, fmt.Errorf("address not given")
 	}
@@ -42,12 +42,15 @@ func (p *proxy) WithdrawRequests(addr *common.Address, stakerID *hexutil.Big, cu
 	if stakerID == nil {
 		// log the action and pull the list for all vals
 		p.log.Debugf("loading withdraw requests of %s to any validator", addr.String())
-		return p.db.Withdrawals(cursor, count, &bson.D{{"addr", addr.String()}})
+		return p.db.Withdrawals(cursor, count, &bson.D{{types.FiWithdrawalAddress, addr.String()}})
 	}
 
 	// log the action and pull the list for specific address and val
 	p.log.Debugf("loading withdraw requests of %s to #%d", addr.String(), stakerID.ToInt().Uint64())
-	return p.db.Withdrawals(cursor, count, &bson.D{{"addr", addr.String()}, {"to", stakerID.String()}})
+	return p.db.Withdrawals(cursor, count, &bson.D{
+		{types.FiWithdrawalAddress, addr.String()},
+		{types.FiWithdrawalToValidator, stakerID.String()},
+	})
 }
 
 // WithdrawRequestsPendingTotal is the total value of all pending withdrawal requests
@@ -60,15 +63,15 @@ func (p *proxy) WithdrawRequestsPendingTotal(addr *common.Address, stakerID *hex
 	// all withdrawals for the address regardless of the target staker
 	if stakerID == nil {
 		return p.db.WithdrawalsSumValue(&bson.D{
-			{"addr", addr.String()},
-			{"fin_trx", bson.D{{"$type", 10}}},
+			{types.FiWithdrawalAddress, addr.String()},
+			{types.FiWithdrawalFinTrx, bson.D{{"$type", 10}}},
 		})
 	}
 
 	// specific delegation withdrawal
 	return p.db.WithdrawalsSumValue(&bson.D{
-		{"addr", addr.String()},
-		{"to", stakerID.String()},
-		{"fin_trx", bson.D{{"$type", 10}}},
+		{types.FiWithdrawalAddress, addr.String()},
+		{types.FiWithdrawalToValidator, stakerID.String()},
+		{types.FiWithdrawalFinTrx, bson.D{{"$type", 10}}},
 	})
 }
