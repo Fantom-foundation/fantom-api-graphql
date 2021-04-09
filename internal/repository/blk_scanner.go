@@ -80,8 +80,8 @@ func (bls *blockScanner) scan(lnb uint64) {
 	// inform about block scanner progress sparsely to prevent log flood
 	go func() {
 		start := time.Now()
-		tick := time.NewTicker(10 * time.Second)
-		bls.log.Infof("block scanner on block #%d of %d", uint64(current), lnb)
+		tick := time.NewTicker(5 * time.Second)
+		bls.log.Infof("block scanner on block #%d", uint64(current))
 
 		for {
 			select {

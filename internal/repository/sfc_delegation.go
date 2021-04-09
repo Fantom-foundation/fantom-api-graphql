@@ -123,7 +123,7 @@ func (p *proxy) UpdateDelegationActiveAmount(addr *common.Address, valID *hexuti
 		}
 
 		// do the update
-		if err := p.db.UpdateDelegationBalance(addr, (*big.Int)(valID), (*hexutil.Big)(val)); err != nil {
+		if err := p.db.UpdateDelegationBalance(addr, valID, (*hexutil.Big)(val)); err != nil {
 			p.log.Errorf("can not update active delegation balance; %s", err.Error())
 			return nil, err
 		}
@@ -257,5 +257,5 @@ func handleSfcWithdrawn(log *retypes.Log, ld *logsDispatcher) {
 	}
 
 	// check active amount on the delegation
-	ld.repo.UpdateDelegationActiveAmount(&addr, valID)
+	go ld.repo.UpdateDelegationActiveAmount(&addr, valID)
 }

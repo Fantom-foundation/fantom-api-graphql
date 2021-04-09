@@ -126,13 +126,13 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 }
 
 // UpdateDelegationBalance updates the given delegation active balance in database to the given amount.
-func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *big.Int, amo *hexutil.Big) error {
+func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *hexutil.Big, amo *hexutil.Big) error {
 	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colDelegations)
 	val := new(big.Int).Div(amo.ToInt(), types.DelegationDecimalsCorrection).Uint64()
 
 	// notify
-	db.log.Debugf("%s delegation to #%d value changed to %d", addr.String(), valID.Uint64(), val)
+	db.log.Debugf("%s delegation to #%d value changed to %d", addr.String(), valID.ToInt().Uint64(), val)
 
 	// update the transaction details
 	ur, err := col.UpdateOne(context.Background(),
@@ -152,7 +152,7 @@ func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *bi
 
 	// any match?
 	if ur.MatchedCount == 0 {
-		db.log.Errorf("delegation  %s to %d not found", addr.String(), valID.Uint64())
+		db.log.Errorf("delegation %s to %d not found", addr.String(), valID.ToInt().Uint64())
 	}
 	return nil
 }
