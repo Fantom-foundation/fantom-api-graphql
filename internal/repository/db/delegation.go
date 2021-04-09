@@ -58,11 +58,9 @@ func (db *MongoDbBridge) Delegation(addr *common.Address, valID *hexutil.Big) (*
 
 	// try to decode
 	var dlg types.Delegation
-	err := sr.Decode(&dlg)
-	if err != nil {
+	if err := sr.Decode(&dlg); err != nil {
 		return nil, err
 	}
-
 	return &dlg, nil
 }
 
@@ -98,7 +96,8 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 	val := new(big.Int).Div(dl.AmountDelegated.ToInt(), types.DelegationDecimalsCorrection).Uint64()
 
 	// notify
-	db.log.Debugf("updating delegation %s to #%d value to %d", dl.Address.String(), dl.ToStakerId.ToInt().Uint64(), val)
+	db.log.Debugf("updating delegation %s to #%d value to %d",
+		dl.Address.String(), dl.ToStakerId.ToInt().Uint64(), val)
 
 	// try to update a delegation by replacing it in the database
 	// we use address and validator ID to identify unique delegation
@@ -152,7 +151,7 @@ func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *bi
 	}
 
 	// any match?
-	if ur.MatchedCount < 1 {
+	if ur.MatchedCount == 0 {
 		db.log.Errorf("delegation  %s to %d not found", addr.String(), valID.Uint64())
 	}
 	return nil
