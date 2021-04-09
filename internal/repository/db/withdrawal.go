@@ -184,7 +184,7 @@ func (db *MongoDbBridge) WithdrawalCountFiltered(filter *bson.D) (uint64, error)
 	return uint64(val), nil
 }
 
-// DelegationsCount calculates total number of delegations in the database.
+// WithdrawalsCount calculates total number of withdraws in the database.
 func (db *MongoDbBridge) WithdrawalsCount() (uint64, error) {
 	return db.WithdrawalCountFiltered(nil)
 }
@@ -266,7 +266,7 @@ func (db *MongoDbBridge) wrListCollectRangeMarks(col *mongo.Collection, list *ty
 func (db *MongoDbBridge) wrListBorderPk(col *mongo.Collection, filter bson.D, opt *options.FindOneOptions) (uint64, error) {
 	// prep container
 	var row struct {
-		Value uint64 `bson:"_id"`
+		Value uint64 `bson:"orx"`
 	}
 
 	// make sure we pull only what we need

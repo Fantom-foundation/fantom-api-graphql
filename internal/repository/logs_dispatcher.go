@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-// logQueueLength represents the amount og transaction logs
+// logQueueLength represents the amount of transaction logs
 // allowed to be queued at a time before queue writer is slowed down
 const logQueueLength = 25000
 
