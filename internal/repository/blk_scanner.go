@@ -87,13 +87,20 @@ func (bls *blockScanner) scan(lnb uint64) {
 			select {
 			case <-stopLog:
 				tick.Stop()
-				bls.log.Infof("block scanner finished on block #%d", uint64(current))
+				bls.log.Infof("block scanner finished on block #%d in %s", uint64(current), time.Now().Sub(start).String())
 				return
 			case <-tick.C:
 				// track the progress
-				if bh, err := bls.repo.BlockHeight(); err == nil && bh != nil {
-					eta := time.Now().Add(time.Duration(time.Now().Sub(start).Nanoseconds() * (bh.ToInt().Int64() / int64(current))))
-					bls.log.Infof("block scanner reached block #%d of %d, ETA %s", uint64(current), bh.ToInt().Uint64(), eta.Format("15:04:05"))
+				if bh, err := bls.repo.BlockHeight(); err == nil && bh != nil && current > 0 {
+					// try to get ETA
+					pass := time.Now().Sub(start)
+					if pass.Seconds() > 60 {
+						eta := time.Now().Add(time.Duration(pass.Nanoseconds() * (bh.ToInt().Int64() / int64(current))))
+						bls.log.Infof("block scanner reached block #%d of %d, ETA %s", uint64(current), bh.ToInt().Uint64(), eta.Format("15:04:05"))
+						continue
+					}
+					// simple
+					bls.log.Infof("block scanner reached block #%d of %d", uint64(current), bh.ToInt().Uint64())
 				}
 			}
 		}
