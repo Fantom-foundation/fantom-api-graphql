@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
+	"strings"
 )
 
 // colWithdrawals represents the name of the withdrawals collection in database.
@@ -418,13 +419,18 @@ func (db *MongoDbBridge) WithdrawalsSumValue(filter *bson.D) (*big.Int, error) {
 		filter = &bson.D{}
 	}
 
+	// construct aggregate column name
+	var sb strings.Builder
+	sb.WriteString("$")
+	sb.WriteString(types.FiWithdrawalValue)
+
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(colWithdrawals)
 	cr, err := col.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", filter}},
 		{{"$group", bson.D{
 			{"_id", nil},
-			{"total", bson.D{{"$sum", types.FiWithdrawalValue}}},
+			{"total", bson.D{{"$sum", sb.String()}}},
 		}}},
 	})
 	if err != nil {
