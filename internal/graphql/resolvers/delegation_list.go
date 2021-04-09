@@ -37,9 +37,8 @@ func (dl *DelegationList) PageInfo() (*ListPageInfo, error) {
 	}
 
 	// get the first and last elements
-	first := Cursor(hexutil.Uint64(dl.First).String())
-	last := Cursor(hexutil.Uint64(dl.Last).String())
-
+	first := Cursor(hexutil.Uint64(dl.Collection[0].OrdinalIndex()).String())
+	last := Cursor(hexutil.Uint64(dl.Collection[len(dl.Collection)-1].OrdinalIndex()).String())
 	return NewListPageInfo(&first, &last, !dl.IsEnd, !dl.IsStart)
 }
 
