@@ -57,7 +57,7 @@ type BsonWithdrawRequest struct {
 // so it can be stored in database as UINT64 without loosing too much data
 var WithdrawDecimalsCorrection = new(big.Int).SetUint64(1000000000)
 
-// Uid returns a unique identifier for the given withdraw request.
+// OrdinalIndex returns an ordinal index of the withdraw request.
 func (wr *WithdrawRequest) OrdinalIndex() uint64 {
 	return (uint64(wr.CreatedTime)&0xFFFFFFFFFF)<<24 | (wr.StakerID.ToInt().Uint64()&0xFFF)<<12 | (binary.BigEndian.Uint64(wr.RequestTrx[:8]) & 0xFFF)
 }

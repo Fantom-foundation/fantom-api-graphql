@@ -79,6 +79,9 @@ func (bls *blockScanner) scan(lnb uint64) {
 
 	// inform about block scanner progress sparsely to prevent log flood
 	go func() {
+		// track the progress
+		start := time.Now()
+
 		bls.log.Infof("block scanner on block #%d", uint64(current))
 		for {
 			select {
@@ -86,7 +89,8 @@ func (bls *blockScanner) scan(lnb uint64) {
 				bls.log.Infof("block scanner finished on block #%d", uint64(current))
 				return
 			case <-time.After(5 * time.Second):
-				bls.log.Infof("block scanner reached block #%d", uint64(current))
+				eta := time.Now().Add(time.Duration(int64(time.Now().Sub(start).Nanoseconds() * (int64(lnb) / int64(current)))))
+				bls.log.Infof("block scanner reached block #%d, ETA %s", uint64(current), eta.Format(time.Stamp))
 			}
 		}
 	}()
