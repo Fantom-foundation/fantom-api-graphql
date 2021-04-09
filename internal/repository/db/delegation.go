@@ -262,8 +262,13 @@ func (db *MongoDbBridge) dlgListCollectRangeMarks(col *mongo.Collection, list *t
 
 	} else if cursor != nil {
 		// the cursor itself is the starting point
+		cv, err := hexutil.DecodeUint64(*cursor)
+		if err != nil {
+			return nil, err
+		}
+		// look for the first ordinal to make sure it's there
 		list.First, err = db.dlgListBorderPk(col,
-			bson.D{{types.FiDelegationOrdinal, *cursor}},
+			append(list.Filter, bson.E{Key: types.FiDelegationOrdinal, Value: cv}),
 			options.FindOne())
 	}
 
