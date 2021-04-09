@@ -50,6 +50,39 @@ func (bls *blockScanner) run() {
 	go bls.scan(lnb)
 }
 
+// logProgress will log the progress of the scanner on tics.
+func (bls *blockScanner) logProgress(current *uint64, stop chan bool) {
+	start := time.Now()
+	tick := time.NewTicker(5 * time.Second)
+	bls.log.Infof("block scanner on block #%d", *current)
+
+	// inform we have ended
+	defer func() {
+		tick.Stop()
+		bls.log.Infof("block scanner finished on block #%d in %s", *current, time.Now().Sub(start).String())
+	}()
+
+	for {
+		select {
+		case <-stop:
+			return
+		case <-tick.C:
+			// track the progress
+			if bh, err := bls.repo.BlockHeight(); err == nil && bh != nil && *current > 0 {
+				// try to get ETA
+				pass := time.Now().Sub(start)
+				if pass.Seconds() > 60 {
+					eta := time.Now().Add(time.Duration(pass.Nanoseconds() * (bh.ToInt().Int64() / int64(*current))))
+					bls.log.Infof("block scanner reached block #%d of %d, ETA %s", *current, bh.ToInt().Uint64(), eta.Format("15:04:05"))
+					continue
+				}
+				// simple
+				bls.log.Infof("block scanner reached block #%d of %d", *current, bh.ToInt().Uint64())
+			}
+		}
+	}
+}
+
 // scan performs the actual blockScanner operation on the missing blocks starting
 // from the identified last known block id/number.
 func (bls *blockScanner) scan(lnb uint64) {
@@ -78,33 +111,7 @@ func (bls *blockScanner) scan(lnb uint64) {
 	}()
 
 	// inform about block scanner progress sparsely to prevent log flood
-	go func() {
-		start := time.Now()
-		tick := time.NewTicker(5 * time.Second)
-		bls.log.Infof("block scanner on block #%d", uint64(current))
-
-		for {
-			select {
-			case <-stopLog:
-				tick.Stop()
-				bls.log.Infof("block scanner finished on block #%d in %s", uint64(current), time.Now().Sub(start).String())
-				return
-			case <-tick.C:
-				// track the progress
-				if bh, err := bls.repo.BlockHeight(); err == nil && bh != nil && current > 0 {
-					// try to get ETA
-					pass := time.Now().Sub(start)
-					if pass.Seconds() > 60 {
-						eta := time.Now().Add(time.Duration(pass.Nanoseconds() * (bh.ToInt().Int64() / int64(current))))
-						bls.log.Infof("block scanner reached block #%d of %d, ETA %s", uint64(current), bh.ToInt().Uint64(), eta.Format("15:04:05"))
-						continue
-					}
-					// simple
-					bls.log.Infof("block scanner reached block #%d of %d", uint64(current), bh.ToInt().Uint64())
-				}
-			}
-		}
-	}()
+	go bls.logProgress((*uint64)(&current), stopLog)
 
 	// do the scan
 	for {
