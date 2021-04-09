@@ -135,7 +135,7 @@ func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *bi
 	db.log.Infof("updating delegation %s to %d value to %d", addr.String(), valID.Uint64(), val)
 
 	// update the transaction details
-	if _, err := col.UpdateOne(context.Background(),
+	ur, err := col.UpdateOne(context.Background(),
 		bson.D{
 			{types.FiDelegationAddress, addr.String()},
 			{types.FiDelegationToValidator, valID.String()},
@@ -143,12 +143,17 @@ func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *bi
 		bson.D{{"$set", bson.D{
 			{types.FiDelegationAmountActive, amo.String()},
 			{types.FiDelegationValue, val},
-		}}}); err != nil {
+		}}})
+	if err != nil {
 		// log the issue
 		db.log.Criticalf("delegation balance can not be updated; %s", err.Error())
 		return err
 	}
 
+	// any match?
+	if ur.MatchedCount < 1 {
+		db.log.Errorf("delegation  %s to %d not found", addr.String(), valID.Uint64())
+	}
 	return nil
 }
 
