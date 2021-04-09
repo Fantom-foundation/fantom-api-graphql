@@ -263,7 +263,7 @@ func (db *MongoDbBridge) dlgListCollectRangeMarks(col *mongo.Collection, list *t
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.dlgListBorderPk(col,
-			bson.D{{types.FiDelegationPk, *cursor}},
+			bson.D{{types.FiDelegationOrdinal, *cursor}},
 			options.FindOne())
 	}
 

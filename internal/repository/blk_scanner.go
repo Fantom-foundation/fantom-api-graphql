@@ -72,7 +72,7 @@ func (bls *blockScanner) logProgress(current *uint64, stop chan bool) {
 				// try to get ETA
 				pass := time.Now().Sub(start)
 				if pass.Seconds() > 60 {
-					eta := time.Now().Add(time.Duration(pass.Nanoseconds() * (bh.ToInt().Int64() / int64(*current))))
+					eta := time.Now().Add(time.Duration(int64(float64(pass.Nanoseconds()) * (float64(bh.ToInt().Int64()) / float64(*current)))))
 					bls.log.Infof("block scanner reached block #%d of %d, ETA %s", *current, bh.ToInt().Uint64(), eta.Format("15:04:05"))
 					continue
 				}
