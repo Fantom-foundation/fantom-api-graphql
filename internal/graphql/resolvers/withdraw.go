@@ -20,7 +20,7 @@ func NewWithdrawRequest(wr *types.WithdrawRequest) WithdrawRequest {
 
 // Id resolves unique internal identifier of the Withdraw request.
 func (wr WithdrawRequest) Id() Cursor {
-	return Cursor(hexutil.Uint64(wr.Uid()).String())
+	return Cursor(wr.RequestTrx.String())
 }
 
 // WithdrawRequestID resolves the SFC identifier of the request

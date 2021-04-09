@@ -241,7 +241,7 @@ type Repository interface {
 	WithdrawRequest(*common.Address, *hexutil.Big, *hexutil.Big) (*types.WithdrawRequest, error)
 
 	// WithdrawRequests extracts a list of withdraw requests for the given address and validator.
-	WithdrawRequests(*common.Address, *hexutil.Big, *hexutil.Uint64, int32) (*types.WithdrawRequestList, error)
+	WithdrawRequests(*common.Address, *hexutil.Big, *string, int32) (*types.WithdrawRequestList, error)
 
 	// WithdrawRequestsPendingTotal is the total value of all pending withdrawal requests
 	// for the given delegator and target staker ID.

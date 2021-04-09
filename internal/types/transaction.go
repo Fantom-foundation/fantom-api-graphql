@@ -94,7 +94,8 @@ type BsonTransaction struct {
 	Logs      []BsonLog `bson:"logs"`
 }
 
-// mustTransactionIndex always calculate the index of the current transaction
+// TransactionIndex calculates an ordinal index a transaction
+// described by the block and trx instance.
 func TransactionIndex(block *Block, trx *Transaction) uint64 {
 	// what is the transaction index
 	var txIndex uint64
@@ -106,7 +107,7 @@ func TransactionIndex(block *Block, trx *Transaction) uint64 {
 	return (uint64(block.Number) << 14) | txIndex
 }
 
-// mustTransactionIndex always calculate the index of the current transaction
+// Uid calculates an ordinal index of the transaction referenced.
 // The ordinal index of a transaction should be unique across a consistent block chain.
 // The calculation gives us about 700 years of index space with 50k blocks per second
 // rate + 10 years to fix than. Max number of transactions in a block here is 14bits = 16383.

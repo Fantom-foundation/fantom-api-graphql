@@ -13,10 +13,8 @@ import (
 	"math/big"
 )
 
-const (
-	// colDelegations represents the name of the delegations collection
-	colDelegations = "delegations"
-)
+// colDelegations represents the name of the delegations collection
+const colDelegations = "delegations"
 
 // initDelegationCollection initializes the delegation collection with
 // indexes and additional parameters needed by the app.
@@ -24,7 +22,7 @@ func (db *MongoDbBridge) initDelegationCollection(col *mongo.Collection) {
 	// prepare index models
 	ix := make([]mongo.IndexModel, 0)
 
-	// index ordinal key along with the primary key
+	// index delegation address and the validator; this is how we find a specific unique delegation
 	unique := true
 	ix = append(ix, mongo.IndexModel{
 		Keys: bson.D{{types.FiDelegationAddress, 1}, {types.FiDelegationToValidator, 1}},
@@ -73,7 +71,7 @@ func (db *MongoDbBridge) AddDelegation(dl *types.Delegation) error {
 	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colDelegations)
 
-	// if the delegation already exists, update it with the new one
+	// if the delegation already exists, update it with the new data
 	if db.isDelegationKnown(col, dl) {
 		return db.UpdateDelegation(dl)
 	}
@@ -98,6 +96,9 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 
 	// calculate the value to 9 digits (and 18 billions remain available)
 	val := new(big.Int).Div(dl.AmountDelegated.ToInt(), types.DelegationDecimalsCorrection).Uint64()
+
+	// notify
+	db.log.Debugf("updating delegation %s to #%d value to %d", dl.Address.String(), dl.ToStakerId.ToInt().Uint64(), val)
 
 	// try to update a delegation by replacing it in the database
 	// we use address and validator ID to identify unique delegation
@@ -132,7 +133,7 @@ func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *bi
 	val := new(big.Int).Div(amo.ToInt(), types.DelegationDecimalsCorrection).Uint64()
 
 	// notify
-	db.log.Infof("updating delegation %s to %d value to %d", addr.String(), valID.Uint64(), val)
+	db.log.Debugf("%s delegation to #%d value changed to %d", addr.String(), valID.Uint64(), val)
 
 	// update the transaction details
 	ur, err := col.UpdateOne(context.Background(),
@@ -178,7 +179,6 @@ func (db *MongoDbBridge) isDelegationKnown(col *mongo.Collection, dl *types.Dele
 		db.log.Errorf("can not get existing delegation pk; %s", sr.Err().Error())
 		return false
 	}
-
 	return true
 }
 
@@ -198,7 +198,6 @@ func (db *MongoDbBridge) DelegationsCountFiltered(filter *bson.D) (uint64, error
 		db.log.Errorf("can not count documents in delegations collection; %s", err.Error())
 		return 0, err
 	}
-
 	return uint64(val), nil
 }
 
@@ -276,7 +275,7 @@ func (db *MongoDbBridge) dlgListCollectRangeMarks(col *mongo.Collection, list *t
 	}
 
 	// inform what we are about to do
-	db.log.Debugf("delegation list initialized with PK %d", list.First)
+	db.log.Debugf("delegation list starts from #%d", list.First)
 	return list, nil
 }
 

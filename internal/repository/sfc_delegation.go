@@ -257,5 +257,5 @@ func handleSfcWithdrawn(log *retypes.Log, ld *logsDispatcher) {
 	}
 
 	// check active amount on the delegation
-	go ld.repo.UpdateDelegationActiveAmount(&addr, valID)
+	ld.repo.UpdateDelegationActiveAmount(&addr, valID)
 }
