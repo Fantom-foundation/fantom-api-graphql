@@ -93,7 +93,7 @@ func (bls *blockScanner) scan(lnb uint64) {
 				// track the progress
 				if bh, err := bls.repo.BlockHeight(); err == nil && bh != nil {
 					eta := time.Now().Add(time.Duration(time.Now().Sub(start).Nanoseconds() * (bh.ToInt().Int64() / int64(current))))
-					bls.log.Infof("block scanner reached block #%d of %d, ETA %s", uint64(current), bh, eta.Format("15:04:05"))
+					bls.log.Infof("block scanner reached block #%d of %d, ETA %s", uint64(current), bh.ToInt().Uint64(), eta.Format("15:04:05"))
 				}
 			}
 		}
