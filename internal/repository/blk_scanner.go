@@ -92,7 +92,7 @@ func (bls *blockScanner) scan(lnb uint64) {
 				return
 			case <-tick.C:
 				eta := time.Now().Add(time.Duration(time.Now().Sub(start).Nanoseconds() * (int64(lnb) / int64(current))))
-				bls.log.Infof("block scanner reached block #%d, ETA %s", uint64(current), eta.Format("15:04:05"))
+				bls.log.Infof("block scanner reached block #%d of %d, ETA %s", uint64(current), lnb, eta.Format("15:04:05"))
 			}
 		}
 	}()
