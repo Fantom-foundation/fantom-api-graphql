@@ -82,6 +82,30 @@ enum DefiTokenBalanceType {
     DEBT
 }
 
+# RewardClaimList is a list of reward claims linked to delegations.
+type RewardClaimList {
+    # Edges contains provided edges of the sequential list.
+    edges: [RewardClaimListEdge!]!
+
+    # TotalCount is the maximum number of reward claims
+    # available for sequential access.
+    totalCount: Long!
+
+    # PageInfo is an information about the current page
+    # of reward claim edges.
+    pageInfo: ListPageInfo!
+}
+
+# RewardClaimListEdge is a single edge in a sequential list
+# of reward claims.
+type RewardClaimListEdge {
+    # Cursor defines a scroll key to this edge.
+    cursor: Cursor!
+
+    # ckaim represents the reward claim detail provided by this list edge.
+    claim: RewardClaim!
+}
+
 # Price represents price information of core Opera token
 type Price {
     "Source unit symbol."
@@ -375,6 +399,10 @@ type Delegation {
     # List of withdraw requests of the delegation,
     # sorted fro the newest to the oldest requests.
     withdrawRequests(cursor: Cursor, count: Int = 25): [WithdrawRequest!]!
+
+    # rewadClaims provides a list of reward claims
+    # of the delegation as a scrollable list of edges with details of claims.
+    rewadClaims(cursor: Cursor, count: Int = 25): RewardClaimList!
 
     # isFluidStakingActive indicates if the delegation is upgraded to fluid staking.
     isFluidStakingActive: Boolean!
@@ -1207,6 +1235,30 @@ type FLendBorrow {
 
     # time of deposit
     timestamp: Long!
+}
+# RewardClaim represents
+type RewardClaim {
+    # address represents the address of the delegator
+    address: Address!
+
+    # toStakerId represents the ID of the validator the delegation
+    # is placed on
+    toStakerId: BigInt!
+
+    # claimed represents the time stamp of the reward claim
+    # in Unix Epoch units, e.g. number of seconds from the Unix Epoch start.
+    claimed: Long!
+
+    # amount represents the amount of tokens rewarded on the claim.
+    amount: BigInt!
+
+    # isRestaked signals if the claim was added to the delegation
+    # effectively increasing the staked amount and raising the delegation value.
+    isRestaked: Boolean!
+
+    # trxHash is the hash pf the transaction calling for the rewards
+    # to be processed and granted.
+    trxHash: Bytes32!
 }
 # Account defines block-chain account information container
 type Account {
