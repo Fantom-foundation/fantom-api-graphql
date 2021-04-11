@@ -61,7 +61,7 @@ func (etx *Erc20Transaction) Pk() string {
 
 	// xor in the timestamp
 	ts := make([]byte, 8)
-	binary.BigEndian.PutUint64(ts, uint64(etx.TimeStamp))
+	binary.BigEndian.PutUint64(ts, uint64(etx.TimeStamp)<<24)
 	for i := 0; i < 8; i++ {
 		bytes[24+i] = bytes[24+i] ^ ts[i]
 	}
