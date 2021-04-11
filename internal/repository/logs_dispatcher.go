@@ -35,7 +35,16 @@ func newLogsDispatcher(buffer chan *eventTrxLog, repo Repository, log logger.Log
 			/* common.HexToHash("0xfd8c857fb9acd6f4ad59b8621a2a77825168b7b4b76de9586d08e00d4ed462be"): handleSfcCreatedDelegation, */
 
 			/* SFC1::CreatedStake(uint256 indexed stakerID, address indexed dagSfcAddress, uint256 amount) */
-			common.HexToHash("0x0697dfe5062b9db8108e4b31254f47a912ae6bbb78837667b2e923a6f5160d39"): handleSfcCreatedStake,
+			/* common.HexToHash("0x0697dfe5062b9db8108e4b31254f47a912ae6bbb78837667b2e923a6f5160d39"): handleSfcCreatedStake, */
+
+			/* SFC1::IncreasedStake(uint256 indexed stakerID, uint256 newAmount, uint256 diff); */
+			/* common.HexToHash("0xa1d93e9a2a16bf4c2d0cdc6f47fe0fa054c741c96b3dac1297c79eaca31714e9"): handleSfcIncreasedStake, */
+
+			/* SFC1::ClaimedDelegationReward(address indexed from, uint256 indexed stakerID, uint256 reward, uint256 fromEpoch, uint256 untilEpoch) */
+			common.HexToHash("0x2676e1697cf4731b93ddb4ef54e0e5a98c06cccbbbb2202848a3c6286595e6ce"): handleSfc1ClaimedDelegationReward,
+
+			/* SFC1::ClaimedValidatorReward(uint256 indexed stakerID, uint256 reward, uint256 fromEpoch, uint256 untilEpoch) */
+			common.HexToHash("0x2ea54c2b22a07549d19fb5eb8e4e48ebe1c653117215e94d5468c5612750d35c"): handleSfc1ClaimedValidatorReward,
 
 			/* SFC3::Delegated(address indexed delegator, uint256 indexed toValidatorID, uint256 amount) */
 			common.HexToHash("0x9a8f44850296624dadfd9c246d17e47171d35727a181bd090aa14bbbe00238bb"): handleSfcCreatedDelegation,
@@ -51,6 +60,12 @@ func newLogsDispatcher(buffer chan *eventTrxLog, repo Repository, log logger.Log
 
 			/* SFC3::RestakedRewards(address indexed delegator, uint256 indexed toValidatorID, uint256 lockupExtraReward, uint256 lockupBaseReward, uint256 unlockedReward) */
 			common.HexToHash("0x4119153d17a36f9597d40e3ab4148d03261a439dddbec4e91799ab7159608e26"): handleSfcRestakeRewards,
+
+			/* ERC20::Approval(address indexed owner, address indexed spender, uint256 value) */
+			common.HexToHash("0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"): handleErc20Approval,
+
+			/* ERC20::Transfer(address indexed from, address indexed to, uint256 value) */
+			common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"): handleErc20Transfer,
 		},
 	}
 }

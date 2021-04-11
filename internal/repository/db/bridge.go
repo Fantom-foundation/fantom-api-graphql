@@ -27,6 +27,7 @@ type MongoDbBridge struct {
 	initDelegations  *sync.Once
 	initWithdrawals  *sync.Once
 	initRewards      *sync.Once
+	initErc20Trx     *sync.Once
 }
 
 // New creates a new Mongo Db connection bridge.
@@ -154,6 +155,7 @@ func (db *MongoDbBridge) CheckDatabaseInitState() {
 	db.collectionNeedInit("delegations", db.DelegationsCount, &db.initDelegations)
 	db.collectionNeedInit("withdrawals", db.WithdrawalsCount, &db.initWithdrawals)
 	db.collectionNeedInit("rewards", db.RewardsCount, &db.initRewards)
+	db.collectionNeedInit("erc20 transactions", db.ErcTransactionCount, &db.initErc20Trx)
 }
 
 // checkAccountCollectionState checks the Accounts collection state.
@@ -175,4 +177,19 @@ func (db *MongoDbBridge) collectionNeedInit(name string, counter func() (uint64,
 	db.log.Noticef("%s collection empty", name)
 	var once sync.Once
 	*init = &once
+}
+
+// CountFiltered calculates total number of documents in the given collection for the given filter.
+func (db *MongoDbBridge) CountFiltered(col *mongo.Collection, filter *bson.D) (uint64, error) {
+	// make sure some filter is used
+	if nil == filter {
+		filter = &bson.D{}
+	}
+	// do the counting
+	val, err := col.CountDocuments(context.Background(), *filter)
+	if err != nil {
+		db.log.Errorf("can not count documents in rewards collection; %s", err.Error())
+		return 0, err
+	}
+	return uint64(val), nil
 }

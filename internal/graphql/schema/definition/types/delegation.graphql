@@ -28,6 +28,10 @@ type Delegation {
     # sorted fro the newest to the oldest requests.
     withdrawRequests(cursor: Cursor, count: Int = 25): [WithdrawRequest!]!
 
+    # rewadClaims provides a list of reward claims
+    # of the delegation as a scrollable list of edges with details of claims.
+    rewadClaims(cursor: Cursor, count: Int = 25): RewardClaimList!
+
     # isFluidStakingActive indicates if the delegation is upgraded to fluid staking.
     isFluidStakingActive: Boolean!
 

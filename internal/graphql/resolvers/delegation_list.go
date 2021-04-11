@@ -29,7 +29,7 @@ func (dl *DelegationList) TotalCount() hexutil.Uint64 {
 	return hexutil.Uint64(dl.Total)
 }
 
-// PageInfo resolves the current page information for the transaction list.
+// PageInfo resolves the current page information for the delegations list.
 func (dl *DelegationList) PageInfo() (*ListPageInfo, error) {
 	// do we have any items?
 	if dl.Collection == nil || len(dl.Collection) == 0 {
@@ -42,7 +42,7 @@ func (dl *DelegationList) PageInfo() (*ListPageInfo, error) {
 	return NewListPageInfo(&first, &last, !dl.IsEnd, !dl.IsStart)
 }
 
-// Edges resolves list of block list edges for the linked block list.
+// Edges resolves list of delegation list edges for the linked block list.
 func (dl *DelegationList) Edges() []*DelegationListEdge {
 	// do we have any items? return empty list if not
 	if dl.Collection == nil || len(dl.Collection) == 0 {

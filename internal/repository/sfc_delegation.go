@@ -15,7 +15,6 @@ import (
 	retypes "github.com/ethereum/go-ethereum/core/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
-	"strings"
 )
 
 // IsDelegating returns if the given address is an SFC delegator.
@@ -35,6 +34,22 @@ func (p *proxy) IsDelegating(addr *common.Address) (bool, error) {
 // StoreDelegation stores the delegation in persistent database.
 func (p *proxy) StoreDelegation(dl *types.Delegation) error {
 	return p.db.AddDelegation(dl)
+}
+
+// UpdateDelegationBalance updates active balance of the given delegation.
+func (p *proxy) UpdateDelegationBalance(addr *common.Address, valID *hexutil.Big) error {
+	// pull the current value
+	val, err := p.DelegationAmountStaked(addr, valID)
+	if err != nil {
+		p.log.Errorf("delegation balance not available for %s to %d; %s", addr.String(), valID.ToInt().Uint64(), err.Error())
+		return err
+	}
+
+	// do the update
+	if err := p.db.UpdateDelegationBalance(addr, valID, (*hexutil.Big)(val)); err != nil {
+		p.log.Errorf("failed delegation balance update for %s to %d; %s", addr.String(), valID.ToInt().Uint64(), err.Error())
+	}
+	return nil
 }
 
 // Delegation returns a detail of delegation for the given address.
@@ -106,34 +121,6 @@ func (p *proxy) DelegationFluidStakingActive(_ *common.Address, _ *hexutil.Big) 
 	return true, nil
 }
 
-// UpdateDelegationActiveAmount updates active delegation amount to the current SFC registered value.
-func (p *proxy) UpdateDelegationActiveAmount(addr *common.Address, valID *hexutil.Big) {
-	// key the specific update
-	var sb strings.Builder
-	sb.WriteString(addr.String())
-	sb.WriteString(valID.String())
-
-	// make sure not to do it more than once in parallel
-	if _, err, _ := p.apiRequestGroup.Do(sb.String(), func() (interface{}, error) {
-		// pull the current value
-		val, err := p.rpc.AmountStaked(addr, (*big.Int)(valID))
-		if err != nil {
-			p.log.Errorf("can not update active delegation balance; %s", err.Error())
-			return nil, err
-		}
-
-		// do the update
-		if err := p.db.UpdateDelegationBalance(addr, valID, (*hexutil.Big)(val)); err != nil {
-			p.log.Errorf("can not update active delegation balance; %s", err.Error())
-			return nil, err
-		}
-		return nil, nil
-	}); err != nil {
-		// log issue
-		p.log.Errorf("delegation %s to %d balance update failed; %s", addr.String(), valID.ToInt().Uint64(), err.Error())
-	}
-}
-
 // handleDelegationLog handles a new delegation event from logs.
 func handleDelegationLog(blk hexutil.Uint64, trx *common.Hash, stakerID *big.Int, addr common.Address, amo *big.Int, ld *logsDispatcher) {
 	// get the block
@@ -183,7 +170,8 @@ func handleSfcCreatedDelegation(log *retypes.Log, ld *logsDispatcher) {
 }
 
 // handleSfcCreatedStake handles a new stake event from SFC v1 and SFC v2 contract.
-// event CreatedStake(uint256 indexed stakerID, address indexed dagSfcAddress, uint256 amount);
+// event CreatedStake(uint256 indexed stakerID, address indexed dagSfcAddress, uint256 amount)
+/*
 func handleSfcCreatedStake(log *retypes.Log, ld *logsDispatcher) {
 	handleDelegationLog(
 		hexutil.Uint64(log.BlockNumber),
@@ -194,6 +182,28 @@ func handleSfcCreatedStake(log *retypes.Log, ld *logsDispatcher) {
 		ld,
 	)
 }
+*/
+
+// handleSfcCreatedStake handles a new stake event from SFC v1 and SFC v2 contract.
+// event IncreasedStake(uint256 indexed stakerID, uint256 newAmount, uint256 diff)
+/*
+func handleSfcIncreasedStake(log *retypes.Log, ld *logsDispatcher) {
+	// get the validator ID
+	valID := new(big.Int).SetBytes(log.Topics[1].Bytes())
+
+	// get the validator address
+	val, err := R().ValidatorAddress((*hexutil.Big)(valID))
+	if err != nil {
+		ld.log.Errorf("unknown validator #%d; %s", valID.Uint64(), err.Error())
+		return
+	}
+
+	// update the balance
+	if err := ld.repo.UpdateDelegationBalance(val, (*hexutil.Big)(valID)); err != nil {
+		ld.log.Errorf("failed to update delegation; %s", err.Error())
+	}
+}
+*/
 
 // handleSfcUndelegated handles new withdrawal request from SFCv3 contract.
 // We ignore withdrawals from previous SFC versions since after the upgrade all the pending
@@ -224,7 +234,9 @@ func handleSfcUndelegated(log *retypes.Log, ld *logsDispatcher) {
 	}
 
 	// check active amount on the delegation
-	go ld.repo.UpdateDelegationActiveAmount(&wr.Address, wr.StakerID)
+	if err := ld.repo.UpdateDelegationBalance(&wr.Address, wr.StakerID); err != nil {
+		ld.log.Errorf("failed to update delegation; %s", err.Error())
+	}
 }
 
 // handleSfcWithdrawn handles a withdrawal request finalization event.
@@ -260,5 +272,7 @@ func handleSfcWithdrawn(log *retypes.Log, ld *logsDispatcher) {
 	}
 
 	// check active amount on the delegation
-	go ld.repo.UpdateDelegationActiveAmount(&addr, valID)
+	if err := ld.repo.UpdateDelegationBalance(&req.Address, req.StakerID); err != nil {
+		ld.log.Errorf("failed to update delegation; %s", err.Error())
+	}
 }

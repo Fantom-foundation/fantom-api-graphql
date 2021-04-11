@@ -414,18 +414,25 @@ func (db *MongoDbBridge) Withdrawals(cursor *string, count int32, filter *bson.D
 
 // WithdrawalsSumValue calculates sum of values for all the withdrawals by a filter.
 func (db *MongoDbBridge) WithdrawalsSumValue(filter *bson.D) (*big.Int, error) {
+	return db.sumFieldValue(
+		db.client.Database(db.dbName).Collection(colWithdrawals),
+		types.FiWithdrawalValue,
+		filter,
+		types.WithdrawDecimalsCorrection)
+}
+
+// sumFieldValue calculates sum of values for specified field of a specified collection by a given filter.
+func (db *MongoDbBridge) sumFieldValue(col *mongo.Collection, field string, filter *bson.D, decCorrection *big.Int) (*big.Int, error) {
 	// make sure we have at least some filter
 	if filter == nil {
 		filter = &bson.D{}
 	}
-
 	// construct aggregate column name
 	var sb strings.Builder
 	sb.WriteString("$")
-	sb.WriteString(types.FiWithdrawalValue)
+	sb.WriteString(field)
 
 	// get the collection
-	col := db.client.Database(db.dbName).Collection(colWithdrawals)
 	cr, err := col.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", filter}},
 		{{"$group", bson.D{
@@ -437,13 +444,12 @@ func (db *MongoDbBridge) WithdrawalsSumValue(filter *bson.D) (*big.Int, error) {
 		db.log.Errorf("can not calculate withdrawal sum value; %s", err.Error())
 		return nil, err
 	}
-
 	// read the data and return result
-	return db.readAggregatedSum(cr)
+	return db.readAggregatedSumFieldValue(cr, decCorrection)
 }
 
-// readAggregatedValue extract the aggregated value from the given result set.
-func (db *MongoDbBridge) readAggregatedSum(cr *mongo.Cursor) (*big.Int, error) {
+// readAggregatedSumFieldValue extract the aggregated value from the given result set.
+func (db *MongoDbBridge) readAggregatedSumFieldValue(cr *mongo.Cursor, decCorrection *big.Int) (*big.Int, error) {
 	// make sure to close the cursor after we got the data
 	defer func() {
 		if err := cr.Close(context.Background()); err != nil {
@@ -464,5 +470,10 @@ func (db *MongoDbBridge) readAggregatedSum(cr *mongo.Cursor) (*big.Int, error) {
 		db.log.Errorf("can not read withdrawal sum value; %s", err.Error())
 		return nil, err
 	}
-	return new(big.Int).Mul(new(big.Int).SetUint64(row.Total), types.WithdrawDecimalsCorrection), nil
+
+	// correct decimals?
+	if nil != decCorrection {
+		return new(big.Int).Mul(new(big.Int).SetUint64(row.Total), decCorrection), nil
+	}
+	return new(big.Int).SetUint64(row.Total), nil
 }

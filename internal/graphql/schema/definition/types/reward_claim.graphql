@@ -1,0 +1,24 @@
+# RewardClaim represents
+type RewardClaim {
+    # address represents the address of the delegator
+    address: Address!
+
+    # toStakerId represents the ID of the validator the delegation
+    # is placed on
+    toStakerId: BigInt!
+
+    # claimed represents the time stamp of the reward claim
+    # in Unix Epoch units, e.g. number of seconds from the Unix Epoch start.
+    claimed: Long!
+
+    # amount represents the amount of tokens rewarded on the claim.
+    amount: BigInt!
+
+    # isRestaked signals if the claim was added to the delegation
+    # effectively increasing the staked amount and raising the delegation value.
+    isRestaked: Boolean!
+
+    # trxHash is the hash pf the transaction calling for the rewards
+    # to be processed and granted.
+    trxHash: Bytes32!
+}

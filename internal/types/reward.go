@@ -10,6 +10,14 @@ import (
 	"math/big"
 )
 
+const (
+	FiRewardClaimPk          = "_id"
+	FiRewardClaimOrdinal     = "orx"
+	FiRewardClaimAddress     = "adr"
+	FiRewardClaimToValidator = "to"
+	FiRewardClaimedValue     = "val"
+)
+
 // RewardDecimalsCorrection is used to manipulate precision of a rewards value
 // so it can be stored in database as UINT64 without loosing too much data
 var RewardDecimalsCorrection = new(big.Int).SetUint64(1000000000)
@@ -26,9 +34,26 @@ type RewardClaim struct {
 	IsDelegated   bool
 }
 
-// Uid returns a unique identifier for the given reward claim request.
-func (rwc *RewardClaim) Uid() uint64 {
-	return (uint64(rwc.Claimed)&0xFFFFFFFFFF)<<24 | (rwc.ToValidatorId.ToInt().Uint64()&0xFFF)<<12 | (binary.BigEndian.Uint64(rwc.ClaimTrx[:8]) & 0xFFF)
+// BsonRewardClaim represents BSON rew structure of the reward claim.
+type BsonRewardClaim struct {
+	ID        string `bson:"_id"`
+	Ordinal   uint64 `bson:"orx"`
+	Addr      string `bson:"addr"`
+	To        string `bson:"to"`
+	ClaimTime uint64 `bson:"when"`
+	Amount    string `bson:"amount"`
+	Value     uint64 `bson:"value"`
+	IsDlg     bool   `bson:"red"`
+}
+
+// Pk returns a unique primary key of the claim.
+func (rwc *RewardClaim) Pk() string {
+	return rwc.ClaimTrx.String()
+}
+
+// OrdinalIndex returns an ordinal index for the given reward claim request.
+func (rwc *RewardClaim) OrdinalIndex() uint64 {
+	return (uint64(rwc.Claimed)&0xFFFFFFFFFF)<<24 | (binary.BigEndian.Uint64(rwc.ClaimTrx[:8]) & 0xFFFFFF)
 }
 
 // MarshalBSON creates a BSON representation of the reward claim request record.
@@ -37,21 +62,12 @@ func (rwc *RewardClaim) MarshalBSON() ([]byte, error) {
 	val := new(big.Int).Div(rwc.Amount.ToInt(), RewardDecimalsCorrection)
 
 	// prep the structure for saving
-	pom := struct {
-		Uid       uint64 `bson:"_id"`
-		Addr      string `bson:"addr"`
-		To        string `bson:"to"`
-		ClaimTime uint64 `bson:"when"`
-		Trx       string `bson:"trx"`
-		Amount    string `bson:"amount"`
-		Value     uint64 `bson:"value"`
-		IsDlg     bool   `bson:"red"`
-	}{
-		Uid:       rwc.Uid(),
+	pom := BsonRewardClaim{
+		ID:        rwc.Pk(),
+		Ordinal:   rwc.OrdinalIndex(),
 		Addr:      rwc.Delegator.String(),
 		To:        rwc.ToValidatorId.String(),
 		ClaimTime: uint64(rwc.Claimed),
-		Trx:       rwc.ClaimTrx.String(),
 		Amount:    rwc.Amount.String(),
 		Value:     val.Uint64(),
 		IsDlg:     rwc.IsDelegated,
@@ -69,16 +85,7 @@ func (rwc *RewardClaim) UnmarshalBSON(data []byte) (err error) {
 	}()
 
 	// try to decode the BSON data
-	var row struct {
-		Uid       uint64 `bson:"_id"`
-		Addr      string `bson:"addr"`
-		To        string `bson:"to"`
-		ClaimTime uint64 `bson:"when"`
-		Trx       string `bson:"trx"`
-		Amount    string `bson:"amount"`
-		Value     uint64 `bson:"value"`
-		IsDlg     bool   `bson:"red"`
-	}
+	var row BsonRewardClaim
 	if err = bson.Unmarshal(data, &row); err != nil {
 		return err
 	}
@@ -87,9 +94,8 @@ func (rwc *RewardClaim) UnmarshalBSON(data []byte) (err error) {
 	rwc.Delegator = common.HexToAddress(row.Addr)
 	rwc.ToValidatorId = (hexutil.Big)(*hexutil.MustDecodeBig(row.To))
 	rwc.Claimed = hexutil.Uint64(row.ClaimTime)
-	rwc.ClaimTrx = common.HexToHash(row.Trx)
+	rwc.ClaimTrx = common.HexToHash(row.ID)
 	rwc.Amount = (hexutil.Big)(*hexutil.MustDecodeBig(row.Amount))
 	rwc.IsDelegated = row.IsDlg
-
 	return nil
 }

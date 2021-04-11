@@ -28,7 +28,7 @@ import (
 
 // Repository interface defines functions the underlying implementation provides to API resolvers.
 type Repository interface {
-	// log provides access to the system wide logger.
+	// Log provides access to the system wide logger.
 	Log() logger.Logger
 
 	// FtmConnection returns open connection to Opera/Lachesis full node.
@@ -59,7 +59,7 @@ type Repository interface {
 	// Transactions are always sorted from newer to older.
 	AccountTransactions(*common.Address, *string, int32) (*types.TransactionList, error)
 
-	// Returns total number of accounts known to repository.
+	// AccountsActive total number of accounts known to repository.
 	AccountsActive() (hexutil.Uint64, error)
 
 	// AccountIsKnown checks if the account of the given address is known to the API server.
@@ -80,17 +80,17 @@ type Repository interface {
 	// LastKnownBlock returns number of the last block known to the repository.
 	LastKnownBlock() (uint64, error)
 
-	// Block returns a block at Opera blockchain represented by a number.
+	// BlockByNumber returns a block at Opera blockchain represented by a number.
 	// Top block is returned if the number is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
 	BlockByNumber(*hexutil.Uint64) (*types.Block, error)
 
-	// Block returns a block at Opera blockchain represented by a hash.
+	// BlockByHash returns a block at Opera blockchain represented by a hash.
 	// Top block is returned if the hash is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
 	BlockByHash(*common.Hash) (*types.Block, error)
 
-	// Collection pulls list of blocks starting on the specified block number
+	// Blocks pulls list of blocks starting on the specified block number
 	// and going up, or down based on count number.
 	Blocks(*uint64, int32) (*types.BlockList, error)
 
@@ -105,7 +105,7 @@ type Repository interface {
 	// is updated the the repository.
 	ValidateContract(*types.Contract) error
 
-	// ContractAdd adds new contract into the repository.
+	// StoreContract updates the contract in repository.
 	StoreContract(*types.Contract) error
 
 	// SfcVersion returns current version of the SFC contract.
@@ -162,7 +162,7 @@ type Repository interface {
 	// ValidatorsCount returns the number of stakers in Opera blockchain.
 	ValidatorsCount() (uint64, error)
 
-	// IsStaker returns if the given address is an SFC staker.
+	// IsValidator returns TRUE if the given address is an SFC staker.
 	IsValidator(*common.Address) (bool, error)
 
 	// ValidatorAddress extract a staker address for the given staker ID.
@@ -171,7 +171,7 @@ type Repository interface {
 	// Validator extract a staker information from SFC smart contract.
 	Validator(*hexutil.Big) (*types.Validator, error)
 
-	// Staker extract a staker information by address.
+	// ValidatorByAddress extract a staker information by address.
 	ValidatorByAddress(*common.Address) (*types.Validator, error)
 
 	// ValidatorDowntime pulls information about validator downtime from the RPC interface.
@@ -180,7 +180,7 @@ type Repository interface {
 	// SfcMaxDelegatedRatio extracts a ratio between self delegation and received stake.
 	SfcMaxDelegatedRatio() (*big.Int, error)
 
-	// StakerInfo extracts an extended staker information from smart contact.
+	// PullStakerInfo extracts an extended staker information from smart contact.
 	PullStakerInfo(*hexutil.Big) (*types.StakerInfo, error)
 
 	// StoreStakerInfo stores staker information to in-memory cache for future use.
@@ -194,6 +194,9 @@ type Repository interface {
 
 	// StoreDelegation stores a delegation in the persistent repository.
 	StoreDelegation(*types.Delegation) error
+
+	// UpdateDelegationBalance updates active balance of the given delegation.
+	UpdateDelegationBalance(*common.Address, *hexutil.Big) error
 
 	// Delegation returns a detail of delegation for the given address and validator ID.
 	Delegation(*common.Address, *hexutil.Big) (*types.Delegation, error)
@@ -214,7 +217,7 @@ type Repository interface {
 	// DelegationLock returns delegation lock information using SFC contract binding.
 	DelegationLock(*common.Address, *hexutil.Big) (*types.DelegationLock, error)
 
-	// Delegation returns a detail of delegation for the given address.
+	// PendingRewards returns a detail of pending rewards for the given delegation.
 	PendingRewards(*common.Address, *hexutil.Big) (*types.PendingRewards, error)
 
 	// DelegationOutstandingSFTM returns the amount of sFTM tokens for the delegation
@@ -227,9 +230,6 @@ type Repository interface {
 
 	// DelegationFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
 	DelegationFluidStakingActive(*common.Address, *hexutil.Big) (bool, error)
-
-	// UpdateDelegationActiveAmount updates active delegation amount to the current SFC registered value.
-	UpdateDelegationActiveAmount(addr *common.Address, valID *hexutil.Big)
 
 	// StoreWithdrawRequest stores the given withdraw request in persistent storage.
 	StoreWithdrawRequest(*types.WithdrawRequest) error
@@ -249,6 +249,13 @@ type Repository interface {
 
 	// StoreRewardClaim stores reward claim record in the persistent repository.
 	StoreRewardClaim(*types.RewardClaim) error
+
+	// RewardsClaimed returns the sum of all the claimed rewards
+	// for the given delegator address and validator ID.
+	RewardsClaimed(adr *common.Address, valId *big.Int) (*big.Int, error)
+
+	// RewardClaims provides list of reward claims for the given criteria.
+	RewardClaims(*common.Address, *big.Int, *string, int32) (*types.RewardClaimsList, error)
 
 	// Price returns a price information for the given target symbol.
 	Price(sym string) (types.Price, error)
@@ -412,6 +419,9 @@ type Repository interface {
 	// Erc20LogoURL provides URL address of a logo of the ERC20 token.
 	Erc20LogoURL(*common.Address) string
 
+	// StoreErc20Transaction stores ERC20 transaction into the repository.
+	StoreErc20Transaction(*types.Erc20Transaction) error
+
 	// GovernanceContractBy provides governance contract details by its address.
 	GovernanceContractBy(*common.Address) (*config.GovernanceContract, error)
 
@@ -462,7 +472,7 @@ type Repository interface {
 	// FLendGetReserveList resolves list of reserves in lending pool
 	FLendGetReserveList() ([]common.Address, error)
 
-	// FLendGetUserHistoryDeposit resolves deposit history
+	// FLendGetUserDepositHistory resolves deposit history
 	// data for specified user and asset address
 	FLendGetUserDepositHistory(*common.Address, *common.Address) ([]*types.FLendDeposit, error)
 
@@ -614,12 +624,12 @@ func (p *proxy) Close() {
 	p.log.Notice("repository done")
 }
 
-// FtmClient returns open connection to Opera/Lachesis full node.
+// Log returns the logger used by the repository.
 func (p *proxy) Log() logger.Logger {
 	return p.log
 }
 
-// FtmClient returns open connection to Opera/Lachesis full node.
+// FtmConnection returns open connection to Opera/Lachesis full node.
 func (p *proxy) FtmConnection() *ftm.Client {
 	return p.rpc.Connection()
 }

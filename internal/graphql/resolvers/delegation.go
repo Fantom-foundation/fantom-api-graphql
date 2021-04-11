@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// Delegator represents resolvable delegator detail.
+// Delegation represents resolvable delegator detail.
 type Delegation struct {
 	types.Delegation
 	cg *singleflight.Group
@@ -102,7 +102,11 @@ func (del Delegation) PendingRewards() (types.PendingRewards, error) {
 
 // ClaimedReward resolves the total amount of rewards received on the delegation.
 func (del Delegation) ClaimedReward() (hexutil.Big, error) {
-	return hexutil.Big{}, nil
+	val, err := repository.R().RewardsClaimed(&del.Address, (*big.Int)(del.Delegation.ToStakerId))
+	if err != nil {
+		return hexutil.Big{}, err
+	}
+	return (hexutil.Big)(*val), nil
 }
 
 // WithdrawRequests resolves partial withdraw requests of the delegator.
@@ -128,6 +132,25 @@ func (del Delegation) WithdrawRequests(args struct {
 
 	// return the final resolvable list
 	return list, nil
+}
+
+// RewardClaims resolves list of reward claims of the delegation.
+func (del Delegation) RewardClaims(args struct {
+	Cursor *Cursor
+	Count  int32
+}) (*RewardClaimList, error) {
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
+
+	// pull list of withdrawals
+	cl, err := repository.R().RewardClaims(&del.Address, (*big.Int)(del.Delegation.ToStakerId), (*string)(args.Cursor), args.Count)
+	if err != nil {
+		return nil, err
+	}
+
+	// return the final resolvable list
+	return NewRewardClaimList(cl), nil
 }
 
 // DelegationLock returns information about delegation lock
@@ -174,7 +197,7 @@ func (del Delegation) LockedFromEpoch() (*hexutil.Uint64, error) {
 	return &lock.LockedFromEpoch, nil
 }
 
-// LockedFromEpoch resolves the epoch om which the lock has been created.
+// LockedAmount resolves the total amount of delegation locked.
 func (del Delegation) LockedAmount() (hexutil.Big, error) {
 	lock, err := del.DelegationLock()
 	if err != nil {
