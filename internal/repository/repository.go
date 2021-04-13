@@ -177,6 +177,9 @@ type Repository interface {
 	// ValidatorDowntime pulls information about validator downtime from the RPC interface.
 	ValidatorDowntime(*hexutil.Big) (uint64, uint64, error)
 
+	// SfcConfiguration provides SFC contract configuration.
+	SfcConfiguration() (*types.SfcConfig, error)
+
 	// SfcMaxDelegatedRatio extracts a ratio between self delegation and received stake.
 	SfcMaxDelegatedRatio() (*big.Int, error)
 

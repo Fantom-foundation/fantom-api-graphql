@@ -30,6 +30,36 @@ func (p *proxy) SfcVersion() (hexutil.Uint64, error) {
 	return p.rpc.SfcVersion()
 }
 
+// SfcConfiguration provides SFC contract configuration.
+func (p *proxy) SfcConfiguration() (*types.SfcConfig, error) {
+	// try cache first
+	c := p.cache.PullSfcConfig()
+	if c == nil {
+		// load the config with all the values filled
+		c = &types.SfcConfig{
+			MinValidatorStake:      p.pullSfcConfigValue(p.rpc.SfcMinValidatorStake),
+			MaxDelegatedRatio:      p.pullSfcConfigValue(p.rpc.SfcMaxDelegatedRatio),
+			MinLockupDuration:      p.pullSfcConfigValue(p.rpc.SfcMinLockupDuration),
+			MaxLockupDuration:      p.pullSfcConfigValue(p.rpc.SfcMaxLockupDuration),
+			WithdrawalPeriodEpochs: p.pullSfcConfigValue(p.rpc.SfcWithdrawalPeriodEpochs),
+			WithdrawalPeriodTime:   p.pullSfcConfigValue(p.rpc.SfcWithdrawalPeriodTime),
+		}
+		// cache for future use
+		p.cache.PushSfcConfig(c)
+	}
+	return c, nil
+}
+
+// pullSfcConfigValue pulls SFC config value for the given value loader function.
+func (p *proxy) pullSfcConfigValue(f func() (*big.Int, error)) hexutil.Big {
+	val, err := f()
+	if err != nil {
+		p.log.Errorf(" can not load SFC config value; %s", err.Error())
+		return hexutil.Big{}
+	}
+	return (hexutil.Big)(*val)
+}
+
 // CurrentEpoch returns the id of the current epoch.
 func (p *proxy) CurrentEpoch() (hexutil.Uint64, error) {
 	return p.rpc.CurrentEpoch()

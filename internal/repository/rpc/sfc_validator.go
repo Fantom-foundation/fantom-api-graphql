@@ -235,15 +235,3 @@ func (ftm *FtmBridge) ValidatorByAddress(addr *common.Address) (*types.Validator
 	}
 	return ftm.validatorById(contract, id)
 }
-
-// SfcMaxDelegatedRatio extracts a ratio between self delegation and received stake.
-func (ftm *FtmBridge) SfcMaxDelegatedRatio() (*big.Int, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return nil, err
-	}
-
-	return contract.MaxDelegatedRatio(nil)
-}

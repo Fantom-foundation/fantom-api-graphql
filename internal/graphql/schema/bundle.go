@@ -307,6 +307,37 @@ type Block {
     txList: [Transaction!]!
 }
 
+# SfcConfig represents the configuration of the SFC contract
+# responsible for managing the staking economy of the network.
+type SfcConfig {
+    # minValidatorStake is the minimal amount of tokens required
+    # to register a validator account with the default self stake.
+    minValidatorStake: BigInt!
+
+    # maxDelegatedRatio is the maximal ratio between a validator self stake
+    # and the sum of all the received stakes of the validator.
+    # The value is provided as a multiplier number with 18 decimals.
+    maxDelegatedRatio: BigInt!
+
+    # minLockupDuration is the lowest possible number of seconds
+    # a delegation can be locked for.
+    minLockupDuration: BigInt!
+
+    # maxLockupDuration is the highest possible number of seconds
+    # a delegation can be locked for.
+    maxLockupDuration: BigInt!
+
+    # withdrawalPeriodEpochs is the minimal number of epochs
+    # between an un-delegation and corresponding withdraw request.
+    # The delay is enforced on withdraw call.
+    withdrawalPeriodEpochs: BigInt!
+
+    # withdrawalPeriodTime is the minimal number of seconds
+    # between an un-delegation and corresponding withdraw request.
+    # The delay is enforced on withdraw call.
+    withdrawalPeriodTime: BigInt!
+}
+
 # ERC20Token represents a generic ERC20 token.
 type ERC20Token {
     # address of the token is used as the token's unique identifier.
@@ -1530,6 +1561,10 @@ type Query {
 
     # State represents the current state of the blockchain and network.
     state: CurrentState!
+
+    # sfcConfig provides the current configuration
+    # of the SFC contract managing the block chain staking economy.
+    sfcConfig: SfcConfig!
 
     # Total number of accounts active on the Opera blockchain.
     accountsActive:Long!

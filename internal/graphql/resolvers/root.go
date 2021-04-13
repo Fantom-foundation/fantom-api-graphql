@@ -33,6 +33,9 @@ type ApiResolver interface {
 	// State resolves current state of the blockchain.
 	State() (CurrentState, error)
 
+	// SfcConfig resolves the current SFC configuration.
+	SfcConfig() SfcConfig
+
 	// Version resolves current version of the API server.
 	Version() string
 

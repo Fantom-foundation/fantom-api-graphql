@@ -142,6 +142,71 @@ func (ftm *FtmBridge) TotalStaked() (*big.Int, error) {
 		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
 		return nil, err
 	}
-
 	return contract.TotalStake(nil)
+}
+
+// SfcMinValidatorStake extracts a value of minimal validator self stake.
+func (ftm *FtmBridge) SfcMinValidatorStake() (*big.Int, error) {
+	// instantiate the contract and display its name
+	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
+		return nil, err
+	}
+	return contract.MinSelfStake(nil)
+}
+
+// SfcMaxDelegatedRatio extracts a ratio between self delegation and received stake.
+func (ftm *FtmBridge) SfcMaxDelegatedRatio() (*big.Int, error) {
+	// instantiate the contract and display its name
+	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
+		return nil, err
+	}
+	return contract.MaxDelegatedRatio(nil)
+}
+
+// SfcMinLockupDuration extracts a minimal lockup duration.
+func (ftm *FtmBridge) SfcMinLockupDuration() (*big.Int, error) {
+	// instantiate the contract and display its name
+	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
+		return nil, err
+	}
+	return contract.MinLockupDuration(nil)
+}
+
+// SfcMaxLockupDuration extracts a maximal lockup duration.
+func (ftm *FtmBridge) SfcMaxLockupDuration() (*big.Int, error) {
+	// instantiate the contract and display its name
+	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
+		return nil, err
+	}
+	return contract.MaxLockupDuration(nil)
+}
+
+// SfcWithdrawalPeriodEpochs extracts a minimal number of epochs between un-delegate and withdraw.
+func (ftm *FtmBridge) SfcWithdrawalPeriodEpochs() (*big.Int, error) {
+	// instantiate the contract and display its name
+	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
+		return nil, err
+	}
+	return contract.WithdrawalPeriodEpochs(nil)
+}
+
+// SfcWithdrawalPeriodTime extracts a minimal number of seconds between un-delegate and withdraw.
+func (ftm *FtmBridge) SfcWithdrawalPeriodTime() (*big.Int, error) {
+	// instantiate the contract and display its name
+	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
+	if err != nil {
+		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
+		return nil, err
+	}
+	return contract.WithdrawalPeriodTime(nil)
 }

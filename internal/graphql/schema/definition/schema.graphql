@@ -13,6 +13,10 @@ type Query {
     # State represents the current state of the blockchain and network.
     state: CurrentState!
 
+    # sfcConfig provides the current configuration
+    # of the SFC contract managing the block chain staking economy.
+    sfcConfig: SfcConfig!
+
     # Total number of accounts active on the Opera blockchain.
     accountsActive:Long!
 
