@@ -13,12 +13,52 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	retypes "github.com/ethereum/go-ethereum/core/types"
+	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
 )
 
 // StoreErc20Transaction stores ERC20 transaction into the repository.
 func (p *proxy) StoreErc20Transaction(trx *types.Erc20Transaction) error {
 	return p.db.AddERC20Transaction(trx)
+}
+
+// Erc20Transactions provides list of ERC20 transactions based on given filters.
+func (p *proxy) Erc20Transactions(token *common.Address, acc *common.Address, tt *int32, cursor *string, count int32) (*types.Erc20TransactionList, error) {
+	// prep the filter
+	fi := bson.D{}
+
+	// filter specific token
+	if token != nil {
+		fi = append(fi, bson.E{
+			Key:   types.FiErc20TransactionToken,
+			Value: token.String(),
+		})
+	}
+
+	// common address (sender or recipient)
+	if acc != nil {
+		fi = append(fi, bson.E{
+			Key: "$or",
+			Value: bson.A{bson.D{{
+				Key:   types.FiErc20TransactionSender,
+				Value: acc.String(),
+			}}, bson.D{{
+				Key:   types.FiErc20TransactionRecipient,
+				Value: acc.String(),
+			}}},
+		})
+	}
+
+	// type of the transaction
+	if tt != nil {
+		fi = append(fi, bson.E{
+			Key:   types.FiErc20TransactionType,
+			Value: *tt,
+		})
+	}
+
+	// do loading
+	return p.db.Erc20Transactions(cursor, count, &fi)
 }
 
 // handleErc20Approval handles Approval event on an ERC20 token.

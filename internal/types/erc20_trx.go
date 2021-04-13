@@ -15,6 +15,7 @@ const (
 	FiErc20TransactionToken     = "erc"
 	FiErc20TransactionSender    = "from"
 	FiErc20TransactionRecipient = "to"
+	FiErc20TransactionType      = "type"
 
 	// ERC20TrxTypeApproval represents transaction for granting approvals.
 	ERC20TrxTypeApproval = 2

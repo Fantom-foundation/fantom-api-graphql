@@ -54,7 +54,7 @@ func (p *proxy) SfcConfiguration() (*types.SfcConfig, error) {
 func (p *proxy) pullSfcConfigValue(f func() (*big.Int, error)) hexutil.Big {
 	val, err := f()
 	if err != nil {
-		p.log.Errorf(" can not load SFC config value; %s", err.Error())
+		p.log.Errorf("can not load SFC config value; %s", err.Error())
 		return hexutil.Big{}
 	}
 	return (hexutil.Big)(*val)
