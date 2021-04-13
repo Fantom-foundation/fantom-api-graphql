@@ -411,11 +411,11 @@ type Delegation {
     isDelegationLocked: Boolean!
 
     # lockedFromEpoch represents the id of epoch the lock has been created.
-    lockedFromEpoch: Long
+    lockedFromEpoch: Long!
 
     # lockedUntil represents the time stamp up to which
     # the delegation is locked, zero if not locked.
-    lockedUntil: Long
+    lockedUntil: Long!
 
     # lockedAmount represents the amount of delegation stake locked.
     # The undelegate process must call unlock prior to creating withdraw request if outstanding

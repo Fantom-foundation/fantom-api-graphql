@@ -180,25 +180,29 @@ func (del Delegation) IsFluidStakingActive() (bool, error) {
 }
 
 // LockedUntil resolves the end time of delegation.
-func (del Delegation) LockedUntil() (*hexutil.Uint64, error) {
+func (del Delegation) LockedUntil() (hexutil.Uint64, error) {
 	lock, err := del.DelegationLock()
 	if err != nil {
-		return nil, err
+		return hexutil.Uint64(0), err
 	}
 	// is there any lock in place?
 	if lock == nil || 0 <= zeroInt.Cmp(lock.LockedAmount.ToInt()) {
-		return nil, err
+		return hexutil.Uint64(0), nil
 	}
-	return &lock.LockedUntil, nil
+	return lock.LockedUntil, nil
 }
 
 // LockedFromEpoch resolves the epoch om which the lock has been created.
-func (del Delegation) LockedFromEpoch() (*hexutil.Uint64, error) {
+func (del Delegation) LockedFromEpoch() (hexutil.Uint64, error) {
 	lock, err := del.DelegationLock()
 	if err != nil {
-		return nil, err
+		return hexutil.Uint64(0), err
 	}
-	return &lock.LockedFromEpoch, nil
+	// is there any lock in place?
+	if lock == nil || 0 <= zeroInt.Cmp(lock.LockedAmount.ToInt()) {
+		return hexutil.Uint64(0), nil
+	}
+	return lock.LockedFromEpoch, nil
 }
 
 // LockedAmount resolves the total amount of delegation locked.

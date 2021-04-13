@@ -88,7 +88,7 @@ func (st Staker) LockedUntil() (hexutil.Uint64, error) {
 	}
 	// is there any lock in place?
 	if lock == nil || 0 <= zeroInt.Cmp(lock.LockedAmount.ToInt()) {
-		return hexutil.Uint64(0), err
+		return hexutil.Uint64(0), nil
 	}
 	return lock.LockedUntil, nil
 }
@@ -98,6 +98,10 @@ func (st Staker) LockedFromEpoch() (hexutil.Uint64, error) {
 	lock, err := st.DelegationLock()
 	if err != nil {
 		return hexutil.Uint64(0), err
+	}
+	// is there any lock in place?
+	if lock == nil || 0 <= zeroInt.Cmp(lock.LockedAmount.ToInt()) {
+		return hexutil.Uint64(0), nil
 	}
 	return lock.LockedFromEpoch, nil
 }
