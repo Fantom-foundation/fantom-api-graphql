@@ -76,13 +76,18 @@ func (st Staker) IsStakeLocked() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return lock != nil && uint64(lock.LockedUntil) < uint64(time.Now().UTC().Unix()), nil
+	return lock != nil && 0 > zeroInt.Cmp(lock.LockedAmount.ToInt()) && uint64(lock.LockedUntil) < uint64(time.Now().UTC().Unix()), nil
 }
 
 // LockedUntil resolves the end time of delegation.
 func (st Staker) LockedUntil() (hexutil.Uint64, error) {
+	// get the lock detail
 	lock, err := st.DelegationLock()
 	if err != nil {
+		return hexutil.Uint64(0), err
+	}
+	// is there any lock in place?
+	if lock == nil || 0 <= zeroInt.Cmp(lock.LockedAmount.ToInt()) {
 		return hexutil.Uint64(0), err
 	}
 	return lock.LockedUntil, nil

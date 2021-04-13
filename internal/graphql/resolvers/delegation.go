@@ -171,7 +171,7 @@ func (del Delegation) IsDelegationLocked() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return lock != nil && uint64(lock.LockedUntil) > uint64(time.Now().UTC().Unix()), nil
+	return lock != nil && 0 > zeroInt.Cmp(lock.LockedAmount.ToInt()) && uint64(lock.LockedUntil) > uint64(time.Now().UTC().Unix()), nil
 }
 
 // IsFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
@@ -183,6 +183,10 @@ func (del Delegation) IsFluidStakingActive() (bool, error) {
 func (del Delegation) LockedUntil() (*hexutil.Uint64, error) {
 	lock, err := del.DelegationLock()
 	if err != nil {
+		return nil, err
+	}
+	// is there any lock in place?
+	if lock == nil || 0 <= zeroInt.Cmp(lock.LockedAmount.ToInt()) {
 		return nil, err
 	}
 	return &lock.LockedUntil, nil
