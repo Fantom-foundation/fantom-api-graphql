@@ -18,22 +18,25 @@ const (
 	FiErc20TransactionType      = "type"
 
 	// ERC20TrxTypeApproval represents transaction for granting approvals.
-	ERC20TrxTypeApproval = 2
+	ERC20TrxTypeApproval     = 2
+	ERC20TrxTypeNameApproval = "APPROVAL"
 
 	// ERC20TrxTypeTransfer represents transaction for transfers.
-	ERC20TrxTypeTransfer = 1
+	ERC20TrxTypeTransfer     = 1
+	ERC20TrxTypeNameTransfer = "TRANSFER"
 )
 
 // Erc20Transaction represents an operation with ERC20 token.
 type Erc20Transaction struct {
-	Transaction common.Hash    `json:"trx"`
-	TrxIndex    hexutil.Uint64 `json:"tix"`
-	Token       common.Address `json:"erc"`
-	Type        int32          `json:"type"`
-	Sender      common.Address `json:"from"`
-	Recipient   common.Address `json:"to"`
-	Amount      hexutil.Big    `json:"amo"`
-	TimeStamp   hexutil.Uint64 `json:"ts"`
+	ID           string         `json:"_id"`
+	Transaction  common.Hash    `json:"trx"`
+	TrxIndex     hexutil.Uint64 `json:"tix"`
+	TokenAddress common.Address `json:"erc"`
+	Type         int32          `json:"type"`
+	Sender       common.Address `json:"from"`
+	Recipient    common.Address `json:"to"`
+	Amount       hexutil.Big    `json:"amo"`
+	TimeStamp    hexutil.Uint64 `json:"ts"`
 }
 
 // BsonErc20Transaction represents the BSON i/o struct for an ERC20 operation.
@@ -82,7 +85,7 @@ func (etx *Erc20Transaction) MarshalBSON() ([]byte, error) {
 		Trx:     etx.Transaction.String(),
 		Tix:     uint64(etx.TrxIndex),
 		Orx:     etx.OrdinalIndex(),
-		Token:   etx.Token.String(),
+		Token:   etx.TokenAddress.String(),
 		Type:    etx.Type,
 		From:    etx.Sender.String(),
 		To:      etx.Recipient.String(),
@@ -106,10 +109,11 @@ func (etx *Erc20Transaction) UnmarshalBSON(data []byte) (err error) {
 	}
 
 	// copy the data
+	etx.ID = row.ID
 	etx.Transaction = common.HexToHash(row.Trx)
 	etx.TrxIndex = hexutil.Uint64(row.Tix)
 	etx.TimeStamp = hexutil.Uint64(row.Created)
-	etx.Token = common.HexToAddress(row.Token)
+	etx.TokenAddress = common.HexToAddress(row.Token)
 	etx.Type = row.Type
 	etx.Sender = common.HexToAddress(row.From)
 	etx.Recipient = common.HexToAddress(row.To)

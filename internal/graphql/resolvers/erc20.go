@@ -22,7 +22,6 @@ func NewErc20Token(adr *common.Address) *ERC20Token {
 	if err != nil {
 		return nil
 	}
-
 	// make the instance of the token
 	return &ERC20Token{*erc20}
 }
@@ -65,7 +64,7 @@ func (rs *rootResolver) ErcTokenAllowance(args *struct {
 	return repository.R().Erc20Allowance(&args.Token, &args.Owner, &args.Spender)
 }
 
-// Name resolves the name of the given ERC20 token.
+// TotalSupply resolves the total supply of the given ERC20 token.
 func (token *ERC20Token) TotalSupply() (hexutil.Big, error) {
 	return repository.R().Erc20TotalSupply(&token.Address)
 }

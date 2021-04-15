@@ -96,14 +96,14 @@ func handleErc20Transaction(log *retypes.Log, ld *logsDispatcher, t int32) {
 
 	// store the trx
 	if err := ld.repo.StoreErc20Transaction(&types.Erc20Transaction{
-		Transaction: log.TxHash,
-		TrxIndex:    hexutil.Uint64(uint64(log.TxIndex)),
-		Token:       log.Address,
-		Type:        t,
-		Sender:      from,
-		Recipient:   to,
-		Amount:      (hexutil.Big)(*amo),
-		TimeStamp:   block.TimeStamp,
+		Transaction:  log.TxHash,
+		TrxIndex:     hexutil.Uint64(uint64(log.TxIndex)),
+		TokenAddress: log.Address,
+		Type:         t,
+		Sender:       from,
+		Recipient:    to,
+		Amount:       (hexutil.Big)(*amo),
+		TimeStamp:    block.TimeStamp,
 	}); err != nil {
 		ld.log.Errorf("can not store ERC20 transaction; %s", err.Error())
 	}
