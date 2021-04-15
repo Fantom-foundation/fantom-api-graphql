@@ -32,7 +32,7 @@ OUT_FILE="$(dirname "$0")/../releases.go"
   echo "// and verify Solidity based contracts."
   echo "package $PACKAGE"
   echo ""
-  echo "// Auto generated Solidity releases list; created" "$(date "+%F %R")"
+  echo "// Auto generated Solidity releases list"
   echo "var solidityReleases = [...]string{"
 
   # list those version from the GIT repo

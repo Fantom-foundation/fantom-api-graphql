@@ -82,6 +82,52 @@ enum DefiTokenBalanceType {
     DEBT
 }
 
+# Erc20TransactionType represents a type of transaction.
+enum Erc20TransactionType {
+    TRANSFER
+    APPROVAL
+}
+
+# ERC20Transaction represents a transaction on an ERC20 token.
+type ERC20Transaction {
+    # trxHash represents a hash of the transaction
+    # executing the ERC20 call.
+    trxHash: Bytes32!
+
+    # transaction represents the transaction
+    # executing the ERC20 call.
+    transaction: Transaction!
+
+    # trxIndex represents the index
+    # of the ERC20 call in the transaction logs.
+    trxIndex: Long!
+
+    # tokenAddress represents the address
+    # of the ERC20 token contract.
+    tokenAddress: Address!
+
+    # token represents the token detail involved.
+    token: ERC20Token!
+
+    # trxType is the type of the transaction.
+    trxType: Erc20TransactionType!
+
+    # sender represents the address of the token owner
+    # sending the tokens, e.g. the sender.
+    sender: Address!
+
+    # recipient represents the address of the token recipient.
+    recipient: Address!
+
+    # amount represents the amount of tokens involved
+    # in the transaction; please make sure to interpret the amount
+    # with the correct number of decimals from the ERC20 token detail.
+    amount: BigInt!
+
+    # timeStamp represents the Unix epoch time stamp
+    # of the ERC20 transaction procvessing.
+    timeStamp: Long!
+}
 # RewardClaimList is a list of reward claims linked to delegations.
 type RewardClaimList {
     # Edges contains provided edges of the sequential list.
@@ -601,6 +647,24 @@ type ContractList {
 type ContractListEdge {
     cursor: Cursor!
     contract: Contract!
+}
+
+# ERC20TransactionList is a list of ERC20 transaction edges provided by sequential access request.
+type ERC20TransactionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ERC20TransactionListEdge!]!
+
+    # TotalCount is the maximum number of ERC20 transactions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of ERC20 transaction edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of ERC20 transactions.
+type ERC20TransactionListEdge {
+    cursor: Cursor!
+    trx: ERC20Transaction!
 }
 
 # Bytes32 is a 32 byte binary string, represented by 0x prefixed hexadecimal hash.
