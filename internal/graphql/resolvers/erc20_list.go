@@ -6,7 +6,7 @@ import "github.com/ethereum/go-ethereum/common"
 // maxAssetTokensToLoad defines the max mount of ERC20 tokens analyzed for assets list.
 const maxAssetTokensToLoad = 1000
 
-// Erc20Token resolves an instance of ERC20 token if available.
+// Erc20TokenList resolves an instance of ERC20 token list if available.
 func (rs *rootResolver) Erc20TokenList(args struct{ Count int32 }) ([]*ERC20Token, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction

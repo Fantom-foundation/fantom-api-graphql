@@ -74,8 +74,8 @@ func (ftm *FtmBridge) Erc20Decimals(token *common.Address) (int32, error) {
 	// get the token name
 	deci, err := contract.Decimals(nil)
 	if err != nil {
-		ftm.log.Errorf("ERC20 token %s symbol not available; %s", token.String(), err.Error())
-		return 0, err
+		ftm.log.Errorf("ERC20 token %s decimals not available; %s", token.String(), err.Error())
+		return 0, nil
 	}
 
 	return int32(deci), nil
