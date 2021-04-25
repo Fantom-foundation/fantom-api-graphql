@@ -29,7 +29,7 @@ import (
 )
 
 // sfcRewardsSafeEpochRange represents the amount of epochs safe to vbe used to calculate rewards.
-const sfcRewardsSafeEpochRange = 250
+const sfcRewardsSafeEpochRange = 500
 
 // SfcVersion returns current version of the SFC contract as a single number.
 func (ftm *FtmBridge) SfcVersion() (hexutil.Uint64, error) {
@@ -374,11 +374,12 @@ func (ftm *FtmBridge) DelegationRewards(adr *common.Address, staker hexutil.Uint
 	}
 
 	// is the epoch calculation partial?
+	paidEpoch = new(big.Int).Add(paidEpoch, big.NewInt(1))
 	isOverRange := sfcRewardsSafeEpochRange < new(big.Int).Sub(epoch, paidEpoch).Uint64()
 
 	// get the rewards amount
 	ftm.log.Debugf("loading delegation rewards for %s → %d between epochs [%d, %d]", adr.String(), uint64(staker), paidEpoch.Uint64(), epoch.Uint64())
-	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(ftm.DefaultCallOpts(), *adr, new(big.Int).SetUint64(uint64(staker)), paidEpoch, big.NewInt(1000))
+	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(ftm.DefaultCallOpts(), *adr, new(big.Int).SetUint64(uint64(staker)), paidEpoch, big.NewInt(2000))
 	if err != nil {
 		ftm.log.Debugf("rewards not loaded for %s → %d; %s", adr.String(), uint64(staker), err.Error())
 		return types.PendingRewards{
