@@ -28,7 +28,7 @@ import (
 
 // Repository interface defines functions the underlying implementation provides to API resolvers.
 type Repository interface {
-	// log provides access to the system wide logger.
+	// Log provides access to the system wide logger.
 	Log() logger.Logger
 
 	// FtmConnection returns open connection to Opera/Lachesis full node.
@@ -59,7 +59,7 @@ type Repository interface {
 	// Transactions are always sorted from newer to older.
 	AccountTransactions(*types.Account, *string, int32) (*types.TransactionHashList, error)
 
-	// Returns total number of accounts known to repository.
+	// AccountsActive returns total number of accounts known to repository.
 	AccountsActive() (hexutil.Uint64, error)
 
 	// AccountIsKnown checks if the account of the given address is known to the API server.
@@ -71,7 +71,7 @@ type Repository interface {
 	// AccountMarkActivity marks the latest account activity in the repository.
 	AccountMarkActivity(*types.Account, uint64) error
 
-	// Block returns a block at Opera blockchain represented by a number.
+	// BlockByNumber returns a block at Opera blockchain represented by a number.
 	// Top block is returned if the number is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
 	BlockByNumber(*hexutil.Uint64) (*types.Block, error)
@@ -97,12 +97,12 @@ type Repository interface {
 	// Epoch returns the id of the current epoch.
 	Epoch(*hexutil.Uint64) (types.Epoch, error)
 
-	// Block returns a block at Opera blockchain represented by a hash.
+	// BlockByHash returns a block at Opera blockchain represented by a hash.
 	// Top block is returned if the hash is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
 	BlockByHash(*types.Hash) (*types.Block, error)
 
-	// AddTransaction adds a new incoming transaction from blockchain to the repository.
+	// TransactionAdd adds a new incoming transaction from blockchain to the repository.
 	TransactionAdd(*types.Block, *types.Transaction) error
 
 	// TransactionUpdate modifies a transaction record in the repository.
@@ -117,7 +117,7 @@ type Repository interface {
 	// Transactions returns list of transaction hashes at Opera blockchain.
 	Transactions(*string, int32) (*types.TransactionHashList, error)
 
-	// Collection pulls list of blocks starting on the specified block number
+	// Blocks pulls list of blocks starting on the specified block number
 	// and going up, or down based on count number.
 	Blocks(*uint64, int32) (*types.BlockList, error)
 
@@ -136,13 +136,13 @@ type Repository interface {
 	// StakerAddress extract a staker address for the given staker ID.
 	StakerAddress(hexutil.Uint64) (common.Address, error)
 
-	// Staker extract a staker information by address.
+	// StakerByAddress extract a staker information by address.
 	StakerByAddress(common.Address) (*types.Staker, error)
 
 	// TotalStaked calculates current total staked amount for all stakers.
 	TotalStaked() (*hexutil.Big, error)
 
-	// StakerInfo extracts an extended staker information from smart contact.
+	// PullStakerInfo extracts an extended staker information from smart contact.
 	PullStakerInfo(hexutil.Uint64) (*types.StakerInfo, error)
 
 	// StoreStakerInfo stores staker information to in-memory cache for future use.
@@ -168,7 +168,7 @@ type Repository interface {
 	DelegationLock(*types.Delegation) (*types.DelegationLock, error)
 
 	// DelegationRewards returns a detail of delegation rewards for the given address.
-	DelegationRewards(string, hexutil.Uint64) (types.PendingRewards, error)
+	DelegationRewards(*common.Address, hexutil.Uint64) (types.PendingRewards, error)
 
 	// DelegationOutstandingSFTM returns the amount of sFTM tokens for the delegation
 	// identified by the delegator address and the staker id.
@@ -198,7 +198,7 @@ type Repository interface {
 	// RewardsStash returns the amount of WEI stashed for the given address.
 	RewardsStash(*common.Address) (*big.Int, error)
 
-	// delegatedAmount calculates total amount currently delegated
+	// DelegatedAmountExtended calculates total amount currently delegated
 	// and amount locked in pending un-delegation.
 	// Partial Un-delegations are subtracted during the preparation
 	// phase, but total un-delegations are subtracted only when
@@ -463,7 +463,7 @@ type Repository interface {
 	// FLendGetReserveList resolves list of reserves in lending pool
 	FLendGetReserveList() ([]common.Address, error)
 
-	// FLendGetUserHistoryDeposit resolves deposit history
+	// FLendGetUserDepositHistory resolves deposit history
 	// data for specified user and asset address
 	FLendGetUserDepositHistory(*common.Address, *common.Address) ([]*types.FLendDeposit, error)
 
@@ -591,12 +591,12 @@ func (p *proxy) Close() {
 	p.log.Notice("repository done")
 }
 
-// FtmClient returns open connection to Opera/Lachesis full node.
+// Log returns the logger used by the repository proxy.
 func (p *proxy) Log() logger.Logger {
 	return p.log
 }
 
-// FtmClient returns open connection to Opera/Lachesis full node.
+// FtmConnection returns open connection to Opera/Lachesis full node.
 func (p *proxy) FtmConnection() *ftm.Client {
 	return p.rpc.Connection()
 }

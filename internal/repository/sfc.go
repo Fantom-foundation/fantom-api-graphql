@@ -67,7 +67,7 @@ func (p *proxy) StakerAddress(id hexutil.Uint64) (common.Address, error) {
 	return p.rpc.StakerAddress(id)
 }
 
-// Staker extract a staker information by address.
+// StakerByAddress extract a staker information by address.
 func (p *proxy) StakerByAddress(addr common.Address) (*types.Staker, error) {
 	return p.rpc.StakerByAddress(addr)
 }
@@ -99,9 +99,9 @@ func (p *proxy) DelegationLock(delegation *types.Delegation) (*types.DelegationL
 }
 
 // DelegationRewards returns a detail of delegation rewards for the given address.
-func (p *proxy) DelegationRewards(addr string, staker hexutil.Uint64) (types.PendingRewards, error) {
-	p.log.Debugf("loading rewards of %s to %d", addr, staker)
-	return p.rpc.DelegationRewards(addr, staker)
+func (p *proxy) DelegationRewards(adr *common.Address, staker hexutil.Uint64) (types.PendingRewards, error) {
+	p.log.Debugf("loading rewards of %s to %d", adr.String(), staker)
+	return p.rpc.DelegationRewards(adr, staker)
 }
 
 // WithdrawRequests extracts a list of partial withdraw requests
@@ -134,7 +134,7 @@ func (p *proxy) DeactivatedDelegation(addr *common.Address, stakerId *hexutil.Ui
 	return p.rpc.DeactivatedDelegation(addr, new(big.Int).SetUint64(uint64(*stakerId)))
 }
 
-// delegatedAmount calculates total amount currently delegated
+// DelegatedAmountExtended calculates total amount currently delegated
 // and amount locked in pending un-delegation.
 // Partial Un-delegations are subtracted during the preparation
 // phase, but total un-delegations are subtracted only when
@@ -255,7 +255,11 @@ func (p *proxy) DelegationFluidStakingActive(dl *types.Delegation) (bool, error)
 
 // DelegationPaidUntilEpoch resolves the id of the last epoch rewards has been paid to."
 func (p *proxy) DelegationPaidUntilEpoch(dl *types.Delegation) (hexutil.Uint64, error) {
-	return p.rpc.DelegationPaidUntilEpoch(dl)
+	val, err := p.rpc.DelegationPaidUntilEpoch(&dl.Address, new(big.Int).SetUint64(uint64(dl.ToStakerId)))
+	if err != nil {
+		return 0, err
+	}
+	return hexutil.Uint64(val.Uint64()), err
 }
 
 // DelegationOutstandingSFTM returns the amount of sFTM tokens for the delegation

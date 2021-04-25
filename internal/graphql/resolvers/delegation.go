@@ -82,7 +82,7 @@ func (del Delegation) AmountInWithdraw() (hexutil.Big, error) {
 // PendingRewards resolves pending rewards for the delegator account.
 func (del Delegation) PendingRewards() (types.PendingRewards, error) {
 	// get the rewards
-	r, err := del.repo.DelegationRewards(del.Address.String(), del.ToStakerId)
+	r, err := del.repo.DelegationRewards(&del.Address, del.ToStakerId)
 	if err != nil {
 		return types.PendingRewards{}, err
 	}

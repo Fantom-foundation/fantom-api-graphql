@@ -25,7 +25,11 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"strconv"
+	"strings"
 )
+
+// sfcRewardsSafeEpochRange represents the amount of epochs safe to vbe used to calculate rewards.
+const sfcRewardsSafeEpochRange = 250
 
 // SfcVersion returns current version of the SFC contract as a single number.
 func (ftm *FtmBridge) SfcVersion() (hexutil.Uint64, error) {
@@ -342,7 +346,7 @@ func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (types.Epoch, error) {
 }
 
 // DelegationRewards returns a detail of delegation rewards for the given address.
-func (ftm *FtmBridge) DelegationRewards(addr string, staker hexutil.Uint64) (types.PendingRewards, error) {
+func (ftm *FtmBridge) DelegationRewards(adr *common.Address, staker hexutil.Uint64) (types.PendingRewards, error) {
 	// instantiate the contract and display its name
 	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
 	if err != nil {
@@ -363,25 +367,36 @@ func (ftm *FtmBridge) DelegationRewards(addr string, staker hexutil.Uint64) (typ
 		return types.PendingRewards{}, nil
 	}
 
-	// get the rewards amount
-	ftm.log.Debugf("loading delegation rewards for %s → %d between epochs [0, %d]", addr, uint64(staker), epoch.Uint64())
-	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(ftm.DefaultCallOpts(), common.HexToAddress(addr), new(big.Int).SetUint64(uint64(staker)), big.NewInt(0), epoch)
+	// paid until
+	paidEpoch, err := ftm.DelegationPaidUntilEpoch(adr, new(big.Int).SetUint64(uint64(staker)))
 	if err != nil {
-		ftm.log.Debugf("no rewards for %s → %d; %s", addr, uint64(staker), err.Error())
+		return types.PendingRewards{}, err
+	}
+
+	// is the epoch calculation partial?
+	isOverRange := sfcRewardsSafeEpochRange < new(big.Int).Sub(epoch, paidEpoch).Uint64()
+
+	// get the rewards amount
+	ftm.log.Debugf("loading delegation rewards for %s → %d between epochs [%d, %d]", adr.String(), uint64(staker), paidEpoch.Uint64(), epoch.Uint64())
+	amount, fromEpoch, toEpoch, err := contract.CalcDelegationRewards(ftm.DefaultCallOpts(), *adr, new(big.Int).SetUint64(uint64(staker)), paidEpoch, big.NewInt(1000))
+	if err != nil {
+		ftm.log.Debugf("rewards not loaded for %s → %d; %s", adr.String(), uint64(staker), err.Error())
 		return types.PendingRewards{
-			Staker:    staker,
-			Amount:    hexutil.Big{},
-			FromEpoch: hexutil.Uint64(0),
-			ToEpoch:   hexutil.Uint64(epoch.Uint64()),
+			Staker:      staker,
+			Amount:      hexutil.Big{},
+			FromEpoch:   hexutil.Uint64(paidEpoch.Uint64()),
+			ToEpoch:     hexutil.Uint64(epoch.Uint64()),
+			IsOverRange: isOverRange,
 		}, nil
 	}
 
 	// return the data
 	return types.PendingRewards{
-		Staker:    staker,
-		Amount:    hexutil.Big(*amount),
-		FromEpoch: hexutil.Uint64(fromEpoch.Uint64()),
-		ToEpoch:   hexutil.Uint64(toEpoch.Uint64()),
+		Staker:      staker,
+		Amount:      hexutil.Big(*amount),
+		FromEpoch:   hexutil.Uint64(fromEpoch.Uint64()),
+		ToEpoch:     hexutil.Uint64(toEpoch.Uint64()),
+		IsOverRange: isOverRange,
 	}, nil
 }
 
@@ -606,38 +621,47 @@ func (ftm *FtmBridge) LockingAllowed() (bool, error) {
 // DelegationFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
 func (ftm *FtmBridge) DelegationFluidStakingActive(dl *types.Delegation) (bool, error) {
 	// try to get paid info
-	paid, err := ftm.DelegationPaidUntilEpoch(dl)
+	paid, err := ftm.DelegationPaidUntilEpoch(&dl.Address, new(big.Int).SetUint64(uint64(dl.ToStakerId)))
 	if err != nil {
 		ftm.log.Errorf("delegation information missing; %s", err.Error())
 		return false, err
 	}
 
-	return paid > 0, nil
+	return paid.Uint64() > 0, nil
 }
 
 // DelegationPaidUntilEpoch resolves the id of the last epoch rewards has been paid to."
-func (ftm *FtmBridge) DelegationPaidUntilEpoch(dl *types.Delegation) (hexutil.Uint64, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
-		return 0, err
-	}
+func (ftm *FtmBridge) DelegationPaidUntilEpoch(adr *common.Address, valID *big.Int) (*big.Int, error) {
+	var sb strings.Builder
+	sb.WriteString("paid_un_")
+	sb.WriteString(adr.String())
+	sb.WriteString(valID.String())
 
-	// get delegation info
-	dd, err := contract.Delegations(nil, dl.Address, big.NewInt(int64(dl.ToStakerId)))
-	if err != nil {
-		ftm.log.Errorf("can not pull delegation information for %s / %d; %s", dl.Address.String(), dl.ToStakerId, err.Error())
-		return 0, err
-	}
+	// call only once
+	val, err, _ := ftm.reqGroup.Do(sb.String(), func() (interface{}, error) {
+		// instantiate the contract and display its name
+		contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
+		if err != nil {
+			ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
+			return new(big.Int), err
+		}
 
-	// any data about paid epoch?
-	if dd.PaidUntilEpoch == nil {
-		ftm.log.Errorf("no paid epoch information for delegation %s / %d", dl.Address.String(), dl.ToStakerId)
-		return 0, nil
-	}
+		// get delegation info
+		dd, err := contract.Delegations(nil, *adr, valID)
+		if err != nil {
+			ftm.log.Errorf("can not pull delegation information for %s / %d; %s", adr.String(), valID.Uint64(), err.Error())
+			return new(big.Int), err
+		}
 
-	return hexutil.Uint64(dd.PaidUntilEpoch.Uint64()), nil
+		// any data about paid epoch?
+		if dd.PaidUntilEpoch == nil {
+			ftm.log.Errorf("no paid epoch information for delegation %s / %d", adr.String(), valID.Uint64())
+			return new(big.Int), nil
+		}
+
+		return dd.PaidUntilEpoch, nil
+	})
+	return val.(*big.Int), err
 }
 
 // DelegationOutstandingSFTM returns the amount of sFTM tokens for the delegation

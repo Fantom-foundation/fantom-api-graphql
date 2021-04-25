@@ -437,6 +437,10 @@ type PendingRewards {
 
     "The last unpaid epoch."
     toEpoch: Long!
+
+    # isOverRange signals that the rewards calculation
+    # can not be done due to too many unclaimed epochs.
+    isOverRange: Boolean!
 }
 
 # Represents epoch information.
