@@ -29,7 +29,7 @@ import (
 )
 
 // sfcRewardsSafeEpochRange represents the amount of epochs safe to vbe used to calculate rewards.
-const sfcRewardsSafeEpochRange = 500
+const sfcRewardsSafeEpochRange = 1000
 
 // SfcVersion returns current version of the SFC contract as a single number.
 func (ftm *FtmBridge) SfcVersion() (hexutil.Uint64, error) {
