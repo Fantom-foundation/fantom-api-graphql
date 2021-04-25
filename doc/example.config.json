@@ -5,19 +5,24 @@
     "pkey": "0xaa682338447d15ac4462d938716c120d085a0db81d3945b18017ae0788a121a7"
   },
   "server": {
-    "bind": "127.0.0.1:16761",
+    "bind": "0.0.0.0:16761",
     "peers": [],
-    "origin": "https://opera.example.net"
+    "origin": "https://xapi.fantom.network",
+    "cors_origins": [
+      "*"
+    ],
+    "write_timeout": 30,
+    "resolver_timeout": 240
   },
   "node": {
-    "url": "/var/opera/data/lachesis.ipc"
+    "url": "/var/opera/lachesis/data/lachesis.ipc"
   },
   "log": {
-    "level": "Debug"
+    "level": "Info"
   },
   "db": {
     "url": "mongodb://127.0.0.1:27017",
-    "db": "lachesis"
+    "db": "mainnet"
   },
   "compiler": {
     "temp": "/tmp/solidity",
@@ -52,9 +57,6 @@
       "KRW"
     ]
   },
-  "voting": {
-    "sources": "0x3a7952c135e7b40942e57ea01396b71bf9eb5b90"
-  },
   "governance": {
     "contracts": [
       {
@@ -66,8 +68,5 @@
       }
     ]
   },
-  "erc20_logos": {
-    "0x0000000000000000000000000000000000000000": "https://repository.fantom.network/logos/erc20.svg",
-    "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83": "https://cryptologos.cc/logos/fantom-ftm-logo.svg?v=003"
-  }
+  "erc20_tokens_file": "/etc/opera/apiserver/tokens.json"
 }
