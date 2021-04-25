@@ -167,7 +167,7 @@ type Repository interface {
 	// DelegationLock returns delegation lock information using SFC contract binding.
 	DelegationLock(*types.Delegation) (*types.DelegationLock, error)
 
-	// Delegation returns a detail of delegation for the given address.
+	// DelegationRewards returns a detail of delegation rewards for the given address.
 	DelegationRewards(string, hexutil.Uint64) (types.PendingRewards, error)
 
 	// DelegationOutstandingSFTM returns the amount of sFTM tokens for the delegation

@@ -98,7 +98,7 @@ func (p *proxy) DelegationLock(delegation *types.Delegation) (*types.DelegationL
 	return p.rpc.DelegationLock(delegation)
 }
 
-// Delegation returns a detail of delegation for the given address.
+// DelegationRewards returns a detail of delegation rewards for the given address.
 func (p *proxy) DelegationRewards(addr string, staker hexutil.Uint64) (types.PendingRewards, error) {
 	p.log.Debugf("loading rewards of %s to %d", addr, staker)
 	return p.rpc.DelegationRewards(addr, staker)

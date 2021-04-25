@@ -52,7 +52,7 @@ func (st Staker) StakerInfo() *types.StakerInfo {
 
 // IsStakeLocked signals if the stake is locked right now.
 func (st Staker) IsStakeLocked() bool {
-	return st.Staker.LockedFromEpoch > 0 && uint64(st.Staker.LockedUntil) < uint64(time.Now().UTC().Unix())
+	return st.Staker.LockedFromEpoch > 0 && uint64(st.Staker.LockedUntil) > uint64(time.Now().UTC().Unix())
 }
 
 // WithdrawRequests resolves partial withdraw requests of the staker.

@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// Delegator represents resolvable delegator detail.
+// Delegation represents resolvable delegator detail.
 type Delegation struct {
 	repo repository.Repository
 	types.Delegation
@@ -25,7 +25,7 @@ type Delegation struct {
 // DelegationsByAge represents a list of delegations sortable by their age of creation.
 type DelegationsByAge []types.Delegation
 
-// NewDelegator creates new instance of resolvable Delegator.
+// NewDelegation creates new instance of resolvable Delegator.
 func NewDelegation(d *types.Delegation, repo repository.Repository) *Delegation {
 	return &Delegation{
 		Delegation: *d,
@@ -158,7 +158,7 @@ func (del Delegation) IsDelegationLocked() bool {
 	}
 
 	// decide based on lock content
-	return lock.LockedFromEpoch > 0 && uint64(lock.LockedUntil) < uint64(time.Now().UTC().Unix())
+	return lock.LockedFromEpoch > 0 && uint64(lock.LockedUntil) > uint64(time.Now().UTC().Unix())
 }
 
 // IsFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.

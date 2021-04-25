@@ -498,7 +498,7 @@ func (ftm *FtmBridge) DelegationLock(delegation *types.Delegation) (dll *types.D
 	return dl, nil
 }
 
-// delegatedAmount calculates total amount currently delegated
+// DelegatedAmountExtended calculates total amount currently delegated
 // and amount locked in pending un-delegation.
 // Partial Un-delegations are subtracted during the preparation
 // phase, but total un-delegations are subtracted only when
