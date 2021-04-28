@@ -13,6 +13,10 @@ type Query {
     # State represents the current state of the blockchain and network.
     state: CurrentState!
 
+    # sfcConfig provides the current configuration
+    # of the SFC contract managing the block chain staking economy.
+    sfcConfig: SfcConfig!
+
     # Total number of accounts active on the Opera blockchain.
     accountsActive:Long!
 
@@ -30,10 +34,7 @@ type Query {
 
     # Get block information by number or by hash.
     # If neither is provided, the most recent block is given.
-    block(number:Long, hash: Hash):Block
-
-    # Get transaction information for given transaction hash.
-    transaction(hash:Hash!):Transaction
+    block(number:Long, hash: Bytes32):Block
 
     # Get list of Blocks with at most <count> edges.
     # If <count> is positive, return edges after the cursor,
@@ -41,6 +42,9 @@ type Query {
     # For undefined cursor, positive <count> starts the list from top,
     # negative <count> starts the list from bottom.
     blocks(cursor:Cursor, count:Int!):BlockList!
+
+    # Get transaction information for given transaction hash.
+    transaction(hash:Bytes32!):Transaction
 
     # Get list of Transactions with at most <count> edges.
     # If <count> is positive, return edges after the cursor,
@@ -64,7 +68,7 @@ type Query {
 
     # Staker information. The staker is loaded either by numeric ID,
     # or by address. null if none is provided.
-    staker(id: Long, address: Address): Staker
+    staker(id: BigInt, address: Address): Staker
 
     # List of staker information from SFC smart contract.
     stakers: [Staker!]!
@@ -72,11 +76,11 @@ type Query {
     # The list of delegations for the given staker ID.
     # Cursor is used to obtain specific slice of the staker's delegations.
     # The most recent delegations are provided if cursor is omitted.
-    delegationsOf(staker:Long!, cursor: Cursor, count: Int = 25): DelegationList!
+    delegationsOf(staker:BigInt!, cursor: Cursor, count: Int = 25): DelegationList!
 
     # Get the details of a specific delegation by it's delegator address
     # and staker the delegation belongs to.
-    delegation(address:Address!, staker: Long!): Delegation
+    delegation(address:Address!, staker: BigInt!): Delegation
 
     # Get the list of all delegations by it's delegator address.
     delegationsByAddress(address:Address!, cursor: Cursor, count: Int = 25): DelegationList!
@@ -96,30 +100,6 @@ type Query {
     # At least one of the address and amount parameters must be provided.
     # If you provide both, the address takes precedence and the amount is ignored.
     estimateRewards(address:Address, amount:Long):EstimatedRewards!
-
-    # Get official ballot information by its address.
-    ballot(address: Address!):Ballot
-
-    # Get list of official Ballots with at most <count> edges.
-    # If <count> is positive, return edges after the cursor,
-    # if negative, return edges before the cursor.
-    # For undefined cursor, positive <count> starts the list from top,
-    # negative <count> starts the list from bottom.
-    ballots(cursor: Cursor, count: Int!):BallotList!
-
-    # Get list of recently closed official Ballots
-    # with at most <count> edges. If the <finalized> is set to false
-    # the list contains ballots, which ended, but were not resolved
-    # yet.
-    ballotsClosed(finalized: Boolean = true, count: Int = 25):[Ballot!]!
-
-    # Get list of currently active Ballots with at most <count> edges.
-    ballotsActive(count: Int = 25):[Ballot!]!
-
-    # List of all votes of the given voter identified by the address
-    # for the given list of ballots identified by an array of ballot
-    # addresses.
-    votes(voter:Address!, ballots:[Address!]!):[Vote!]!
 
     # defiConfiguration exposes the current DeFi contract setup.
     defiConfiguration:DefiSettings!

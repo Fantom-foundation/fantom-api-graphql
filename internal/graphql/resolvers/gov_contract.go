@@ -11,9 +11,6 @@ import (
 // GovernanceContract represents details of a Governance contract
 // recognized by the API server.
 type GovernanceContract struct {
-	// repo represents the reference to the server repository
-	repo repository.Repository
-
 	// Type represents the internal type of the Governance contract
 	Type string
 
@@ -27,14 +24,13 @@ type GovernanceContract struct {
 // GovContract resolves a governance contract details recognized by the API by address.
 func (rs *rootResolver) GovContract(args struct{ Address common.Address }) (*GovernanceContract, error) {
 	// get the contract by the address
-	gc, err := rs.repo.GovernanceContractBy(&args.Address)
+	gc, err := repository.R().GovernanceContractBy(&args.Address)
 	if err != nil {
 		return nil, err
 	}
 
 	// return the contract info
 	return &GovernanceContract{
-		repo:    rs.repo,
 		Type:    gc.Type,
 		Name:    gc.Name,
 		Address: args.Address,
@@ -49,42 +45,35 @@ func (rs *rootResolver) GovContracts() ([]*GovernanceContract, error) {
 	}
 
 	// make the output array
-	res := make([]*GovernanceContract, 0)
-
-	// loop over known governance contracts
-	for _, gc := range rs.cfg.Governance.Contracts {
+	res := make([]*GovernanceContract, len(rs.cfg.Governance.Contracts))
+	for i, gc := range rs.cfg.Governance.Contracts {
 		// add to the structure
-		res = append(res, &GovernanceContract{
-			repo:    rs.repo,
+		res[i] = &GovernanceContract{
 			Name:    gc.Name,
 			Type:    gc.Type,
 			Address: gc.Address,
-		})
+		}
 	}
-
 	return res, nil
 }
 
 // TotalProposals resolves the number of proposals registered within
 // the governance contract.
 func (gc *GovernanceContract) TotalProposals() (hexutil.Big, error) {
-	return gc.repo.GovernanceProposalsCount(&gc.Address)
+	return repository.R().GovernanceProposalsCount(&gc.Address)
 }
 
 // Proposal resolves single proposal of the Governance contract specified
 // by the proposal id inside the contract.
 func (gc *GovernanceContract) Proposal(args *struct{ Id hexutil.Big }) (*GovernanceProposal, error) {
 	// get the proposal
-	prop, err := gc.repo.GovernanceProposal(&gc.Address, &args.Id)
+	prop, err := repository.R().GovernanceProposal(&gc.Address, &args.Id)
 	if err != nil {
 		return nil, err
 	}
 
 	// wrap the proposal for resolving
-	return &GovernanceProposal{
-		repo:               gc.repo,
-		GovernanceProposal: *prop,
-	}, nil
+	return NewGovernanceProposal(prop), nil
 }
 
 // Proposals resolves list of Governance contract proposals encapsulated in a listable structure.
@@ -98,12 +87,12 @@ func (gc *GovernanceContract) Proposals(args *struct {
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get the list of all proposals
-	list, err := gc.repo.GovernanceProposals([]*common.Address{&gc.Address}, (*string)(args.Cursor), args.Count, args.ActiveOnly)
+	list, err := repository.R().GovernanceProposals([]*common.Address{&gc.Address}, (*string)(args.Cursor), args.Count, args.ActiveOnly)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewGovernanceProposalList(list, gc.repo), nil
+	return NewGovernanceProposalList(list), nil
 }
 
 // DelegationsBy resolves list of delegations an address has in context of the given
@@ -116,7 +105,7 @@ func (gc *GovernanceContract) DelegationsBy(args struct{ From common.Address }) 
 	}
 
 	// no delegations by default
-	gc.repo.Log().Debugf("unknown governance type of %s", gc.Address.Hex())
+	repository.R().Log().Debugf("unknown governance type of %s", gc.Address.Hex())
 	return []common.Address{}, nil
 }
 
@@ -129,82 +118,47 @@ func (gc *GovernanceContract) CanVote(args struct{ From common.Address }) (bool,
 	}
 
 	// voting disabled by default
-	gc.repo.Log().Debugf("unknown governance type of %s", gc.Address.Hex())
+	repository.R().Log().Debugf("unknown governance type of %s", gc.Address.Hex())
 	return false, nil
 }
 
 // sfcDelegationsBy resolves delegations of the SFC type.
 func (gc *GovernanceContract) sfcDelegationsBy(addr common.Address) ([]common.Address, error) {
 	// get SFC delegations list
-	dl, err := gc.repo.DelegationsByAddress(addr)
+	dl, err := repository.R().DelegationsByAddressAll(&addr)
 	if err != nil {
 		return nil, err
 	}
 
-	// prep the result container
+	// make the active delegations list
 	res := make([]common.Address, 0)
-
-	// check if the address is a staker
-	// if so, it also delegates to itself in the context of the contract
-	isStaker, err := gc.repo.IsStaker(&addr)
-	if err == nil && isStaker {
-		res = append(res, addr)
-	}
-
-	// loop delegations to make the list
 	for _, d := range dl {
 		// is the delegation ok for voting?
-		if nil != d.DeactivatedEpoch && 0 < uint64(*d.DeactivatedEpoch) {
-			gc.repo.Log().Debugf("delegation to %d from address %s is deactivated", d.ToStakerId, addr.String())
+		if 0 == d.AmountDelegated.ToInt().Uint64() {
+			repository.R().Log().Debugf("delegation to %d from address %s is deactivated", d.ToStakerId, addr.String())
 			continue
 		}
-
-		// get the staker info
-		staker, err := gc.repo.StakerAddress(d.ToStakerId)
-		if err != nil {
-			gc.repo.Log().Errorf("error loading staker %d info; %s", d.ToStakerId, addr.String())
-			return nil, err
-		}
-
-		// get the
-		res = append(res, staker)
+		res = append(res, d.ToStakerAddress)
 	}
 
 	// log delegations found
-	gc.repo.Log().Debugf("%d delegations on %s", len(res), addr.String())
+	repository.R().Log().Debugf("%d delegations on %s", len(res), addr.String())
 	return res, nil
 }
 
 // sfcCanVote resolves if a given address can vote in SFC governance context.
 func (gc *GovernanceContract) sfcCanVote(addr common.Address) (bool, error) {
-	// is the address a staker?
-	isStaker, err := gc.repo.IsStaker(&addr)
-	if err != nil {
-		return false, err
-	}
-
-	// if the account is a staker, we are done here
-	if isStaker {
-		gc.repo.Log().Debugf("%s is validator", addr.String())
-		return true, nil
-	}
-
-	// check delegating status
-	isDelegation, err := gc.repo.IsDelegating(&addr)
-	if err != nil {
-		return false, err
-	}
-
-	return isDelegation, nil
+	// even validators are actually delegating to themself on SFCv3
+	return repository.R().IsDelegating(&addr)
 }
 
 // ProposalFee resolves the fee required by the Governance contract to allow
 // new proposal to be placed.
 func (gc *GovernanceContract) ProposalFee() (hexutil.Big, error) {
-	return gc.repo.GovernanceProposalFee(&gc.Address)
+	return repository.R().GovernanceProposalFee(&gc.Address)
 }
 
 // totalVotingPower resolves the total available voting power.
 func (gc *GovernanceContract) TotalVotingPower() (hexutil.Big, error) {
-	return gc.repo.GovernanceTotalWeight(&gc.Address)
+	return repository.R().GovernanceTotalWeight(&gc.Address)
 }

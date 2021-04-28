@@ -17,10 +17,11 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	retypes "github.com/ethereum/go-ethereum/core/types"
 )
 
 // Transaction returns information about a blockchain transaction by hash.
-func (ftm *FtmBridge) Transaction(hash *types.Hash) (*types.Transaction, error) {
+func (ftm *FtmBridge) Transaction(hash *common.Hash) (*types.Transaction, error) {
 	// keep track of the operation
 	ftm.log.Debugf("loading transaction %s", hash.String())
 
@@ -39,8 +40,9 @@ func (ftm *FtmBridge) Transaction(hash *types.Hash) (*types.Transaction, error) 
 			Index             hexutil.Uint64  `json:"transactionIndex"`
 			CumulativeGasUsed hexutil.Uint64  `json:"cumulativeGasUsed"`
 			GasUsed           hexutil.Uint64  `json:"gasUsed"`
-			ContractAddress   *common.Address `json:"contractAddress"`
+			ContractAddress   *common.Address `json:"contractAddress,omitempty"`
 			Status            hexutil.Uint64  `json:"status"`
+			Logs              []retypes.Log   `json:"logs"`
 		}
 
 		// call for the transaction receipt data
@@ -56,6 +58,7 @@ func (ftm *FtmBridge) Transaction(hash *types.Hash) (*types.Transaction, error) 
 		trx.GasUsed = &rec.GasUsed
 		trx.ContractAddress = rec.ContractAddress
 		trx.Status = &rec.Status
+		trx.Logs = rec.Logs
 	}
 
 	// keep track of the operation
@@ -64,11 +67,11 @@ func (ftm *FtmBridge) Transaction(hash *types.Hash) (*types.Transaction, error) 
 }
 
 // SendTransaction sends raw signed and RLP encoded transaction to the block chain.
-func (ftm *FtmBridge) SendTransaction(tx hexutil.Bytes) (*types.Hash, error) {
+func (ftm *FtmBridge) SendTransaction(tx hexutil.Bytes) (*common.Hash, error) {
 	// keep track of the operation
 	ftm.log.Debug("sending new transaction to block chain")
 
-	var hash types.Hash
+	var hash common.Hash
 	err := ftm.rpc.Call(&hash, "eth_sendRawTransaction", tx)
 	if err != nil {
 		ftm.log.Error("transaction could not be sent")

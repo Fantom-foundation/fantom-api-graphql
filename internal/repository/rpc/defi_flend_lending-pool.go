@@ -22,7 +22,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-//go:generate abigen --abi ./contracts/abi/defi-flend-ilending-pool.abi --pkg contracts --type iLendingPool --out ./contracts/defi-flend-ilending-pool.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/defi-flend-ilending-pool.abi --pkg contracts --type iLendingPool --out ./contracts/defi-flend-ilending-pool.go
 
 // fLendConfig represents the configuration for DeFi fLend module.
 type fLendConfig struct {
@@ -157,7 +157,7 @@ func (ftm *FtmBridge) FLendGetUserDepositHistory(userAddress *common.Address, as
 	// filter logs
 	fdi, err := lp.FilterDeposit(&bind.FilterOpts{}, assetFilter, userFilter, []uint16{0})
 	if err != nil {
-		ftm.log.Errorf("Can not filter lending pool deposit logs for user %s: %s", userAddress.String(), err.Error())
+		ftm.log.Errorf("can not filter lending pool deposit logs: %s", err.Error())
 		return nil, err
 	}
 
@@ -166,15 +166,15 @@ func (ftm *FtmBridge) FLendGetUserDepositHistory(userAddress *common.Address, as
 
 	// iterate thru filtered logs
 	for fdi.Next() {
-
 		// get block for timestamp information
 		blkHash := fdi.Event.Raw.BlockHash.String()
 		blk, err := ftm.BlockByHash(&blkHash)
 		if err != nil {
 			ftm.log.Errorf("fLend block with hash %s was not found: %s", blkHash, err.Error())
+			continue
 		}
 
-		// add deposit event data to reults
+		// add deposit event data to results
 		depositArray = append(depositArray, &types.FLendDeposit{
 			AssetAddress:      fdi.Event.Reserve,
 			UserAddress:       fdi.Event.User,

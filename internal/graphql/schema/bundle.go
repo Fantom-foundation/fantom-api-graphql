@@ -82,6 +82,78 @@ enum DefiTokenBalanceType {
     DEBT
 }
 
+# Erc20TransactionType represents a type of transaction.
+enum Erc20TransactionType {
+    TRANSFER
+    MINT
+    BURN
+    APPROVAL
+}
+
+# ERC20Transaction represents a transaction on an ERC20 token.
+type ERC20Transaction {
+    # trxHash represents a hash of the transaction
+    # executing the ERC20 call.
+    trxHash: Bytes32!
+
+    # transaction represents the transaction
+    # executing the ERC20 call.
+    transaction: Transaction!
+
+    # trxIndex represents the index
+    # of the ERC20 call in the transaction logs.
+    trxIndex: Long!
+
+    # tokenAddress represents the address
+    # of the ERC20 token contract.
+    tokenAddress: Address!
+
+    # token represents the token detail involved.
+    token: ERC20Token!
+
+    # trxType is the type of the transaction.
+    trxType: Erc20TransactionType!
+
+    # sender represents the address of the token owner
+    # sending the tokens, e.g. the sender.
+    sender: Address!
+
+    # recipient represents the address of the token recipient.
+    recipient: Address!
+
+    # amount represents the amount of tokens involved
+    # in the transaction; please make sure to interpret the amount
+    # with the correct number of decimals from the ERC20 token detail.
+    amount: BigInt!
+
+    # timeStamp represents the Unix epoch time stamp
+    # of the ERC20 transaction procvessing.
+    timeStamp: Long!
+}
+# RewardClaimList is a list of reward claims linked to delegations.
+type RewardClaimList {
+    # Edges contains provided edges of the sequential list.
+    edges: [RewardClaimListEdge!]!
+
+    # TotalCount is the maximum number of reward claims
+    # available for sequential access.
+    totalCount: Long!
+
+    # PageInfo is an information about the current page
+    # of reward claim edges.
+    pageInfo: ListPageInfo!
+}
+
+# RewardClaimListEdge is a single edge in a sequential list
+# of reward claims.
+type RewardClaimListEdge {
+    # Cursor defines a scroll key to this edge.
+    cursor: Cursor!
+
+    # ckaim represents the reward claim detail provided by this list edge.
+    claim: RewardClaim!
+}
+
 # Price represents price information of core Opera token
 type Price {
     "Source unit symbol."
@@ -186,7 +258,7 @@ type ListPageInfo {
 # Transaction is an Opera block chain transaction.
 type Transaction {
     # Hash is the unique hash of this transaction.
-    hash: Hash!
+    hash: Bytes32!
 
     # Nonce is the number of transactions sent by the account prior to this transaction.
     nonce: Long!
@@ -235,7 +307,7 @@ type Transaction {
 
     # BlockHash is the hash of the block this transaction was assigned to.
     # Null if the transaction is pending.
-    blockHash: Hash
+    blockHash: Bytes32
 
     # BlockHash is the hash of the block this transaction was assigned to.
     # Null if the transaction is pending.
@@ -250,14 +322,6 @@ type Transaction {
     # running out of gas). If the transaction has not yet been processed, this
     # field will be null.
     status: Long
-
-    # isErc20Call indicates if this is an ERC20 call.
-    isErc20Call: Boolean!
-
-    # relayToken represents the reference of the token being referenced
-    # by the relay call. It's null if the transaction is actually not a relay
-    # call.
-    relayToken: ERC20Token
 }
 
 # Block is an Opera block chain block.
@@ -266,7 +330,7 @@ type Block {
     number: Long!
 
     # Hash is the unique block hash of this block.
-    hash: Hash!
+    hash: Bytes32!
 
     # Parent is the parent block of this block.
     parent: Block
@@ -285,10 +349,41 @@ type Block {
 
     # txHashList is the list of unique hash values of transaction
     # assigned to the block.
-    txHashList: [Hash!]!
+    txHashList: [Bytes32!]!
 
     # txList is a list of transactions assigned to the block.
     txList: [Transaction!]!
+}
+
+# SfcConfig represents the configuration of the SFC contract
+# responsible for managing the staking economy of the network.
+type SfcConfig {
+    # minValidatorStake is the minimal amount of tokens required
+    # to register a validator account with the default self stake.
+    minValidatorStake: BigInt!
+
+    # maxDelegatedRatio is the maximal ratio between a validator self stake
+    # and the sum of all the received stakes of the validator.
+    # The value is provided as a multiplier number with 18 decimals.
+    maxDelegatedRatio: BigInt!
+
+    # minLockupDuration is the lowest possible number of seconds
+    # a delegation can be locked for.
+    minLockupDuration: BigInt!
+
+    # maxLockupDuration is the highest possible number of seconds
+    # a delegation can be locked for.
+    maxLockupDuration: BigInt!
+
+    # withdrawalPeriodEpochs is the minimal number of epochs
+    # between an un-delegation and corresponding withdraw request.
+    # The delay is enforced on withdraw call.
+    withdrawalPeriodEpochs: BigInt!
+
+    # withdrawalPeriodTime is the minimal number of seconds
+    # between an un-delegation and corresponding withdraw request.
+    # The delay is enforced on withdraw call.
+    withdrawalPeriodTime: BigInt!
 }
 
 # ERC20Token represents a generic ERC20 token.
@@ -339,7 +434,7 @@ type DelegationList {
     TotalCount is the maximum number of delegations
     available for sequential access.
     """
-    totalCount: BigInt!
+    totalCount: Long!
 
     "PageInfo is an information about the current page of delegation edges."
     pageInfo: ListPageInfo!
@@ -354,71 +449,63 @@ type DelegationListEdge {
     delegation: Delegation!
 }
 
-# Delegation represents a delegation on Opera blockchain.
+# Delegation represents a delegation on Opera block chain.
 type Delegation {
-    "Address of the delegator account."
+    # Address of the delegator account.
     address: Address!
 
-    "Identifier of the staker the delegation belongs to."
-    toStakerId: Long!
+    # Identifier of the staker the delegation belongs to.
+    toStakerId: BigInt!
 
-    "Epoch in which the delegation was made."
-    createdEpoch: Long!
-
-    "Timestamp of the delegation creation."
+    # Time stamp of the delegation creation.
     createdTime: Long!
 
-    "Epoch in which the delegation was deactivated."
-    deactivatedEpoch: Long
-
-    "Timestamp of the deactivation of the delegation."
-    deactivatedTime: Long
-
-    "Amount delegated. It includes all the pending un-delegations."
+    # Amount delegated in WEI. The value includes all the pending un-delegations.
     amount: BigInt!
 
-    """
-    Amount delegated. The current amount still registered
-    by SFC contract as delegated amount. It does include pending
-    deactivation, but does not include partial un-delegations.
-    """
-    amountDelegated: BigInt
+    # Current active amount delegated in WEI.
+    amountDelegated: BigInt!
 
-    "Amount locked in pending un-delegations and withdrawals."
+    # Amount locked in pending un-delegations in WEI.
     amountInWithdraw: BigInt!
 
-    "Amount of rewards claimed."
-    claimedReward: BigInt
+    # Total amount of rewards claimed.
+    claimedReward: BigInt!
 
-    "Pending rewards for the delegation."
+    # Pending rewards for the delegation in WEI.
     pendingRewards: PendingRewards!
 
-    "The id of the last epoch rewards has been paid to."
-    paidUntilEpoch: Long!
+    # List of withdraw requests of the delegation,
+    # sorted fro the newest to the oldest requests.
+    withdrawRequests(cursor: Cursor, count: Int = 25): [WithdrawRequest!]!
 
-    "List of withdraw requests of the delegation."
-    withdrawRequests: [WithdrawRequest!]!
+    # rewardClaims provides a list of reward claims
+    # of the delegation as a scrollable list of edges with details of claims.
+    rewardClaims(cursor: Cursor, count: Int = 25): RewardClaimList!
 
-    "List of full delegation deactivation."
-    deactivation: [DeactivatedDelegation!]!
-
-    "isFluidStakingActive indicates if the delegation is upgraded to fluid staking."
+    # isFluidStakingActive indicates if the delegation is upgraded to fluid staking.
     isFluidStakingActive: Boolean!
 
-    "isDelegationLocked indicates if the delegation is locked."
+    # isDelegationLocked indicates if the delegation is locked.
     isDelegationLocked: Boolean!
 
-    "lockedFromEpoch represents the id of epoch the lock has been created."
+    # lockedFromEpoch represents the id of epoch the lock has been created.
     lockedFromEpoch: Long!
 
-    "lockedUntil represents the timestamp up to which the delegation is locked, zero if not locked."
+    # lockedUntil represents the time stamp up to which
+    # the delegation is locked, zero if not locked.
     lockedUntil: Long!
 
-    # outstandingSFTM represents the amount of sFTM tokens representing the tokenised stake
+    # lockedAmount represents the amount of delegation stake locked.
+    # The undelegate process must call unlock prior to creating withdraw request if outstanding
+    # unlocked amount is lower than demanded amount to undelegate.
+    lockedAmount: BigInt!
+
+    # outstandingSFTM represents the amount of sFTM tokens representing the tokenized stake
     # minted and un-repaid on this delegation.
     outstandingSFTM: BigInt!
 
-    # tokenizerAllowedToWithdraw indicates if the stake tokeniser allows the stake
+    # tokenizerAllowedToWithdraw indicates if the stake tokenizer allows the stake
     # to be withdrawn. That means all the sFTM tokens have been repaid and the sFTM
     # debt is effectively zero for the delegation.
     tokenizerAllowedToWithdraw: Boolean!
@@ -426,49 +513,44 @@ type Delegation {
 
 # PendingRewards represents a detail of pending rewards for staking and delegations
 type PendingRewards {
-    "Staker the pending reward relates to."
-    staker: Long!
+    # address of the delegation the reward belongs to.
+    address: Address!
 
-    "Pending rewards amount."
+    # Staker the pending reward relates to.
+    staker: BigInt!
+
+    # Pending rewards amount.
     amount: BigInt!
-
-    "The first unpaid epoch."
-    fromEpoch: Long!
-
-    "The last unpaid epoch."
-    toEpoch: Long!
 }
 
 # Represents epoch information.
 type Epoch {
-    "Number the epoch end."
+    # Identifier of the epoch.
     id: Long!
 
-    "Timestamp of the epoch end."
-    endTime: BigInt!
+    # Timestamp of the epoch end.
+    endTime: Long!
 
-    "Epoch duration in seconds."
-    duration: BigInt!
+    # Epoch duration in seconds.
+    duration: Long!
 
-    "Fee at the epoch."
+    # Fee at the epoch.
     epochFee: BigInt!
 
-    "Total base reward weight on epoch."
+    # Total base reward weight on epoch.
     totalBaseRewardWeight: BigInt!
 
-    "Total transaction reward weight on epoch."
+    # Total transaction reward weight on epoch.
     totalTxRewardWeight: BigInt!
 
-    "Base reward per second of epoch."
+    # Base reward per second of epoch.
     baseRewardPerSecond: BigInt!
 
-    "Total amount staked."
+    # Total amount staked. This includes all the staked
+    # amount including validators' self stake.
     stakeTotalAmount: BigInt!
 
-    "Total amount delegated."
-    delegationsTotalAmount: BigInt!
-
-    "Total supply amount."
+    # Total supply amount.
     totalSupply: BigInt!
 }
 
@@ -481,7 +563,7 @@ type Contract {
     deployedBy: Transaction!
 
     "transactionHash represents the smart contract deployment transaction hash."
-    transactionHash: Hash!
+    transactionHash: Bytes32!
 
     "Smart contract name. Empty if not available."
     name: String!
@@ -569,8 +651,26 @@ type ContractListEdge {
     contract: Contract!
 }
 
-# Hash is a 32 byte binary string, represented by 0x prefixed hexadecimal.
-scalar Hash
+# ERC20TransactionList is a list of ERC20 transaction edges provided by sequential access request.
+type ERC20TransactionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ERC20TransactionListEdge!]!
+
+    # TotalCount is the maximum number of ERC20 transactions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of ERC20 transaction edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of ERC20 transactions.
+type ERC20TransactionListEdge {
+    cursor: Cursor!
+    trx: ERC20Transaction!
+}
+
+# Bytes32 is a 32 byte binary string, represented by 0x prefixed hexadecimal hash.
+scalar Bytes32
 
 # Address is a 20 byte Opera address, represented as 0x prefixed hexadecimal number.
 scalar Address
@@ -596,7 +696,7 @@ type CurrentState {
     sealedEpoch: Epoch!
 
     # blocks represents number of blocks in the chain.
-    blocks: Long!
+    blocks: BigInt!
 
     # transactions represents number of transactions in the chain.
     transactions: Long!
@@ -607,18 +707,18 @@ type CurrentState {
     # accounts represents number of accounts participating on transactions.
     accounts: Long!
 
+    # sfcVersion indicates the current version of the SFC contract.
+    # The version is encoded into 3 bytes representing ASCII version numbers
+    # with the most significant byte first [<8bit major><8bit minor><8bit revision>].
+    # I.e. Version 1.0.2 = "102" = 0x313032
+    sfcVersion: Long!
+
     # sfcContractAddress is the address of the SFC contract
     # used for PoS staking control.
     sfcContractAddress: Address!
 
     # sfcLockingEnabled indicates if the SFC locking feature is enabled.
     sfcLockingEnabled: Boolean!
-
-    # sfcVersion indicates the current version of the SFC contract.
-    # The version is encoded into 3 bytes representing ASCII version numbers
-    # with the most significant byte first [<8bit major><8bit minor><8bit revision>].
-    # I.e. Version 1.0.2 = "102" = 0x313032
-    sfcVersion: Long!
 }
 # UniswapActionList is a list of uniswap action edges provided by sequential access request.
 type UniswapActionList {
@@ -642,7 +742,7 @@ type UniswapActionListEdge {
 type UniswapAction {
 
     # id of the action in the persistent db
-    id: Hash!
+    id: Bytes32!
 
     # UniswapPair represents the information about single
     # Uniswap pair managed by the Uniswap Core.
@@ -652,7 +752,7 @@ type UniswapAction {
     pairAddress: Address!
 
     # transactionHash represents the hash for this acstion transaction
-    transactionHash: Hash!
+    transactionHash: Bytes32!
 
     # sender is address of action owner account
     sender: Address!
@@ -684,117 +784,81 @@ type UniswapAction {
 
 # Represents staker information.
 type Staker {
-    "Id number the staker."
-    id: Long!
+    # ID number the staker.
+    id: BigInt!
 
-    "Staker address."
+    # Staker address.
     stakerAddress: Address!
 
-    "Amount of total staked tokens in WEI."
+    # Amount of total staked tokens in WEI.
     totalStake: BigInt
 
-    "Amount of own staked tokens in WEI."
-    stake: BigInt
+    # Amount of own staked tokens in WEI.
+    stake: BigInt!
 
-    "Amount of tokens delegated to the staker in WEI."
-    delegatedMe: BigInt
+    # Amount of tokens delegated to the staker in WEI.
+    delegatedMe: BigInt!
 
-    """
-    Maximum total amount of tokens allowed to be delegated
-    to the staker in WEI.
-    This value depends on the amount of self staked tokens.
-    """
+    # Maximum total amount of tokens allowed to be delegated
+    # to the staker in WEI.
+    # This value depends on the amount of self staked tokens.
     totalDelegatedLimit: BigInt!
 
-    """
-    Maximum amount of tokens allowed to be delegated to the staker
-    on a new delegation in WEI.
-    This value depends on the amount of self staked tokens.
-    """
+    # Maximum amount of tokens allowed to be delegated to the staker
+    # on a new delegation in WEI.
+    # This value depends on the amount of self staked tokens.
     delegatedLimit: BigInt!
 
-    "Is this a validator record."
-    isValidator: Boolean!
-
-    "Is the staker active."
+    # Is the staker active.
     isActive: Boolean!
 
-    "Is the staker considered to be cheater."
+    # Is TRUE for validators withdrawing their validation stake.
+	isWithdrawn: Boolean!
+
+    # Is the staker considered to be cheater.
     isCheater: Boolean!
 
-    "Is the staker offline."
+    # Is the staker offline.
     isOffline: Boolean!
 
-    "isStakeLocked signals if the staker locked the stake."
+    # isStakeLocked signals if the staker locked the stake.
     isStakeLocked: Boolean!
 
-    "Epoch in which the staker was created."
+    # Epoch in which the staker was created.
     createdEpoch: Long!
 
-    "Timestamp of the staker creation."
+    # Timestamp of the staker creation.
     createdTime: Long!
 
-    "lockedFromEpoch is the identifier of the epoch the stake lock was created."
+    # lockedFromEpoch is the identifier of the epoch the stake lock was created.
     lockedFromEpoch: Long!
 
-    "lockedUntil is the timestamp up to which the stake is locked, zero if not locked."
+    # lockedUntil is the timestamp up to which the stake is locked, zero if not locked.
     lockedUntil: Long!
 
-    "Epoch in which the staker was deactivated."
+    # Epoch in which the staker was deactivated.
     deactivatedEpoch: Long!
 
-    "Timestamp of the staker deactivation."
+    # Timestamp of the staker deactivation.
     deactivatedTime: Long!
 
-    "How many blocks the staker missed."
+    # How many blocks the staker missed.
     missedBlocks: Long!
 
-    "Number of seconds the staker is offline."
+    # Number of seconds the staker is offline.
     downtime: Long!
 
-    "Proof of importance score."
-    poi: BigInt
-
-    "Base weight for rewards distribution."
-    baseRewardWeight: BigInt
-
-    "Weight for transaction rewards distribution."
-    txRewardWeight: BigInt
-
-    "Validation score."
-    validationScore: BigInt
-
-    "Origination score."
-    originationScore: BigInt
-
-    "Amount of rewards claimed in WEI."
-    claimedRewards: BigInt
-
-    "Amount of rewards claimed by delegators in WEI."
-    delegationClaimedRewards: BigInt
-
-    """
-    List of delegations of this staker. Cursor is used to obtain specific slice
-    of the staker's delegations. The most recent delegations
-    are provided if cursor is omitted.
-    """
+    # List of delegations of this staker. Cursor is used to obtain specific slice
+    # of the staker's delegations. The most recent delegations
+    # are provided if cursor is omitted.
     delegations(cursor: Cursor, count: Int = 25):DelegationList!
 
-    """
-    Status is a binary encoded status of the staker.
-    Ok = 0, bin 1 = Fork Detected, bin 256 = Validator Offline
-    """
+    # Status is a binary encoded status of the staker.
+    # Ok = 0, bin 1 = Fork Detected, bin 256 = Validator Offline
     status: Long!
 
-    "StakerInfo represents extended staker information from smart contract."
+    # StakerInfo represents extended staker information from smart contract.
     stakerInfo: StakerInfo
-
-    """
-    List of withdraw requests of the stake.
-    Contains only withdrawal requests of the staking account,
-    not the requests of the stake delegators.
-    """
-    withdrawRequests: [WithdrawRequest!]!
 }
 
 # FMintAccount represents an informastion about account details
@@ -936,129 +1000,73 @@ type DefiSettings {
 
 # EstimatedRewards represents a calculated rewards estimation for an account or amount staked
 type EstimatedRewards {
-    "Amount of FTM tokens expected to be staked for the calculation."
+    # Amount of FTM tokens expected to be staked for the calculation.
     staked: Long!
 
-    """
-    dailyReward represents amount of FTM tokens estimated
-    to be rewarded for staked amount in average per day.
-    """
+    # dailyReward represents amount of FTM tokens estimated
+    # to be rewarded for staked amount in average per day.
     dailyReward: BigInt!
 
-    """
-    weeklyReward represents amount of FTM tokens estimated
-    to be rewarded for staked amount in average per week.
-    """
+    # weeklyReward represents amount of FTM tokens estimated
+    # to be rewarded for staked amount in average per week.
     weeklyReward: BigInt!
 
-    """
-    monthlyReward represents amount of FTM tokens estimated
-    to be rewarded for staked amount in average per month.
-    """
+    # monthlyReward represents amount of FTM tokens estimated
+    # to be rewarded for staked amount in average per month.
     monthlyReward: BigInt!
 
-    """
-    yearlyReward represents amount of FTM tokens estimated
-    to be rewarded for staked amount in average per year.
-    """
+    # yearlyReward represents amount of FTM tokens estimated
+    # to be rewarded for staked amount in average per year.
     yearlyReward: BigInt!
 
-    """
-    currentRewardYearRate represents average reward rate
-    for any staked amount in average per year.
-    The value is calculated as linear gross proceeds for staked amount
-    of tokens yearly.
-    """
+    # currentRewardYearRate represents average reward rate
+    # for any staked amount in average per year.
+    # The value is calculated as linear gross proceeds for staked amount
+    # of tokens yearly.
     currentRewardRateYearly: Int!
 
-    """
-    Total amount of staked FTM tokens used for the calculation in WEI units.
-    The estimation uses total staked amount, not the effective amount provided
-    by the last epoch. The effective amount does include current
-    un-delegations and also skips offline self-staking and flagged staking.
-    """
+    # Total amount of staked FTM tokens used for the calculation in WEI units.
+    # The estimation uses total staked amount, not the effective amount provided
+    # by the last epoch. The effective amount does not include current
+    # un-delegations and also skips offline self-staking and flagged staking.
     totalStaked: BigInt!
 
-    """
-    Information about the last sealed epoch of the Opera blockchain.
-    The epoch provides useful information about total FTM supply,
-    total amount staked, rewards rate and weight, fee, etc.
-    """
+    # Information about the last sealed epoch of the Opera blockchain.
+    # The epoch provides useful information about total FTM supply,
+    # total amount staked, rewards rate and weight, fee, etc.
     lastEpoch: Epoch!
 }
+
 # WithdrawRequest represents a request for partial stake withdraw.
 type WithdrawRequest {
-    "Address of the authorized request."
+    # Cursor is the internal cursor ID of the withdraw request.
+    id: Cursor!
+
+    # Address of the authorized request.
     address: Address!
 
-    "Address of the receiving account."
-    receiver: Address!
-
-    "Account receiving the withdraw request."
+    # Account of the authorized request.
     account: Account!
 
-    "Staker Id of the staker involved in the withdraw request."
-    stakerID: Long!
+    # StakerID represents the identifier of the validator
+    # the withdraw request points to.
+    stakerID: BigInt!
 
-    "Details of the staker involved in the withdraw request."
+    # Details of the staker involved in the withdraw request.
     staker: Staker!
 
-    "Unique withdraw request identifier."
+    # Unique withdraw request identifier.
     withdrawRequestID: BigInt!
 
-    "Is this a partial delegation withdraw, or staker withdraw?"
-    isDelegation: Boolean!
-
-    "Amount of WEI requested to be withdrawn."
+    # Amount of tokens to be withdrawn in WEI.
     amount: BigInt!
 
-    "Block in which the withdraw request was registered."
-    requestBlock: Block!
+    # CreatedTime represents the time stamp of the request creation.
+    createdTime: Long!
 
-    """
-    Block in which the withdraw request was finalized.
-    The value is NULL for pending request.
-    """
-    withdrawBlock: Block
-
-    """
-    Amount of WEI slashed as a penalty for cheating.
-    The penalty is applied not only to staker withdraw,
-    but also to delegations of a cheating staker.
-    The value is NULL for pending requests.
-    """
-    withdrawPenalty: BigInt
-}
-
-# DeactivatedDelegation represents a prepared delegation full withdraw.
-# Fully withdrawn delegations must be prepared first and finalized
-# only after the lock down period passes.
-type DeactivatedDelegation {
-    "Address of the delegator."
-    address: Address!
-
-    "Staker Id of the staker involved in the withdraw request."
-    stakerID: Long!
-
-    "Details of the staker involved in the withdraw request."
-    staker: Staker!
-
-    "Block in which the delegation deactivation was registered."
-    requestBlock: Block!
-
-    """
-    Block in which the delegation was withdrawn.
-    The value is NULL for pending request.
-    """
-    withdrawBlock: Block
-
-    """
-    Amount of WEI slashed as a penalty for cheating.
-    The penalty is applied to delegators' rewards
-    in case their staker is flagged.
-    The value is NULL for pending requests.
-    """
-    withdrawPenalty: BigInt
+    # WithdrawTime represents the time stamp of the request finalization.
+    # If the request is pending, the withdrawTime will be NULL.
+    withdrawTime: Long
 }
 
 # UniswapPair represents the information about single
@@ -1325,50 +1333,59 @@ type FLendBorrow {
     # time of deposit
     timestamp: Long!
 }
-# Account defines block-chain account information container
-type Account {
-    "Address is the address of the account."
+# RewardClaim represents
+type RewardClaim {
+    # address represents the address of the delegator
     address: Address!
 
-    "Balance is the current balance of the Account in WEI."
+    # toStakerId represents the ID of the validator the delegation
+    # is placed on
+    toStakerId: BigInt!
+
+    # claimed represents the time stamp of the reward claim
+    # in Unix Epoch units, e.g. number of seconds from the Unix Epoch start.
+    claimed: Long!
+
+    # amount represents the amount of tokens rewarded on the claim.
+    amount: BigInt!
+
+    # isRestaked signals if the claim was added to the delegation
+    # effectively increasing the staked amount and raising the delegation value.
+    isRestaked: Boolean!
+
+    # trxHash is the hash pf the transaction calling for the rewards
+    # to be processed and granted.
+    trxHash: Bytes32!
+}
+# Account defines block-chain account information container
+type Account {
+    # Address is the address of the account.
+    address: Address!
+
+    # Balance is the current balance of the Account in WEI.
     balance: BigInt!
 
-    """
-    TotalValue is the current total value fo the account in WEI.
-    It includes available balance,
-    delegated amount and pending staking rewards.
-    """
+    # TotalValue is the current total value of the account in WEI.
+    # It includes available balance, delegated amount and pending rewards.
+    # NOTE: This values is slow to calculate.
     totalValue: BigInt!
 
-    """
-    Stashed represents the amount of WEI stashed
-    on this account, if any. Stashed amount comes from
-    the delegation and validation rewards.
-    """
-    stashed: BigInt!
-
-    """
-    canUnStash informs if there is a stash which can be claimed.
-    Please note that stash claiming can be locked inside SFC.
-    """
-    canUnStash: Boolean!
-
-    "txCount represents number of transaction sent from the account."
+    # txCount represents number of transaction sent from the account (Nonce).
     txCount: Long!
 
-    """
-    txList represents list of transactions of the account
-    in form of TransactionList.
-    """
+    # txList represents list of transactions of the account in form of TransactionList.
     txList (cursor:Cursor, count:Int!): TransactionList!
 
-    "Details of a staker, if the account is a staker."
+    # erc20TxList represents list of ERC20 transactions of the account.
+    erc20TxList (cursor:Cursor, count:Int = 25, token: Address, txType: String = TRANSFER): ERC20TransactionList!
+
+    # Details of a staker, if the account is a staker.
     staker: Staker
 
-    "List of delegations of the account, if the account is a delegator."
+    # List of delegations of the account, if the account is a delegator.
     delegations(cursor:Cursor, count:Int = 25): DelegationList!
 
-    "Details about smart contract, if the account is a smart contract."
+    # Details about smart contract, if the account is a smart contract.
     contract: Contract
 }
 
@@ -1599,87 +1616,6 @@ type GovernanceVote {
     # presented.
     choices: [Long!]!
 }
-# Ballot represents an official deployed ballot contract
-# used for Fantom Opera related voting poll.
-type Ballot {
-    # Address of the ballot, correspond with the smart contract address.
-    address: Address!
-
-    # Deployed smart contract handling the ballot voting.
-    contract: Contract!
-
-    # Short name of the ballot.
-    name: String!
-
-    # URL of the ballot detailed information page.
-    detailsUrl: String!
-
-    # An approximate timestamp after which the ballot opens for voting.
-    start: Long!
-
-    # An approximate timestamp after which the ballot
-    # is closed and no longer accepts votes.
-    end: Long!
-
-    # Informs if the ballot is open for voting.
-    isOpen: Boolean!
-
-    # Informs if the ballot has already been finalized
-    # and the winning proposal is available.
-    isFinalized: Boolean!
-
-    # List of proposals of the ballot.
-    proposals: [BallotProposal!]!
-
-    # Index of the winning proposal.
-    # Is NULL if the ballot has not been finalized yet.
-    winner: Int
-}
-
-# BallotProposal represents a proposal in the ballot.
-type BallotProposal {
-    # id is the ballot proposal identifier.
-    id: Int!
-
-    # name is the name of the proposal option.
-    name: String!
-}
-
-# Vote represents a selected vote in a ballot.
-type Vote {
-    # Address of the ballot the Vote relates to.
-    ballot: Address!
-
-    # Address of the voter who placed the vote.
-    voter: Address!
-
-    # Account of the voter who placed the vote.
-    account: Account!
-
-    # The selected proposal index the voter chose.
-    vote: Int
-}
-
-# BallotList is a list of ballot edges provided by sequential access request.
-type BallotList {
-    # Edges contains provided edges of the sequential list.
-    edges: [BallotListEdge!]!
-
-    # TotalCount is the maximum number of ballots available
-    # for sequential access.
-    totalCount: BigInt!
-
-    # PageInfo is an information about the current page
-    # of ballot edges.
-    pageInfo: ListPageInfo!
-}
-
-# BallotListEdge is a single edge in a sequential list of ballots.
-type BallotListEdge {
-    cursor: Cursor!
-    ballot: Ballot!
-}
-
 # Root schema definition
 schema {
     query: Query
@@ -1694,6 +1630,10 @@ type Query {
 
     # State represents the current state of the blockchain and network.
     state: CurrentState!
+
+    # sfcConfig provides the current configuration
+    # of the SFC contract managing the block chain staking economy.
+    sfcConfig: SfcConfig!
 
     # Total number of accounts active on the Opera blockchain.
     accountsActive:Long!
@@ -1712,10 +1652,7 @@ type Query {
 
     # Get block information by number or by hash.
     # If neither is provided, the most recent block is given.
-    block(number:Long, hash: Hash):Block
-
-    # Get transaction information for given transaction hash.
-    transaction(hash:Hash!):Transaction
+    block(number:Long, hash: Bytes32):Block
 
     # Get list of Blocks with at most <count> edges.
     # If <count> is positive, return edges after the cursor,
@@ -1723,6 +1660,9 @@ type Query {
     # For undefined cursor, positive <count> starts the list from top,
     # negative <count> starts the list from bottom.
     blocks(cursor:Cursor, count:Int!):BlockList!
+
+    # Get transaction information for given transaction hash.
+    transaction(hash:Bytes32!):Transaction
 
     # Get list of Transactions with at most <count> edges.
     # If <count> is positive, return edges after the cursor,
@@ -1746,7 +1686,7 @@ type Query {
 
     # Staker information. The staker is loaded either by numeric ID,
     # or by address. null if none is provided.
-    staker(id: Long, address: Address): Staker
+    staker(id: BigInt, address: Address): Staker
 
     # List of staker information from SFC smart contract.
     stakers: [Staker!]!
@@ -1754,11 +1694,11 @@ type Query {
     # The list of delegations for the given staker ID.
     # Cursor is used to obtain specific slice of the staker's delegations.
     # The most recent delegations are provided if cursor is omitted.
-    delegationsOf(staker:Long!, cursor: Cursor, count: Int = 25): DelegationList!
+    delegationsOf(staker:BigInt!, cursor: Cursor, count: Int = 25): DelegationList!
 
     # Get the details of a specific delegation by it's delegator address
     # and staker the delegation belongs to.
-    delegation(address:Address!, staker: Long!): Delegation
+    delegation(address:Address!, staker: BigInt!): Delegation
 
     # Get the list of all delegations by it's delegator address.
     delegationsByAddress(address:Address!, cursor: Cursor, count: Int = 25): DelegationList!
@@ -1778,30 +1718,6 @@ type Query {
     # At least one of the address and amount parameters must be provided.
     # If you provide both, the address takes precedence and the amount is ignored.
     estimateRewards(address:Address, amount:Long):EstimatedRewards!
-
-    # Get official ballot information by its address.
-    ballot(address: Address!):Ballot
-
-    # Get list of official Ballots with at most <count> edges.
-    # If <count> is positive, return edges after the cursor,
-    # if negative, return edges before the cursor.
-    # For undefined cursor, positive <count> starts the list from top,
-    # negative <count> starts the list from bottom.
-    ballots(cursor: Cursor, count: Int!):BallotList!
-
-    # Get list of recently closed official Ballots
-    # with at most <count> edges. If the <finalized> is set to false
-    # the list contains ballots, which ended, but were not resolved
-    # yet.
-    ballotsClosed(finalized: Boolean = true, count: Int = 25):[Ballot!]!
-
-    # Get list of currently active Ballots with at most <count> edges.
-    ballotsActive(count: Int = 25):[Ballot!]!
-
-    # List of all votes of the given voter identified by the address
-    # for the given list of ballots identified by an array of ballot
-    # addresses.
-    votes(voter:Address!, ballots:[Address!]!):[Vote!]!
 
     # defiConfiguration exposes the current DeFi contract setup.
     defiConfiguration:DefiSettings!

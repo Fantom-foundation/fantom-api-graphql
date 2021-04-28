@@ -1,14 +1,11 @@
 # PendingRewards represents a detail of pending rewards for staking and delegations
 type PendingRewards {
-    "Staker the pending reward relates to."
-    staker: Long!
+    # address of the delegation the reward belongs to.
+    address: Address!
 
-    "Pending rewards amount."
+    # Staker the pending reward relates to.
+    staker: BigInt!
+
+    # Pending rewards amount.
     amount: BigInt!
-
-    "The first unpaid epoch."
-    fromEpoch: Long!
-
-    "The last unpaid epoch."
-    toEpoch: Long!
 }

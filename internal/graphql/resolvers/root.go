@@ -10,6 +10,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"golang.org/x/sync/singleflight"
 	"sync"
 )
 
@@ -32,6 +33,9 @@ type ApiResolver interface {
 	// State resolves current state of the blockchain.
 	State() (CurrentState, error)
 
+	// SfcConfig resolves the current SFC configuration.
+	SfcConfig() SfcConfig
+
 	// Version resolves current version of the API server.
 	Version() string
 
@@ -50,36 +54,10 @@ type ApiResolver interface {
 	// to notify them about the change.
 	ValidateContract(*struct{ Contract ContractValidationInput }) (*Contract, error)
 
-	// Ballot resolves details of a voting ballot by it's address.
-	Ballot(*struct{ Address common.Address }) (*Ballot, error)
-
-	// Ballots resolves list of official ballots.
-	Ballots(*struct {
-		Cursor *Cursor
-		Count  int32
-	}) (*BallotList, error)
-
-	// BallotsClosed resolves list of official ballots recently closed.
-	BallotsClosed(*struct {
-		Finalized bool
-		Count     int32
-	}) ([]*Ballot, error)
-
-	// BallotsActive resolves list of currently active ballots.
-	BallotsActive(*struct {
-		Count int32
-	}) ([]*Ballot, error)
-
-	// Votes resolves list of votes for the given voter address and list of ballots.
-	Votes(*struct {
-		Voter   common.Address
-		Ballots []common.Address
-	}) ([]Vote, error)
-
 	// Block resolves blockchain block by number or by hash. If neither is provided, the most recent block is given.
 	Block(*struct {
 		Number *hexutil.Uint64
-		Hash   *types.Hash
+		Hash   *common.Hash
 	}) (*Block, error)
 
 	// Blocks resolves list of blockchain blocks encapsulated in a listable structure.
@@ -89,7 +67,7 @@ type ApiResolver interface {
 	}) (*BlockList, error)
 
 	// Transaction resolves blockchain transaction by hash.
-	Transaction(*struct{ Hash types.Hash }) (*Transaction, error)
+	Transaction(*struct{ Hash common.Hash }) (*Transaction, error)
 
 	// Transactions resolves list of blockchain transactions encapsulated in a listable structure.
 	Transactions(*struct {
@@ -107,7 +85,7 @@ type ApiResolver interface {
 	CurrentEpoch() (hexutil.Uint64, error)
 
 	// Epoch resolves information about epoch of the given id.
-	Epoch(*struct{ Id *hexutil.Uint64 }) (types.Epoch, error)
+	Epoch(*struct{ Id *hexutil.Uint64 }) (Epoch, error)
 
 	// LastStakerId resolves the last staker id in Opera blockchain.
 	LastStakerId() (hexutil.Uint64, error)
@@ -116,23 +94,23 @@ type ApiResolver interface {
 	StakersNum() (hexutil.Uint64, error)
 
 	// Staker resolves a staker information from SFC smart contract.
-	Staker(*struct {
-		Id      *hexutil.Uint64
+	Staker(struct {
+		Id      *hexutil.Big
 		Address *common.Address
 	}) (*Staker, error)
 
 	// Stakers resolves a list of staker information from SFC smart contract.
-	Stakers() ([]Staker, error)
+	Stakers() ([]*Staker, error)
 
 	// Delegation resolves details of a delegator by it's address.
 	Delegation(*struct {
 		Address common.Address
-		Staker  hexutil.Uint64
+		Staker  hexutil.Big
 	}) (*Delegation, error)
 
 	// Resolves a list of delegations information of a staker.
 	DelegationsOf(*struct {
-		Staker hexutil.Uint64
+		Staker hexutil.Big
 		Cursor *Cursor
 		Count  int32
 	}) (*DelegationList, error)
@@ -257,12 +235,12 @@ type ApiResolver interface {
 
 // rootResolver represents the ApiResolver implementation.
 type rootResolver struct {
-	log  logger.Logger
-	repo repository.Repository
-	cfg  *config.Config
+	log logger.Logger
+	cfg *config.Config
 
 	// service terminator
 	wg      sync.WaitGroup
+	cg      singleflight.Group
 	sigStop chan bool
 
 	// blocks subscriptions management
@@ -279,12 +257,11 @@ type rootResolver struct {
 }
 
 // New creates a new root resolver instance and initializes it's internal structure.
-func New(cfg *config.Config, log logger.Logger, repo repository.Repository) ApiResolver {
+func New(cfg *config.Config, log logger.Logger) ApiResolver {
 	// create new resolver
 	rs := rootResolver{
-		log:  log,
-		repo: repo,
-		cfg:  cfg,
+		log: log,
+		cfg: cfg,
 
 		// create terminator
 		sigStop: make(chan bool, 1),
@@ -303,6 +280,7 @@ func New(cfg *config.Config, log logger.Logger, repo repository.Repository) ApiR
 	}
 
 	// register event channels with repository
+	repo := repository.R()
 	repo.SetBlockChannel(rs.onBlockEvents)
 	repo.SetTrxChannel(rs.onTrxEvents)
 

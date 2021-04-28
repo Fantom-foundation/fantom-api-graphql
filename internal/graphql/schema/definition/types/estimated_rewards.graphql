@@ -1,52 +1,38 @@
 # EstimatedRewards represents a calculated rewards estimation for an account or amount staked
 type EstimatedRewards {
-    "Amount of FTM tokens expected to be staked for the calculation."
+    # Amount of FTM tokens expected to be staked for the calculation.
     staked: Long!
 
-    """
-    dailyReward represents amount of FTM tokens estimated
-    to be rewarded for staked amount in average per day.
-    """
+    # dailyReward represents amount of FTM tokens estimated
+    # to be rewarded for staked amount in average per day.
     dailyReward: BigInt!
 
-    """
-    weeklyReward represents amount of FTM tokens estimated
-    to be rewarded for staked amount in average per week.
-    """
+    # weeklyReward represents amount of FTM tokens estimated
+    # to be rewarded for staked amount in average per week.
     weeklyReward: BigInt!
 
-    """
-    monthlyReward represents amount of FTM tokens estimated
-    to be rewarded for staked amount in average per month.
-    """
+    # monthlyReward represents amount of FTM tokens estimated
+    # to be rewarded for staked amount in average per month.
     monthlyReward: BigInt!
 
-    """
-    yearlyReward represents amount of FTM tokens estimated
-    to be rewarded for staked amount in average per year.
-    """
+    # yearlyReward represents amount of FTM tokens estimated
+    # to be rewarded for staked amount in average per year.
     yearlyReward: BigInt!
 
-    """
-    currentRewardYearRate represents average reward rate
-    for any staked amount in average per year.
-    The value is calculated as linear gross proceeds for staked amount
-    of tokens yearly.
-    """
+    # currentRewardYearRate represents average reward rate
+    # for any staked amount in average per year.
+    # The value is calculated as linear gross proceeds for staked amount
+    # of tokens yearly.
     currentRewardRateYearly: Int!
 
-    """
-    Total amount of staked FTM tokens used for the calculation in WEI units.
-    The estimation uses total staked amount, not the effective amount provided
-    by the last epoch. The effective amount does include current
-    un-delegations and also skips offline self-staking and flagged staking.
-    """
+    # Total amount of staked FTM tokens used for the calculation in WEI units.
+    # The estimation uses total staked amount, not the effective amount provided
+    # by the last epoch. The effective amount does not include current
+    # un-delegations and also skips offline self-staking and flagged staking.
     totalStaked: BigInt!
 
-    """
-    Information about the last sealed epoch of the Opera blockchain.
-    The epoch provides useful information about total FTM supply,
-    total amount staked, rewards rate and weight, fee, etc.
-    """
+    # Information about the last sealed epoch of the Opera blockchain.
+    # The epoch provides useful information about total FTM supply,
+    # total amount staked, rewards rate and weight, fee, etc.
     lastEpoch: Epoch!
 }

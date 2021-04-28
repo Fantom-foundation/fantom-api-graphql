@@ -17,6 +17,8 @@ import (
 	"context"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
+	"golang.org/x/sync/singleflight"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	eth "github.com/ethereum/go-ethereum/ethclient"
@@ -28,6 +30,7 @@ type FtmBridge struct {
 	rpc *ftm.Client
 	eth *eth.Client
 	log logger.Logger
+	cg  *singleflight.Group
 
 	// fMintCfg represents the configuration of the fMint protocol
 	sigConfig     *config.ServerSignature
@@ -69,6 +72,7 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 		rpc: client,
 		eth: con,
 		log: log,
+		cg:  new(singleflight.Group),
 
 		// special configuration options below this line
 		sigConfig:     &cfg.MySignature,
@@ -105,10 +109,16 @@ func (ftm *FtmBridge) Connection() *ftm.Client {
 
 // DefaultCallOpts creates a default record for call options.
 func (ftm *FtmBridge) DefaultCallOpts() *bind.CallOpts {
+	// get block
+	bh, _, _ := ftm.cg.Do("block-height", func() (interface{}, error) {
+		return ftm.MustBlockHeight(), nil
+	})
+
+	// get the opts
 	return &bind.CallOpts{
 		Pending:     false,
 		From:        ftm.sigConfig.Address,
-		BlockNumber: ftm.MustBlockHeight(),
+		BlockNumber: bh.(*big.Int),
 		Context:     context.Background(),
 	}
 }

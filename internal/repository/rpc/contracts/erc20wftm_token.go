@@ -862,6 +862,7 @@ func (_ErcWrappedFtm *ErcWrappedFtmFilterer) ParseApproval(log types.Log) (*ErcW
 	if err := _ErcWrappedFtm.contract.UnpackLog(event, "Approval", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -995,6 +996,7 @@ func (_ErcWrappedFtm *ErcWrappedFtmFilterer) ParsePaused(log types.Log) (*ErcWra
 	if err := _ErcWrappedFtm.contract.UnpackLog(event, "Paused", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1138,6 +1140,7 @@ func (_ErcWrappedFtm *ErcWrappedFtmFilterer) ParsePauserAdded(log types.Log) (*E
 	if err := _ErcWrappedFtm.contract.UnpackLog(event, "PauserAdded", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1281,6 +1284,7 @@ func (_ErcWrappedFtm *ErcWrappedFtmFilterer) ParsePauserRemoved(log types.Log) (
 	if err := _ErcWrappedFtm.contract.UnpackLog(event, "PauserRemoved", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1434,6 +1438,7 @@ func (_ErcWrappedFtm *ErcWrappedFtmFilterer) ParseTransfer(log types.Log) (*ErcW
 	if err := _ErcWrappedFtm.contract.UnpackLog(event, "Transfer", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1567,5 +1572,6 @@ func (_ErcWrappedFtm *ErcWrappedFtmFilterer) ParseUnpaused(log types.Log) (*ErcW
 	if err := _ErcWrappedFtm.contract.UnpackLog(event, "Unpaused", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }

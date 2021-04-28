@@ -13,22 +13,25 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"sync"
+	"time"
 )
 
 // blockScanner implements blockchain blockScanner used to extract blockchain data to off-chain storage.
 type blockScanner struct {
 	service
-	buffer chan *evtTransaction
+	buffer chan *eventTransaction
 	isDone chan bool
+	reScan uint64
 }
 
 // newBlockScanner creates new blockchain blockScanner service.
-func newBlockScanner(buffer chan *evtTransaction, isDone chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *blockScanner {
+func newBlockScanner(buffer chan *eventTransaction, isDone chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup, reScan uint64) *blockScanner {
 	// create new blockScanner instance
 	return &blockScanner{
 		service: newService("block scanner", repo, log, wg),
 		buffer:  buffer,
 		isDone:  isDone,
+		reScan:  reScan,
 	}
 }
 
@@ -41,6 +44,11 @@ func (bls *blockScanner) run() {
 		return
 	}
 
+	// apply re-scan
+	if lnb > bls.reScan {
+		lnb = lnb - bls.reScan
+	}
+
 	// log what we do
 	bls.log.Noticef("block chain scan starts from block #%d", lnb)
 
@@ -49,13 +57,61 @@ func (bls *blockScanner) run() {
 	go bls.scan(lnb)
 }
 
+// logProgress will log the progress of the scanner on tics.
+func (bls *blockScanner) logProgress(current *uint64, stop chan bool) {
+	start := time.Now()
+	tick := time.NewTicker(5 * time.Second)
+	bls.log.Infof("block scanner on block #%d", *current)
+
+	// inform we have ended
+	defer func() {
+		tick.Stop()
+		bls.log.Infof("block scanner finished on block #%d in %s", *current, time.Now().Sub(start).String())
+	}()
+
+	for {
+		select {
+		case <-stop:
+			return
+		case <-tick.C:
+			// track the progress
+			if bh, err := bls.repo.BlockHeight(); err == nil && bh != nil && *current > 0 {
+				// try to get ETA
+				pass := time.Now().Sub(start)
+				if pass.Seconds() > 10 {
+					dur := time.Duration(int64(float64(pass.Nanoseconds()) * (float64(bh.ToInt().Int64()) / float64(*current))))
+					eta := start.Add(dur)
+					diff := eta.Sub(time.Now())
+					bls.log.Infof("block scanner reached block #%d of %d, should finish in %s [total time %s], ETA %s", *current, bh.ToInt().Uint64(), diff.String(), dur.String(), eta.Format("15:04:05"))
+					continue
+				}
+
+				// simple
+				bls.log.Infof("block scanner reached block #%d of %d", *current, bh.ToInt().Uint64())
+			}
+		}
+	}
+}
+
 // scan performs the actual blockScanner operation on the missing blocks starting
 // from the identified last known block id/number.
 func (bls *blockScanner) scan(lnb uint64) {
+	// what is the current block
+	var (
+		current = hexutil.Uint64(lnb)
+		block   *types.Block
+		err     error
+		index   int
+		trx     *types.Transaction
+		toSend  *eventTransaction
+		stopLog = make(chan bool, 1)
+	)
+
 	// don't forget to sign off after we are done
 	defer func() {
 		// signal we are done with the sync
 		bls.isDone <- true
+		stopLog <- true
 
 		// log finish
 		bls.log.Notice("block scanner done")
@@ -64,23 +120,13 @@ func (bls *blockScanner) scan(lnb uint64) {
 		bls.wg.Done()
 	}()
 
-	// what is the current block
-	var (
-		current = hexutil.Uint64(lnb)
-		block   *types.Block
-		err     error
-		index   int
-		trx     *types.Transaction
-		toSend  *evtTransaction
-	)
+	// inform about block scanner progress sparsely to prevent log flood
+	go bls.logProgress((*uint64)(&current), stopLog)
 
 	// do the scan
 	for {
 		// do we need a new block?
 		if block == nil || block.Txs == nil || len(block.Txs) <= index {
-			// log action
-			bls.log.Infof("blockScanner reached block #%d", uint64(current))
-
 			// try to get the next block
 			block, err = bls.repo.BlockByNumber(&current)
 			if err != nil {
@@ -106,7 +152,7 @@ func (bls *blockScanner) scan(lnb uint64) {
 				}
 
 				// prep sending struct and advance transaction index
-				toSend = &evtTransaction{block: block, trx: trx}
+				toSend = &eventTransaction{block: block, trx: trx}
 				index++
 			}
 

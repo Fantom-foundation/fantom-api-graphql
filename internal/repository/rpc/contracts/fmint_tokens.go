@@ -387,17 +387,20 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryCaller) Tokens(opts *bind.C
 		CanDeposit    bool
 		CanMint       bool
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.Id = out[0].(*big.Int)
-	outstruct.Name = out[1].(string)
-	outstruct.Symbol = out[2].(string)
-	outstruct.Decimals = out[3].(uint8)
-	outstruct.Logo = out[4].(string)
-	outstruct.Oracle = out[5].(common.Address)
-	outstruct.PriceDecimals = out[6].(uint8)
-	outstruct.IsActive = out[7].(bool)
-	outstruct.CanDeposit = out[8].(bool)
-	outstruct.CanMint = out[9].(bool)
+	outstruct.Id = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.Name = *abi.ConvertType(out[1], new(string)).(*string)
+	outstruct.Symbol = *abi.ConvertType(out[2], new(string)).(*string)
+	outstruct.Decimals = *abi.ConvertType(out[3], new(uint8)).(*uint8)
+	outstruct.Logo = *abi.ConvertType(out[4], new(string)).(*string)
+	outstruct.Oracle = *abi.ConvertType(out[5], new(common.Address)).(*common.Address)
+	outstruct.PriceDecimals = *abi.ConvertType(out[6], new(uint8)).(*uint8)
+	outstruct.IsActive = *abi.ConvertType(out[7], new(bool)).(*bool)
+	outstruct.CanDeposit = *abi.ConvertType(out[8], new(bool)).(*bool)
+	outstruct.CanMint = *abi.ConvertType(out[9], new(bool)).(*bool)
 
 	return *outstruct, err
 
@@ -755,6 +758,7 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryFilterer) ParseOwnershipTra
 	if err := _DefiFMintTokenRegistry.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -900,6 +904,7 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryFilterer) ParseTokenAdded(l
 	if err := _DefiFMintTokenRegistry.contract.UnpackLog(event, "TokenAdded", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1044,5 +1049,6 @@ func (_DefiFMintTokenRegistry *DefiFMintTokenRegistryFilterer) ParseTokenUpdated
 	if err := _DefiFMintTokenRegistry.contract.UnpackLog(event, "TokenUpdated", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }

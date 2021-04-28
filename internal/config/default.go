@@ -17,7 +17,7 @@ const (
 	defSelfAddress    = "0xE8E2ab527D1fDbCe570B221977BB5c3f12dFa1DA"
 	defSelfPrivateKey = "0xaa682338447d15ac4462d938716c120d085a0db81d3945b18017ae0788a121a7"
 
-	// this defines empty address
+	// EmptyAddress defines an empty address
 	EmptyAddress = "0x0000000000000000000000000000000000000000"
 
 	// defServerBind holds default API server binding address

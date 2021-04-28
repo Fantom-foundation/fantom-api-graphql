@@ -23,7 +23,7 @@ const monBlocksBufferCapacity = 25000
 type blockMonitor struct {
 	service
 
-	txChan      chan *evtTransaction
+	txChan      chan *eventTransaction
 	blkChan     chan types.Block
 	procChan    chan types.Block
 	sigProcStop chan bool
@@ -37,7 +37,7 @@ type blockMonitor struct {
 }
 
 // NewBlockMonitor creates a new block monitor instance.
-func NewBlockMonitor(con *ftm.Client, buffer chan *evtTransaction, rescan chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *blockMonitor {
+func NewBlockMonitor(con *ftm.Client, buffer chan *eventTransaction, rescan chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *blockMonitor {
 	// create new blockScanner instance
 	return &blockMonitor{
 		service:     newService("block monitor", repo, log, wg),
@@ -194,7 +194,7 @@ func (bm *blockMonitor) handle(block *types.Block) {
 		}
 
 		// prep sending struct and push it to the queue
-		event := evtTransaction{block: block, trx: trx}
+		event := eventTransaction{block: block, trx: trx}
 		bm.txChan <- &event
 
 		// notify new transaction

@@ -20,9 +20,9 @@ import (
 	"math/big"
 )
 
-//go:generate abigen --abi ./contracts/abi/erc20.abi --pkg contracts --type ERCTwenty --out ./contracts/erc20_token.go
-//go:generate abigen --abi ./contracts/abi/erc20detailed.abi --pkg contracts --type ERCTwentyDetailed --out ./contracts/erc20detailed_token.go
-//go:generate abigen --abi ./contracts/abi/wftm.abi --pkg contracts --type ErcWrappedFtm --out ./contracts/erc20wftm_token.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/erc20.abi --pkg contracts --type ERCTwenty --out ./contracts/erc20_token.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/erc20detailed.abi --pkg contracts --type ERCTwentyDetailed --out ./contracts/erc20detailed_token.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/wftm.abi --pkg contracts --type ErcWrappedFtm --out ./contracts/erc20wftm_token.go
 
 // Erc20Name provides information about the name of the ERC20 token.
 func (ftm *FtmBridge) Erc20Name(token *common.Address) (string, error) {

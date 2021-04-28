@@ -40,12 +40,12 @@ const (
 
 // the account base row
 type AccountRow struct {
-	Address  string      `bson:"_id"`
-	Type     string      `bson:"type"`
-	Sc       *string     `bson:"sc"`
-	Activity uint64      `bson:"ats"`
-	Counter  uint64      `bson:"atc"`
-	ScHash   *types.Hash `bson:"-"`
+	Address  string       `bson:"_id"`
+	Type     string       `bson:"type"`
+	Sc       *string      `bson:"sc"`
+	Activity uint64       `bson:"ats"`
+	Counter  uint64       `bson:"atc"`
+	ScHash   *common.Hash `bson:"-"`
 }
 
 // Account tries to load an account identified by the address given from
@@ -78,7 +78,7 @@ func (db *MongoDbBridge) Account(addr *common.Address) (*types.Account, error) {
 
 	// any hash?
 	if row.Sc != nil {
-		h := types.HexToHash(*row.Sc)
+		h := common.HexToHash(*row.Sc)
 		row.ScHash = &h
 	}
 
@@ -94,12 +94,6 @@ func (db *MongoDbBridge) Account(addr *common.Address) (*types.Account, error) {
 // initAccountsCollection initializes the account collection with
 // indexes and additional parameters needed by the app.
 func (db *MongoDbBridge) initAccountsCollection() {
-	if !db.initAccounts {
-		return
-	}
-
-	// log we are done here
-	db.initAccounts = false
 	db.log.Debugf("accounts collection initialized")
 }
 
@@ -136,7 +130,10 @@ func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 	}
 
 	// check init state
-	db.initAccountsCollection()
+	// make sure transactions collection is initialized
+	if db.initAccounts != nil {
+		db.initAccounts.Do(func() { db.initAccountsCollection(); db.initAccounts = nil })
+	}
 
 	// log what we have done
 	db.log.Debugf("added account at %s", acc.Address.String())
@@ -168,7 +165,7 @@ func (db *MongoDbBridge) IsAccountKnown(addr *common.Address) (bool, error) {
 }
 
 // AccountCount calculates total number of accounts in the database.
-func (db *MongoDbBridge) AccountCount() (hexutil.Uint64, error) {
+func (db *MongoDbBridge) AccountCount() (uint64, error) {
 	// get the collection for transactions
 	col := db.client.Database(db.dbName).Collection(coAccounts)
 
@@ -179,48 +176,48 @@ func (db *MongoDbBridge) AccountCount() (hexutil.Uint64, error) {
 		return 0, err
 	}
 
-	return hexutil.Uint64(uint64(val)), nil
+	return uint64(val), nil
 }
 
 // AccountTransactions loads list of transaction hashes of an account.
-func (db *MongoDbBridge) AccountTransactions(acc *types.Account, cursor *string, count int32) (*types.TransactionHashList, error) {
+func (db *MongoDbBridge) AccountTransactions(addr *common.Address, cursor *string, count int32) (*types.TransactionList, error) {
 	// nothing to load?
 	if count == 0 {
 		return nil, fmt.Errorf("nothing to do, zero blocks requested")
 	}
 
 	// no account given?
-	if acc == nil {
+	if addr == nil {
 		return nil, fmt.Errorf("can not list transactions of empty account")
 	}
 
 	// log what we do here
-	db.log.Debugf("loading transactions of %s", acc.Address.String())
+	db.log.Debugf("loading transactions of %s", addr.String())
 
 	// make the filter for [(from = Account) OR (to = Account)]
-	filter := bson.D{{"$or", bson.A{bson.D{{"from", acc.Address.String()}}, bson.D{{"to", acc.Address.String()}}}}}
+	filter := bson.D{{"$or", bson.A{bson.D{{"from", addr.String()}}, bson.D{{"to", addr.String()}}}}}
 
 	// return list of transactions filtered by the account
 	return db.Transactions(cursor, count, &filter)
 }
 
 // AccountMarkActivity marks the latest account activity in the repository.
-func (db *MongoDbBridge) AccountMarkActivity(acc *types.Account, ts uint64) error {
+func (db *MongoDbBridge) AccountMarkActivity(addr *common.Address, ts uint64) error {
 	// log what we do
-	db.log.Debugf("account %s activity at %s", acc.Address.String(), time.Unix(int64(ts), 0).String())
+	db.log.Debugf("account %s activity at %s", addr.String(), time.Unix(int64(ts), 0).String())
 
 	// get the collection for contracts
 	col := db.client.Database(db.dbName).Collection(coAccounts)
 
 	// update the contract details
 	if _, err := col.UpdateOne(context.Background(),
-		bson.D{{fiAccountPk, acc.Address.String()}},
+		bson.D{{fiAccountPk, addr.String()}},
 		bson.D{
 			{"$set", bson.D{{fiAccountLastActivity, ts}}},
 			{"$inc", bson.D{{fiAccountTransactionCounter, 1}}},
 		}); err != nil {
 		// log the issue
-		db.log.Errorf("can not update account %s details; %s", acc.Address.String(), err.Error())
+		db.log.Errorf("can not update account %s details; %s", addr.String(), err.Error())
 		return err
 	}
 

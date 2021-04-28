@@ -1,68 +1,60 @@
-# Delegation represents a delegation on Opera blockchain.
+# Delegation represents a delegation on Opera block chain.
 type Delegation {
-    "Address of the delegator account."
+    # Address of the delegator account.
     address: Address!
 
-    "Identifier of the staker the delegation belongs to."
-    toStakerId: Long!
+    # Identifier of the staker the delegation belongs to.
+    toStakerId: BigInt!
 
-    "Epoch in which the delegation was made."
-    createdEpoch: Long!
-
-    "Timestamp of the delegation creation."
+    # Time stamp of the delegation creation.
     createdTime: Long!
 
-    "Epoch in which the delegation was deactivated."
-    deactivatedEpoch: Long
-
-    "Timestamp of the deactivation of the delegation."
-    deactivatedTime: Long
-
-    "Amount delegated. It includes all the pending un-delegations."
+    # Amount delegated in WEI. The value includes all the pending un-delegations.
     amount: BigInt!
 
-    """
-    Amount delegated. The current amount still registered
-    by SFC contract as delegated amount. It does include pending
-    deactivation, but does not include partial un-delegations.
-    """
-    amountDelegated: BigInt
+    # Current active amount delegated in WEI.
+    amountDelegated: BigInt!
 
-    "Amount locked in pending un-delegations and withdrawals."
+    # Amount locked in pending un-delegations in WEI.
     amountInWithdraw: BigInt!
 
-    "Amount of rewards claimed."
-    claimedReward: BigInt
+    # Total amount of rewards claimed.
+    claimedReward: BigInt!
 
-    "Pending rewards for the delegation."
+    # Pending rewards for the delegation in WEI.
     pendingRewards: PendingRewards!
 
-    "The id of the last epoch rewards has been paid to."
-    paidUntilEpoch: Long!
+    # List of withdraw requests of the delegation,
+    # sorted fro the newest to the oldest requests.
+    withdrawRequests(cursor: Cursor, count: Int = 25): [WithdrawRequest!]!
 
-    "List of withdraw requests of the delegation."
-    withdrawRequests: [WithdrawRequest!]!
+    # rewardClaims provides a list of reward claims
+    # of the delegation as a scrollable list of edges with details of claims.
+    rewardClaims(cursor: Cursor, count: Int = 25): RewardClaimList!
 
-    "List of full delegation deactivation."
-    deactivation: [DeactivatedDelegation!]!
-
-    "isFluidStakingActive indicates if the delegation is upgraded to fluid staking."
+    # isFluidStakingActive indicates if the delegation is upgraded to fluid staking.
     isFluidStakingActive: Boolean!
 
-    "isDelegationLocked indicates if the delegation is locked."
+    # isDelegationLocked indicates if the delegation is locked.
     isDelegationLocked: Boolean!
 
-    "lockedFromEpoch represents the id of epoch the lock has been created."
+    # lockedFromEpoch represents the id of epoch the lock has been created.
     lockedFromEpoch: Long!
 
-    "lockedUntil represents the timestamp up to which the delegation is locked, zero if not locked."
+    # lockedUntil represents the time stamp up to which
+    # the delegation is locked, zero if not locked.
     lockedUntil: Long!
 
-    # outstandingSFTM represents the amount of sFTM tokens representing the tokenised stake
+    # lockedAmount represents the amount of delegation stake locked.
+    # The undelegate process must call unlock prior to creating withdraw request if outstanding
+    # unlocked amount is lower than demanded amount to undelegate.
+    lockedAmount: BigInt!
+
+    # outstandingSFTM represents the amount of sFTM tokens representing the tokenized stake
     # minted and un-repaid on this delegation.
     outstandingSFTM: BigInt!
 
-    # tokenizerAllowedToWithdraw indicates if the stake tokeniser allows the stake
+    # tokenizerAllowedToWithdraw indicates if the stake tokenizer allows the stake
     # to be withdrawn. That means all the sFTM tokens have been repaid and the sFTM
     # debt is effectively zero for the delegation.
     tokenizerAllowedToWithdraw: Boolean!

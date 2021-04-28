@@ -1,5 +1,5 @@
-# Hash is a 32 byte binary string, represented by 0x prefixed hexadecimal.
-scalar Hash
+# Bytes32 is a 32 byte binary string, represented by 0x prefixed hexadecimal hash.
+scalar Bytes32
 
 # Address is a 20 byte Opera address, represented as 0x prefixed hexadecimal number.
 scalar Address

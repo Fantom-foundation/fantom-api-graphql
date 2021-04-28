@@ -13,6 +13,7 @@ import (
 	"fantom-api-graphql/internal/repository/rpc"
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/rpc"
 )
@@ -46,7 +47,7 @@ func (p *proxy) BlockByNumber(num *hexutil.Uint64) (*types.Block, error) {
 // BlockByHash returns a block at Opera blockchain represented by a hash. Top block is returned if the hash
 // is not provided.
 // If the block is not found, ErrBlockNotFound error is returned.
-func (p *proxy) BlockByHash(hash *types.Hash) (*types.Block, error) {
+func (p *proxy) BlockByHash(hash *common.Hash) (*types.Block, error) {
 	// do we have a hash?
 	if hash == nil {
 		tag := rpc.BlockTypeLatest

@@ -1,46 +1,31 @@
 # Account defines block-chain account information container
 type Account {
-    "Address is the address of the account."
+    # Address is the address of the account.
     address: Address!
 
-    "Balance is the current balance of the Account in WEI."
+    # Balance is the current balance of the Account in WEI.
     balance: BigInt!
 
-    """
-    TotalValue is the current total value fo the account in WEI.
-    It includes available balance,
-    delegated amount and pending staking rewards.
-    """
+    # TotalValue is the current total value of the account in WEI.
+    # It includes available balance, delegated amount and pending rewards.
+    # NOTE: This values is slow to calculate.
     totalValue: BigInt!
 
-    """
-    Stashed represents the amount of WEI stashed
-    on this account, if any. Stashed amount comes from
-    the delegation and validation rewards.
-    """
-    stashed: BigInt!
-
-    """
-    canUnStash informs if there is a stash which can be claimed.
-    Please note that stash claiming can be locked inside SFC.
-    """
-    canUnStash: Boolean!
-
-    "txCount represents number of transaction sent from the account."
+    # txCount represents number of transaction sent from the account (Nonce).
     txCount: Long!
 
-    """
-    txList represents list of transactions of the account
-    in form of TransactionList.
-    """
+    # txList represents list of transactions of the account in form of TransactionList.
     txList (cursor:Cursor, count:Int!): TransactionList!
 
-    "Details of a staker, if the account is a staker."
+    # erc20TxList represents list of ERC20 transactions of the account.
+    erc20TxList (cursor:Cursor, count:Int = 25, token: Address, txType: String = TRANSFER): ERC20TransactionList!
+
+    # Details of a staker, if the account is a staker.
     staker: Staker
 
-    "List of delegations of the account, if the account is a delegator."
+    # List of delegations of the account, if the account is a delegator.
     delegations(cursor:Cursor, count:Int = 25): DelegationList!
 
-    "Details about smart contract, if the account is a smart contract."
+    # Details about smart contract, if the account is a smart contract.
     contract: Contract
 }

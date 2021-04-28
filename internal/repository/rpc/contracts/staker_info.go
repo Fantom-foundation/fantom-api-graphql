@@ -509,6 +509,7 @@ func (_StakerInfoContract *StakerInfoContractFilterer) ParseInfoUpdated(log type
 	if err := _StakerInfoContract.contract.UnpackLog(event, "InfoUpdated", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -661,5 +662,6 @@ func (_StakerInfoContract *StakerInfoContractFilterer) ParseOwnershipTransferred
 	if err := _StakerInfoContract.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }

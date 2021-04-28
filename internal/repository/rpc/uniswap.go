@@ -23,9 +23,9 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-//go:generate abigen --abi ./contracts/abi/uniswap-factory.abi --pkg contracts --type UniswapFactory --out ./contracts/uniswap_factory.go
-//go:generate abigen --abi ./contracts/abi/uniswap-pair.abi --pkg contracts --type UniswapPair --out ./contracts/uniswap_pair.go
-//go:generate abigen --abi ./contracts/abi/uniswap-router.abi --pkg contracts --type UniswapRouter --out ./contracts/uniswap_router.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/uniswap-factory.abi --pkg contracts --type UniswapFactory --out ./contracts/uniswap_factory.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/uniswap-pair.abi --pkg contracts --type UniswapPair --out ./contracts/uniswap_pair.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/uniswap-router.abi --pkg contracts --type UniswapRouter --out ./contracts/uniswap_router.go
 
 // UniswapPairs returns list of all token pairs managed by Uniswap core.
 func (ftm *FtmBridge) NativeTokenAddress() (*common.Address, error) {

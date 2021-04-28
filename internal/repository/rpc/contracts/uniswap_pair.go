@@ -404,10 +404,13 @@ func (_UniswapPair *UniswapPairCaller) GetReserves(opts *bind.CallOpts) (struct 
 		Reserve1           *big.Int
 		BlockTimestampLast uint32
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.Reserve0 = out[0].(*big.Int)
-	outstruct.Reserve1 = out[1].(*big.Int)
-	outstruct.BlockTimestampLast = out[2].(uint32)
+	outstruct.Reserve0 = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.Reserve1 = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.BlockTimestampLast = *abi.ConvertType(out[2], new(uint32)).(*uint32)
 
 	return *outstruct, err
 
@@ -1074,6 +1077,7 @@ func (_UniswapPair *UniswapPairFilterer) ParseApproval(log types.Log) (*UniswapP
 	if err := _UniswapPair.contract.UnpackLog(event, "Approval", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1230,6 +1234,7 @@ func (_UniswapPair *UniswapPairFilterer) ParseBurn(log types.Log) (*UniswapPairB
 	if err := _UniswapPair.contract.UnpackLog(event, "Burn", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1375,6 +1380,7 @@ func (_UniswapPair *UniswapPairFilterer) ParseMint(log types.Log) (*UniswapPairM
 	if err := _UniswapPair.contract.UnpackLog(event, "Mint", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1533,6 +1539,7 @@ func (_UniswapPair *UniswapPairFilterer) ParseSwap(log types.Log) (*UniswapPairS
 	if err := _UniswapPair.contract.UnpackLog(event, "Swap", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1667,6 +1674,7 @@ func (_UniswapPair *UniswapPairFilterer) ParseSync(log types.Log) (*UniswapPairS
 	if err := _UniswapPair.contract.UnpackLog(event, "Sync", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1820,5 +1828,6 @@ func (_UniswapPair *UniswapPairFilterer) ParseTransfer(log types.Log) (*UniswapP
 	if err := _UniswapPair.contract.UnpackLog(event, "Transfer", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }

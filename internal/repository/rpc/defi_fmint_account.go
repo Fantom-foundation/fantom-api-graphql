@@ -13,9 +13,9 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 */
 package rpc
 
-//go:generate abigen --abi ./contracts/abi/price-oracle-proxy-interface.abi --pkg contracts --type PriceOracleProxyInterface --out ./contracts/oracle_proxy.go
-//go:generate abigen --abi ./contracts/abi/defi-token-storage.abi --pkg contracts --type DeFiTokenStorage --out ./contracts/token_storage.go
-//go:generate abigen --abi ./contracts/abi/defi-fmint-reward-distribution.abi --pkg contracts --type FMintRewardsDistribution --out ./contracts/fmint_rewards.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/price-oracle-proxy-interface.abi --pkg contracts --type PriceOracleProxyInterface --out ./contracts/oracle_proxy.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/defi-token-storage.abi --pkg contracts --type DeFiTokenStorage --out ./contracts/token_storage.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/defi-fmint-reward-distribution.abi --pkg contracts --type FMintRewardsDistribution --out ./contracts/fmint_rewards.go
 
 import (
 	"context"
