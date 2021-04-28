@@ -21,15 +21,17 @@ type blockScanner struct {
 	service
 	buffer chan *eventTransaction
 	isDone chan bool
+	reScan uint64
 }
 
 // newBlockScanner creates new blockchain blockScanner service.
-func newBlockScanner(buffer chan *eventTransaction, isDone chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup) *blockScanner {
+func newBlockScanner(buffer chan *eventTransaction, isDone chan bool, repo Repository, log logger.Logger, wg *sync.WaitGroup, reScan uint64) *blockScanner {
 	// create new blockScanner instance
 	return &blockScanner{
 		service: newService("block scanner", repo, log, wg),
 		buffer:  buffer,
 		isDone:  isDone,
+		reScan:  reScan,
 	}
 }
 
@@ -40,6 +42,11 @@ func (bls *blockScanner) run() {
 	if err != nil {
 		bls.log.Critical("can not scan blockchain; %sys", err.Error())
 		return
+	}
+
+	// apply re-scan
+	if lnb > bls.reScan {
+		lnb = lnb - bls.reScan
 	}
 
 	// log what we do

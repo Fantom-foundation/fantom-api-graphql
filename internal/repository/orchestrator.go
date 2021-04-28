@@ -61,7 +61,7 @@ type orchestrator struct {
 }
 
 // NewOrchestrator creates a new instance of repository orchestrator.
-func newOrchestrator(repo Repository, log logger.Logger, cfg *config.Repository) *orchestrator {
+func newOrchestrator(repo Repository, log logger.Logger, cfg *config.Config) *orchestrator {
 	// make a wait group for orchestrated services
 	var wg sync.WaitGroup
 
@@ -86,7 +86,7 @@ func newOrchestrator(repo Repository, log logger.Logger, cfg *config.Repository)
 }
 
 // init initiates the orchestrator work.
-func (or *orchestrator) init(cfg *config.Repository) {
+func (or *orchestrator) init(cfg *config.Config) {
 	// make all the dispatchers first so they can receive and process objects
 	or.txd = newTrxDispatcher(or.trxDispatcherQueue, or.repo, or.log, or.wg)
 	or.acd = newAccountDispatcher(or.accountQueue, or.repo, or.log, or.wg)
@@ -95,7 +95,7 @@ func (or *orchestrator) init(cfg *config.Repository) {
 
 	// create sync blockScanner; it starts scanning immediately
 	or.blkScanDone = make(chan bool, 1)
-	or.bls = newBlockScanner(or.trxDispatcherQueue, or.blkScanDone, or.repo, or.log, or.wg)
+	or.bls = newBlockScanner(or.trxDispatcherQueue, or.blkScanDone, or.repo, or.log, or.wg, cfg.ReScanBlocks)
 
 	// create swap blockScanner, which loads uniswap to local db immediately
 	or.swapScanDone = make(chan bool, 1)
@@ -109,7 +109,7 @@ func (or *orchestrator) init(cfg *config.Repository) {
 	or.uwm = NewUniswapMonitor(or.repo.FtmConnection(), or.swapDispatcherQueue, or.repo, or.log, or.wg)
 
 	// create staker information monitor; it starts right away on slow peace
-	if cfg.MonitorStakers {
+	if cfg.Repository.MonitorStakers {
 		or.stm = newStiMonitor(or.repo, or.log, or.wg)
 	}
 }

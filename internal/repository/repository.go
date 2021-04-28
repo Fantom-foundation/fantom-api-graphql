@@ -568,7 +568,7 @@ func newRepository() Repository {
 	}
 
 	// make the service orchestrator and start it's job
-	p.orc = newOrchestrator(&p, log, &cfg.Repository)
+	p.orc = newOrchestrator(&p, log, cfg)
 	p.orc.run()
 
 	// return the proxy

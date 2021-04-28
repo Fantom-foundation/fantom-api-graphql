@@ -54,6 +54,9 @@ type Config struct {
 	// TokenLogo is a list of known ERC20 tokens
 	// mapped to URL addresses of their logos.
 	TokenLogo map[common.Address]string
+
+	// ReScanBlocks represents the number of blocks to be re-scanned.
+	ReScanBlocks uint64
 }
 
 // Server represents the GraphQL server configuration

@@ -31,13 +31,17 @@ func init() {
 
 // main initializes the API server and starts it when ready.
 func main() {
-	// make sure to capture version request
+	// make sure to capture version request and rescan depth
 	versionRequest := flag.Bool("v", false, "get the application version")
+	reScan := flag.Uint64("r", 0, "re-scan specified known blocks")
 
 	// get the configuration to prepare the server
 	cfg, err := config.Load()
 	if nil != err {
 		log.Fatal(err)
+	}
+	if reScan != nil {
+		cfg.ReScanBlocks = *reScan
 	}
 
 	// print the version information
