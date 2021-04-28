@@ -8,9 +8,7 @@
     "bind": "0.0.0.0:16761",
     "peers": [],
     "origin": "https://xapi.fantom.network",
-    "cors_origins": [
-      "*"
-    ],
+    "cors_origins": ["*"],
     "write_timeout": 30,
     "resolver_timeout": 240
   },
@@ -68,5 +66,5 @@
       }
     ]
   },
-  "erc20_tokens_file": "/etc/opera/apiserver/tokens.json"
+  "erc20_tokens_file": "tokens.json"
 }
