@@ -1,6 +1,7 @@
 package resolvers
 
 import (
+	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -40,6 +41,15 @@ func (trx *ERC20Transaction) Token() *ERC20Token {
 func (trx *ERC20Transaction) TrxType() string {
 	switch trx.Type {
 	case types.ERC20TrxTypeTransfer:
+		// minting
+		if config.EmptyAddress == trx.Sender.String() {
+			return types.ERC20TrxTypeNameMint
+		}
+		// burning
+		if config.EmptyAddress == trx.Recipient.String() {
+			return types.ERC20TrxTypeNameBurn
+		}
+		//regular transfer
 		return types.ERC20TrxTypeNameTransfer
 	case types.ERC20TrxTypeApproval:
 		return types.ERC20TrxTypeNameApproval

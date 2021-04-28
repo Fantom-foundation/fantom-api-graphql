@@ -1,6 +1,8 @@
 # Erc20TransactionType represents a type of transaction.
 enum Erc20TransactionType {
     TRANSFER
+    MINT
+    BURN
     APPROVAL
 }
 

@@ -75,9 +75,9 @@ func handleErc20Transfer(log *retypes.Log, ld *logsDispatcher) {
 
 // handleErc20Transaction handles Approval and/or Transfer event on an ERC20 token.
 func handleErc20Transaction(log *retypes.Log, ld *logsDispatcher, t int32) {
-	// sanity check for data (1x uint256 = 32 bytes)
+	// sanity check for data (1x uint256 (value) = 32 bytes)
 	if len(log.Data) != 32 {
-		ld.log.Criticalf("%s log invalid data length; expected 32 bytes, given %d bytes", log.TxHash.String(), len(log.Data))
+		ld.log.Criticalf("%s log invalid data length; expected 32 bytes, %d bytes given", log.TxHash.String(), len(log.Data))
 		return
 	}
 
@@ -105,6 +105,6 @@ func handleErc20Transaction(log *retypes.Log, ld *logsDispatcher, t int32) {
 		Amount:       (hexutil.Big)(*amo),
 		TimeStamp:    block.TimeStamp,
 	}); err != nil {
-		ld.log.Errorf("can not store ERC20 transaction; %s", err.Error())
+		ld.log.Errorf("can not store ERC20 trx for call %s; %s", log.TxHash.String(), err.Error())
 	}
 }

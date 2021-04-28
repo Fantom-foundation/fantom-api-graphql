@@ -37,7 +37,7 @@ func (rs *rootResolver) Account(args struct{ Address common.Address }) (*Account
 	return NewAccount(acc), nil
 }
 
-// Resolves total number of active accounts on the blockchain.
+// AccountsActive resolves total number of active accounts on the blockchain.
 func (rs *rootResolver) AccountsActive() (hexutil.Uint64, error) {
 	return repository.R().AccountsActive()
 }
@@ -104,6 +104,26 @@ func (acc *Account) TxList(args struct {
 	return NewTransactionList(bl), nil
 }
 
+// Erc20TxList resolves list of ERC20 transactions associated with the account.
+func (acc *Account) Erc20TxList(args struct {
+	Cursor *Cursor
+	Count  int32
+	Token  *common.Address
+	TxType string
+}) (*ERC20TransactionList, error) {
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
+
+	// get the transaction hash list from repository
+	tl, err := repository.R().Erc20Transactions(args.Token, &acc.Address, types.Erc20TrxTypeByName(args.TxType), (*string)(args.Cursor), args.Count)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewERC20TransactionList(tl), nil
+}
+
 // Staker resolves the account staker detail, if the account is a staker.
 func (acc *Account) Staker() (*Staker, error) {
 	// get the staker
@@ -119,7 +139,7 @@ func (acc *Account) Staker() (*Staker, error) {
 	return NewStaker(st), nil
 }
 
-// Delegation resolves the account delegator detail, if the account is a delegator.
+// Delegations resolves a list of account delegations, if the account is a delegator.
 func (acc *Account) Delegations(args *struct {
 	Cursor *Cursor
 	Count  int32

@@ -85,6 +85,8 @@ enum DefiTokenBalanceType {
 # Erc20TransactionType represents a type of transaction.
 enum Erc20TransactionType {
     TRANSFER
+    MINT
+    BURN
     APPROVAL
 }
 
@@ -1373,6 +1375,9 @@ type Account {
 
     # txList represents list of transactions of the account in form of TransactionList.
     txList (cursor:Cursor, count:Int!): TransactionList!
+
+    # erc20TxList represents list of ERC20 transactions of the account.
+    erc20TxList (cursor:Cursor, count:Int = 25, token: Address, txType: String = TRANSFER): ERC20TransactionList!
 
     # Details of a staker, if the account is a staker.
     staker: Staker
