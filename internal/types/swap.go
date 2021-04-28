@@ -32,7 +32,7 @@ type Swap struct {
 	Sender common.Address `json:"sender" bson:"sender"`
 
 	// Hash represents 32 bytes hash of the transaction.
-	Hash Hash `json:"tx" bson:"tx"`
+	Hash common.Hash `json:"tx" bson:"tx"`
 
 	// Amount0In represents integer of the swap amount.
 	Amount0In *big.Int `json:"amount0In" bson:"am0in"`
@@ -53,13 +53,6 @@ type Swap struct {
 	Reserve1 *big.Int `json:"reserve1" bson:"reserve1"`
 }
 
-// UnmarshalSwap parses the JSON-encoded block data.
-func UnmarshalSwap(data []byte) (*Swap, error) {
-	var swap Swap
-	err := json.Unmarshal(data, &swap)
-	return &swap, err
-}
-
 // Marshal returns the JSON encoding of swap.
 func (swap *Swap) Marshal() ([]byte, error) {
 	return json.Marshal(swap)
@@ -71,7 +64,7 @@ type DefiSwapVolume struct {
 	// PairAddress is an address of the listed pair
 	PairAddress *common.Address
 
-	// Volume is a swap voolume for specified period
+	// Volume is a swap volume for specified period
 	Volume *big.Int
 
 	// IsInFUSD true if volumes can be denominated to fUSD
@@ -150,7 +143,7 @@ type UniswapActionList struct {
 type UniswapAction struct {
 
 	// ID of the action in the persistent db
-	ID Hash `json:"id"`
+	ID common.Hash `json:"id"`
 
 	// OrdIndex represents the ordinal index of the transaction inside the block chain.
 	// It's build from the block number and the index of the transaction inside the block
@@ -170,7 +163,7 @@ type UniswapAction struct {
 	Sender common.Address `json:"sender"`
 
 	// TransactionHash represents the hash of the contract deployment transaction.
-	TransactionHash Hash `json:"tx"`
+	TransactionHash common.Hash `json:"tx"`
 
 	// Time represents UTC ISO time tag for this reserve value
 	Time hexutil.Uint64 `json:"date"`

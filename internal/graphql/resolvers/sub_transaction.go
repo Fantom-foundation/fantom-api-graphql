@@ -46,7 +46,7 @@ func (rs *rootResolver) addTrxSubscriber(sub *subscriptOnTrx) {
 // dispatchOnTransaction dispatches onTransaction event to registered subscribers.
 func (rs *rootResolver) dispatchOnTransaction(trx *types.Transaction) {
 	// prep the block
-	transaction := NewTransaction(trx, rs.repo)
+	transaction := NewTransaction(trx)
 
 	// broadcast the event in separate go routines so we don't block here
 	for id, sub := range rs.trxSubscribers {

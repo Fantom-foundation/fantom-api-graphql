@@ -4,7 +4,7 @@ type Block {
     number: Long!
 
     # Hash is the unique block hash of this block.
-    hash: Hash!
+    hash: Bytes32!
 
     # Parent is the parent block of this block.
     parent: Block
@@ -23,7 +23,7 @@ type Block {
 
     # txHashList is the list of unique hash values of transaction
     # assigned to the block.
-    txHashList: [Hash!]!
+    txHashList: [Bytes32!]!
 
     # txList is a list of transactions assigned to the block.
     txList: [Transaction!]!

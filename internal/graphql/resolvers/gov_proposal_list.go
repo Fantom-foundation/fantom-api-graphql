@@ -12,9 +12,7 @@ import (
 // GovernanceProposalList represents resolvable list of governance
 // proposal edges structure.
 type GovernanceProposalList struct {
-	repo       repository.Repository
-	list       *types.GovernanceProposalList
-	TotalCount hexutil.Big
+	types.GovernanceProposalList
 }
 
 // GovernanceProposalListEdge represents a single edge of a proposal list structure.
@@ -24,12 +22,8 @@ type GovernanceProposalListEdge struct {
 }
 
 // NewGovernanceProposalList builds new resolvable list of governance proposals.
-func NewGovernanceProposalList(gps *types.GovernanceProposalList, repo repository.Repository) *GovernanceProposalList {
-	return &GovernanceProposalList{
-		repo:       repo,
-		list:       gps,
-		TotalCount: hexutil.Big(*big.NewInt(int64(gps.Total))),
-	}
+func NewGovernanceProposalList(gps *types.GovernanceProposalList) *GovernanceProposalList {
+	return &GovernanceProposalList{*gps}
 }
 
 // Proposals resolves list of proposals across all the known governance
@@ -50,48 +44,47 @@ func (rs *rootResolver) GovProposals(args struct {
 	}
 
 	// get the list of all proposals
-	list, err := rs.repo.GovernanceProposals(gcl, (*string)(args.Cursor), args.Count, args.ActiveOnly)
+	list, err := repository.R().GovernanceProposals(gcl, (*string)(args.Cursor), args.Count, args.ActiveOnly)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewGovernanceProposalList(list, rs.repo), nil
+	return NewGovernanceProposalList(list), nil
+}
+
+// TotalCount resolves the total number of governance proposals in the list.
+func (gpl *GovernanceProposalList) TotalCount() hexutil.Big {
+	val := new(big.Int).SetUint64(gpl.Total)
+	return (hexutil.Big)(*val)
 }
 
 // PageInfo resolves the current page information for the governance proposal list.
 func (gpl *GovernanceProposalList) PageInfo() (*ListPageInfo, error) {
 	// do we have any items?
-	if gpl.list == nil || gpl.list.Collection == nil || len(gpl.list.Collection) == 0 {
+	if gpl.Collection == nil || len(gpl.Collection) == 0 {
 		return NewListPageInfo(nil, nil, false, false)
 	}
 
 	// get the first and last elements
-	first := Cursor(gpl.list.First.String())
-	last := Cursor(gpl.list.Last.String())
-	return NewListPageInfo(&first, &last, !gpl.list.IsEnd, !gpl.list.IsStart)
+	first := Cursor(gpl.First.String())
+	last := Cursor(gpl.Last.String())
+	return NewListPageInfo(&first, &last, !gpl.IsEnd, !gpl.IsStart)
 }
 
 // Edges resolves list of edges for the linked governance proposal list.
 func (gpl *GovernanceProposalList) Edges() []*GovernanceProposalListEdge {
 	// do we have any items? return empty list if not
-	if gpl.list == nil || gpl.list.Collection == nil || len(gpl.list.Collection) == 0 {
+	if gpl.Collection == nil || len(gpl.Collection) == 0 {
 		return make([]*GovernanceProposalListEdge, 0)
 	}
 
 	// make the list
-	edges := make([]*GovernanceProposalListEdge, len(gpl.list.Collection))
-	for i, b := range gpl.list.Collection {
-		// make the element
-		edge := GovernanceProposalListEdge{
-			Proposal: &GovernanceProposal{
-				repo:               gpl.repo,
-				GovernanceProposal: *b,
-			},
-			Cursor: Cursor(b.Contract.String()),
+	edges := make([]*GovernanceProposalListEdge, len(gpl.Collection))
+	for i, gp := range gpl.Collection {
+		edges[i] = &GovernanceProposalListEdge{
+			Proposal: NewGovernanceProposal(gp),
+			Cursor:   Cursor(gp.Contract.String()),
 		}
-
-		// add it to the list
-		edges[i] = &edge
 	}
 
 	return edges

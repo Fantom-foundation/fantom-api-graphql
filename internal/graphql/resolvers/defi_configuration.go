@@ -10,15 +10,13 @@ import (
 
 // DefiConfiguration represents a resolvable DeFi Configuration instance.
 type DefiConfiguration struct {
-	repo repository.Repository
-	cfg  *config.Config
+	cfg *config.Config
 	types.DefiSettings
 }
 
 // NewDefiConfiguration creates a new instance of resolvable DeFi token.
-func NewDefiConfiguration(cf *types.DefiSettings, cfg *config.Config, repo repository.Repository) *DefiConfiguration {
+func NewDefiConfiguration(cf *types.DefiSettings, cfg *config.Config) *DefiConfiguration {
 	return &DefiConfiguration{
-		repo:         repo,
 		cfg:          cfg,
 		DefiSettings: *cf,
 	}
@@ -27,12 +25,12 @@ func NewDefiConfiguration(cf *types.DefiSettings, cfg *config.Config, repo repos
 // DefiConfiguration resolves the current DeFi contract settings.
 func (rs *rootResolver) DefiConfiguration() (*DefiConfiguration, error) {
 	// pass the call to repository
-	st, err := rs.repo.DefiConfiguration()
+	st, err := repository.R().DefiConfiguration()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewDefiConfiguration(st, rs.cfg, rs.repo), nil
+	return NewDefiConfiguration(st, rs.cfg), nil
 }
 
 // UniswapCoreFactory returns the address of the Uniswap factory contract

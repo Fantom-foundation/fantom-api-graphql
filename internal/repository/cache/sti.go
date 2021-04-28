@@ -16,7 +16,7 @@ const stiCacheKeyPrefix = "staker_info_"
 const stiTotalStakedKey = "staked_total"
 
 // PullStakerInfo extracts staker information from the in-memory cache if available.
-func (b *MemBridge) PullStakerInfo(id hexutil.Uint64) *types.StakerInfo {
+func (b *MemBridge) PullStakerInfo(id *hexutil.Big) *types.StakerInfo {
 	// try to get the account data from the cache
 	data, err := b.cache.Get(getStakerInfoKey(id))
 	if err != nil {
@@ -35,7 +35,7 @@ func (b *MemBridge) PullStakerInfo(id hexutil.Uint64) *types.StakerInfo {
 }
 
 // PushStakerInfo stores provided staker information in the in-memory cache.
-func (b *MemBridge) PushStakerInfo(id hexutil.Uint64, sti types.StakerInfo) error {
+func (b *MemBridge) PushStakerInfo(id *hexutil.Big, sti *types.StakerInfo) error {
 	// encode account
 	data, err := sti.Marshal()
 	if err != nil {
@@ -48,7 +48,7 @@ func (b *MemBridge) PushStakerInfo(id hexutil.Uint64, sti types.StakerInfo) erro
 }
 
 // getPriceKeyBySymbol build a cache key for the given price symbol.
-func getStakerInfoKey(id hexutil.Uint64) string {
+func getStakerInfoKey(id *hexutil.Big) string {
 	// use the builder to make the string
 	var sb strings.Builder
 

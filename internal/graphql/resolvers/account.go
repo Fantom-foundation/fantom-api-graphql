@@ -6,8 +6,8 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"golang.org/x/sync/singleflight"
 	"math/big"
-	"sort"
 )
 
 // accMaxTransactionsPerRequest maximal number of transaction end-client can request in one query.
@@ -15,23 +15,13 @@ const accMaxTransactionsPerRequest = 50
 
 // Account represents resolvable blockchain account structure.
 type Account struct {
-	repo          repository.Repository
-	rfDelegations []types.Delegation
-	rfStaker      *types.Staker
-	rfBalance     *hexutil.Big
-	stashBalance  *big.Int
-
-	/* extended delegated amounts pre-loaded */
-	dlExtendedAmount           *big.Int
-	dlExtendedAmountInWithdraw *big.Int
-
 	types.Account
+	cg singleflight.Group
 }
 
 // NewAccount builds new resolvable account structure.
-func NewAccount(acc *types.Account, repo repository.Repository) *Account {
+func NewAccount(acc *types.Account) *Account {
 	return &Account{
-		repo:    repo,
 		Account: *acc,
 	}
 }
@@ -39,86 +29,34 @@ func NewAccount(acc *types.Account, repo repository.Repository) *Account {
 // Account resolves blockchain account by address.
 func (rs *rootResolver) Account(args struct{ Address common.Address }) (*Account, error) {
 	// simply pull the block by hash
-	acc, err := rs.repo.Account(&args.Address)
+	acc, err := repository.R().Account(&args.Address)
 	if err != nil {
 		rs.log.Errorf("could not get the specified account")
 		return nil, err
 	}
-
-	return NewAccount(acc, rs.repo), nil
+	return NewAccount(acc), nil
 }
 
-// Resolves total number of active accounts on the blockchain.
+// AccountsActive resolves total number of active accounts on the blockchain.
 func (rs *rootResolver) AccountsActive() (hexutil.Uint64, error) {
-	return rs.repo.AccountsActive()
+	return repository.R().AccountsActive()
 }
 
 // Balance resolves total balance of the account.
 func (acc *Account) Balance() (hexutil.Big, error) {
-	if acc.rfBalance == nil {
-		// get the sender by address
-		bal, err := acc.repo.AccountBalance(&acc.Account)
-		if err != nil {
-			return hexutil.Big{}, err
-		}
+	// get the balance
+	val, err, _ := acc.cg.Do("balance", func() (interface{}, error) {
+		return repository.R().AccountBalance(&acc.Address)
+	})
 
-		acc.rfBalance = bal
-	}
-
-	return *acc.rfBalance, nil
-}
-
-// stashedBalance returns the current stash balance on account.
-func (acc *Account) stashedBalance() (*big.Int, error) {
-	// return pre-cached stash balance
-	if acc.stashBalance == nil {
-		// get the stash amount from SFC
-		val, err := acc.repo.RewardsStash(&acc.Address)
-		if err != nil {
-			return nil, err
-		}
-
-		// keep cached
-		acc.stashBalance = val
-	}
-
-	return acc.stashBalance, nil
-}
-
-// Stashed resolves the amount of WEI stashed for this account.
-func (acc *Account) Stashed() (hexutil.Big, error) {
-	// get the stash amount from SFC
-	val, err := acc.stashedBalance()
+	// can not get the balance?
 	if err != nil {
 		return hexutil.Big{}, err
 	}
-
-	return hexutil.Big(*val), nil
+	return *val.(*hexutil.Big), nil
 }
 
-// CanUnStash resolves the stash status for this account.
-func (acc *Account) CanUnStash() (bool, error) {
-	// get the current lock status
-	allowed, err := acc.repo.RewardsAllowed()
-	if err != nil {
-		return false, err
-	}
-
-	// rewards are still locked, no luck
-	if !allowed {
-		return false, nil
-	}
-
-	// get the stash amount from SFC
-	val, err := acc.stashedBalance()
-	if err != nil || val == nil {
-		return false, err
-	}
-
-	return val.Cmp(big.NewInt(0)) > 0, nil
-}
-
-// TotalValue resolves address total value including delegated amount and pending rewards.
+// TotalValue resolves account total value including delegated amount and pending rewards.
 func (acc *Account) TotalValue() (hexutil.Big, error) {
 	// get the balance
 	balance, err := acc.Balance()
@@ -126,107 +64,21 @@ func (acc *Account) TotalValue() (hexutil.Big, error) {
 		return hexutil.Big{}, err
 	}
 
-	// try to get delegation
-	/*
-		del, err := acc.getDelegation()
-		if err != nil {
-			return balance, err
-		}
-
-		// do we have a delegation?
-		if del != nil {
-			var err error
-
-			// try to load the data
-			if acc.dlExtendedAmount == nil {
-				acc.dlExtendedAmount, acc.dlExtendedAmountInWithdraw, err = acc.repo.DelegatedAmountExtended(del)
-				if err != nil {
-					return hexutil.Big{}, err
-				}
-			}
-
-			// add delegated amount to the balance
-			val := big.NewInt(0).Add(balance.ToInt(), acc.dlExtendedAmount)
-
-			// get pending rewards
-			rw, err := acc.repo.DelegationRewards(acc.Address.String())
-			if err != nil {
-				return hexutil.Big(*val), err
-			}
-
-			// add pending rewards to the final value
-			val = big.NewInt(0).Add(val, rw.Amount.ToInt())
-
-			// add claimed/stashed rewards from staking to the total
-			val = acc.addStashedRewards(val)
-			balance = hexutil.Big(*val)
-		}
-	*/
-
-	// add delegation amount
-	balance = acc.totalBalanceAddDelegations(&balance)
-
-	// add staking amount
-	balance = acc.totalBalanceAddStake(&balance)
-
-	return balance, nil
-}
-
-// addStashedRewards adds stashed rewards to the provided total value.
-/*
-func (acc *Account) addStashedRewards(val *big.Int) *big.Int {
-	// get the delegation information
-	sb, err := acc.stashedBalance()
+	// try to pull the delegations details
+	delegated, rewards, err := acc.delegationsTotal()
 	if err != nil {
-		return val
+		return hexutil.Big{}, err
 	}
 
-	// calculate the new total by adding the stashed amount
-	return new(big.Int).Add(val, sb)
-}
-*/
-
-// totalBalanceAddStake extends the total balance by adding staked
-// amount, if any.
-func (acc *Account) totalBalanceAddStake(balance *hexutil.Big) hexutil.Big {
-	// add self staked amount of a staker
-	st, err := acc.getStaker()
-	if err != nil {
-		return *balance
-	}
-
-	// do we have a staker info?
-	if st != nil && st.Stake != nil {
-		val := new(big.Int).Add(balance.ToInt(), st.Stake.ToInt())
-		return hexutil.Big(*val)
-	}
-
-	return *balance
-}
-
-// totalBalanceAddDelegations extends the total balance by adding delegated
-// amount, if any, including pending rewards.
-func (acc *Account) totalBalanceAddDelegations(balance *hexutil.Big) hexutil.Big {
-	// try to get the list of all delegations available
-	dls, err := acc.getDelegations()
-	if err != nil {
-		return *balance
-	}
-
-	// loop all loaded delegations and add their values together
-	extendBy := balance.ToInt()
-	for _, d := range dls {
-		extendBy = new(big.Int).Add(extendBy, d.AmountDelegated.ToInt())
-	}
-
-	// make the new value
-	return hexutil.Big(*extendBy)
+	// calc the sum
+	val := new(big.Int).Add(new(big.Int).Add(balance.ToInt(), delegated), rewards)
+	return hexutil.Big(*val), nil
 }
 
 // TxCount resolves the number of transaction sent by the account, also known as nonce.
 func (acc *Account) TxCount() (hexutil.Uint64, error) {
 	// get the sender by address
-	bal, err := acc.repo.AccountNonce(&acc.Account)
+	bal, err := repository.R().AccountNonce(&acc.Address)
 	if err != nil {
 		return hexutil.Uint64(0), err
 	}
@@ -244,31 +96,50 @@ func (acc *Account) TxList(args struct {
 	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
 
 	// get the transaction hash list from repository
-	bl, err := acc.repo.AccountTransactions(&acc.Account, (*string)(args.Cursor), args.Count)
+	bl, err := repository.R().AccountTransactions(&acc.Address, (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewTransactionList(bl, acc.repo), nil
+	return NewTransactionList(bl), nil
+}
+
+// Erc20TxList resolves list of ERC20 transactions associated with the account.
+func (acc *Account) Erc20TxList(args struct {
+	Cursor *Cursor
+	Count  int32
+	Token  *common.Address
+	TxType string
+}) (*ERC20TransactionList, error) {
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
+
+	// get the transaction hash list from repository
+	tl, err := repository.R().Erc20Transactions(args.Token, &acc.Address, types.Erc20TrxTypeByName(args.TxType), (*string)(args.Cursor), args.Count)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewERC20TransactionList(tl), nil
 }
 
 // Staker resolves the account staker detail, if the account is a staker.
 func (acc *Account) Staker() (*Staker, error) {
 	// get the staker
-	st, err := acc.getStaker()
+	st, err := repository.R().ValidatorByAddress(&acc.Address)
 	if err != nil {
 		return nil, err
 	}
 
-	// not staker
+	// staker not found?
 	if st == nil {
 		return nil, nil
 	}
-
-	return NewStaker(st, acc.repo), nil
+	return NewStaker(st), nil
 }
 
-// Delegation resolves the account delegator detail, if the account is a delegator.
+// Delegations resolves a list of account delegations, if the account is a delegator.
 func (acc *Account) Delegations(args *struct {
 	Cursor *Cursor
 	Count  int32
@@ -277,15 +148,14 @@ func (acc *Account) Delegations(args *struct {
 	// this controls the loading direction
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
-	// try to get the delegator info
-	dl, err := acc.getDelegations()
+	// pull the list
+	dl, err := repository.R().DelegationsByAddress(&acc.Address, (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}
 
-	// sort delegations by age
-	sort.Sort(DelegationsByAge(dl))
-	return NewDelegationList(dl, parseDelegationsCursor(args.Cursor, args.Count, dl), args.Count, acc.repo), nil
+	// convert to resolvable list
+	return NewDelegationList(dl), nil
 }
 
 // Contract resolves the account smart contract detail,
@@ -297,45 +167,43 @@ func (acc *Account) Contract() (*Contract, error) {
 	}
 
 	// get new contract
-	con, err := acc.repo.Contract(&acc.Address)
+	con, err := repository.R().Contract(&acc.Address)
 	if err != nil {
 		return nil, err
 	}
-
-	return NewContract(con, acc.repo), nil
+	return NewContract(con), nil
 }
 
-// getStaker returns lazy loaded staker information.
-func (acc *Account) getStaker() (*types.Staker, error) {
-	// try to get the staker info
-	if acc.rfStaker == nil {
-		st, err := acc.repo.StakerByAddress(acc.Address)
+// delegationsTotal calculates total sum of delegations of the given account including
+// pending rewards for those delegations.
+func (acc *Account) delegationsTotal() (amount *big.Int, rewards *big.Int, err error) {
+	// pull all the delegations of the account
+	list, err := repository.R().DelegationsByAddressAll(&acc.Address)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// prep containers for calculation and loop all delegations found
+	amount = new(big.Int)
+	rewards = new(big.Int)
+	for _, dlg := range list {
+		// any active delegated amount?
+		if 0 < dlg.AmountDelegated.ToInt().Uint64() {
+			amount = new(big.Int).Add(amount, dlg.AmountDelegated.ToInt())
+		}
+
+		// get pending rewards for this delegation (can be stashed)
+		rw, err := repository.R().PendingRewards(&acc.Address, dlg.ToStakerId)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
-		// is this a valid staker info?
-		if st.Id <= 0 {
-			return nil, nil
-		}
-
-		// keep the staker info
-		acc.rfStaker = st
-	}
-
-	return acc.rfStaker, nil
-}
-
-// getDelegations return lazy loaded list of delegation details for the account.
-func (acc *Account) getDelegations() ([]types.Delegation, error) {
-	// do we need to load the list?
-	if nil == acc.rfDelegations {
-		var err error
-
-		// lazy loading of the list happens here
-		if acc.rfDelegations, err = acc.repo.DelegationsByAddress(acc.Address); err != nil {
-			return nil, err
+		// any rewards?
+		if 0 < rw.Amount.ToInt().Uint64() {
+			rewards = new(big.Int).Add(rewards, rw.Amount.ToInt())
 		}
 	}
-	return acc.rfDelegations, nil
+
+	// loop all delegations and calculate
+	return amount, rewards, nil
 }

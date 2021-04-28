@@ -1,0 +1,17 @@
+# ERC20TransactionList is a list of ERC20 transaction edges provided by sequential access request.
+type ERC20TransactionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ERC20TransactionListEdge!]!
+
+    # TotalCount is the maximum number of ERC20 transactions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of ERC20 transaction edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of ERC20 transactions.
+type ERC20TransactionListEdge {
+    cursor: Cursor!
+    trx: ERC20Transaction!
+}

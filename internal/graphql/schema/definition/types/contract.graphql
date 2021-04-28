@@ -7,7 +7,7 @@ type Contract {
     deployedBy: Transaction!
 
     "transactionHash represents the smart contract deployment transaction hash."
-    transactionHash: Hash!
+    transactionHash: Bytes32!
 
     "Smart contract name. Empty if not available."
     name: String!

@@ -1,114 +1,78 @@
 # Represents staker information.
 type Staker {
-    "Id number the staker."
-    id: Long!
+    # ID number the staker.
+    id: BigInt!
 
-    "Staker address."
+    # Staker address.
     stakerAddress: Address!
 
-    "Amount of total staked tokens in WEI."
+    # Amount of total staked tokens in WEI.
     totalStake: BigInt
 
-    "Amount of own staked tokens in WEI."
-    stake: BigInt
+    # Amount of own staked tokens in WEI.
+    stake: BigInt!
 
-    "Amount of tokens delegated to the staker in WEI."
-    delegatedMe: BigInt
+    # Amount of tokens delegated to the staker in WEI.
+    delegatedMe: BigInt!
 
-    """
-    Maximum total amount of tokens allowed to be delegated
-    to the staker in WEI.
-    This value depends on the amount of self staked tokens.
-    """
+    # Maximum total amount of tokens allowed to be delegated
+    # to the staker in WEI.
+    # This value depends on the amount of self staked tokens.
     totalDelegatedLimit: BigInt!
 
-    """
-    Maximum amount of tokens allowed to be delegated to the staker
-    on a new delegation in WEI.
-    This value depends on the amount of self staked tokens.
-    """
+    # Maximum amount of tokens allowed to be delegated to the staker
+    # on a new delegation in WEI.
+    # This value depends on the amount of self staked tokens.
     delegatedLimit: BigInt!
 
-    "Is this a validator record."
-    isValidator: Boolean!
-
-    "Is the staker active."
+    # Is the staker active.
     isActive: Boolean!
 
-    "Is the staker considered to be cheater."
+    # Is TRUE for validators withdrawing their validation stake.
+	isWithdrawn: Boolean!
+
+    # Is the staker considered to be cheater.
     isCheater: Boolean!
 
-    "Is the staker offline."
+    # Is the staker offline.
     isOffline: Boolean!
 
-    "isStakeLocked signals if the staker locked the stake."
+    # isStakeLocked signals if the staker locked the stake.
     isStakeLocked: Boolean!
 
-    "Epoch in which the staker was created."
+    # Epoch in which the staker was created.
     createdEpoch: Long!
 
-    "Timestamp of the staker creation."
+    # Timestamp of the staker creation.
     createdTime: Long!
 
-    "lockedFromEpoch is the identifier of the epoch the stake lock was created."
+    # lockedFromEpoch is the identifier of the epoch the stake lock was created.
     lockedFromEpoch: Long!
 
-    "lockedUntil is the timestamp up to which the stake is locked, zero if not locked."
+    # lockedUntil is the timestamp up to which the stake is locked, zero if not locked.
     lockedUntil: Long!
 
-    "Epoch in which the staker was deactivated."
+    # Epoch in which the staker was deactivated.
     deactivatedEpoch: Long!
 
-    "Timestamp of the staker deactivation."
+    # Timestamp of the staker deactivation.
     deactivatedTime: Long!
 
-    "How many blocks the staker missed."
+    # How many blocks the staker missed.
     missedBlocks: Long!
 
-    "Number of seconds the staker is offline."
+    # Number of seconds the staker is offline.
     downtime: Long!
 
-    "Proof of importance score."
-    poi: BigInt
-
-    "Base weight for rewards distribution."
-    baseRewardWeight: BigInt
-
-    "Weight for transaction rewards distribution."
-    txRewardWeight: BigInt
-
-    "Validation score."
-    validationScore: BigInt
-
-    "Origination score."
-    originationScore: BigInt
-
-    "Amount of rewards claimed in WEI."
-    claimedRewards: BigInt
-
-    "Amount of rewards claimed by delegators in WEI."
-    delegationClaimedRewards: BigInt
-
-    """
-    List of delegations of this staker. Cursor is used to obtain specific slice
-    of the staker's delegations. The most recent delegations
-    are provided if cursor is omitted.
-    """
+    # List of delegations of this staker. Cursor is used to obtain specific slice
+    # of the staker's delegations. The most recent delegations
+    # are provided if cursor is omitted.
     delegations(cursor: Cursor, count: Int = 25):DelegationList!
 
-    """
-    Status is a binary encoded status of the staker.
-    Ok = 0, bin 1 = Fork Detected, bin 256 = Validator Offline
-    """
+    # Status is a binary encoded status of the staker.
+    # Ok = 0, bin 1 = Fork Detected, bin 256 = Validator Offline
     status: Long!
 
-    "StakerInfo represents extended staker information from smart contract."
+    # StakerInfo represents extended staker information from smart contract.
     stakerInfo: StakerInfo
-
-    """
-    List of withdraw requests of the stake.
-    Contains only withdrawal requests of the staking account,
-    not the requests of the stake delegators.
-    """
-    withdrawRequests: [WithdrawRequest!]!
 }

@@ -1,7 +1,10 @@
 // Package resolvers implements GraphQL resolvers to incoming API requests.
 package resolvers
 
-import "github.com/ethereum/go-ethereum/common"
+import (
+	"fantom-api-graphql/internal/repository"
+	"github.com/ethereum/go-ethereum/common"
+)
 
 // maxAssetTokensToLoad defines the max mount of ERC20 tokens analyzed for assets list.
 const maxAssetTokensToLoad = 1000
@@ -13,17 +16,15 @@ func (rs *rootResolver) Erc20TokenList(args struct{ Count int32 }) ([]*ERC20Toke
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get the list of addresses of active tokens
-	al, err := rs.repo.Erc20TokensList(args.Count)
+	al, err := repository.R().Erc20TokensList(args.Count)
 	if err != nil {
 		return nil, err
 	}
 
-	// make the container
+	// make the container and create resolvables
 	list := make([]*ERC20Token, len(al))
-
-	// loop all the
 	for i, adr := range al {
-		list[i] = NewErc20Token(&adr, rs.repo)
+		list[i] = NewErc20Token(&adr)
 	}
 
 	return list, nil
@@ -39,22 +40,17 @@ func (rs *rootResolver) Erc20Assets(args struct {
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get the list of addresses of active tokens
-	al, err := rs.repo.Erc20TokensList(maxAssetTokensToLoad)
+	al, err := repository.R().Erc20TokensList(maxAssetTokensToLoad)
 	if err != nil {
 		return nil, err
 	}
 
-	// make the container
+	// make the container and build the list (limit to recognized assets)
 	list := make([]*ERC20Token, 0)
-
-	// loop all the
 	for _, token := range al {
 		// is there any balance of the token for the owner?
 		if rs.ownsErc20Asset(&token, &args.Owner) {
-			// add to the list
-			list = append(list, NewErc20Token(&token, rs.repo))
-
-			// check the limit of the assets list
+			list = append(list, NewErc20Token(&token))
 			if args.Count == int32(len(list)) {
 				break
 			}
@@ -67,7 +63,7 @@ func (rs *rootResolver) Erc20Assets(args struct {
 // ownsErc20Asset checks if the given owner has any tokens of the given ERC20.
 func (rs *rootResolver) ownsErc20Asset(token *common.Address, owner *common.Address) bool {
 	// get the balance for the owner
-	val, err := rs.repo.Erc20BalanceOf(token, owner)
+	val, err := repository.R().Erc20BalanceOf(token, owner)
 	if err != nil {
 		rs.log.Errorf("token %s balance can not be loaded for %s; %s", token.String(), owner.String(), err.Error())
 		return false

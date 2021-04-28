@@ -3,11 +3,11 @@ package cache
 
 import (
 	"fantom-api-graphql/internal/types"
-	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // PullTransaction extracts transaction information from the in-memory cache if available.
-func (b *MemBridge) PullTransaction(hash *types.Hash) *types.Transaction {
+func (b *MemBridge) PullTransaction(hash *common.Hash) *types.Transaction {
 	// try to get the account data from the cache
 	data, err := b.cache.Get(hash.String())
 	if err != nil {
@@ -16,29 +16,31 @@ func (b *MemBridge) PullTransaction(hash *types.Hash) *types.Transaction {
 	}
 
 	// do we have the data?
-	trx, err := types.UnmarshalTransaction(data)
-	if err != nil {
+	trx := new(types.Transaction)
+	if err := trx.UnmarshalBSON(data); err != nil {
 		b.log.Criticalf("can not decode transaction data from in-memory cache; %s", err.Error())
 		return nil
 	}
-
 	return trx
 }
 
 // PushTransaction stores provided transaction in the in-memory cache.
-func (b *MemBridge) PushTransaction(trx *types.Transaction) error {
+func (b *MemBridge) PushTransaction(trx *types.Transaction) {
 	// we need valid account
 	if nil == trx {
-		return fmt.Errorf("undefined transaction can not be pushed to the in-memory cache")
+		b.log.Errorf("undefined transaction can not be pushed to the in-memory cache")
+		return
 	}
 
 	// encode account
-	data, err := trx.Marshal()
+	data, err := trx.MarshalBSON()
 	if err != nil {
-		b.log.Criticalf("can not marshal transaction to JSON; %s", err.Error())
-		return err
+		b.log.Criticalf("can not marshal transaction; %s", err.Error())
+		return
 	}
 
 	// set the data to cache by block number
-	return b.cache.Set(trx.Hash.String(), data)
+	if err := b.cache.Set(trx.Hash.String(), data); err != nil {
+		b.log.Criticalf("can not cache transaction; %s", err.Error())
+	}
 }

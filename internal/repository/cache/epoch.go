@@ -2,16 +2,25 @@ package cache
 
 import (
 	"fantom-api-graphql/internal/types"
-	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"strings"
 )
 
 // lastEpochCacheKey represents the in-memory cache key for the latest sealed Epoch data.
-const lastEpochCacheKey = "last-sealed-epoch"
+const epochCacheKey = "epoch"
 
-// PullLastEpoch extracts information about the latest Epoch from the in-memory cache if available.
-func (b *MemBridge) PullLastEpoch() *types.Epoch {
+// epochKey generates cache key for the given epoch number.
+func epochKey(id *hexutil.Uint64) string {
+	var sb strings.Builder
+	sb.WriteString(epochCacheKey)
+	sb.WriteString(id.String())
+	return sb.String()
+}
+
+// PullEpoch extracts information about the given Epoch from the in-memory cache if available.
+func (b *MemBridge) PullEpoch(id *hexutil.Uint64) *types.Epoch {
 	// try to get the Epoch data from the cache
-	data, err := b.cache.Get(lastEpochCacheKey)
+	data, err := b.cache.Get(epochKey(id))
 	if err != nil {
 		// cache returns ErrEntryNotFound if the key does not exist
 		return nil
@@ -23,24 +32,25 @@ func (b *MemBridge) PullLastEpoch() *types.Epoch {
 		b.log.Criticalf("can not decode epoch data from in-memory cache; %s", err.Error())
 		return nil
 	}
-
 	return ep
 }
 
 // PushLastEpoch stores provided latest sealed Epoch in the in-memory cache.
-func (b *MemBridge) PushLastEpoch(ep *types.Epoch) error {
+func (b *MemBridge) PushEpoch(ep *types.Epoch) {
 	// we need valid account
 	if nil == ep {
-		return fmt.Errorf("undefined epoch can not be pushed to the in-memory cache")
+		return
 	}
 
 	// encode account
 	data, err := ep.Marshal()
 	if err != nil {
 		b.log.Criticalf("can not marshal epoch to JSON; %s", err.Error())
-		return err
+		return
 	}
 
 	// set the data to cache by block number
-	return b.cache.Set(lastEpochCacheKey, data)
+	if err := b.cache.Set(epochKey(&ep.Id), data); err != nil {
+		b.log.Errorf("can not cache epoch #%d; %s", ep.Id, err.Error())
+	}
 }

@@ -1239,9 +1239,12 @@ func (_DefiFMintMinter *DefiFMintMinterCaller) GetExtendedPrice(opts *bind.CallO
 		Price  *big.Int
 		Digits *big.Int
 	})
+	if err != nil {
+		return *outstruct, err
+	}
 
-	outstruct.Price = out[0].(*big.Int)
-	outstruct.Digits = out[1].(*big.Int)
+	outstruct.Price = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.Digits = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
 
 	return *outstruct, err
 
@@ -2283,6 +2286,7 @@ func (_DefiFMintMinter *DefiFMintMinterFilterer) ParseCollateralLowestDebtRatioC
 	if err := _DefiFMintMinter.contract.UnpackLog(event, "CollateralLowestDebtRatioChanged", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2436,6 +2440,7 @@ func (_DefiFMintMinter *DefiFMintMinterFilterer) ParseDeposited(log types.Log) (
 	if err := _DefiFMintMinter.contract.UnpackLog(event, "Deposited", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2569,6 +2574,7 @@ func (_DefiFMintMinter *DefiFMintMinterFilterer) ParseMintFeeChanged(log types.L
 	if err := _DefiFMintMinter.contract.UnpackLog(event, "MintFeeChanged", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2723,6 +2729,7 @@ func (_DefiFMintMinter *DefiFMintMinterFilterer) ParseMinted(log types.Log) (*De
 	if err := _DefiFMintMinter.contract.UnpackLog(event, "Minted", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2875,6 +2882,7 @@ func (_DefiFMintMinter *DefiFMintMinterFilterer) ParseOwnershipTransferred(log t
 	if err := _DefiFMintMinter.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -3028,6 +3036,7 @@ func (_DefiFMintMinter *DefiFMintMinterFilterer) ParseRepaid(log types.Log) (*De
 	if err := _DefiFMintMinter.contract.UnpackLog(event, "Repaid", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -3161,6 +3170,7 @@ func (_DefiFMintMinter *DefiFMintMinterFilterer) ParseRewardEligibilityRatioChan
 	if err := _DefiFMintMinter.contract.UnpackLog(event, "RewardEligibilityRatioChanged", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -3314,5 +3324,6 @@ func (_DefiFMintMinter *DefiFMintMinterFilterer) ParseWithdrawn(log types.Log) (
 	if err := _DefiFMintMinter.contract.UnpackLog(event, "Withdrawn", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }

@@ -47,7 +47,18 @@ func (p *proxy) UniswapQuoteInput(
 
 // UniswapTokens returns list of addresses of tokens involved in a Uniswap pair.
 func (p *proxy) UniswapTokens(pair *common.Address) ([]common.Address, error) {
-	return p.rpc.UniswapTokens(pair)
+	var err error
+	// try cache first
+	tl := p.cache.PullUniswapPairTokens(pair)
+	if nil == tl {
+		// load the hard way
+		tl, err = p.rpc.UniswapTokens(pair)
+		if err == nil {
+			// push to cache for future use
+			p.cache.PushUniswapPairTokens(pair, tl)
+		}
+	}
+	return tl, err
 }
 
 // UniswapReserves returns list of token reserve amounts in a Uniswap pair.

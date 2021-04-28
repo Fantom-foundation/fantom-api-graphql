@@ -22,7 +22,7 @@ import (
 	"math/big"
 )
 
-//go:generate abigen --abi ./contracts/abi/defi-fmint-address-provider.abi --pkg contracts --type DefiFMintAddressProvider --out ./contracts/fmint_addresses.go
+//go:generate tools/abigen.sh --abi ./contracts/abi/defi-fmint-address-provider.abi --pkg contracts --type DefiFMintAddressProvider --out ./contracts/fmint_addresses.go
 
 // tConfigItemsLoaders defines a map between DeFi config elements and their respective loaders.
 type tConfigItemsLoaders map[*hexutil.Big]func(*bind.CallOpts) (*big.Int, error)

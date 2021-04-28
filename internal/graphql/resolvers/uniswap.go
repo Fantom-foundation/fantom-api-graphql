@@ -1,11 +1,10 @@
+// Package resolvers implements GraphQL resolvers to incoming API requests.
 package resolvers
 
 import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"fmt"
-	"math/big"
-	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -14,7 +13,6 @@ import (
 
 // UniswapPair represents a pair of tokens in Uniswap protocol.
 type UniswapPair struct {
-	repo        repository.Repository
 	PairAddress common.Address
 }
 
@@ -39,33 +37,39 @@ type DefiTimeReserve struct {
 }
 
 // NewUniswapPair creates a new instance of resolvable UniswapPair token.
-func NewUniswapPair(adr *common.Address, repo repository.Repository) *UniswapPair {
+func NewUniswapPair(adr *common.Address) *UniswapPair {
 	// make the instance of the token
 	return &UniswapPair{
-		repo:        repo,
 		PairAddress: *adr,
 	}
 }
 
+// defiUniswapPairs load list of Uniswap pairs once in concurrent threads.
+func (rs *rootResolver) defiUniswapPairs() []*UniswapPair {
+	// make sure to do this only once
+	list, err, _ := rs.cg.Do("uniswap-pairs", func() (interface{}, error) {
+		// get the list of pair addresses
+		pairs, err := repository.R().UniswapPairs()
+		if err != nil || pairs == nil {
+			return make([]*UniswapPair, 0), nil
+		}
+
+		// build the output list
+		list := make([]*UniswapPair, len(pairs))
+		for i, adr := range pairs {
+			list[i] = NewUniswapPair(&adr)
+		}
+		return list, nil
+	})
+	if err != nil {
+		return make([]*UniswapPair, 0)
+	}
+	return list.([]*UniswapPair)
+}
+
 // DefiUniswapPairs resolves list of
 func (rs *rootResolver) DefiUniswapPairs() []*UniswapPair {
-	// prep container for the pairs list
-	list := make([]*UniswapPair, 0)
-
-	// get the list of pair addresses
-	pairs, err := rs.repo.UniswapPairs()
-	if err != nil || pairs == nil {
-		return list
-	}
-
-	// loop all addresses and build the output list
-	for _, adr := range pairs {
-		uPair := NewUniswapPair(&adr, rs.repo)
-		uPair.Tokens()
-		list = append(list, uPair)
-	}
-
-	return list
+	return rs.defiUniswapPairs()
 }
 
 // DefiUniswapAmountsOut resolves a list of output amounts for the given
@@ -74,7 +78,7 @@ func (rs *rootResolver) DefiUniswapAmountsOut(args *struct {
 	AmountIn hexutil.Big
 	Tokens   []common.Address
 }) ([]hexutil.Big, error) {
-	return rs.repo.UniswapAmountsOut(args.AmountIn, args.Tokens)
+	return repository.R().UniswapAmountsOut(args.AmountIn, args.Tokens)
 }
 
 // DefiUniswapAmountsOut resolves a list of input amounts for the given
@@ -83,7 +87,7 @@ func (rs *rootResolver) DefiUniswapAmountsIn(args *struct {
 	AmountOut hexutil.Big
 	Tokens    []common.Address
 }) ([]hexutil.Big, error) {
-	return rs.repo.UniswapAmountsIn(args.AmountOut, args.Tokens)
+	return repository.R().UniswapAmountsIn(args.AmountOut, args.Tokens)
 }
 
 // DefiUniswapQuoteLiquidity resolves a list of optimal amounts of tokens
@@ -103,13 +107,13 @@ func (rs *rootResolver) DefiUniswapQuoteLiquidity(args *struct {
 	}
 
 	// get the pair address for the given set of tokens
-	pair, err := rs.repo.UniswapPair(&args.Tokens[0], &args.Tokens[1])
+	pair, err := repository.R().UniswapPair(&args.Tokens[0], &args.Tokens[1])
 	if err != nil {
 		return nil, err
 	}
 
 	// get normalized tokens order
-	tokens, err := rs.repo.UniswapTokens(pair)
+	tokens, err := repository.R().UniswapTokens(pair)
 	if err != nil {
 		return nil, err
 	}
@@ -141,19 +145,18 @@ func (rs *rootResolver) uniswapOptimalLiquidity(
 	amountBIn *hexutil.Big,
 ) ([]hexutil.Big, error) {
 	// get amount of reserves
-	reserves, err := rs.repo.UniswapReserves(pair)
+	reserves, err := repository.R().UniswapReserves(pair)
 	if err != nil {
 		return nil, err
 	}
 
 	// no liquidity on the pair at all? simply confirm desired values
-	zeroInt := new(big.Int)
 	if 0 == reserves[0].ToInt().Cmp(zeroInt) && 0 == reserves[1].ToInt().Cmp(zeroInt) {
 		return []hexutil.Big{*amountAIn, *amountBIn}, nil
 	}
 
 	// get side B optimal
-	optimalB, err := rs.repo.UniswapQuoteInput(*amountAIn, reserves[0], reserves[1])
+	optimalB, err := repository.R().UniswapQuoteInput(*amountAIn, reserves[0], reserves[1])
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +167,7 @@ func (rs *rootResolver) uniswapOptimalLiquidity(
 	}
 
 	// optimal B si higher than the input offered; calculate optimal A from the reversed reserves
-	optimalA, err := rs.repo.UniswapQuoteInput(*amountBIn, reserves[1], reserves[0])
+	optimalA, err := repository.R().UniswapQuoteInput(*amountBIn, reserves[1], reserves[0])
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +183,7 @@ func (rs *rootResolver) uniswapOptimalLiquidity(
 // Tokens resolves a list of tokens of the given Uniswap pair.
 func (up *UniswapPair) Tokens() ([]*ERC20Token, error) {
 	// load addresses
-	tokens, err := up.repo.UniswapTokens(&up.PairAddress)
+	tokens, err := repository.R().UniswapTokens(&up.PairAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -193,54 +196,49 @@ func (up *UniswapPair) Tokens() ([]*ERC20Token, error) {
 
 	// make the list container
 	list := make([]*ERC20Token, len(tokens))
-
-	// populate a resolvable list of tokens involved with the pair
 	for i, adr := range tokens {
-		erc := NewErc20Token(&adr, up.repo)
+		erc := NewErc20Token(&adr)
 		list[i] = erc
 	}
-
 	return list, nil
 }
 
-// DefiUniswapVolumes returns all swap pairs and their informations for swap volumes
+// DefiUniswapVolumes returns all swap pairs and their information for swap volumes
 func (rs *rootResolver) DefiUniswapVolumes() []*UniswapPairVolume {
+	// get all the pairs
+	pairs := rs.defiUniswapPairs()
 
 	// create empty list as a result object
-	list := make([]*UniswapPairVolume, 0)
-
-	// iterate thru all Uniswap pairs
-	for _, pair := range rs.DefiUniswapPairs() {
-
-		tok, err := pair.Tokens()
+	list := make([]*UniswapPairVolume, len(pairs))
+	for i, pair := range pairs {
+		// get thr pair tokens
+		tl, err := repository.R().UniswapTokens(&pair.PairAddress)
 		if err != nil {
-			rs.repo.Log().Debugf("Cannot resolve tokens for pair %s : %v", pair.PairAddress.String(), err.Error())
 			return list
 		}
 
 		// get token price for denomination
 		isDenominated := true
-		tokenAPrice, err := rs.repo.DefiTokenPrice(&tok[0].Address)
+		tokenAPrice, err := repository.R().DefiTokenPrice(&tl[0])
 		if err != nil {
 			tokenAPrice = hexutil.Big{}
 			isDenominated = false
 		}
 
 		// fill result list
-		list = append(list, &UniswapPairVolume{
+		list[i] = &UniswapPairVolume{
 			UniswapPair: pair,
 			PairAddress: pair.PairAddress,
 			TokenPrice:  tokenAPrice,
 			InFUSD:      isDenominated,
-		})
+		}
 	}
-
 	return list
 }
 
 func (upv *UniswapPairVolume) getVolumeTillNow(fromTime int64) (hexutil.Big, error) {
 	toTime := time.Now().UTC().Unix()
-	swapVolume, err := upv.repo.UniswapVolume(&upv.PairAddress, fromTime, toTime)
+	swapVolume, err := repository.R().UniswapVolume(&upv.PairAddress, fromTime, toTime)
 	if err != nil {
 		return hexutil.Big{}, err
 	}
@@ -285,10 +283,7 @@ func (rs *rootResolver) DefiTimeVolumes(args *struct {
 	FromDate   *int32
 	ToDate     *int32
 }) []*DefiTimeVolume {
-
-	// create empty list as return value
-	list := make([]*DefiTimeVolume, 0)
-
+	// decode dates
 	var fDate int64
 	if args.FromDate != nil {
 		fDate = (int64)(*args.FromDate)
@@ -297,27 +292,28 @@ func (rs *rootResolver) DefiTimeVolumes(args *struct {
 	}
 	tDate := checkDate(args.ToDate)
 
+	// decode resolution
 	resolution := ""
 	if args.Resolution != nil {
 		resolution = *args.Resolution
 	}
+
 	// get volumes from DB repository
-	swapVolumes, err := rs.repo.UniswapTimeVolumes(&args.Address, resolution, fDate, tDate)
+	swapVolumes, err := repository.R().UniswapTimeVolumes(&args.Address, resolution, fDate, tDate)
 	if err != nil {
 		rs.log.Errorf("Can not get swap volumes from DB repository: %s", err.Error())
-		return list
+		return make([]*DefiTimeVolume, 0)
 	}
 
 	// iterate thru results and build final list
-	for _, volume := range swapVolumes {
-
-		list = append(list, &DefiTimeVolume{
+	list := make([]*DefiTimeVolume, len(swapVolumes))
+	for i, volume := range swapVolumes {
+		list[i] = &DefiTimeVolume{
 			PairAddress: *volume.PairAddress,
 			Time:        volume.DateString,
 			Value:       hexutil.Big(*volume.Volume),
-		})
+		}
 	}
-
 	return list
 }
 
@@ -330,10 +326,6 @@ func (rs *rootResolver) DefiTimePrices(args *struct {
 	ToDate     *int32
 	Direction  *int32
 }) []types.DefiTimePrice {
-
-	// create empty list as return value
-	list := make([]types.DefiTimePrice, 0)
-
 	//check date values
 	var fDate int64
 	if args.FromDate != nil {
@@ -356,46 +348,45 @@ func (rs *rootResolver) DefiTimePrices(args *struct {
 	}
 
 	// get prices from DB repository
-	swapPrices, err := rs.repo.UniswapTimePrices(&args.Address, resolution, fDate, tDate, dir)
+	swapPrices, err := repository.R().UniswapTimePrices(&args.Address, resolution, fDate, tDate, dir)
 	if err != nil {
 		rs.log.Errorf("Can not get uniswap prices from DB repository: %s", err.Error())
-		return list
+		return make([]types.DefiTimePrice, 0)
 	}
-
 	return swapPrices
 }
 
 // Reserves resolves a list of token reserves of the given Uniswap pair.
 func (up *UniswapPair) Reserves() ([]hexutil.Big, error) {
-	return up.repo.UniswapReserves(&up.PairAddress)
+	return repository.R().UniswapReserves(&up.PairAddress)
 }
 
 // ReservesTimeStamp resolves reserves of the given Uniswap pair.
 func (up *UniswapPair) ReservesTimeStamp() (hexutil.Uint64, error) {
-	return up.repo.UniswapReservesTimeStamp(&up.PairAddress)
+	return repository.R().UniswapReservesTimeStamp(&up.PairAddress)
 }
 
 // CumulativePrices resolves a list of token cumulative prices
 // of the given Uniswap pair.
 func (up *UniswapPair) CumulativePrices() ([]hexutil.Big, error) {
-	return up.repo.UniswapCumulativePrices(&up.PairAddress)
+	return repository.R().UniswapCumulativePrices(&up.PairAddress)
 }
 
 // TotalSupply resolves the total amount of pair tokens, e.g. the share pool
 // of the given Uniswap pair.
 func (up *UniswapPair) TotalSupply() (hexutil.Big, error) {
-	return up.repo.Erc20TotalSupply(&up.PairAddress)
+	return repository.R().Erc20TotalSupply(&up.PairAddress)
 }
 
 // TotalSupply resolves the total amount of pair tokens, e.g. the share pool
 // of the given Uniswap pair.
 func (up *UniswapPair) ShareOf(args *struct{ User common.Address }) (hexutil.Big, error) {
-	return up.repo.Erc20BalanceOf(&up.PairAddress, &args.User)
+	return repository.R().Erc20BalanceOf(&up.PairAddress, &args.User)
 }
 
 // LastKValue resolves the last value of the pool control coefficient.
 func (up *UniswapPair) LastKValue() (hexutil.Big, error) {
-	return up.repo.UniswapLastKValue(&up.PairAddress)
+	return repository.R().UniswapLastKValue(&up.PairAddress)
 }
 
 func checkDate(tdate *int32) int64 {
@@ -413,10 +404,6 @@ func (rs *rootResolver) DefiTimeReserves(args *struct {
 	FromDate   *int32
 	ToDate     *int32
 }) []DefiTimeReserve {
-
-	// create empty list as return value holder
-	list := make([]DefiTimeReserve, 0)
-
 	//check date values
 	var fDate int64
 	if args.FromDate != nil {
@@ -433,126 +420,18 @@ func (rs *rootResolver) DefiTimeReserves(args *struct {
 	}
 
 	// get reserves from DB repository
-	timeReserves, err := rs.repo.UniswapTimeReserves(&args.Address, resolution, fDate, tDate)
+	timeReserves, err := repository.R().UniswapTimeReserves(&args.Address, resolution, fDate, tDate)
 	if err != nil {
 		rs.log.Errorf("Can not get uniswap reserves from DB repository: %s", err.Error())
-		return list
+		return make([]DefiTimeReserve, 0)
 	}
-	for _, timeReserve := range timeReserves {
-		res := DefiTimeReserve{
+
+	list := make([]DefiTimeReserve, len(timeReserves))
+	for i, timeReserve := range timeReserves {
+		list[i] = DefiTimeReserve{
 			DefiTimeReserve: timeReserve,
-			UniswapPair:     NewUniswapPair(&args.Address, rs.repo),
+			UniswapPair:     NewUniswapPair(&args.Address),
 		}
-		list = append(list, res)
 	}
-
 	return list
-}
-
-// UniswapAction represents resolvable blockchain uniswap action structure.
-type UniswapAction struct {
-	repo repository.Repository
-	types.UniswapAction
-	*UniswapPair
-}
-
-// NewUniswapAction builds new resolvable uniswap action structure.
-func NewUniswapAction(ua *types.UniswapAction, repo repository.Repository, pair *UniswapPair) *UniswapAction {
-	return &UniswapAction{
-		repo:          repo,
-		UniswapAction: *ua,
-		UniswapPair:   pair,
-	}
-}
-
-// UniswapActionList represents resolvable list of blockchain uniswap action edges structure.
-type UniswapActionList struct {
-	repo repository.Repository
-	list *types.UniswapActionList
-}
-
-// UniswapActionListEdge represents a single edge of a uniswap action list structure.
-type UniswapActionListEdge struct {
-	UniswapAction *UniswapAction
-	Cursor        Cursor
-}
-
-// NewUniswapActionList builds new resolvable list of uniswap actions.
-func NewUniswapActionList(ual *types.UniswapActionList, repo repository.Repository) *UniswapActionList {
-	return &UniswapActionList{
-		repo: repo,
-		list: ual,
-	}
-}
-
-// DefiUniswapActions resolves list of blockchain uniswap actions encapsulated in a listable structure.
-func (rs *rootResolver) DefiUniswapActions(args *struct {
-	Cursor      *Cursor
-	Count       int32
-	PairAddress *common.Address
-	ActionType  *int32
-}) (*UniswapActionList, error) {
-	// limit query size; the count can be either positive or negative
-	// this controls the loading direction
-	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
-
-	if args.ActionType == nil {
-		var t int32 = -1
-		args.ActionType = &t
-	}
-
-	// get the uniswap action list from repository
-	al, err := rs.repo.UniswapActions(args.PairAddress, (*string)(args.Cursor), args.Count, *args.ActionType)
-	if err != nil {
-		rs.log.Errorf("Can not get uniswap action list; %s", err.Error())
-		return nil, err
-	}
-	return NewUniswapActionList(al, rs.repo), nil
-}
-
-// TotalCount resolves the total number of uniswap actions in the list.
-func (cl *UniswapActionList) TotalCount() hexutil.Big {
-	val := (*hexutil.Big)(big.NewInt(int64(cl.list.Total)))
-	return *val
-}
-
-// PageInfo resolves the current page information for the uniswap action list.
-func (cl *UniswapActionList) PageInfo() (*ListPageInfo, error) {
-	// do we have any items?
-	if cl.list == nil || cl.list.Collection == nil || len(cl.list.Collection) == 0 {
-		return NewListPageInfo(nil, nil, false, false)
-	}
-
-	// get the first and last elements
-	first := Cursor(strconv.FormatUint(cl.list.First, 10))
-	last := Cursor(strconv.FormatUint(cl.list.Last, 10))
-	return NewListPageInfo(&first, &last, !cl.list.IsEnd, !cl.list.IsStart)
-}
-
-// Edges resolves list of edges for the linked uniswap action list.
-func (cl *UniswapActionList) Edges() []*UniswapActionListEdge {
-	// do we have any items? return empty list if not
-	if cl.list == nil || cl.list.Collection == nil || len(cl.list.Collection) == 0 {
-		return make([]*UniswapActionListEdge, 0)
-	}
-
-	// make the list
-	edges := make([]*UniswapActionListEdge, len(cl.list.Collection))
-	for i, c := range cl.list.Collection {
-
-		up := NewUniswapPair(&c.PairAddress, cl.repo)
-		// make the uniswap action ref
-		ct := NewUniswapAction(c, cl.repo, up)
-
-		// make the element
-		edge := UniswapActionListEdge{
-			UniswapAction: ct,
-			Cursor:        Cursor(strconv.FormatUint(c.OrdIndex, 10)),
-		}
-
-		// add it to the list
-		edges[i] = &edge
-	}
-
-	return edges
 }

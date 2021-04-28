@@ -7,7 +7,7 @@ type DelegationList {
     TotalCount is the maximum number of delegations
     available for sequential access.
     """
-    totalCount: BigInt!
+    totalCount: Long!
 
     "PageInfo is an information about the current page of delegation edges."
     pageInfo: ListPageInfo!

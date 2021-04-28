@@ -1,0 +1,23 @@
+# RewardClaimList is a list of reward claims linked to delegations.
+type RewardClaimList {
+    # Edges contains provided edges of the sequential list.
+    edges: [RewardClaimListEdge!]!
+
+    # TotalCount is the maximum number of reward claims
+    # available for sequential access.
+    totalCount: Long!
+
+    # PageInfo is an information about the current page
+    # of reward claim edges.
+    pageInfo: ListPageInfo!
+}
+
+# RewardClaimListEdge is a single edge in a sequential list
+# of reward claims.
+type RewardClaimListEdge {
+    # Cursor defines a scroll key to this edge.
+    cursor: Cursor!
+
+    # ckaim represents the reward claim detail provided by this list edge.
+    claim: RewardClaim!
+}

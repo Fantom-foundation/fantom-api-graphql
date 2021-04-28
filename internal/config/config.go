@@ -43,9 +43,6 @@ type Config struct {
 	// DeFi configuration
 	DeFi DeFi `mapstructure:"defi"`
 
-	// Voting configuration
-	Voting Voting `mapstructure:"voting"`
-
 	// Governance configuration
 	Governance Governance `mapstructure:"governance"`
 
@@ -57,6 +54,9 @@ type Config struct {
 	// TokenLogo is a list of known ERC20 tokens
 	// mapped to URL addresses of their logos.
 	TokenLogo map[common.Address]string
+
+	// ReScanBlocks represents the number of blocks to be re-scanned.
+	ReScanBlocks uint64
 }
 
 // Server represents the GraphQL server configuration
@@ -139,11 +139,6 @@ type DeFiUniswap struct {
 	Core           common.Address   `mapstructure:"core"`
 	Router         common.Address   `mapstructure:"router"`
 	PairsWhiteList []common.Address `mapstructure:"whitelist"`
-}
-
-// Voting represents the simple voting/ballots module configuration.
-type Voting struct {
-	Sources []string `mapstructure:"sources"`
 }
 
 // Governance represents the governance module configuration.

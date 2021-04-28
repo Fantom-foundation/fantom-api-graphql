@@ -117,17 +117,18 @@ func syncContractToPeer(payload *bytes.Buffer, peer string, origin string, wg *s
 	// log action
 	lg.Debugf("syncing contract validation to %s from %s", peer, origin)
 
+	// make a context with predefined timeout, we don't use the cancel func callback
+	ctx, cancel := context.WithTimeout(context.Background(), contractSyncCallTimeout)
+
 	// don't forget to sign off after we are done
 	defer func() {
 		// log finish
+		cancel()
 		lg.Noticef("syncing %s finished", peer)
 
 		// signal to wait group we are done
 		wg.Done()
 	}()
-
-	// make a context with predefined timeout, we don't use the cancel func callback
-	ctx, _ := context.WithTimeout(context.Background(), contractSyncCallTimeout)
 
 	// create the request
 	req, err := http.NewRequestWithContext(ctx, "POST", peer, payload)

@@ -160,10 +160,7 @@ func (p *proxy) ValidateContract(sc *types.Contract) error {
 
 			// inform about success
 			p.log.Debugf("contract %s [%s] validated", sc.Address.String(), name)
-
-			// re-scan contract transactions so they are up-to-date with their calls analysis
 			p.cache.EvictContract(&sc.Address)
-			go p.transactionRescanContractCalls(sc)
 
 			// inform the upper instance we have a winner
 			return nil
@@ -174,8 +171,8 @@ func (p *proxy) ValidateContract(sc *types.Contract) error {
 	return fmt.Errorf("contract source code does not match with the deployed byte code")
 }
 
-// ContractAdd adds new contract into the repository.
-func (p *proxy) ContractAdd(con *types.Contract) error {
+// StoreContract adds new contract into the repository.
+func (p *proxy) StoreContract(con *types.Contract) error {
 	// is the a known contract which will be updated?
 	isUpdate := p.db.IsContractKnown(&con.Address)
 
@@ -189,11 +186,7 @@ func (p *proxy) ContractAdd(con *types.Contract) error {
 	if isUpdate {
 		// log what we have done here
 		p.log.Debugf("updated known contract at %s", con.Address.String())
-
-		// initiate re-scan
 		p.cache.EvictContract(&con.Address)
-		go p.transactionRescanContractCalls(con)
 	}
-
 	return nil
 }

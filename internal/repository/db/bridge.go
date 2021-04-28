@@ -6,6 +6,7 @@ import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
 	"fmt"
+	"sync"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,10 +20,14 @@ type MongoDbBridge struct {
 	dbName string
 
 	// init state marks
-	initAccounts     bool
-	initTransactions bool
-	initContracts    bool
-	initSwaps        bool
+	initAccounts     *sync.Once
+	initTransactions *sync.Once
+	initContracts    *sync.Once
+	initSwaps        *sync.Once
+	initDelegations  *sync.Once
+	initWithdrawals  *sync.Once
+	initRewards      *sync.Once
+	initErc20Trx     *sync.Once
 }
 
 // New creates a new Mongo Db connection bridge.
@@ -142,88 +147,49 @@ func (db *MongoDbBridge) getAggregateValue(col *mongo.Collection, pipeline *bson
 func (db *MongoDbBridge) CheckDatabaseInitState() {
 	// log what we do
 	db.log.Debugf("checking database init state")
-	db.checkAccountCollectionState()
-	db.checkTransactionCollectionState()
-	db.checkContractCollectionState()
-	db.checkUniswapCollectionState()
+
+	db.collectionNeedInit("accounts", db.AccountCount, &db.initAccounts)
+	db.collectionNeedInit("transactions", db.TransactionsCount, &db.initTransactions)
+	db.collectionNeedInit("contracts", db.ContractCount, &db.initContracts)
+	db.collectionNeedInit("swaps", db.SwapCount, &db.initSwaps)
+	db.collectionNeedInit("delegations", db.DelegationsCount, &db.initDelegations)
+	db.collectionNeedInit("withdrawals", db.WithdrawalsCount, &db.initWithdrawals)
+	db.collectionNeedInit("rewards", db.RewardsCount, &db.initRewards)
+	db.collectionNeedInit("erc20 transactions", db.ErcTransactionCount, &db.initErc20Trx)
 }
 
 // checkAccountCollectionState checks the Accounts collection state.
-func (db *MongoDbBridge) checkAccountCollectionState() {
-	// get the collection for account transactions
-	count, err := db.AccountCount()
+func (db *MongoDbBridge) collectionNeedInit(name string, counter func() (uint64, error), init **sync.Once) {
+	// use the counter to get the collection size
+	count, err := counter()
 	if err != nil {
-		db.log.Errorf("can not check accounts collection; %s", err.Error())
+		db.log.Errorf("can not check %s count; %s", name, err.Error())
 		return
 	}
 
-	// accounts already initialized
-	if 0 != uint64(count) {
-		db.log.Debugf("%d accounts in database", count)
+	// collection not empty,
+	if 0 != count {
+		db.log.Debugf("found %d %s", count, name)
 		return
 	}
 
-	// we have to init accounts
-	db.log.Notice("accounts collection empty")
-	db.initAccounts = true
+	// collection init needed, create the init control
+	db.log.Noticef("%s collection empty", name)
+	var once sync.Once
+	*init = &once
 }
 
-// checkTransactionCollectionState checks the Transactions collection state.
-func (db *MongoDbBridge) checkTransactionCollectionState() {
-	// get the collection for account transactions
-	count, err := db.TransactionsCount()
+// CountFiltered calculates total number of documents in the given collection for the given filter.
+func (db *MongoDbBridge) CountFiltered(col *mongo.Collection, filter *bson.D) (uint64, error) {
+	// make sure some filter is used
+	if nil == filter {
+		filter = &bson.D{}
+	}
+	// do the counting
+	val, err := col.CountDocuments(context.Background(), *filter)
 	if err != nil {
-		db.log.Errorf("can not check transactions collection; %s", err.Error())
-		return
+		db.log.Errorf("can not count documents in rewards collection; %s", err.Error())
+		return 0, err
 	}
-
-	// accounts already initialized
-	if 0 != count {
-		db.log.Debugf("%d transactions in database", count)
-		return
-	}
-
-	// we have to init accounts
-	db.log.Notice("transactions collection empty")
-	db.initTransactions = true
-}
-
-// checkUniswapCollectionState checks the uniswap collection state.
-func (db *MongoDbBridge) checkUniswapCollectionState() {
-	// get the collection for uniswap swaps
-	count, err := db.SwapCount()
-	if err != nil {
-		db.log.Errorf("can not check uniswap collection; %s", err.Error())
-		return
-	}
-
-	// swaps already initialized
-	if 0 != count {
-		db.log.Debugf("%d swaps in database", count)
-		return
-	}
-
-	// we have to init swaps
-	db.log.Notice("swaps collection empty")
-	db.initSwaps = true
-}
-
-// checkTransactionCollectionState checks the Transactions collection state.
-func (db *MongoDbBridge) checkContractCollectionState() {
-	// get the collection for account transactions
-	count, err := db.ContractCount()
-	if err != nil {
-		db.log.Errorf("can not check contracts collection; %s", err.Error())
-		return
-	}
-
-	// accounts already initialized
-	if 0 != count {
-		db.log.Debugf("%d contracts in database", count)
-		return
-	}
-
-	// we have to init accounts
-	db.log.Notice("contracts collection empty")
-	db.initContracts = true
+	return uint64(val), nil
 }
