@@ -7,6 +7,7 @@
 
 # Local configuration files
 doc/config*
+doc/deploy*
 
 # Test binary, built with `go test -c`
 *.test
