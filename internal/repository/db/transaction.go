@@ -92,7 +92,7 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	// if the transaction already exists, we don't need to add it
 	// just make sure the transaction accounts were processed
 	if !db.shouldAddTransaction(col, trx) {
-		return nil
+		return db.UpdateTransaction(col, trx)
 	}
 
 	// try to do the insert
