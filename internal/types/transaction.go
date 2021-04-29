@@ -225,7 +225,7 @@ func (trx *Transaction) UnmarshalBSON(data []byte) (err error) {
 
 	// try to decode the value
 	tv, err := hexutil.DecodeBig(row.Value)
-	if err != nil && tv != nil {
+	if err == nil && tv != nil {
 		trx.Value = (hexutil.Big)(*tv)
 	}
 
