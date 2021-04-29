@@ -127,7 +127,6 @@ func (or *orchestrator) run() {
 	or.uws.run()
 
 	// finally monitors
-	or.blm.run()
 	or.uwm.run()
 
 	// stakers info monitor may not be run at all
@@ -221,6 +220,7 @@ func (or *orchestrator) orchestrate() {
 
 		case <-or.blkScanDone:
 			or.log.Notice("blocks synchronization finished")
+			or.blm.run()
 
 		case <-or.swapScanDone:
 			or.log.Notice("swaps synchronization finished")
@@ -243,6 +243,7 @@ func (or *orchestrator) orchestrate() {
 func (or *orchestrator) scheduleRescan() {
 	// inform
 	or.log.Notice("re-scan scheduler is running")
+	or.blm.close()
 
 	// don't forget to sign off after we are done
 	defer func() {

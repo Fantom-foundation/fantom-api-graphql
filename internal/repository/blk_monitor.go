@@ -17,7 +17,7 @@ import (
 )
 
 // monBlocksBufferCapacity is the number of new blocks kept in the block processing channel.
-const monBlocksBufferCapacity = 25000
+const monBlocksBufferCapacity = 20000
 
 // BlockMonitor represents a subscription processor capturing new blockchain blocks.
 type blockMonitor struct {

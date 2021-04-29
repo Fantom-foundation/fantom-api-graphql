@@ -78,18 +78,7 @@ func (bls *blockScanner) logProgress(current *uint64, stop chan bool) {
 			if bh, err := bls.repo.BlockHeight(); err == nil && bh != nil && *current > 0 {
 				// try to get ETA
 				pass := time.Now().Sub(start)
-				if pass.Seconds() > 10 && bh.ToInt().Uint64() > 0 {
-					pct := int(float64(*current) / float64(bh.ToInt().Uint64()))
-					bar := []byte("          ")
-					for i := 0; i < pct*10; i++ {
-						bar[i] = 0x23
-					}
-					bls.log.Infof("block scanner reached #%d of %d [%s] %d%%", *current, bh.ToInt().Uint64(), string(bar), pct*100)
-					continue
-				}
-
-				// simple
-				bls.log.Infof("block scanner reached block #%d of %d", *current, bh.ToInt().Uint64())
+				bls.log.Infof("block scanner reached #%d of #%d; processing for %s", *current, bh.ToInt().Uint64(), pass.String())
 			}
 		}
 	}
