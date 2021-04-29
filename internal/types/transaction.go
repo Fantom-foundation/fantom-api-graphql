@@ -84,6 +84,7 @@ type BsonTransaction struct {
 	BlkIndex  *uint64   `bson:"bix"`
 	From      string    `bson:"from"`
 	To        *string   `bson:"to"`
+	Value     string    `bson:"value"`
 	Gas       uint64    `bson:"gas"`
 	UsedGas   *string   `bson:"gas_use"`
 	CumGas    *uint64   `bson:"gas_all"`
@@ -135,6 +136,7 @@ func (trx *Transaction) MarshalBSON() ([]byte, error) {
 		Gas:      uint64(trx.Gas),
 		GasPrice: trx.GasPrice.String(),
 		Nonce:    uint64(trx.Nonce),
+		Value:    trx.Value.String(),
 	}
 
 	// transaction has been mined, we have all the extra info, too
@@ -217,6 +219,12 @@ func (trx *Transaction) UnmarshalBSON(data []byte) (err error) {
 	trx.GasPrice = (hexutil.Big)(*hexutil.MustDecodeBig(row.GasPrice))
 	trx.Nonce = hexutil.Uint64(row.Nonce)
 	trx.Status = (*hexutil.Uint64)(&row.Status)
+
+	// try to decode the value
+	tv, err := hexutil.DecodeBig(row.Value)
+	if err != nil && tv != nil {
+		trx.Value = (hexutil.Big)(*tv)
+	}
 
 	// pointers
 	if row.BlockHash != nil {

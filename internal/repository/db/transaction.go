@@ -33,6 +33,9 @@ const (
 	// null for contract creation.
 	// db.transaction.createIndex({to:1}).
 	fiTransactionRecipient = "to"
+
+	// fiTransactionValue is the name of the field of the transaction value.
+	fiTransactionValue = "value"
 )
 
 // initTransactionsCollection initializes the transaction collection with
@@ -109,7 +112,33 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	return nil
 }
 
-// isTransactionKnown checks if a transaction document already exists in the database.
+// UpdateTransaction updates transaction data in the database collection.
+func (db *MongoDbBridge) UpdateTransaction(col *mongo.Collection, trx *types.Transaction) error {
+	// notify
+	db.log.Debugf("updating transaction %s", trx.Hash.String())
+
+	// try to update a delegation by replacing it in the database
+	// we use address and validator ID to identify unique delegation
+	er, err := col.UpdateOne(context.Background(), bson.D{
+		{fiTransactionPk, trx.Hash.String()},
+	}, bson.D{{"$set", bson.D{
+		{fiTransactionOrdinalIndex, trx.Uid()},
+		{fiTransactionSender, trx.From.String()},
+		{fiTransactionValue, trx.Value.String()},
+	}}}, new(options.UpdateOptions).SetUpsert(false))
+	if err != nil {
+		db.log.Critical(err)
+		return err
+	}
+
+	// do we actually have the document
+	if 0 == er.MatchedCount {
+		return fmt.Errorf("can not update, the transaction not found in database")
+	}
+	return nil
+}
+
+// IsTransactionKnown checks if a transaction document already exists in the database.
 func (db *MongoDbBridge) IsTransactionKnown(col *mongo.Collection, hash *common.Hash) (bool, error) {
 	// try to find the transaction in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
