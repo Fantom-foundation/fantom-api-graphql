@@ -85,6 +85,7 @@ type BsonTransaction struct {
 	From      string    `bson:"from"`
 	To        *string   `bson:"to"`
 	Value     string    `bson:"value"`
+	Input     []byte    `bson:"input"`
 	Gas       uint64    `bson:"gas"`
 	UsedGas   *string   `bson:"gas_use"`
 	CumGas    *uint64   `bson:"gas_all"`
@@ -137,6 +138,7 @@ func (trx *Transaction) MarshalBSON() ([]byte, error) {
 		GasPrice: trx.GasPrice.String(),
 		Nonce:    uint64(trx.Nonce),
 		Value:    trx.Value.String(),
+		Input:    ([]byte)(trx.InputData),
 	}
 
 	// transaction has been mined, we have all the extra info, too
@@ -219,6 +221,7 @@ func (trx *Transaction) UnmarshalBSON(data []byte) (err error) {
 	trx.GasPrice = (hexutil.Big)(*hexutil.MustDecodeBig(row.GasPrice))
 	trx.Nonce = hexutil.Uint64(row.Nonce)
 	trx.Status = (*hexutil.Uint64)(&row.Status)
+	trx.InputData = row.Input
 
 	// try to decode the value
 	tv, err := hexutil.DecodeBig(row.Value)
