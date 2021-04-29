@@ -146,7 +146,7 @@ func (bls *blockScanner) scan(lnb uint64) {
 				bls.log.Debugf("loading transaction #%d of block #%d", index, uint64(block.Number))
 
 				// get transaction
-				trx, err = bls.repo.Transaction(block.Txs[index])
+				trx, err = bls.repo.LoadTransaction(block.Txs[index])
 				if err != nil {
 					return
 				}

@@ -141,6 +141,10 @@ type Repository interface {
 	// StoreTransaction adds a new incoming transaction from blockchain to the repository.
 	StoreTransaction(*types.Block, *types.Transaction) error
 
+	// LoadTransaction returns a transaction at Opera blockchain
+	// by a hash loaded directly from the node.
+	LoadTransaction(hash *common.Hash) (*types.Transaction, error)
+
 	// Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
 	Transaction(*common.Hash) (*types.Transaction, error)
 

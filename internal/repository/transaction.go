@@ -38,13 +38,7 @@ func (p *proxy) Transaction(hash *common.Hash) (*types.Transaction, error) {
 	}
 
 	// return the value
-	return p.loadTransaction(hash)
-}
-
-// loadTransaction loads the transaction hard way using RPC and DB.
-func (p *proxy) loadTransaction(hash *common.Hash) (*types.Transaction, error) {
-	// we need to go to RPC
-	trx, err := p.rpc.Transaction(hash)
+	trx, err := p.LoadTransaction(hash)
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +54,12 @@ func (p *proxy) loadTransaction(hash *common.Hash) (*types.Transaction, error) {
 	// store to cache
 	p.cache.PushTransaction(trx)
 	return trx, nil
+}
+
+// LoadTransaction returns a transaction at Opera blockchain
+// by a hash loaded directly from the node.
+func (p *proxy) LoadTransaction(hash *common.Hash) (*types.Transaction, error) {
+	return p.rpc.Transaction(hash)
 }
 
 // SendTransaction sends raw signed and RLP encoded transaction to the block chain.
