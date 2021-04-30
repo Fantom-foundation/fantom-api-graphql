@@ -14,9 +14,11 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 import (
+	"context"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -37,6 +39,37 @@ func (ftm *FtmBridge) AmountStakeLocked(addr *common.Address, valID *big.Int) (*
 // AmountStakeUnlocked returns the current unlocked amount at stake for the given staker address and target validator.
 func (ftm *FtmBridge) AmountStakeUnlocked(addr *common.Address, valID *big.Int) (*big.Int, error) {
 	return ftm.SfcContract().GetUnlockedStake(ftm.DefaultCallOpts(), *addr, valID)
+}
+
+// StakeUnlockPenalty returns the expected penalty of a premature stake unlock.
+func (ftm *FtmBridge) StakeUnlockPenalty(addr *common.Address, valID *big.Int, amount *big.Int) (*big.Int, error) {
+	// pack call data
+	cd, err := ftm.SfcAbi().Pack("unlockStake", valID, amount)
+	if err != nil {
+		ftm.log.Errorf("penalty for unlocking %d of %s to %d not available; %s", amount.Uint64(), addr.String(), valID.Uint64(), err.Error())
+		return nil, err
+	}
+
+	// make the UnlockStake call as a view call to get the penalty value
+	data, err := ftm.eth.CallContract(context.Background(), ethereum.CallMsg{
+		From: *addr,
+		To:   &ftm.sfcConfig.SFCContract,
+		Gas:  160000,
+		Data: cd,
+	}, ftm.MustBlockHeight())
+	if err != nil {
+		ftm.log.Errorf("penalty for unlocking %d of %s to %d not available; %s", amount.Uint64(), addr.String(), valID.Uint64(), err.Error())
+		return nil, err
+	}
+
+	// make response size sanity check; we expect single big integer value
+	if len(data) != 32 {
+		ftm.log.Errorf("penalty for unlocking %d of %s to %d response not valid; expected 32 bytes, received %d bytes", amount.Uint64(), addr.String(), valID.Uint64(), len(data))
+		return nil, err
+	}
+
+	// parse data in to the value and return it
+	return new(big.Int).SetBytes(data), nil
 }
 
 // PendingRewards returns a detail of delegation rewards waiting to be claimed for the given delegation.

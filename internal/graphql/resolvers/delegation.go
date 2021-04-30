@@ -220,6 +220,12 @@ func (del Delegation) UnlockedAmount() (hexutil.Big, error) {
 	return repository.R().DelegationAmountUnlocked(&del.Address, (*big.Int)(del.Delegation.ToStakerId))
 }
 
+// UnlockPenalty resolves the amount of penalty applied to the stake
+// on premature unlock request.
+func (del Delegation) UnlockPenalty(args struct{ Amount hexutil.Big }) (hexutil.Big, error) {
+	return repository.R().DelegationUnlockPenalty(&del.Address, (*big.Int)(del.Delegation.ToStakerId), (*big.Int)(&args.Amount))
+}
+
 // OutstandingSFTM resolves the amount of outstanding sFTM tokens
 // minted for this account.
 func (del Delegation) OutstandingSFTM() (hexutil.Big, error) {

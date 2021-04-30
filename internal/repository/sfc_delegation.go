@@ -106,6 +106,18 @@ func (p *proxy) DelegationAmountUnlocked(addr *common.Address, valID *big.Int) (
 	return hexutil.Big(*val), nil
 }
 
+// DelegationUnlockPenalty returns the amount of penalty applied on given stake unlock.
+func (p *proxy) DelegationUnlockPenalty(addr *common.Address, valID *big.Int, amount *big.Int) (hexutil.Big, error) {
+	p.log.Debugf("checking unlock of %d penalty for %s to #%d", amount.Uint64(), addr.String(), valID.Uint64())
+
+	// get the amount
+	val, err := p.rpc.StakeUnlockPenalty(addr, valID, amount)
+	if err != nil {
+		return hexutil.Big{}, err
+	}
+	return hexutil.Big(*val), nil
+}
+
 // PendingRewards returns a detail of pending rewards for the given delegation address and validator ID.
 func (p *proxy) PendingRewards(addr *common.Address, valID *hexutil.Big) (*types.PendingRewards, error) {
 	p.log.Debugf("loading pending rewards of %s to #%d", addr.String(), valID.ToInt().Uint64())

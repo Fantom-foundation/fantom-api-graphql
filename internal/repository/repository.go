@@ -224,6 +224,9 @@ type Repository interface {
 	// DelegationLock returns delegation lock information using SFC contract binding.
 	DelegationLock(*common.Address, *hexutil.Big) (*types.DelegationLock, error)
 
+	// DelegationUnlockPenalty returns the amount of penalty applied on given stake unlock.
+	DelegationUnlockPenalty(addr *common.Address, valID *big.Int, amount *big.Int) (hexutil.Big, error)
+
 	// DelegationAmountUnlocked returns delegation lock information using SFC contract binding.
 	DelegationAmountUnlocked(addr *common.Address, valID *big.Int) (hexutil.Big, error)
 

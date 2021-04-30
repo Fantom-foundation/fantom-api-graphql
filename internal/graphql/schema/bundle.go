@@ -497,15 +497,21 @@ type Delegation {
     lockedUntil: Long!
 
     # lockedAmount represents the amount of delegation stake locked.
-    # The undelegate process must call unlock prior to creating withdraw request if outstanding
-    # unlocked amount is lower than demanded amount to undelegate.
+    # The undelegate process must call unlock prior to creating withdraw
+    # request if outstanding unlocked amount
+    # is lower than demanded amount to undelegate.
     lockedAmount: BigInt!
 
-    # unlockedAmount represents the amount of delegation stake available for undelegate.
+    # unlockedAmount represents the amount
+    # of delegation stake available for undelegate.
     unlockedAmount: BigInt!
 
-    # outstandingSFTM represents the amount of sFTM tokens representing the tokenized stake
-    # minted and un-repaid on this delegation.
+    # unlockPenalty provides the mount of penalty applied
+    # to the stake amount on premature unlock
+    unlockPenalty(amount: BigInt!): BigInt!
+
+    # outstandingSFTM represents the amount of sFTM tokens representing
+    # the tokenized stake minted and un-repaid on this delegation.
     outstandingSFTM: BigInt!
 
     # tokenizerAllowedToWithdraw indicates if the stake tokenizer allows the stake

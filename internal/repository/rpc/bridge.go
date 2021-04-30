@@ -18,10 +18,12 @@ import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	eth "github.com/ethereum/go-ethereum/ethclient"
 	ftm "github.com/ethereum/go-ethereum/rpc"
 	"golang.org/x/sync/singleflight"
+	"strings"
 )
 
 // FtmBridge represents Lachesis RPC abstraction layer.
@@ -41,6 +43,7 @@ type FtmBridge struct {
 	fLendCfg fLendConfig
 
 	// common contracts
+	sfcAbi      *abi.ABI
 	sfcContract *contracts.SfcContract
 }
 
@@ -136,4 +139,17 @@ func (ftm *FtmBridge) SfcContract() *contracts.SfcContract {
 		}
 	}
 	return ftm.sfcContract
+}
+
+// SfcAbi returns a parse ABI of the AFC contract.
+func (ftm *FtmBridge) SfcAbi() *abi.ABI {
+	if nil == ftm.sfcAbi {
+		ab, err := abi.JSON(strings.NewReader(contracts.SfcContractABI))
+		if err != nil {
+			ftm.log.Criticalf("failed to parse SFC contract ABI; %s", err.Error())
+			panic(err)
+		}
+		ftm.sfcAbi = &ab
+	}
+	return ftm.sfcAbi
 }
