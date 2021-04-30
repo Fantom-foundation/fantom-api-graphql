@@ -214,6 +214,12 @@ func (del Delegation) LockedAmount() (hexutil.Big, error) {
 	return lock.LockedAmount, nil
 }
 
+// UnlockedAmount resolves the total amount of unlocked delegation
+// which is available for un-delegate.
+func (del Delegation) UnlockedAmount() (hexutil.Big, error) {
+	return repository.R().DelegationAmountUnlocked(&del.Address, (*big.Int)(del.Delegation.ToStakerId))
+}
+
 // OutstandingSFTM resolves the amount of outstanding sFTM tokens
 // minted for this account.
 func (del Delegation) OutstandingSFTM() (hexutil.Big, error) {

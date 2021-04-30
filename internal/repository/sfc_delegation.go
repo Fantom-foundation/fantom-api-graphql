@@ -94,6 +94,18 @@ func (p *proxy) DelegationLock(addr *common.Address, valID *hexutil.Big) (*types
 	return p.rpc.DelegationLock(addr, valID)
 }
 
+// DelegationAmountUnlocked returns delegation lock information using SFC contract binding.
+func (p *proxy) DelegationAmountUnlocked(addr *common.Address, valID *big.Int) (hexutil.Big, error) {
+	p.log.Debugf("loading unlocked amount for %s to #%d", addr.String(), valID.Uint64())
+
+	// get the amount
+	val, err := p.rpc.AmountStakeUnlocked(addr, valID)
+	if err != nil {
+		return hexutil.Big{}, err
+	}
+	return hexutil.Big(*val), nil
+}
+
 // PendingRewards returns a detail of pending rewards for the given delegation address and validator ID.
 func (p *proxy) PendingRewards(addr *common.Address, valID *hexutil.Big) (*types.PendingRewards, error) {
 	p.log.Debugf("loading pending rewards of %s to #%d", addr.String(), valID.ToInt().Uint64())

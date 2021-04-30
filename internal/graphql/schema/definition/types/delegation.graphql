@@ -50,6 +50,9 @@ type Delegation {
     # unlocked amount is lower than demanded amount to undelegate.
     lockedAmount: BigInt!
 
+    # unlockedAmount represents the amount of delegation stake available for undelegate.
+    unlockedAmount: BigInt!
+
     # outstandingSFTM represents the amount of sFTM tokens representing the tokenized stake
     # minted and un-repaid on this delegation.
     outstandingSFTM: BigInt!

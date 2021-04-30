@@ -19,7 +19,6 @@ package rpc
 //go:generate tools/abigen.sh --abi ./contracts/abi/sfc-tokenizer.abi --pkg contracts --type SfcTokenizer --out ./contracts/sfc_tokenizer.go
 
 import (
-	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -30,21 +29,14 @@ const sfcFirstLockEpoch uint64 = 1600
 
 // SfcVersion returns current version of the SFC contract as a single number.
 func (ftm *FtmBridge) SfcVersion() (hexutil.Uint64, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
-		return 0, err
-	}
-
 	// get the version information from the contract
 	var ver [3]byte
-	ver, err = contract.Version(nil)
+	var err error
+	ver, err = ftm.SfcContract().Version(nil)
 	if err != nil {
 		ftm.log.Criticalf("failed to get the SFC version; %s", err.Error())
 		return 0, err
 	}
-
 	return hexutil.Uint64((uint64(ver[0]) << 16) | (uint64(ver[1]) << 8) | uint64(ver[2])), nil
 }
 
@@ -63,35 +55,19 @@ func (ftm *FtmBridge) CurrentEpoch() (hexutil.Uint64, error) {
 
 // CurrentSealedEpoch extract the current sealed epoch id from SFC smart contract.
 func (ftm *FtmBridge) CurrentSealedEpoch() (hexutil.Uint64, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
-		return 0, err
-	}
-
 	// get the value from the contract
-	epoch, err := contract.CurrentSealedEpoch(ftm.DefaultCallOpts())
+	epoch, err := ftm.SfcContract().CurrentSealedEpoch(ftm.DefaultCallOpts())
 	if err != nil {
 		ftm.log.Errorf("failed to get the current sealed epoch: %s", err.Error())
 		return 0, err
 	}
-
-	// get the value
 	return hexutil.Uint64(epoch.Uint64()), nil
 }
 
 // Epoch extract information about an epoch from SFC smart contract.
 func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (*types.Epoch, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
-		return nil, err
-	}
-
 	// extract epoch snapshot
-	epo, err := contract.GetEpochSnapshot(nil, big.NewInt(int64(id)))
+	epo, err := ftm.SfcContract().GetEpochSnapshot(nil, big.NewInt(int64(id)))
 	if err != nil {
 		ftm.log.Errorf("failed to extract epoch information: %s", err.Error())
 		return nil, err
@@ -117,15 +93,8 @@ func (ftm *FtmBridge) RewardsAllowed() (bool, error) {
 
 // LockingAllowed indicates if the stake locking has been enabled in SFC.
 func (ftm *FtmBridge) LockingAllowed() (bool, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
-		return false, err
-	}
-
 	// get the current sealed epoch value from the contract
-	epoch, err := contract.CurrentSealedEpoch(nil)
+	epoch, err := ftm.SfcContract().CurrentSealedEpoch(nil)
 	if err != nil {
 		ftm.log.Errorf("failed to get the current sealed epoch: %s", err.Error())
 		return false, err
@@ -136,77 +105,35 @@ func (ftm *FtmBridge) LockingAllowed() (bool, error) {
 
 // TotalStaked returns the total amount of staked tokens.
 func (ftm *FtmBridge) TotalStaked() (*big.Int, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
-		return nil, err
-	}
-	return contract.TotalStake(nil)
+	return ftm.SfcContract().TotalStake(ftm.DefaultCallOpts())
 }
 
 // SfcMinValidatorStake extracts a value of minimal validator self stake.
 func (ftm *FtmBridge) SfcMinValidatorStake() (*big.Int, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return nil, err
-	}
-	return contract.MinSelfStake(nil)
+	return ftm.SfcContract().MinSelfStake(ftm.DefaultCallOpts())
 }
 
 // SfcMaxDelegatedRatio extracts a ratio between self delegation and received stake.
 func (ftm *FtmBridge) SfcMaxDelegatedRatio() (*big.Int, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return nil, err
-	}
-	return contract.MaxDelegatedRatio(nil)
+	return ftm.SfcContract().MaxDelegatedRatio(ftm.DefaultCallOpts())
 }
 
 // SfcMinLockupDuration extracts a minimal lockup duration.
 func (ftm *FtmBridge) SfcMinLockupDuration() (*big.Int, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return nil, err
-	}
-	return contract.MinLockupDuration(nil)
+	return ftm.SfcContract().MinLockupDuration(ftm.DefaultCallOpts())
 }
 
 // SfcMaxLockupDuration extracts a maximal lockup duration.
 func (ftm *FtmBridge) SfcMaxLockupDuration() (*big.Int, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return nil, err
-	}
-	return contract.MaxLockupDuration(nil)
+	return ftm.SfcContract().MaxLockupDuration(ftm.DefaultCallOpts())
 }
 
 // SfcWithdrawalPeriodEpochs extracts a minimal number of epochs between un-delegate and withdraw.
 func (ftm *FtmBridge) SfcWithdrawalPeriodEpochs() (*big.Int, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return nil, err
-	}
-	return contract.WithdrawalPeriodEpochs(nil)
+	return ftm.SfcContract().WithdrawalPeriodEpochs(ftm.DefaultCallOpts())
 }
 
 // SfcWithdrawalPeriodTime extracts a minimal number of seconds between un-delegate and withdraw.
 func (ftm *FtmBridge) SfcWithdrawalPeriodTime() (*big.Int, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return nil, err
-	}
-	return contract.WithdrawalPeriodTime(nil)
+	return ftm.SfcContract().WithdrawalPeriodTime(ftm.DefaultCallOpts())
 }

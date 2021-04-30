@@ -17,12 +17,11 @@ import (
 	"context"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
-	"golang.org/x/sync/singleflight"
-	"math/big"
-
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	eth "github.com/ethereum/go-ethereum/ethclient"
 	ftm "github.com/ethereum/go-ethereum/rpc"
+	"golang.org/x/sync/singleflight"
 )
 
 // FtmBridge represents Lachesis RPC abstraction layer.
@@ -40,6 +39,9 @@ type FtmBridge struct {
 	// extended minter config
 	fMintCfg fMintConfig
 	fLendCfg fLendConfig
+
+	// common contracts
+	sfcContract *contracts.SfcContract
 }
 
 // New creates new Lachesis RPC connection bridge.
@@ -109,16 +111,29 @@ func (ftm *FtmBridge) Connection() *ftm.Client {
 
 // DefaultCallOpts creates a default record for call options.
 func (ftm *FtmBridge) DefaultCallOpts() *bind.CallOpts {
-	// get block
-	bh, _, _ := ftm.cg.Do("block-height", func() (interface{}, error) {
-		return ftm.MustBlockHeight(), nil
+	// get the default call opts only once if called in parallel
+	co, _, _ := ftm.cg.Do("default-call-opts", func() (interface{}, error) {
+		return &bind.CallOpts{
+			Pending:     false,
+			From:        ftm.sigConfig.Address,
+			BlockNumber: ftm.MustBlockHeight(),
+			Context:     context.Background(),
+		}, nil
 	})
+	return co.(*bind.CallOpts)
+}
 
-	// get the opts
-	return &bind.CallOpts{
-		Pending:     false,
-		From:        ftm.sigConfig.Address,
-		BlockNumber: bh.(*big.Int),
-		Context:     context.Background(),
+// SfcContract returns instance of SFC contract for interaction.
+func (ftm *FtmBridge) SfcContract() *contracts.SfcContract {
+	// lazy create SFC contract instance
+	if nil == ftm.sfcContract {
+		// instantiate the contract and display its name
+		var err error
+		ftm.sfcContract, err = contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
+		if err != nil {
+			ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
+			panic(err)
+		}
 	}
+	return ftm.sfcContract
 }

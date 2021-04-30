@@ -12,6 +12,10 @@ import (
 	"math/rand"
 )
 
+// trxLargeInputWall represents the largest transaction input block we store in the off-chain database.
+// Larger inputs (like contract deployments) need to be loaded from the blockchain directly if needed.
+const trxLargeInputWall = 32 * 8
+
 // Transaction represents a basic information provided by the API about transaction inside Opera blockchain.
 type Transaction struct {
 	// BlockHash represents hash of the block where this transaction was in. nil when its pending.
@@ -56,6 +60,9 @@ type Transaction struct {
 	// Input represents the data send along with the transaction.
 	InputData hexutil.Bytes `json:"input"`
 
+	// LargeInput indicates the input data block is large and needs to be loaded separately.
+	LargeInput bool `json:"-"`
+
 	// Index represents integer of the transaction's index position in the block.
 	Index *hexutil.Uint64 `json:"index,omitempty"`
 
@@ -77,23 +84,24 @@ type BsonLog struct {
 
 // BsonTransaction represents the transaction data structure for BSON formatting.
 type BsonTransaction struct {
-	Hash      string    `bson:"_id"`
-	Ordinal   uint64    `bson:"orx"`
-	BlockID   *uint64   `bson:"blk"`
-	BlockHash *string   `bson:"blk_h"`
-	BlkIndex  *uint64   `bson:"bix"`
-	From      string    `bson:"from"`
-	To        *string   `bson:"to"`
-	Value     string    `bson:"value"`
-	Input     []byte    `bson:"input"`
-	Gas       uint64    `bson:"gas"`
-	UsedGas   *string   `bson:"gas_use"`
-	CumGas    *uint64   `bson:"gas_all"`
-	GasPrice  string    `bson:"gas_pri"`
-	Nonce     uint64    `bson:"nonce"`
-	Contract  *string   `bson:"contr"`
-	Status    uint64    `bson:"stat"`
-	Logs      []BsonLog `bson:"logs"`
+	Hash       string    `bson:"_id"`
+	Ordinal    uint64    `bson:"orx"`
+	BlockID    *uint64   `bson:"blk"`
+	BlockHash  *string   `bson:"blk_h"`
+	BlkIndex   *uint64   `bson:"bix"`
+	From       string    `bson:"from"`
+	To         *string   `bson:"to"`
+	Value      string    `bson:"value"`
+	LargeInput bool      `bson:"large"`
+	Input      []byte    `bson:"input"`
+	Gas        uint64    `bson:"gas"`
+	UsedGas    *string   `bson:"gas_use"`
+	CumGas     *uint64   `bson:"gas_all"`
+	GasPrice   string    `bson:"gas_pri"`
+	Nonce      uint64    `bson:"nonce"`
+	Contract   *string   `bson:"contr"`
+	Status     uint64    `bson:"stat"`
+	Logs       []BsonLog `bson:"logs"`
 }
 
 // TransactionIndex calculates an ordinal index a transaction
@@ -131,14 +139,19 @@ func (trx *Transaction) Marshal() ([]byte, error) {
 func (trx *Transaction) MarshalBSON() ([]byte, error) {
 	// prep the structure for saving
 	pom := BsonTransaction{
-		Hash:     trx.Hash.String(),
-		Ordinal:  trx.Uid(),
-		From:     trx.From.String(),
-		Gas:      uint64(trx.Gas),
-		GasPrice: trx.GasPrice.String(),
-		Nonce:    uint64(trx.Nonce),
-		Value:    trx.Value.String(),
-		Input:    ([]byte)(trx.InputData),
+		Hash:       trx.Hash.String(),
+		Ordinal:    trx.Uid(),
+		From:       trx.From.String(),
+		Gas:        uint64(trx.Gas),
+		GasPrice:   trx.GasPrice.String(),
+		Nonce:      uint64(trx.Nonce),
+		Value:      trx.Value.String(),
+		LargeInput: len(trx.InputData) > trxLargeInputWall,
+	}
+
+	// store the input data along with the trx
+	if !pom.LargeInput {
+		pom.Input = trx.InputData
 	}
 
 	// transaction has been mined, we have all the extra info, too
@@ -196,7 +209,6 @@ func (trx *Transaction) MarshalBSON() ([]byte, error) {
 			pom.Logs[i].Topics[ti] = th.String()
 		}
 	}
-
 	return bson.Marshal(pom)
 }
 
@@ -222,6 +234,7 @@ func (trx *Transaction) UnmarshalBSON(data []byte) (err error) {
 	trx.Nonce = hexutil.Uint64(row.Nonce)
 	trx.Status = (*hexutil.Uint64)(&row.Status)
 	trx.InputData = row.Input
+	trx.LargeInput = row.LargeInput
 
 	// try to decode the value
 	tv, err := hexutil.DecodeBig(row.Value)

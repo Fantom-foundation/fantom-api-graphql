@@ -26,32 +26,17 @@ import (
 func (ftm *FtmBridge) AmountStaked(addr *common.Address, valID *big.Int) (*big.Int, error) {
 	// keep track of the operation
 	ftm.log.Debugf("verifying amount staked by %s to %d", addr.String(), valID.Uint64())
-
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return nil, err
-	}
-
-	// get the amount staked
-	return contract.GetStake(ftm.DefaultCallOpts(), *addr, valID)
+	return ftm.SfcContract().GetStake(ftm.DefaultCallOpts(), *addr, valID)
 }
 
-// AmountStakeLocked returns the current locked amount at stake for the given staker address and target validator
+// AmountStakeLocked returns the current locked amount at stake for the given staker address and target validator.
 func (ftm *FtmBridge) AmountStakeLocked(addr *common.Address, valID *big.Int) (*big.Int, error) {
-	// keep track of the operation
-	ftm.log.Debugf("verifying amount locked by %s to %d", addr.String(), valID.Uint64())
+	return ftm.SfcContract().GetLockedStake(ftm.DefaultCallOpts(), *addr, valID)
+}
 
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return nil, err
-	}
-
-	// get the amount staked
-	return contract.GetLockedStake(ftm.DefaultCallOpts(), *addr, valID)
+// AmountStakeUnlocked returns the current unlocked amount at stake for the given staker address and target validator.
+func (ftm *FtmBridge) AmountStakeUnlocked(addr *common.Address, valID *big.Int) (*big.Int, error) {
+	return ftm.SfcContract().GetUnlockedStake(ftm.DefaultCallOpts(), *addr, valID)
 }
 
 // PendingRewards returns a detail of delegation rewards waiting to be claimed for the given delegation.
@@ -63,15 +48,8 @@ func (ftm *FtmBridge) PendingRewards(addr *common.Address, valID *big.Int) (*typ
 		Amount:  hexutil.Big{},
 	}
 
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return &pr, nil
-	}
-
 	// get the pending rewards amount
-	amo, err := contract.PendingRewards(ftm.DefaultCallOpts(), *addr, valID)
+	amo, err := ftm.SfcContract().PendingRewards(ftm.DefaultCallOpts(), *addr, valID)
 	if err != nil {
 		ftm.log.Criticalf("can not calculate pending rewards of %s to %d; %s", addr.String(), valID.Uint64(), err.Error())
 		return &pr, nil
@@ -92,15 +70,8 @@ func (ftm *FtmBridge) DelegationLock(addr *common.Address, valID *hexutil.Big) (
 		}
 	}()
 
-	// instantiate the contract
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return nil, err
-	}
-
 	// get staker locking detail
-	lock, err := contract.GetLockupInfo(ftm.DefaultCallOpts(), *addr, valID.ToInt())
+	lock, err := ftm.SfcContract().GetLockupInfo(ftm.DefaultCallOpts(), *addr, valID.ToInt())
 	if err != nil {
 		ftm.log.Errorf("delegation lock query failed; %v", err)
 		return nil, err

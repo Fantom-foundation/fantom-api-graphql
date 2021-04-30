@@ -14,7 +14,6 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 import (
-	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -51,33 +50,17 @@ func (ftm *FtmBridge) ValidatorEpochUptime(valID *hexutil.Big) (uint64, error) {
 
 // LastValidatorId returns the last staker id in Opera blockchain.
 func (ftm *FtmBridge) LastValidatorId() (uint64, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
-		return 0, err
-	}
-
 	// get the value from the contract
-	sl, err := contract.LastValidatorID(nil)
+	sl, err := ftm.SfcContract().LastValidatorID(nil)
 	if err != nil {
 		ftm.log.Errorf("failed to get the last staker ID: %s", err.Error())
 		return 0, err
 	}
-
-	// get the value
 	return sl.Uint64(), nil
 }
 
 // ValidatorsCount returns the number of validators in Opera blockchain.
 func (ftm *FtmBridge) ValidatorsCount() (uint64, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract: %s", err.Error())
-		return 0, err
-	}
-
 	var ep hexutil.Big
 	if err := ftm.rpc.Call(&ep, "ftm_currentEpoch"); err != nil {
 		ftm.log.Errorf("failed to get the current epoch; %s", err.Error())
@@ -85,7 +68,7 @@ func (ftm *FtmBridge) ValidatorsCount() (uint64, error) {
 	}
 
 	// get the value from the contract
-	val, err := contract.GetEpochValidatorIDs(nil, ep.ToInt())
+	val, err := ftm.SfcContract().GetEpochValidatorIDs(nil, ep.ToInt())
 	if err != nil {
 		ftm.log.Errorf("failed to get the list of validators; %s", err.Error())
 		return 0, err
@@ -104,21 +87,13 @@ func (ftm *FtmBridge) Validator(valID *big.Int) (*types.Validator, error) {
 
 	// keep track of the operation
 	ftm.log.Debugf("loading validator #%d", valID.Uint64())
-
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return nil, err
-	}
-
-	return ftm.validatorById(contract, valID)
+	return ftm.validatorById(valID)
 }
 
 // validatorById loads details of a validator with the specified ID.
-func (ftm *FtmBridge) validatorById(contract *contracts.SfcContract, valID *big.Int) (*types.Validator, error) {
+func (ftm *FtmBridge) validatorById(valID *big.Int) (*types.Validator, error) {
 	// call for data
-	val, err := contract.GetValidator(nil, valID)
+	val, err := ftm.SfcContract().GetValidator(nil, valID)
 	if err != nil {
 		ftm.log.Criticalf("failed to load validator #%d from SFC; %s", valID.Uint64(), err.Error())
 		return nil, err
@@ -158,15 +133,8 @@ func (ftm *FtmBridge) validatorById(contract *contracts.SfcContract, valID *big.
 
 // ValidatorAddress extract a staker address for the given staker ID.
 func (ftm *FtmBridge) ValidatorAddress(valID *big.Int) (*common.Address, error) {
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract;%s", err.Error())
-		return nil, err
-	}
-
 	// do we have an address call?
-	val, err := contract.GetValidator(nil, valID)
+	val, err := ftm.SfcContract().GetValidator(nil, valID)
 	if err != nil {
 		ftm.log.Error("validator information could not be extracted")
 		return nil, err
@@ -187,15 +155,8 @@ func (ftm *FtmBridge) IsValidator(addr *common.Address) (bool, error) {
 	// keep track of the operation
 	ftm.log.Debugf("verifying validator address %s", addr.String())
 
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return false, err
-	}
-
 	// try to get the id
-	id, err := contract.GetValidatorID(nil, *addr)
+	id, err := ftm.SfcContract().GetValidatorID(nil, *addr)
 	if err != nil {
 		ftm.log.Criticalf("can not check validator at %s; %s", addr.String(), err.Error())
 		return false, err
@@ -214,15 +175,8 @@ func (ftm *FtmBridge) ValidatorByAddress(addr *common.Address) (*types.Validator
 	// keep track of the operation
 	ftm.log.Debugf("loading validator with address %s", addr.String())
 
-	// instantiate the contract and display its name
-	contract, err := contracts.NewSfcContract(ftm.sfcConfig.SFCContract, ftm.eth)
-	if err != nil {
-		ftm.log.Criticalf("failed to instantiate SFC contract; %s", err.Error())
-		return nil, err
-	}
-
 	// try to get the staker id
-	id, err := contract.GetValidatorID(ftm.DefaultCallOpts(), *addr)
+	id, err := ftm.SfcContract().GetValidatorID(ftm.DefaultCallOpts(), *addr)
 	if err != nil {
 		ftm.log.Criticalf("can not check validator at %s; %s", addr.String(), err.Error())
 		return nil, err
@@ -233,5 +187,5 @@ func (ftm *FtmBridge) ValidatorByAddress(addr *common.Address) (*types.Validator
 		ftm.log.Debugf("validator not found for address %s", addr.String())
 		return nil, nil
 	}
-	return ftm.validatorById(contract, id)
+	return ftm.validatorById(id)
 }
