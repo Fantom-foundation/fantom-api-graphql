@@ -54,9 +54,8 @@ func (ftm *FtmBridge) StakeUnlockPenalty(addr *common.Address, valID *big.Int, a
 	data, err := ftm.eth.CallContract(context.Background(), ethereum.CallMsg{
 		From: *addr,
 		To:   &ftm.sfcConfig.SFCContract,
-		Gas:  160000,
 		Data: cd,
-	}, ftm.MustBlockHeight())
+	}, nil)
 	if err != nil {
 		ftm.log.Errorf("penalty for unlocking %d of %s to %d not available; %s", amount.Uint64(), addr.String(), valID.Uint64(), err.Error())
 		return nil, err
