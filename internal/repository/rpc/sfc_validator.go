@@ -61,14 +61,15 @@ func (ftm *FtmBridge) LastValidatorId() (uint64, error) {
 
 // ValidatorsCount returns the number of validators in Opera blockchain.
 func (ftm *FtmBridge) ValidatorsCount() (uint64, error) {
-	var ep hexutil.Big
-	if err := ftm.rpc.Call(&ep, "ftm_currentEpoch"); err != nil {
-		ftm.log.Errorf("failed to get the current epoch; %s", err.Error())
+	// get the value from the contract
+	epoch, err := ftm.SfcContract().CurrentEpoch(ftm.DefaultCallOpts())
+	if err != nil {
+		ftm.log.Errorf("failed to get the current sealed epoch: %s", err.Error())
 		return 0, err
 	}
 
 	// get the value from the contract
-	val, err := ftm.SfcContract().GetEpochValidatorIDs(nil, ep.ToInt())
+	val, err := ftm.SfcContract().GetEpochValidatorIDs(nil, epoch)
 	if err != nil {
 		ftm.log.Errorf("failed to get the list of validators; %s", err.Error())
 		return 0, err

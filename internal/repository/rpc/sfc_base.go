@@ -42,15 +42,13 @@ func (ftm *FtmBridge) SfcVersion() (hexutil.Uint64, error) {
 
 // CurrentEpoch extract the current epoch id from SFC smart contract.
 func (ftm *FtmBridge) CurrentEpoch() (hexutil.Uint64, error) {
-	// use rather the public API, it should be faster since it does not involve contract call
-	var ep hexutil.Big
-	if err := ftm.rpc.Call(&ep, "ftm_currentEpoch"); err != nil {
-		ftm.log.Errorf("failed to get the current epoch; %s", err.Error())
+	// get the value from the contract
+	epoch, err := ftm.SfcContract().CurrentEpoch(ftm.DefaultCallOpts())
+	if err != nil {
+		ftm.log.Errorf("failed to get the current sealed epoch: %s", err.Error())
 		return 0, err
 	}
-
-	// get the value
-	return hexutil.Uint64(ep.ToInt().Uint64()), nil
+	return hexutil.Uint64(epoch.Uint64()), nil
 }
 
 // CurrentSealedEpoch extract the current sealed epoch id from SFC smart contract.
