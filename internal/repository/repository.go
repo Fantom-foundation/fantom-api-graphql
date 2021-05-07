@@ -152,7 +152,13 @@ type Repository interface {
 	Transactions(*string, int32) (*types.TransactionList, error)
 
 	// TransactionsCount returns total number of transactions in the block chain.
-	TransactionsCount() (hexutil.Uint64, error)
+	TransactionsCount() (uint64, error)
+
+	// EstimateTransactionsCount returns an approximate amount of transactions on the network.
+	EstimateTransactionsCount() (hexutil.Uint64, error)
+
+	// TransactionsCountInc updates the value of transaction counter estimator.
+	TransactionsCountInc(diff uint64)
 
 	// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
 	SendTransaction(hexutil.Bytes) (*types.Transaction, error)
@@ -540,6 +546,9 @@ type proxy struct {
 	log   logger.Logger
 	cfg   *config.Config
 
+	// helpers
+	txe *trxEstimator
+
 	// we need a Group to use single flight to control price pulls
 	apiRequestGroup singleflight.Group
 
@@ -569,6 +578,7 @@ func newRepository() Repository {
 		rpc:   rpcBridge,
 		log:   log,
 		cfg:   cfg,
+		txe:   new(trxEstimator),
 
 		// get the map of governance contracts
 		govContracts: governanceContractsMap(&cfg.Governance),

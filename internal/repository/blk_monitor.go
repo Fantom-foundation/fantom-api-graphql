@@ -88,8 +88,10 @@ func (bm *blockMonitor) monitor() {
 
 		// unsubscribe
 		bm.log.Notice("block monitor unsubscribed")
-		bm.sub.Unsubscribe()
-		bm.sub = nil
+		if bm.sub != nil {
+			bm.sub.Unsubscribe()
+			bm.sub = nil
+		}
 
 		// log finish
 		bm.log.Notice("block monitor is closed")

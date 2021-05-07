@@ -41,7 +41,7 @@ func main() {
 		log.Fatal(err)
 	}
 	if reScan != nil {
-		cfg.ReScanBlocks = *reScan
+		cfg.ReScanBlocks.Start = *reScan
 	}
 
 	// print the version information

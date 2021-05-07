@@ -102,17 +102,5 @@ func (p *proxy) SendTransaction(tx hexutil.Bytes) (*types.Transaction, error) {
 // 	- For positive count we start from the most recent transaction and scan to older transactions.
 // 	- For negative count we start from the first transaction and scan to newer transactions.
 func (p *proxy) Transactions(cursor *string, count int32) (*types.TransactionList, error) {
-	// go to the database for the list of hashes of transaction searched
 	return p.db.Transactions(cursor, count, nil)
-}
-
-// TransactionsCount returns total number of transactions in the block chain.
-func (p *proxy) TransactionsCount() (hexutil.Uint64, error) {
-	// get the number of transactions registered
-	tc, err := p.db.TransactionsCount()
-	if err != nil {
-		return hexutil.Uint64(0), err
-	}
-
-	return hexutil.Uint64(tc), nil
 }

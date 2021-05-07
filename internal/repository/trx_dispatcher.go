@@ -99,10 +99,16 @@ func (td *trxDispatcher) process(evt *eventTransaction) {
 
 // waitAndStore waits for the transaction processing to finish and stores the transaction into db.
 func (td *trxDispatcher) waitAndStore(blk *types.Block, trx *types.Transaction, wg *sync.WaitGroup) {
+	// wait until the trx is processed
 	wg.Wait()
+
+	// store to the db
 	if err := td.repo.StoreTransaction(blk, trx); err != nil {
 		td.log.Errorf("can not store transaction %s from block %d", trx.Hash.String(), blk.Number)
 	}
+
+	// update estimator
+	td.repo.TransactionsCountInc(1)
 }
 
 // propagateTrxToAccounts pushes given transaction to accounts on both sides.

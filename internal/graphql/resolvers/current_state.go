@@ -51,7 +51,7 @@ func (cst CurrentState) Blocks() (hexutil.Big, error) {
 
 // Transactions resolves the total number of transactions in the chain.
 func (cst CurrentState) Transactions() (hexutil.Uint64, error) {
-	return repository.R().TransactionsCount()
+	return repository.R().EstimateTransactionsCount()
 }
 
 // SfcContractAddress resolves address of the SFC contract.

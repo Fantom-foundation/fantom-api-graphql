@@ -158,7 +158,7 @@ func (gc *GovernanceContract) ProposalFee() (hexutil.Big, error) {
 	return repository.R().GovernanceProposalFee(&gc.Address)
 }
 
-// totalVotingPower resolves the total available voting power.
+// TotalVotingPower resolves the total available voting power.
 func (gc *GovernanceContract) TotalVotingPower() (hexutil.Big, error) {
 	return repository.R().GovernanceTotalWeight(&gc.Address)
 }
