@@ -41,7 +41,7 @@ func (p *proxy) EstimateTransactionsCount() (hexutil.Uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return val.(hexutil.Uint64), nil
+	return hexutil.Uint64(val.(uint64)), nil
 }
 
 // TransactionsCountInc updates the value of transaction counter estimator.
