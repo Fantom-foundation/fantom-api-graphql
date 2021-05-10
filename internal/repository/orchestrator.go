@@ -95,7 +95,7 @@ func (or *orchestrator) init(cfg *config.Config) {
 
 	// create sync blockScanner; it starts scanning immediately
 	or.blkScanDone = make(chan bool, 1)
-	or.bls = newBlockScanner(or.trxDispatcherQueue, or.blkScanDone, or.repo, or.log, or.wg, cfg.ReScanBlocks.Start)
+	or.bls = newBlockScanner(or.trxDispatcherQueue, or.blkScanDone, or.repo, or.log, or.wg, &cfg.RepoCommand)
 
 	// create swap blockScanner, which loads uniswap to local db immediately
 	or.swapScanDone = make(chan bool, 1)

@@ -10,6 +10,7 @@ import (
 	retypes "github.com/ethereum/go-ethereum/core/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"math/rand"
+	"time"
 )
 
 // trxLargeInputWall represents the largest transaction input block we store in the off-chain database.
@@ -23,6 +24,9 @@ type Transaction struct {
 
 	// BlockNumber represents number of the block where this transaction was in. nil when its pending.
 	BlockNumber *hexutil.Uint64 `json:"blockNumber"`
+
+	// TimeStamp represents the time stamp of the transaction.
+	TimeStamp time.Time
 
 	// From represents address of the sender.
 	From common.Address `json:"from"`
@@ -101,6 +105,7 @@ type BsonTransaction struct {
 	Nonce      uint64    `bson:"nonce"`
 	Contract   *string   `bson:"contr"`
 	Status     uint64    `bson:"stat"`
+	Stamp      time.Time `bson:"stamp"`
 	Logs       []BsonLog `bson:"logs"`
 }
 
@@ -147,6 +152,7 @@ func (trx *Transaction) MarshalBSON() ([]byte, error) {
 		Nonce:      uint64(trx.Nonce),
 		Value:      trx.Value.String(),
 		LargeInput: len(trx.InputData) > trxLargeInputWall,
+		Stamp:      trx.TimeStamp,
 	}
 
 	// store the input data along with the trx
@@ -235,6 +241,7 @@ func (trx *Transaction) UnmarshalBSON(data []byte) (err error) {
 	trx.Status = (*hexutil.Uint64)(&row.Status)
 	trx.InputData = row.Input
 	trx.LargeInput = row.LargeInput
+	trx.TimeStamp = row.Stamp
 
 	// try to decode the value
 	tv, err := hexutil.DecodeBig(row.Value)

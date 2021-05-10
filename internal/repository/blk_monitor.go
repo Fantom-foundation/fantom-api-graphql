@@ -14,6 +14,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	ftm "github.com/ethereum/go-ethereum/rpc"
 	"sync"
+	"time"
 )
 
 // monBlocksBufferCapacity is the number of new blocks kept in the block processing channel.
@@ -134,13 +135,17 @@ func (bm *blockMonitor) monitor() {
 			block, err := bm.repo.BlockByNumber(&blk.Number)
 			if err != nil {
 				bm.log.Errorf("can not process block; %s", err.Error())
-			} else {
-				// push for processing
-				bm.procChan <- *block
-
-				// notify event
-				bm.onBlock <- block
+				continue
 			}
+
+			// push for processing
+			bm.procChan <- *block
+
+			// notify event
+			bm.onBlock <- block
+
+			// add to the ring cache
+			bm.repo.CacheBlock(block)
 		}
 	}
 }
@@ -194,6 +199,9 @@ func (bm *blockMonitor) handle(block *types.Block) {
 			bm.log.Errorf("error getting transaction detail; %s", err.Error())
 			continue
 		}
+
+		// update time stamp using the block data
+		trx.TimeStamp = time.Unix(int64(block.TimeStamp), 0)
 
 		// prep sending struct and push it to the queue
 		event := eventTransaction{block: block, trx: trx}

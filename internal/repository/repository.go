@@ -94,6 +94,9 @@ type Repository interface {
 	// and going up, or down based on count number.
 	Blocks(*uint64, int32) (*types.BlockList, error)
 
+	// CacheBlock puts a block to the internal block ring cache.
+	CacheBlock(blk *types.Block)
+
 	// Contract extract a smart contract information by address if available.
 	Contract(*common.Address) (*types.Contract, error)
 
@@ -159,6 +162,9 @@ type Repository interface {
 
 	// TransactionsCountInc updates the value of transaction counter estimator.
 	TransactionsCountInc(diff uint64)
+
+	// CacheTransaction puts a transaction to the internal ring cache.
+	CacheTransaction(trx *types.Transaction)
 
 	// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
 	SendTransaction(hexutil.Bytes) (*types.Transaction, error)

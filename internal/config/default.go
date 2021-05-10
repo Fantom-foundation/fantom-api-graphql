@@ -76,6 +76,9 @@ const (
 
 	// defTokenLogoFilePath represents the default path to the tokens map file
 	defTokenLogoFilePath = "tokens.json"
+
+	// defBlockScanRescanDepth represents the amount of blocks re-scanned on server start
+	defBlockScanRescanDepth = 500
 )
 
 // default list of API peers

@@ -4,14 +4,27 @@ package cache
 import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
+	"fantom-api-graphql/internal/repository/cache/ring"
 	"github.com/allegro/bigcache"
 	"time"
 )
+
+// TransactionRingCacheSize represents the amount of transactions kept
+// in fast in-memory ring cache for fast loading.
+const TransactionRingCacheSize = 75
+
+// BlockRingCacheSize represents the amount of blocks kept
+// in fast in-memory ring cache for fast loading.
+const BlockRingCacheSize = 75
 
 // MemBridge represents BigCache abstraction layer.
 type MemBridge struct {
 	cache *bigcache.BigCache
 	log   logger.Logger
+
+	// ring of the most recent blocks and transactions
+	blkRing *ring.Ring
+	trxRing *ring.Ring
 }
 
 // New creates a new BigCache bridge.
@@ -30,6 +43,10 @@ func New(cfg *config.Config, log logger.Logger) (*MemBridge, error) {
 	return &MemBridge{
 		cache: c,
 		log:   log,
+
+		// make rings
+		blkRing: ring.New(BlockRingCacheSize),
+		trxRing: ring.New(TransactionRingCacheSize),
 	}, nil
 }
 

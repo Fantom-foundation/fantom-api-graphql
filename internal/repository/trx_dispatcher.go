@@ -62,9 +62,9 @@ func (td *trxDispatcher) dispatch() {
 		// try to read next transaction
 		select {
 		case toDispatch := <-td.buffer:
-			// validate
-			if toDispatch.block == nil || toDispatch.trx == nil {
-				td.log.Critical("dispatcher received invalid transaction")
+			// validate incoming data
+			if toDispatch == nil || toDispatch.block == nil || toDispatch.trx == nil {
+				td.log.Debugf("dispatcher dry loop")
 				continue
 			}
 
@@ -109,6 +109,9 @@ func (td *trxDispatcher) waitAndStore(blk *types.Block, trx *types.Transaction, 
 
 	// update estimator
 	td.repo.TransactionsCountInc(1)
+
+	// add to the ring cache
+	td.repo.CacheTransaction(trx)
 }
 
 // propagateTrxToAccounts pushes given transaction to accounts on both sides.

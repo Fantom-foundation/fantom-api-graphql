@@ -10,6 +10,7 @@ package repository
 
 import (
 	"errors"
+	"fantom-api-graphql/internal/repository/cache"
 	"fantom-api-graphql/internal/repository/rpc"
 	"fantom-api-graphql/internal/types"
 	"fmt"
@@ -29,6 +30,11 @@ func (p *proxy) BlockHeight() (*hexutil.Big, error) {
 // LastKnownBlock returns number of the last block known to the repository.
 func (p *proxy) LastKnownBlock() (uint64, error) {
 	return p.db.LastKnownBlock()
+}
+
+// CacheBlock puts a block to the internal block cache.
+func (p *proxy) CacheBlock(blk *types.Block) {
+	p.cache.AddBlock(blk)
 }
 
 // BlockByNumber returns a block at Opera blockchain represented by a number. Top block is returned if the number
@@ -220,6 +226,20 @@ func (p *proxy) Blocks(num *uint64, count int32) (*types.BlockList, error) {
 		return nil, fmt.Errorf("nothing to do, zero blocks requested")
 	}
 
+	// fast blocks list from the rings available?
+	if num == nil && count > 0 && count < cache.BlockRingCacheSize {
+		bl, err := p.RecentBlocks(int(count))
+		if err == nil {
+			return bl, nil
+		}
+	}
+
+	// slow block list
+	return p.makeBlocksList(num, count)
+}
+
+// makeBlocksList creates a block list for defined blocks range.
+func (p *proxy) makeBlocksList(num *uint64, count int32) (*types.BlockList, error) {
 	// init the list
 	current, list, err := p.initBlockList(num, count)
 	if err != nil {
@@ -244,6 +264,21 @@ func (p *proxy) Blocks(num *uint64, count int32) (*types.BlockList, error) {
 	if count < 0 {
 		list.Reverse()
 	}
-
 	return list, nil
+}
+
+// RecentBlocks pulls a list of the most recent blocks from the ring cache.
+func (p *proxy) RecentBlocks(length int) (*types.BlockList, error) {
+	// pull the quick list
+	bl := p.cache.ListBlocks(length)
+
+	// does it make sense? if so, make the list from it
+	if len(bl) > 0 {
+		return &types.BlockList{
+			Collection: bl,
+			IsStart:    true,
+			IsEnd:      false,
+		}, nil
+	}
+	return nil, fmt.Errorf("recent blocks list not available")
 }

@@ -18,6 +18,9 @@ import (
 // Load provides a loaded configuration for Fantom API server.
 func Load() (*Config, error) {
 	// Get the config reader
+	var config Config
+	attachCliFlags(&config)
+
 	cfg, err := readConfigFile()
 	if err != nil {
 		return nil, err
@@ -25,7 +28,6 @@ func Load() (*Config, error) {
 
 	// prep the container and try to unmarshal
 	// the config file into the config structure
-	var config Config
 	if err = cfg.Unmarshal(&config, setupConfigUnmarshaler); err != nil {
 		log.Println("can not extract API server configuration")
 		log.Println(err.Error())
@@ -37,6 +39,14 @@ func Load() (*Config, error) {
 
 	// return the final config
 	return &config, nil
+}
+
+// attachCliFlags connects CLI flags to certain configuration options.
+func attachCliFlags(cfg *Config) {
+	flag.Uint64Var(&cfg.RepoCommand.BlockScanStart, keyConfigCmdBlockScanStart, 0, "Force block scanner to start on this block.")
+	flag.Uint64Var(&cfg.RepoCommand.BlockScanEnd, keyConfigCmdBlockScanEnd, 18446744073709551615, "Force block scanner to end before this block.")
+	flag.Uint64Var(&cfg.RepoCommand.BlockScanReScan, keyConfigCmdBlockScanReScan, defBlockScanRescanDepth, "How many blocks are re-scanned on the server start.")
+	flag.StringVar(&cfg.RepoCommand.RestoreStake, keyConfigCmdRestoreStake, "", "Owner of the stake to be restored.")
 }
 
 // readConfigFile reads the config file and provides instance

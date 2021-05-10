@@ -56,13 +56,15 @@ type Config struct {
 	TokenLogo map[common.Address]string
 
 	// ReScanBlocks represents the number of blocks to be re-scanned.
-	ReScanBlocks ReScan
+	RepoCommand RepoCmd `mapstructure:"cmd"`
 }
 
-// ReScan represents a configuration for block scanner edges.
-type ReScan struct {
-	Start uint64
-	End   uint64
+// RepoCmd represents a repository command configuration.
+type RepoCmd struct {
+	BlockScanStart  uint64
+	BlockScanEnd    uint64
+	BlockScanReScan uint64
+	RestoreStake    string
 }
 
 // Server represents the GraphQL server configuration

@@ -6,8 +6,12 @@ const (
 	configFileName = "apiserver"
 
 	// configuration options
-	keyAppName        = "app_name"
-	keyConfigFilePath = "cfg"
+	keyAppName                  = "app_name"
+	keyConfigFilePath           = "cfg"
+	keyConfigCmdBlockScanStart  = "cmd.blk_from"
+	keyConfigCmdBlockScanEnd    = "cmd.blk_to"
+	keyConfigCmdBlockScanReScan = "cmd.rescan"
+	keyConfigCmdRestoreStake    = "cmd.fix_stake"
 
 	// server related keys
 	keyBindAddress      = "server.bind"

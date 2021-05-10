@@ -127,7 +127,7 @@ func (sws *uniswapScanner) getUniswapBlock(blockNr uint64, actualBlock *types.Bl
 	blkNumber := hexutil.Uint64(blockNr)
 	blk, err := sws.repo.BlockByNumber(&blkNumber)
 	if err != nil {
-		sws.log.Errorf("Uniswap block number %i was not found: %s", blockNr, err.Error())
+		sws.log.Errorf("uniswap block number %d was not found; %s", blockNr, err.Error())
 		return nil
 	}
 	return blk
@@ -150,6 +150,11 @@ func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *c
 
 	for itSwap.Next() {
 		blk := sws.getUniswapBlock(itSwap.Event.Raw.BlockNumber, nil)
+		if blk == nil {
+			sws.log.Criticalf("uniswap block %d not found to process swap", itSwap.Event.Raw.BlockNumber)
+			continue
+		}
+
 		sws.log.Debugf("Loading uniswap swap event from block nr# %d, tx: %s, time: %s", itSwap.Event.Raw.BlockNumber, itSwap.Event.Raw.TxHash.String(), blk.TimeStamp.String())
 		swap = sws.newSwap(*blk, pair, itSwap.Event.Raw.TxHash)
 		swap.Type = types.SwapNormal
@@ -181,8 +186,13 @@ func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *c
 
 	for itMint.Next() {
 		blk := sws.getUniswapBlock(itMint.Event.Raw.BlockNumber, nil)
-		txhash := common.BytesToHash(itMint.Event.Raw.TxHash.Bytes())
-		tx, _ := sws.repo.Transaction(&txhash)
+		if blk == nil {
+			sws.log.Criticalf("uniswap block %d not found to process mint", itSwap.Event.Raw.BlockNumber)
+			continue
+		}
+
+		txh := common.BytesToHash(itMint.Event.Raw.TxHash.Bytes())
+		tx, _ := sws.repo.LoadTransaction(&txh)
 		sws.log.Debugf("Loading uniswap mint event from block nr# %d, tx: %s, time: %s", itMint.Event.Raw.BlockNumber, itMint.Event.Raw.TxHash.String(), blk.TimeStamp.String())
 		swap = sws.newSwap(*blk, pair, itMint.Event.Raw.TxHash)
 		swap.Type = types.SwapMint
@@ -213,8 +223,13 @@ func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *c
 
 	for itBurn.Next() {
 		blk := sws.getUniswapBlock(itBurn.Event.Raw.BlockNumber, nil)
-		txhash := common.BytesToHash(itBurn.Event.Raw.TxHash.Bytes())
-		tx, _ := sws.repo.Transaction(&txhash)
+		if blk == nil {
+			sws.log.Criticalf("uniswap block %d not found to process burn", itSwap.Event.Raw.BlockNumber)
+			continue
+		}
+
+		txh := common.BytesToHash(itBurn.Event.Raw.TxHash.Bytes())
+		tx, _ := sws.repo.LoadTransaction(&txh)
 		sws.log.Debugf("Loading uniswap burn event from block nr# %d, tx: %s, time: %s", itBurn.Event.Raw.BlockNumber, itBurn.Event.Raw.TxHash.String(), blk.TimeStamp.String())
 		swap = sws.newSwap(*blk, pair, itBurn.Event.Raw.TxHash)
 		swap.Type = types.SwapBurn
@@ -245,6 +260,11 @@ func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *c
 
 	for itSync.Next() {
 		blk := sws.getUniswapBlock(itSync.Event.Raw.BlockNumber, nil)
+		if blk == nil {
+			sws.log.Criticalf("uniswap block %d not found to process sync", itSwap.Event.Raw.BlockNumber)
+			continue
+		}
+
 		sws.log.Debugf("Loading uniswap sync event from block nr# %d, tx: %s, time: %s", itSync.Event.Raw.BlockNumber, itSync.Event.Raw.TxHash.String(), blk.TimeStamp.String())
 		swap = sws.newSwap(*blk, pair, itSync.Event.Raw.TxHash)
 		swap.Type = types.SwapSync

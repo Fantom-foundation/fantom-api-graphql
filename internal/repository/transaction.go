@@ -10,6 +10,7 @@ package repository
 
 import (
 	"errors"
+	"fantom-api-graphql/internal/repository/cache"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -22,6 +23,11 @@ var ErrTransactionNotFound = errors.New("requested transaction can not be found 
 // StoreTransaction notifies a new incoming transaction from blockchain to the repository.
 func (p *proxy) StoreTransaction(block *types.Block, trx *types.Transaction) error {
 	return p.db.AddTransaction(block, trx)
+}
+
+// CacheTransaction puts a transaction to the internal ring cache.
+func (p *proxy) CacheTransaction(trx *types.Transaction) {
+	p.cache.AddTransaction(trx)
 }
 
 // Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
@@ -102,5 +108,25 @@ func (p *proxy) SendTransaction(tx hexutil.Bytes) (*types.Transaction, error) {
 // 	- For positive count we start from the most recent transaction and scan to older transactions.
 // 	- For negative count we start from the first transaction and scan to newer transactions.
 func (p *proxy) Transactions(cursor *string, count int32) (*types.TransactionList, error) {
+	// we may be able to pull the list faster than from the db
+	if cursor == nil && count > 0 && count < cache.TransactionRingCacheSize {
+		// pull the quick list
+		tl := p.cache.ListTransactions(int(count))
+
+		// does it make sense? if so, make the list from it
+		if len(tl) > 0 {
+			return &types.TransactionList{
+				Collection: tl,
+				Total:      uint64(p.MustEstimateTransactionsCount()),
+				First:      tl[0].Uid(),
+				Last:       tl[len(tl)-1].Uid(),
+				IsStart:    true,
+				IsEnd:      false,
+				Filter:     nil,
+			}, nil
+		}
+	}
+
+	// use slow trx list pulling
 	return p.db.Transactions(cursor, count, nil)
 }

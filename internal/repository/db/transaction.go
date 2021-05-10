@@ -36,6 +36,9 @@ const (
 
 	// fiTransactionValue is the name of the field of the transaction value.
 	fiTransactionValue = "value"
+
+	// fiTransactionTimeStamp is the name of the field of the transaction time stamp.
+	fiTransactionTimeStamp = "stamp"
 )
 
 // initTransactionsCollection initializes the transaction collection with
@@ -125,6 +128,7 @@ func (db *MongoDbBridge) UpdateTransaction(col *mongo.Collection, trx *types.Tra
 		{fiTransactionOrdinalIndex, trx.Uid()},
 		{fiTransactionSender, trx.From.String()},
 		{fiTransactionValue, trx.Value.String()},
+		{fiTransactionTimeStamp, trx.TimeStamp},
 	}}}, new(options.UpdateOptions).SetUpsert(false))
 	if err != nil {
 		db.log.Critical(err)

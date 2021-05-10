@@ -14,6 +14,9 @@ import (
 	"time"
 )
 
+// TransactionCountEstimateResetPeriod represents the period of trx count estimator reset.
+const TransactionCountEstimateResetPeriod = 60 * time.Minute
+
 // trxEstimator helps with counting transaction in repository.
 type trxEstimator struct {
 	count      uint64
@@ -34,7 +37,7 @@ func (p *proxy) EstimateTransactionsCount() (hexutil.Uint64, error) {
 
 			// store the value
 			atomic.StoreUint64(&p.txe.count, val)
-			p.txe.nextUpdate = time.Now().Add(15 * time.Minute)
+			p.txe.nextUpdate = time.Now().Add(TransactionCountEstimateResetPeriod)
 		}
 		return p.txe.count, nil
 	})
@@ -42,6 +45,15 @@ func (p *proxy) EstimateTransactionsCount() (hexutil.Uint64, error) {
 		return 0, err
 	}
 	return hexutil.Uint64(val.(uint64)), nil
+}
+
+// MustEstimateTransactionsCount resolves estimated transaction pool size.
+func (p *proxy) MustEstimateTransactionsCount() hexutil.Uint64 {
+	val, err := p.EstimateTransactionsCount()
+	if err != nil {
+		return 0
+	}
+	return val
 }
 
 // TransactionsCountInc updates the value of transaction counter estimator.
