@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	retypes "github.com/ethereum/go-ethereum/core/types"
 	"go.mongodb.org/mongo-driver/bson"
+	"math/big"
 	"math/rand"
 	"time"
 )
@@ -16,6 +17,10 @@ import (
 // trxLargeInputWall represents the largest transaction input block we store in the off-chain database.
 // Larger inputs (like contract deployments) need to be loaded from the blockchain directly if needed.
 const trxLargeInputWall = 32 * 8
+
+// TransactionDecimalsCorrection is used to manipulate precision of a transaction amount value
+// so it can be stored in database as INT64 without loosing too much data
+var TransactionDecimalsCorrection = new(big.Int).SetUint64(1000000000)
 
 // Transaction represents a basic information provided by the API about transaction inside Opera blockchain.
 type Transaction struct {
@@ -96,6 +101,7 @@ type BsonTransaction struct {
 	From       string    `bson:"from"`
 	To         *string   `bson:"to"`
 	Value      string    `bson:"value"`
+	Amount     int64     `bson:"amo"`
 	LargeInput bool      `bson:"large"`
 	Input      []byte    `bson:"input"`
 	Gas        uint64    `bson:"gas"`
@@ -142,6 +148,9 @@ func (trx *Transaction) Marshal() ([]byte, error) {
 
 // MarshalBSON creates a BSON representation of the Transaction record.
 func (trx *Transaction) MarshalBSON() ([]byte, error) {
+	// calculate the value to 9 digits (and 18 billions remain available)
+	val := new(big.Int).Div(trx.Value.ToInt(), TransactionDecimalsCorrection)
+
 	// prep the structure for saving
 	pom := BsonTransaction{
 		Hash:       trx.Hash.String(),
@@ -151,6 +160,7 @@ func (trx *Transaction) MarshalBSON() ([]byte, error) {
 		GasPrice:   trx.GasPrice.String(),
 		Nonce:      uint64(trx.Nonce),
 		Value:      trx.Value.String(),
+		Amount:     val.Int64(),
 		LargeInput: len(trx.InputData) > trxLargeInputWall,
 		Stamp:      trx.TimeStamp,
 	}
