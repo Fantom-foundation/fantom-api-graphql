@@ -58,6 +58,7 @@ type orchestrator struct {
 	uwm *UniswapMonitor
 	blm *blockMonitor
 	stm *stiMonitor
+	txf *txFlowUpdater
 }
 
 // NewOrchestrator creates a new instance of repository orchestrator.
@@ -112,6 +113,9 @@ func (or *orchestrator) init(cfg *config.Config) {
 	if cfg.Repository.MonitorStakers {
 		or.stm = newStiMonitor(or.repo, or.log, or.wg)
 	}
+
+	// create trx flow updater
+	or.txf = NewTxFlowUpdater(or.repo, or.log, or.wg)
 }
 
 // run starts the orchestrator work
@@ -128,6 +132,7 @@ func (or *orchestrator) run() {
 
 	// finally monitors
 	or.uwm.run()
+	or.txf.run()
 
 	// stakers info monitor may not be run at all
 	if or.stm != nil {
@@ -171,6 +176,7 @@ func (or *orchestrator) closeServices() {
 	// signal monitors to close
 	or.blm.close()
 	or.uwm.close()
+	or.txf.close()
 
 	// signal scanners to close
 	or.bls.close()

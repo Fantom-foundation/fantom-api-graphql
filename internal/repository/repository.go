@@ -508,6 +508,9 @@ type Repository interface {
 	// TrxFlowVolume resolves the list of daily trx flow aggregations.
 	TrxFlowVolume(from *time.Time, to *time.Time) ([]*types.DailyTrxVolume, error)
 
+	// TrxFlowUpdate executes the trx flow update in the database.
+	TrxFlowUpdate()
+
 	// Close and cleanup the repository.
 	Close()
 }

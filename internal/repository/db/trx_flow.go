@@ -88,3 +88,46 @@ func loadTrxDailyFlowList(ld *mongo.Cursor) ([]*types.DailyTrxVolume, error) {
 	}
 	return list, nil
 }
+
+// TrxDailyFlowUpdate performs an update on the daily trx flow data
+// for the given date range directly.
+func (db *MongoDbBridge) TrxDailyFlowUpdate(from time.Time) error {
+	// log what we do
+	db.log.Noticef("updating trx flow after %s", from)
+
+	// we aggregate transactions
+	col := db.client.Database(db.dbName).Collection(coTransactions)
+
+	// get the collection
+	cr, err := col.Aggregate(context.Background(), mongo.Pipeline{
+		{{"$match", bson.D{
+			{"stamp", bson.D{{"$gte", from}}},
+		}}},
+		{{"$group", bson.D{
+			{"_id", bson.D{{"$dateToString", bson.D{{"format", "%Y-%m-%d"}, {"date", "$stamp"}}}}},
+			{"volume", bson.D{{"$sum", "$amo"}}},
+			{"value", bson.D{{"$sum", 1}}},
+		}}},
+		{{"$project", bson.D{
+			{"stamp", bson.D{{"$toDate", "$_id"}}},
+			{"volume", 1},
+			{"value", 1},
+		}}},
+		{{"$merge", bson.D{
+			{"into", "trx_volume"},
+			{"on", "_id"},
+			{"whenMatched", "replace"},
+			{"whenNotMatched", "insert"},
+		}}},
+	})
+	if err != nil {
+		db.log.Errorf("can not update trx flow; %s", err.Error())
+		return err
+	}
+
+	// close the cursor, we don't really need the data
+	if err := cr.Close(context.Background()); err != nil {
+		db.log.Errorf("can not close aggregate cursor; %s", err.Error())
+	}
+	return nil
+}
