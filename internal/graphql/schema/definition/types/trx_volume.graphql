@@ -1,0 +1,16 @@
+# DailyTrxVolume represents a view of an aggregated flow
+# of transactions on the network on specific day.
+type DailyTrxVolume {
+    # day represents the day of the aggregation in format YYYY-MM-DD
+    # i.e. 2021-01-23 for January 23rd, 2021
+    day: String!
+
+    # volume represent the number of transactions originated / mined
+    # by the network on the day.
+    volume: Int!
+
+    # amount represents the total value of native tokens transfered
+    # by the network on the day. Please note this includes only direct
+    # token transfers.
+    amount: BigInt!
+}

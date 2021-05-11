@@ -20,6 +20,7 @@ import (
 	"golang.org/x/sync/singleflight"
 	"math/big"
 	"sync"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -503,6 +504,9 @@ type Repository interface {
 	// FLendGetUserDepositHistory resolves deposit history
 	// data for specified user and asset address
 	FLendGetUserDepositHistory(*common.Address, *common.Address) ([]*types.FLendDeposit, error)
+
+	// TrxFlowVolume resolves the list of daily trx flow aggregations.
+	TrxFlowVolume(from *time.Time, to *time.Time) ([]*types.DailyTrxVolume, error)
 
 	// Close and cleanup the repository.
 	Close()

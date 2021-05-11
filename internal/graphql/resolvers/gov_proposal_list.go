@@ -26,7 +26,7 @@ func NewGovernanceProposalList(gps *types.GovernanceProposalList) *GovernancePro
 	return &GovernanceProposalList{*gps}
 }
 
-// Proposals resolves list of proposals across all the known governance
+// GovProposals resolves list of proposals across all the known governance
 // contracts in a browsable structure.
 func (rs *rootResolver) GovProposals(args struct {
 	Cursor     *Cursor

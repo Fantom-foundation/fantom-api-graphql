@@ -2,6 +2,23 @@ package gqlschema
 
 // Auto generated GraphQL schema bundle
 const schema = `
+# DailyTrxVolume represents a view of an aggregated flow
+# of transactions on the network on specific day.
+type DailyTrxVolume {
+    # day represents the day of the aggregation in format YYYY-MM-DD
+    # i.e. 2021-01-23 for January 23rd, 2021
+    day: String!
+
+    # volume represent the number of transactions originated / mined
+    # by the network on the day.
+    volume: Int!
+
+    # amount represents the total value of native tokens transfered
+    # by the network on the day. Please note this includes only direct
+    # token transfers.
+    amount: BigInt!
+}
+
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
     # address of the token is used as the token's unique identifier.
@@ -1856,6 +1873,11 @@ type Query {
 
     # fLendLendingPool represents an instance of an fLend Lending pool
     fLendLendingPool: LendingPool!
+
+    # trxVolume provides a list of daily aggregations of the network transaction flow.
+    # If boundaries are not defined, last 90 days of aggregated trx flow is provided.
+    # Boundaries are defined in format YYYY-MM-DD, i.e. 2021-01-23 for January 23rd, 2021.
+    trxVolume(from:String, to:String):[DailyTrxVolume!]!
 }
 
 # Mutation endpoints for modifying the data

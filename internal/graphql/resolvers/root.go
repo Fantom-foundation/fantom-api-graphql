@@ -108,14 +108,14 @@ type ApiResolver interface {
 		Staker  hexutil.Big
 	}) (*Delegation, error)
 
-	// Resolves a list of delegations information of a staker.
+	// DelegationsOf a list of delegations information of a staker.
 	DelegationsOf(*struct {
 		Staker hexutil.Big
 		Cursor *Cursor
 		Count  int32
 	}) (*DelegationList, error)
 
-	// Resolves a list of own delegations by the account address.
+	// DelegationsByAddress a list of own delegations by the account address.
 	DelegationsByAddress(*struct {
 		Address common.Address
 		Cursor  *Cursor
@@ -162,7 +162,7 @@ type ApiResolver interface {
 		Tokens   []common.Address
 	}) ([]hexutil.Big, error)
 
-	// DefiUniswapAmountsOut resolves a list of input amounts for the given
+	// DefiUniswapAmountsIn resolves a list of input amounts for the given
 	// output amount and a list of tokens to be used to make the swap operation.
 	DefiUniswapAmountsIn(*struct {
 		AmountOut hexutil.Big
@@ -228,6 +228,13 @@ type ApiResolver interface {
 		Count      int32
 		ActiveOnly bool
 	}) (*GovernanceProposalList, error)
+
+	// TrxVolume resolves list of daily aggregations
+	// of the network transaction flow.
+	TrxVolume(args struct {
+		From *string
+		To   *string
+	}) ([]*DailyTrxVolume, error)
 
 	// Close terminates resolver broadcast management.
 	Close()
