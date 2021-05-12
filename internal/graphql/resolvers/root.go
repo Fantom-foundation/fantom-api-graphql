@@ -236,6 +236,11 @@ type ApiResolver interface {
 		To   *string
 	}) ([]*DailyTrxVolume, error)
 
+	// TrxSpeed resolves the recent speed of the network in transactions processed per second.
+	TrxSpeed(args struct {
+		Range int32
+	}) (float64, error)
+
 	// Close terminates resolver broadcast management.
 	Close()
 }

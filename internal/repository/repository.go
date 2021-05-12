@@ -511,6 +511,9 @@ type Repository interface {
 	// TrxFlowUpdate executes the trx flow update in the database.
 	TrxFlowUpdate()
 
+	// TrxFlowSpeed provides speed of transaction per second for the last <sec> seconds.
+	TrxFlowSpeed(sec int32) (float64, error)
+
 	// Close and cleanup the repository.
 	Close()
 }

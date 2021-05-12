@@ -43,6 +43,17 @@ func (rs *rootResolver) TrxVolume(args struct {
 	return list, nil
 }
 
+// TrxSpeed resolves the recent speed of the network in transactions processed per second.
+func (rs *rootResolver) TrxSpeed(args struct {
+	Range int32
+}) (float64, error) {
+	// make sure to obey the minimal range
+	if args.Range < 60 {
+		args.Range = 60
+	}
+	return repository.R().TrxFlowSpeed(args.Range)
+}
+
 // trxVolumeRange generates the time range for trx volume resolver.
 func trxVolumeRange(args struct {
 	From *string

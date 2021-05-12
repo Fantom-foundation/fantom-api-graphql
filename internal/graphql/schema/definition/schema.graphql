@@ -223,6 +223,12 @@ type Query {
     # If boundaries are not defined, last 90 days of aggregated trx flow is provided.
     # Boundaries are defined in format YYYY-MM-DD, i.e. 2021-01-23 for January 23rd, 2021.
     trxVolume(from:String, to:String):[DailyTrxVolume!]!
+
+    # trxSpeed provides the recent speed of the network
+    # as number of transactions processed per second
+    # calculated for the given range denominated in secods. I.e. range:300 means last 5 minutes.
+    # Minimal rangte is 60 seconds, any range below this value will be adjusted to 60 secods.
+    trxSpeed(range: Int = 300): Float!
 }
 
 # Mutation endpoints for modifying the data

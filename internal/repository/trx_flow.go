@@ -75,6 +75,11 @@ func (p *proxy) TrxFlowVolume(from *time.Time, to *time.Time) ([]*types.DailyTrx
 	return p.db.TrxDailyFlowList(from, to)
 }
 
+// TrxFlowSpeed provides speed of transaction per second for the last <sec> seconds.
+func (p *proxy) TrxFlowSpeed(sec int32) (float64, error) {
+	return p.db.TrxRecentTrxSpeed(sec)
+}
+
 // TrxFlowUpdate executes the trx flow update in the database.
 func (p *proxy) TrxFlowUpdate() {
 	// calculate previous midnight

@@ -50,6 +50,33 @@ func (db *MongoDbBridge) TrxDailyFlowList(from *time.Time, to *time.Time) ([]*ty
 	return loadTrxDailyFlowList(ld)
 }
 
+// TrxRecentTrxSpeed provides the number of transaction per second on the defined range in seconds.
+func (db *MongoDbBridge) TrxRecentTrxSpeed(sec int32) (float64, error) {
+	// make sure the request makes sense and calculate the left boundary
+	if sec < 60 {
+		sec = 60
+	}
+	from := time.Now().UTC().Add(time.Duration(-sec) * time.Second)
+	col := db.client.Database(db.dbName).Collection(coTransactions)
+
+	// find how many transactions do we have in the database
+	total, err := col.CountDocuments(context.Background(), bson.D{
+		{fiTransactionTimeStamp, bson.D{
+			{"$gte", from},
+		}},
+	})
+	if err != nil {
+		db.log.Errorf("can not count recent transactions")
+		return 0, err
+	}
+
+	// any transactions at all?
+	if total == 0 {
+		return 0, nil
+	}
+	return float64(total) / float64(sec), nil
+}
+
 // trxDailyFlowListFilter creates a filter for loading trx flow data based on provided
 // range dates.
 func trxDailyFlowListFilter(from *time.Time, to *time.Time) *bson.D {
@@ -104,7 +131,12 @@ func (db *MongoDbBridge) TrxDailyFlowUpdate(from time.Time) error {
 			{"stamp", bson.D{{"$gte", from}}},
 		}}},
 		{{"$group", bson.D{
-			{"_id", bson.D{{"$dateToString", bson.D{{"format", "%Y-%m-%d"}, {"date", "$stamp"}}}}},
+			{"_id", bson.D{
+				{"$dateToString", bson.D{
+					{"format", "%Y-%m-%d"},
+					{"date", "$stamp"},
+				}},
+			}},
 			{"volume", bson.D{{"$sum", "$amo"}}},
 			{"value", bson.D{{"$sum", 1}}},
 		}}},

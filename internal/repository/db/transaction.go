@@ -59,6 +59,7 @@ func (db *MongoDbBridge) initTransactionsCollection(col *mongo.Collection) {
 	// index sender and recipient
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiTransactionSender, 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiTransactionRecipient, 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiTransactionTimeStamp, 1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
