@@ -16,6 +16,12 @@ type GovernanceProposal struct {
 	cg *singleflight.Group
 }
 
+// GovernanceProposalState represents the state of the proposal.
+type GovernanceProposalState struct {
+	gp *GovernanceProposal
+	types.GovernanceProposalState
+}
+
 // zeroInt represents an empty Big INT value used for comparison.
 var zeroInt = new(big.Int)
 
@@ -33,10 +39,13 @@ func (gp *GovernanceProposal) OptionState(args *struct{ OptionId hexutil.Big }) 
 	return repository.R().GovernanceOptionState(&gp.GovernanceId, &gp.Id, &args.OptionId)
 }
 
-// OptionState resolves a state of a given Proposal option identified
-// by it's id (index position) in the Proposal options list.
+// OptionStates resolves a list of states of Proposal options.
 func (gp *GovernanceProposal) OptionStates() ([]*types.GovernanceOptionState, error) {
-	return repository.R().GovernanceOptionStates(&gp.GovernanceId, &gp.Id)
+	// make sure to call this only once in parallel processing
+	ops, err, _ := gp.cg.Do("opt_states", func() (interface{}, error) {
+		return repository.R().GovernanceOptionStates(&gp.GovernanceId, &gp.Id)
+	})
+	return ops.([]*types.GovernanceOptionState), err
 }
 
 // Vote resolves the vote for the given <from> address linked
@@ -64,7 +73,7 @@ func (gp *GovernanceProposal) Governance() (*GovernanceContract, error) {
 }
 
 // State resolves the state of the Governance Proposal.
-func (gp *GovernanceProposal) State() (*types.GovernanceProposalState, error) {
+func (gp *GovernanceProposal) State() (*GovernanceProposalState, error) {
 	// make sure to call this only once in parallel processing
 	gps, err, _ := gp.cg.Do("state", func() (interface{}, error) {
 		return repository.R().GovernanceProposalState(&gp.GovernanceId, &gp.Id)
@@ -72,7 +81,7 @@ func (gp *GovernanceProposal) State() (*types.GovernanceProposalState, error) {
 	if err != nil {
 		return nil, err
 	}
-	return gps.(*types.GovernanceProposalState), nil
+	return &GovernanceProposalState{GovernanceProposalState: *gps.(*types.GovernanceProposalState), gp: gp}, nil
 }
 
 // TotalWeight resolves the total available voting power which can influence
@@ -105,4 +114,34 @@ func (gp *GovernanceProposal) VotedWeightRatio() int32 {
 
 	// calculate the rate
 	return int32(new(big.Int).Div(new(big.Int).Mul(big.NewInt(1000), state.Votes.ToInt()), total.ToInt()).Int64())
+}
+
+// WinnerId resolves id of the winner of the proposal.
+func (gps *GovernanceProposalState) WinnerId() (*hexutil.Big, error) {
+	// non-resolved proposal means no winner
+	if !gps.IsResolved {
+		return nil, nil
+	}
+
+	// get options states
+	states, err := gps.gp.OptionStates()
+	if err != nil {
+		return nil, err
+	}
+
+	// try to find the winner
+	var win *big.Int
+	var topRatio = new(big.Int)
+
+	// loop all state
+	for _, st := range states {
+		// we found a new candidate
+		if st.AgreementRatio.ToInt().Cmp(topRatio) > 0 {
+			win = st.OptionId.ToInt()
+			topRatio = st.AgreementRatio.ToInt()
+		}
+	}
+
+	// return what we have found
+	return (*hexutil.Big)(win), err
 }
