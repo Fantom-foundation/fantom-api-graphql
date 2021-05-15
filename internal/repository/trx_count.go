@@ -11,35 +11,13 @@ package repository
 import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"sync/atomic"
-	"time"
 )
-
-// TransactionCountEstimateResetPeriod represents the period of trx count estimator reset.
-const TransactionCountEstimateResetPeriod = 60 * time.Minute
-
-// trxEstimator helps with counting transaction in repository.
-type trxEstimator struct {
-	count      uint64
-	nextUpdate time.Time
-}
 
 // EstimateTransactionsCount returns an approximate amount of transactions on the network.
 func (p *proxy) EstimateTransactionsCount() (hexutil.Uint64, error) {
 	// ask for the value
 	val, err, _ := p.apiRequestGroup.Do("tx_count", func() (interface{}, error) {
-		// do we need to pull a recent value from DB?
-		if p.txe.nextUpdate.IsZero() || p.txe.nextUpdate.Before(time.Now()) {
-			// pull the value from DB
-			val, err := p.db.TransactionsCount()
-			if err != nil {
-				return uint64(0), err
-			}
-
-			// store the value
-			atomic.StoreUint64(&p.txe.count, val)
-			p.txe.nextUpdate = time.Now().Add(TransactionCountEstimateResetPeriod)
-		}
-		return p.txe.count, nil
+		return p.txCount, nil
 	})
 	if err != nil {
 		return 0, err
@@ -56,9 +34,14 @@ func (p *proxy) MustEstimateTransactionsCount() hexutil.Uint64 {
 	return val
 }
 
-// TransactionsCountInc updates the value of transaction counter estimator.
-func (p *proxy) TransactionsCountInc(diff uint64) {
-	atomic.AddUint64(&p.txe.count, diff)
+// IncTrxCountEstimate bumps the value of transaction counter estimator.
+func (p *proxy) IncTrxCountEstimate(diff uint64) {
+	atomic.AddUint64(&p.txCount, diff)
+}
+
+// UpdateTrxCountEstimate updates the value of transaction counter estimator.
+func (p *proxy) UpdateTrxCountEstimate(val uint64) {
+	atomic.StoreUint64(&p.txCount, val)
 }
 
 // TransactionsCount returns total number of transactions in the block chain.

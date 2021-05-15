@@ -108,7 +108,7 @@ func (td *trxDispatcher) waitAndStore(blk *types.Block, trx *types.Transaction, 
 	}
 
 	// update estimator
-	td.repo.TransactionsCountInc(1)
+	td.repo.IncTrxCountEstimate(1)
 
 	// add to the ring cache
 	td.repo.CacheTransaction(trx)

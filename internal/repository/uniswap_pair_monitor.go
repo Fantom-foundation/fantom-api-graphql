@@ -147,7 +147,7 @@ func (pam *UniswapPairMonitor) monitor() {
 		}
 
 		// signal to wait group we are done
-		pam.log.Notice("uniswap pair %s monitor is closed", pam.pair.String())
+		pam.log.Noticef("uniswap pair %s monitor is closed", pam.pair.String())
 		pam.wg.Done()
 	}()
 

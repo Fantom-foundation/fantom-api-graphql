@@ -161,8 +161,11 @@ type Repository interface {
 	// EstimateTransactionsCount returns an approximate amount of transactions on the network.
 	EstimateTransactionsCount() (hexutil.Uint64, error)
 
-	// TransactionsCountInc updates the value of transaction counter estimator.
-	TransactionsCountInc(diff uint64)
+	// IncTrxCountEstimate bumps the value of transaction counter estimator.
+	IncTrxCountEstimate(diff uint64)
+
+	// UpdateTrxCountEstimate updates the value of transaction counter estimator.
+	UpdateTrxCountEstimate(val uint64)
 
 	// CacheTransaction puts a transaction to the internal ring cache.
 	CacheTransaction(trx *types.Transaction)
@@ -562,8 +565,8 @@ type proxy struct {
 	log   logger.Logger
 	cfg   *config.Config
 
-	// helpers
-	txe *trxEstimator
+	// transaction estimator counter
+	txCount uint64
 
 	// we need a Group to use single flight to control price pulls
 	apiRequestGroup singleflight.Group
@@ -594,7 +597,6 @@ func newRepository() Repository {
 		rpc:   rpcBridge,
 		log:   log,
 		cfg:   cfg,
-		txe:   new(trxEstimator),
 
 		// get the map of governance contracts
 		govContracts: governanceContractsMap(&cfg.Governance),
