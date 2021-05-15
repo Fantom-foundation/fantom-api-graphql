@@ -43,6 +43,20 @@ func (rs *rootResolver) TrxVolume(args struct {
 	return list, nil
 }
 
+// TrxGasPerSecond resolves the gas consumption speed speed
+// of the network in transactions processed per second.
+func (rs *rootResolver) TrxGasPerSecond(args struct {
+	Range int32
+	To    *string
+	Cml   bool
+}) (hexutil.Uint64, error) {
+	// make sure to obey the minimal range
+	if args.Range < 60 {
+		args.Range = 60
+	}
+	return hexutil.Uint64(0), nil
+}
+
 // TrxSpeed resolves the recent speed of the network in transactions processed per second.
 func (rs *rootResolver) TrxSpeed(args struct {
 	Range int32

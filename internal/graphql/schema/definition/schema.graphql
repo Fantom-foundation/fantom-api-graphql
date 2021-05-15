@@ -229,6 +229,14 @@ type Query {
     # calculated for the given range denominated in secods. I.e. range:300 means last 5 minutes.
     # Minimal range is 60 seconds, any range below this value will be adjusted to 60 seconds.
     trxSpeed(range: Int = 1200): Float!
+
+    # trxGasPerSecond provides average gas consumed by transactions, either base or cumulative,
+    # per second in the given date/time period. Please specify the ending date and time
+    # as RFC3339 time stamp. The current time is used if not defined. The range represents
+    # the number of seconds prior the end time stamp we use to calculate the average
+    # gas consumption. If <cml> is set to TRUE, the full cummulative gas is evaluated
+    # instead of the base trx consumed gas.
+    trxGasPerSecond(range: Int = 1200, to: String, cml: Boolean = false): Long!
 }
 
 # Mutation endpoints for modifying the data

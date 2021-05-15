@@ -104,9 +104,9 @@ type BsonTransaction struct {
 	Amount     int64     `bson:"amo"`
 	LargeInput bool      `bson:"large"`
 	Input      []byte    `bson:"input"`
-	Gas        uint64    `bson:"gas"`
-	UsedGas    *string   `bson:"gas_use"`
-	CumGas     *uint64   `bson:"gas_all"`
+	Gas        uint64    `bson:"gas_lim"`
+	UsedGas    *uint64   `bson:"gas_use"`
+	CumGas     *uint64   `bson:"gas_cum"`
 	GasPrice   string    `bson:"gas_pri"`
 	Nonce      uint64    `bson:"nonce"`
 	Contract   *string   `bson:"contr"`
@@ -185,7 +185,7 @@ func (trx *Transaction) MarshalBSON() ([]byte, error) {
 		pom.BlkIndex = &bx
 
 		// used gas
-		gu := trx.GasUsed.String()
+		gu := uint64(*trx.GasUsed)
 		pom.UsedGas = &gu
 
 		// cumulative gas
@@ -276,7 +276,7 @@ func (trx *Transaction) UnmarshalBSON(data []byte) (err error) {
 		trx.TrxIndex = &bi
 
 		// used gas
-		gu := hexutil.Uint64(hexutil.MustDecodeUint64(*row.UsedGas))
+		gu := hexutil.Uint64(*row.UsedGas)
 		trx.GasUsed = &gu
 
 		// cumulative gas

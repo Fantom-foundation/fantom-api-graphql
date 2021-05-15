@@ -42,6 +42,7 @@ func (p *proxy) IncTrxCountEstimate(diff uint64) {
 // UpdateTrxCountEstimate updates the value of transaction counter estimator.
 func (p *proxy) UpdateTrxCountEstimate(val uint64) {
 	atomic.StoreUint64(&p.txCount, val)
+	p.log.Infof("trx count estimator updated to %d", val)
 }
 
 // TransactionsCount returns total number of transactions in the block chain.
