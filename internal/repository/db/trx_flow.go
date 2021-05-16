@@ -138,12 +138,14 @@ func (db *MongoDbBridge) TrxDailyFlowUpdate(from time.Time) error {
 				}},
 			}},
 			{"volume", bson.D{{"$sum", "$amo"}}},
+			{"gas", bson.D{{"$sum", "$gas_use"}}},
 			{"value", bson.D{{"$sum", 1}}},
 		}}},
 		{{"$project", bson.D{
 			{"stamp", bson.D{{"$toDate", "$_id"}}},
 			{"volume", 1},
 			{"value", 1},
+			{"gas", 1},
 		}}},
 		{{"$merge", bson.D{
 			{"into", "trx_volume"},
