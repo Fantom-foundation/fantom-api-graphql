@@ -17,6 +17,10 @@ type DailyTrxVolume {
     # by the network on the day. Please note this includes only direct
     # token transfers.
     amount: BigInt!
+
+    # gas represents the total amount of gas consumed by transactions
+    # on the network on the day.
+    gas: BigInt!
 }
 
 # DefiToken represents a token available for DeFi operations.
@@ -1885,13 +1889,12 @@ type Query {
     # Minimal range is 60 seconds, any range below this value will be adjusted to 60 seconds.
     trxSpeed(range: Int = 1200): Float!
 
-    # trxGasPerSecond provides average gas consumed by transactions, either base or cumulative,
+    # trxGasSpeed provides average gas consumed by transactions, either base or cumulative,
     # per second in the given date/time period. Please specify the ending date and time
-    # as RFC3339 time stamp. The current time is used if not defined. The range represents
-    # the number of seconds prior the end time stamp we use to calculate the average
-    # gas consumption. If <cml> is set to TRUE, the full cummulative gas is evaluated
-    # instead of the base trx consumed gas.
-    trxGasPerSecond(range: Int = 1200, to: String, cml: Boolean = false): Long!
+    # as RFC3339 time stamp, i.e. 2021-05-14T00:00:00.000Z. The current time is used if not defined.
+    # The range represents the number of seconds prior the end time stamp
+    # we use to calculate the average gas consumption.
+    trxGasSpeed(range: Int = 1200, to: String): Float!
 }
 
 # Mutation endpoints for modifying the data

@@ -43,18 +43,29 @@ func (rs *rootResolver) TrxVolume(args struct {
 	return list, nil
 }
 
-// TrxGasPerSecond resolves the gas consumption speed speed
+// TrxGasSpeed resolves the gas consumption speed speed
 // of the network in transactions processed per second.
-func (rs *rootResolver) TrxGasPerSecond(args struct {
+func (rs *rootResolver) TrxGasSpeed(args struct {
 	Range int32
 	To    *string
-	Cml   bool
-}) (hexutil.Uint64, error) {
+}) (val float64, err error) {
 	// make sure to obey the minimal range
 	if args.Range < 60 {
 		args.Range = 60
 	}
-	return hexutil.Uint64(0), nil
+
+	// collect target time
+	to := time.Now()
+	if args.To != nil {
+		to, err = time.Parse(time.RFC3339, *args.To)
+		if err != nil {
+			return 0.0, err
+		}
+	}
+
+	// get the value
+	from := to.Add(time.Duration(-args.Range) * time.Second)
+	return repository.R().TrxGasSpeed(&from, &to)
 }
 
 // TrxSpeed resolves the recent speed of the network in transactions processed per second.
@@ -111,4 +122,10 @@ func (dtv *DailyTrxVolume) Amount() hexutil.Big {
 // Volume resolves the number of transactions in Int format.
 func (dtv *DailyTrxVolume) Volume() int32 {
 	return int32(dtv.DailyTrxVolume.Counter)
+}
+
+// Gas resolves the amount of gas consumed by transactions on the network.
+func (dtv *DailyTrxVolume) Gas() hexutil.Big {
+	val := new(big.Int).SetInt64(dtv.DailyTrxVolume.Gas)
+	return hexutil.Big(*val)
 }

@@ -35,12 +35,12 @@ func (b *MemBridge) PushTransaction(trx *types.Transaction) {
 	// encode account
 	data, err := trx.MarshalBSON()
 	if err != nil {
-		b.log.Criticalf("can not marshal transaction; %s", err.Error())
+		b.log.Criticalf("can not marshal transaction %s; %s", trx.Hash.String(), err.Error())
 		return
 	}
 
 	// set the data to cache by block number
 	if err := b.cache.Set(trx.Hash.String(), data); err != nil {
-		b.log.Criticalf("can not cache transaction; %s", err.Error())
+		b.log.Criticalf("can not cache transaction %s; %s", trx.Hash.String(), err.Error())
 	}
 }

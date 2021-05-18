@@ -13,4 +13,8 @@ type DailyTrxVolume {
     # by the network on the day. Please note this includes only direct
     # token transfers.
     amount: BigInt!
+
+    # gas represents the total amount of gas consumed by transactions
+    # on the network on the day.
+    gas: BigInt!
 }

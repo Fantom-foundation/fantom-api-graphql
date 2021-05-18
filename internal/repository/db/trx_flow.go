@@ -4,6 +4,7 @@ package db
 import (
 	"context"
 	"fantom-api-graphql/internal/types"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -48,6 +49,61 @@ func (db *MongoDbBridge) TrxDailyFlowList(from *time.Time, to *time.Time) ([]*ty
 
 	// load the list
 	return loadTrxDailyFlowList(ld)
+}
+
+// TrxGasSpeed provides amount of gas consumed by transaction per second
+// in the given time range.
+func (db *MongoDbBridge) TrxGasSpeed(from *time.Time, to *time.Time) (float64, error) {
+	// check the time range
+	if !from.Before(*to) {
+		return 0.0, fmt.Errorf("invalid time range requested")
+	}
+
+	// get the collection and context
+	ctx := context.Background()
+	col := db.client.Database(db.dbName).Collection(coTransactions)
+
+	// aggregate the gas used from the given time range
+	cr, err := col.Aggregate(ctx, mongo.Pipeline{
+		{{"$match", trxDailyFlowListFilter(from, to)}},
+		{{"$group", bson.D{
+			{"_id", nil},
+			{"volume", bson.D{{"$sum", "$gas_use"}}},
+		}}},
+	})
+	if err != nil {
+		db.log.Errorf("can not collect gas speed; %s", err.Error())
+		return 0.0, err
+	}
+
+	// close the cursor as we leave
+	defer func() {
+		if err := cr.Close(ctx); err != nil {
+			db.log.Errorf("error closing gas speed cursor; %s", err.Error())
+		}
+	}()
+	return db.trxGasSpeed(cr, from, to)
+}
+
+// trxGasSpeed makes the gas speed calculation from the given aggregation cursor.
+func (db *MongoDbBridge) trxGasSpeed(cr *mongo.Cursor, from *time.Time, to *time.Time) (float64, error) {
+	// get the row
+	if !cr.Next(context.Background()) {
+		db.log.Errorf("can not navigate gas speed results")
+		return 0.0, fmt.Errorf("gas speed aggregation failure")
+	}
+
+	// the row struct for parsing
+	var row struct {
+		Volume int64 `bson:"volume"`
+	}
+	if err := cr.Decode(&row); err != nil {
+		db.log.Errorf("can not decode gas speed cursor; %s", err.Error())
+		return 0.0, err
+	}
+
+	// calculate the gas volume per second
+	return float64(row.Volume) / to.Sub(*from).Seconds(), nil
 }
 
 // TrxRecentTrxSpeed provides the number of transaction per second on the defined range in seconds.

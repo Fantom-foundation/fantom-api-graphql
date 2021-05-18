@@ -10,4 +10,5 @@ type DailyTrxVolume struct {
 	Stamp          time.Time `bson:"stamp"`
 	Counter        int64     `bson:"value"`
 	AmountAdjusted int64     `bson:"volume"`
+	Gas            int64     `bson:"gas"`
 }

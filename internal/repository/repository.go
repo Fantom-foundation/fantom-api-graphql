@@ -511,6 +511,9 @@ type Repository interface {
 	// TrxFlowVolume resolves the list of daily trx flow aggregations.
 	TrxFlowVolume(from *time.Time, to *time.Time) ([]*types.DailyTrxVolume, error)
 
+	// TrxGasSpeed provides speed of gas consumption per second by transactions.
+	TrxGasSpeed(from *time.Time, to *time.Time) (float64, error)
+
 	// TrxFlowUpdate executes the trx flow update in the database.
 	TrxFlowUpdate()
 

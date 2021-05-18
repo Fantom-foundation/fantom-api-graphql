@@ -107,6 +107,11 @@ func (p *proxy) TrxFlowSpeed(sec int32) (float64, error) {
 	return p.db.TrxRecentTrxSpeed(sec)
 }
 
+// TrxGasSpeed provides speed of gas consumption per second by transactions.
+func (p *proxy) TrxGasSpeed(from *time.Time, to *time.Time) (float64, error) {
+	return p.db.TrxGasSpeed(from, to)
+}
+
 // TrxFlowUpdate executes the trx flow update in the database.
 func (p *proxy) TrxFlowUpdate() {
 	// calculate previous midnight

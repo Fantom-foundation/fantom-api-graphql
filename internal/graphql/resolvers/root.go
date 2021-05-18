@@ -241,6 +241,13 @@ type ApiResolver interface {
 		Range int32
 	}) (float64, error)
 
+	// TrxGasSpeed resolves the gas consumption speed speed
+	// of the network in transactions processed per second.
+	TrxGasSpeed(args struct {
+		Range int32
+		To    *string
+	}) (float64, error)
+
 	// Close terminates resolver broadcast management.
 	Close()
 }
