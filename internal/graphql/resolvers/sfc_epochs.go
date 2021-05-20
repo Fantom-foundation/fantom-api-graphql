@@ -40,8 +40,8 @@ func (rs *rootResolver) Epochs(args struct {
 }
 
 // TotalCount resolves the total number of epochs in the list.
-func (el *EpochList) TotalCount() hexutil.Uint64 {
-	return hexutil.Uint64(el.Total)
+func (el *EpochList) TotalCount() (hexutil.Uint64, error) {
+	return repository.R().CurrentEpoch()
 }
 
 // PageInfo resolves the current page information for the epoch list.
