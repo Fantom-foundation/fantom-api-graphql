@@ -30,7 +30,7 @@ import (
 )
 
 // stiRequestTimeout is number of seconds we wait for the staker information request to finish.
-const stiRequestTimeout = 15
+const stiRequestTimeout = 2 * time.Second
 
 // stiNameCheckRegex is the expression used to check for staker name validity
 var stiNameCheckRegex = regexp.MustCompile(`^[\w\d\s.\-_'$()]+$`)
@@ -74,7 +74,7 @@ func (ftm *FtmBridge) downloadStakerInfo(stUrl string) (*types.StakerInfo, error
 	ftm.log.Debugf("downloading staker info address [%s]", stUrl)
 
 	// make a http client
-	cl := http.Client{Timeout: time.Second * stiRequestTimeout}
+	cl := http.Client{Timeout: stiRequestTimeout}
 
 	// prep request
 	req, err := http.NewRequest(http.MethodGet, stUrl, nil)

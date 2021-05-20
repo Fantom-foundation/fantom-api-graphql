@@ -11,7 +11,9 @@ package repository
 import (
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"sync"
+	"time"
 )
 
 // trxDispatchQueueCapacity is the number of transactions kept in the dispatch buffer.
@@ -50,18 +52,30 @@ func (td *trxDispatcher) dispatch() {
 	// log action
 	td.log.Notice("trx dispatcher is running")
 
+	// make ticker for last known block updater
+	lnbTicker := time.NewTicker(5 * time.Second)
+
 	// don't forget to sign off after we are done
 	defer func() {
 		// log finish
+		lnbTicker.Stop()
 		td.log.Notice("trx dispatcher is closed")
 		td.wg.Done()
 	}()
+
+	// what we process
+	var toDispatch *eventTransaction
 
 	// wait for transactions and process them
 	for {
 		// try to read next transaction
 		select {
-		case toDispatch := <-td.buffer:
+		case <-lnbTicker.C:
+			// update the LNB
+			if toDispatch != nil && toDispatch.block != nil {
+				go td.updateLastSeenBlock(&toDispatch.block.Number)
+			}
+		case toDispatch = <-td.buffer:
 			// validate incoming data
 			if toDispatch == nil || toDispatch.block == nil || toDispatch.trx == nil {
 				td.log.Debugf("dispatcher dry loop")
@@ -75,6 +89,19 @@ func (td *trxDispatcher) dispatch() {
 			td.log.Info("trx dispatcher received stop signal")
 			return
 		}
+	}
+}
+
+// updateLastSeenBlock updates the information about last known block
+// in the
+func (td *trxDispatcher) updateLastSeenBlock(blockNo *hexutil.Uint64) {
+	// log what we do
+	td.log.Noticef("last seen block is #%d", uint64(*blockNo))
+
+	// make the change
+	err := td.repo.UpdateLastKnownBlock(blockNo)
+	if err != nil {
+		td.log.Errorf("could not update last seen block; %s", err.Error())
 	}
 }
 

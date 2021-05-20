@@ -81,6 +81,9 @@ type Repository interface {
 	// LastKnownBlock returns number of the last block known to the repository.
 	LastKnownBlock() (uint64, error)
 
+	// UpdateLastKnownBlock update record about last known block.
+	UpdateLastKnownBlock(blockNo *hexutil.Uint64) error
+
 	// BlockByNumber returns a block at Opera blockchain represented by a number.
 	// Top block is returned if the number is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
@@ -121,11 +124,20 @@ type Repository interface {
 	// CurrentEpoch returns the id of the current epoch.
 	CurrentEpoch() (hexutil.Uint64, error)
 
+	// LastKnownEpoch returns the id of the last known and scanned epoch.
+	LastKnownEpoch() (uint64, error)
+
+	// AddEpoch stores an epoch reference in connected persistent storage.
+	AddEpoch(e *types.Epoch) error
+
 	// Epoch returns the id of the current epoch.
 	Epoch(*hexutil.Uint64) (*types.Epoch, error)
 
 	// CurrentSealedEpoch returns the data of the latest sealed epoch.
 	CurrentSealedEpoch() (*types.Epoch, error)
+
+	// Epochs pulls list of epochs starting at the specified cursor.
+	Epochs(cursor *string, count int32) (*types.EpochList, error)
 
 	// TotalStaked calculates current total staked amount for all stakers.
 	TotalStaked() (*hexutil.Big, error)

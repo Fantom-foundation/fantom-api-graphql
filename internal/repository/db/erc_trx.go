@@ -73,7 +73,7 @@ func (db *MongoDbBridge) isErcTransactionKnown(col *mongo.Collection, trx *types
 			return false
 		}
 		// inform that we can not get the PK; should not happen
-		db.log.Errorf("can not get existing reward claim pk; %s", sr.Err().Error())
+		db.log.Errorf("can not get existing ERC transaction pk; %s", sr.Err().Error())
 		return false
 	}
 	return true
@@ -82,12 +82,12 @@ func (db *MongoDbBridge) isErcTransactionKnown(col *mongo.Collection, trx *types
 // ErcTransactionCountFiltered calculates total number of ERC20 transactions
 // in the database for the given filter.
 func (db *MongoDbBridge) ErcTransactionCountFiltered(filter *bson.D) (uint64, error) {
-	return db.CountFiltered(db.client.Database(db.dbName).Collection(colRewards), filter)
+	return db.CountFiltered(db.client.Database(db.dbName).Collection(colErcTransactions), filter)
 }
 
 // ErcTransactionCount calculates total number of ERC20 transactions in the database.
 func (db *MongoDbBridge) ErcTransactionCount() (uint64, error) {
-	return db.ErcTransactionCountFiltered(nil)
+	return db.EstimateCount(db.client.Database(db.dbName).Collection(colErcTransactions))
 }
 
 // ercTrxListInit initializes list of ERC20 transactions based on provided cursor, count, and filter.
@@ -233,7 +233,7 @@ func (db *MongoDbBridge) ercTrxListLoad(col *mongo.Collection, cursor *string, c
 	ctx := context.Background()
 
 	// load the data
-	ld, err := col.Find(ctx, db.ercTrxListFilter(cursor, count, list), db.dlgListOptions(count))
+	ld, err := col.Find(ctx, db.ercTrxListFilter(cursor, count, list), db.ercTrxListOptions(count))
 	if err != nil {
 		db.log.Errorf("error loading ERC20 transactions list; %s", err.Error())
 		return err

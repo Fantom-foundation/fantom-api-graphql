@@ -25,22 +25,22 @@ func (p *proxy) ValidatorsCount() (uint64, error) {
 	return p.rpc.ValidatorsCount()
 }
 
-// IsStaker returns if the given address is an SFC staker.
+// IsValidator returns if the given address is an SFC staker.
 func (p *proxy) IsValidator(addr *common.Address) (bool, error) {
 	return p.rpc.IsValidator(addr)
 }
 
-// StakerAddress extract a staker address for the given staker ID.
+// ValidatorAddress extract a staker address for the given staker ID.
 func (p *proxy) ValidatorAddress(id *hexutil.Big) (*common.Address, error) {
 	return p.rpc.ValidatorAddress((*big.Int)(id))
 }
 
-// Staker extract a staker information from SFC smart contract.
+// Validator extract a staker information from SFC smart contract.
 func (p *proxy) Validator(id *hexutil.Big) (*types.Validator, error) {
 	return p.rpc.Validator((*big.Int)(id))
 }
 
-// Staker extract a staker information by address.
+// ValidatorByAddress extract a staker information by address.
 func (p *proxy) ValidatorByAddress(addr *common.Address) (*types.Validator, error) {
 	return p.rpc.ValidatorByAddress(addr)
 }

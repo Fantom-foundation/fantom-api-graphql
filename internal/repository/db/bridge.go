@@ -28,6 +28,7 @@ type MongoDbBridge struct {
 	initWithdrawals  *sync.Once
 	initRewards      *sync.Once
 	initErc20Trx     *sync.Once
+	initEpochs       *sync.Once
 }
 
 // New creates a new Mongo Db connection bridge.
@@ -156,6 +157,7 @@ func (db *MongoDbBridge) CheckDatabaseInitState() {
 	db.collectionNeedInit("withdrawals", db.WithdrawalsCount, &db.initWithdrawals)
 	db.collectionNeedInit("rewards", db.RewardsCount, &db.initRewards)
 	db.collectionNeedInit("erc20 transactions", db.ErcTransactionCount, &db.initErc20Trx)
+	db.collectionNeedInit("epochs", db.EpochsCount, &db.initEpochs)
 }
 
 // checkAccountCollectionState checks the Accounts collection state.
@@ -185,8 +187,20 @@ func (db *MongoDbBridge) CountFiltered(col *mongo.Collection, filter *bson.D) (u
 	if nil == filter {
 		filter = &bson.D{}
 	}
+
 	// do the counting
 	val, err := col.CountDocuments(context.Background(), *filter)
+	if err != nil {
+		db.log.Errorf("can not count documents in rewards collection; %s", err.Error())
+		return 0, err
+	}
+	return uint64(val), nil
+}
+
+// EstimateCount calculates an estimated number of documents in the given collection.
+func (db *MongoDbBridge) EstimateCount(col *mongo.Collection) (uint64, error) {
+	// do the counting
+	val, err := col.EstimatedDocumentCount(context.Background())
 	if err != nil {
 		db.log.Errorf("can not count documents in rewards collection; %s", err.Error())
 		return 0, err

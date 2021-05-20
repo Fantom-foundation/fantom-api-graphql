@@ -104,11 +104,11 @@ type BsonTransaction struct {
 	Amount     int64     `bson:"amo"`
 	LargeInput bool      `bson:"large"`
 	Input      []byte    `bson:"input"`
-	Gas        uint64    `bson:"gas_lim"`
+	Gas        int64     `bson:"gas_lim"`
 	UsedGas    *uint64   `bson:"gas_use"`
 	CumGas     *uint64   `bson:"gas_cum"`
 	GasPrice   string    `bson:"gas_pri"`
-	Nonce      uint64    `bson:"nonce"`
+	Nonce      int64     `bson:"nonce"`
 	Contract   *string   `bson:"contr"`
 	Status     uint64    `bson:"stat"`
 	Stamp      time.Time `bson:"stamp"`
@@ -156,9 +156,9 @@ func (trx *Transaction) MarshalBSON() ([]byte, error) {
 		Hash:       trx.Hash.String(),
 		Ordinal:    trx.Uid(),
 		From:       trx.From.String(),
-		Gas:        uint64(trx.Gas),
+		Gas:        int64(trx.Gas),
 		GasPrice:   trx.GasPrice.String(),
-		Nonce:      uint64(trx.Nonce),
+		Nonce:      int64(trx.Nonce),
 		Value:      trx.Value.String(),
 		Amount:     val.Int64(),
 		LargeInput: len(trx.InputData) > trxLargeInputWall,
@@ -184,13 +184,17 @@ func (trx *Transaction) MarshalBSON() ([]byte, error) {
 		bx := uint64(*trx.Index)
 		pom.BlkIndex = &bx
 
-		// used gas
-		gu := uint64(*trx.GasUsed)
-		pom.UsedGas = &gu
-
 		// cumulative gas
-		gc := uint64(*trx.CumulativeGasUsed)
+		gc := uint64(*trx.CumulativeGasUsed) & 0x7FFFFFFFFFFFFFFF
 		pom.CumGas = &gc
+
+		// used gas
+		// overcome an error in node API, it reports invalid gas usage on some trx
+		gu := uint64(*trx.GasUsed) & 0x7FFFFFFFFFFFFFFF
+		if *trx.GasUsed > *trx.CumulativeGasUsed {
+			gu = gc
+		}
+		pom.UsedGas = &gu
 
 		// status
 		pom.Status = uint64(*trx.Status)
@@ -225,6 +229,7 @@ func (trx *Transaction) MarshalBSON() ([]byte, error) {
 			pom.Logs[i].Topics[ti] = th.String()
 		}
 	}
+
 	return bson.Marshal(pom)
 }
 

@@ -7,7 +7,7 @@ import (
 	"sort"
 )
 
-// Resolves a staker information from SFC smart contract.
+// Stakers resolves a list of staker information from SFC smart contract.
 func (rs *rootResolver) Stakers() ([]*Staker, error) {
 	// get the number
 	num, err := repository.R().LastValidatorId()

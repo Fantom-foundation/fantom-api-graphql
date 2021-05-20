@@ -168,26 +168,12 @@ func (db *MongoDbBridge) isWithdrawalKnown(col *mongo.Collection, wr *types.With
 
 // WithdrawalCountFiltered calculates total number of withdraw requests in the database for the given filter.
 func (db *MongoDbBridge) WithdrawalCountFiltered(filter *bson.D) (uint64, error) {
-	// make sure some filter is used
-	if nil == filter {
-		filter = &bson.D{}
-	}
-
-	// get the collection for delegations
-	col := db.client.Database(db.dbName).Collection(colWithdrawals)
-
-	// do the counting
-	val, err := col.CountDocuments(context.Background(), *filter)
-	if err != nil {
-		db.log.Errorf("can not count documents in withdrawals collection; %s", err.Error())
-		return 0, err
-	}
-	return uint64(val), nil
+	return db.CountFiltered(db.client.Database(db.dbName).Collection(colWithdrawals), filter)
 }
 
 // WithdrawalsCount calculates total number of withdraws in the database.
 func (db *MongoDbBridge) WithdrawalsCount() (uint64, error) {
-	return db.WithdrawalCountFiltered(nil)
+	return db.EstimateCount(db.client.Database(db.dbName).Collection(colWithdrawals))
 }
 
 // wrListInit initializes list of withdraw requests based on provided cursor, count, and filter.

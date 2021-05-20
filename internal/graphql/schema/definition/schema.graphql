@@ -60,6 +60,9 @@ type Query {
     # if id is not provided.
     epoch(id: Long): Epoch!
 
+    # Get a scrollable list of epochs sorted from the last one back by default.
+    epochs(cursor: Cursor, count: Int = 25): EpochList!
+
     # The last staker id in Opera blockchain.
     lastStakerId: Long!
 

@@ -183,26 +183,12 @@ func (db *MongoDbBridge) isDelegationKnown(col *mongo.Collection, dl *types.Dele
 
 // DelegationsCountFiltered calculates total number of delegations in the database for the given filter.
 func (db *MongoDbBridge) DelegationsCountFiltered(filter *bson.D) (uint64, error) {
-	// make sure some filter is used
-	if nil == filter {
-		filter = &bson.D{}
-	}
-
-	// get the collection for delegations
-	col := db.client.Database(db.dbName).Collection(colDelegations)
-
-	// do the counting
-	val, err := col.CountDocuments(context.Background(), *filter)
-	if err != nil {
-		db.log.Errorf("can not count documents in delegations collection; %s", err.Error())
-		return 0, err
-	}
-	return uint64(val), nil
+	return db.CountFiltered(db.client.Database(db.dbName).Collection(colDelegations), filter)
 }
 
 // DelegationsCount calculates total number of delegations in the database.
 func (db *MongoDbBridge) DelegationsCount() (uint64, error) {
-	return db.DelegationsCountFiltered(nil)
+	return db.EstimateCount(db.client.Database(db.dbName).Collection(colDelegations))
 }
 
 // dlgListInit initializes list of delegations based on provided cursor, count, and filter.

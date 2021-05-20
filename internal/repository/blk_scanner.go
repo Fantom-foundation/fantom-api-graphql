@@ -36,7 +36,7 @@ func newBlockScanner(buffer chan *eventTransaction, isDone chan bool, repo Repos
 	}
 }
 
-// scan initializes the blockScanner and starts scanning
+// run initializes the blockScanner and starts scanning
 func (bls *blockScanner) run() {
 	// get the scanner range
 	start, end, err := bls.scanRange()

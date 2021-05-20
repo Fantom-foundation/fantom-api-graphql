@@ -19,14 +19,12 @@ import (
 	"time"
 )
 
-// how much time to wait between calls
-var stiInitDelay = 100 * time.Millisecond
-var stiIdleDelay = 10 * time.Second
+// stiPullDelay represents the delay between validators info pulls
+const stiPullDelay = 5 * time.Second
 
 // stiMonitor implements staker information monitoring service.
 type stiMonitor struct {
 	service
-	onInit        bool
 	currentStaker uint64
 	topStaker     uint64
 }
@@ -36,7 +34,6 @@ func newStiMonitor(repo Repository, log logger.Logger, wg *sync.WaitGroup) *stiM
 	// create new blockScanner instance
 	return &stiMonitor{
 		service: newService("stm monitor", repo, log, wg),
-		onInit:  true,
 	}
 }
 
@@ -52,32 +49,27 @@ func (sti *stiMonitor) run() {
 
 // monitor runs the staker information monitoring task.
 func (sti *stiMonitor) monitor() {
+	// make the ticker
+	stiTicker := time.NewTicker(stiPullDelay)
+
 	// don't forget to sign off after we are done
 	defer func() {
-		// log finish
+		// finish and log
+		stiTicker.Stop()
 		sti.log.Notice("staker information monitor done")
 
 		// signal to wait group we are done
 		sti.wg.Done()
 	}()
 
-	// we will be changing the delay based on the round we do
-	var delay time.Duration
-
 	// loop before terminated
 	for {
-		// what delay to use
-		delay = stiIdleDelay
-		if sti.onInit {
-			delay = stiInitDelay
-		}
-
 		// wait for stop or timeout
 		select {
 		case <-sti.sigStop:
 			// stop signal received?
 			return
-		case <-time.After(delay):
+		case <-stiTicker.C:
 			sti.next()
 		}
 	}
@@ -95,6 +87,7 @@ func (sti *stiMonitor) next() {
 		}
 
 		// remember the ceiling for this loop
+		sti.log.Noticef("%d validators found", ls)
 		sti.topStaker = ls
 		sti.currentStaker++
 	}
@@ -106,27 +99,24 @@ func (sti *stiMonitor) next() {
 	stakerID := new(big.Int).SetUint64(sti.currentStaker)
 	info, err := sti.repo.PullStakerInfo((*hexutil.Big)(stakerID))
 	if err == nil && info != nil {
-		// got info? store it in cache
 		err = sti.repo.StoreStakerInfo((*hexutil.Big)(stakerID), info)
 	}
 
 	// anything failed?
 	if err != nil || info == nil {
-		// log issue, but we still continue to the next staker
 		sti.log.Debugf("staker information of #%d not available", sti.currentStaker)
 	}
 
 	// advance to the next staker
 	sti.currentStaker++
 
-	// close the loop when we reached the last staker; from now on the monitor will loop on idle
+	// close the loop when we reached the last staker
 	if sti.topStaker < sti.currentStaker {
 		sti.currentStaker = 0
-		sti.onInit = false
 	}
 }
 
-// StakerInfo extracts an extended staker information from smart contact.
+// PullStakerInfo extracts an extended staker information from smart contact.
 func (p *proxy) PullStakerInfo(id *hexutil.Big) (*types.StakerInfo, error) {
 	return p.rpc.StakerInfo(id)
 }
@@ -139,7 +129,6 @@ func (p *proxy) StoreStakerInfo(id *hexutil.Big, sti *types.StakerInfo) error {
 		p.log.Error("staker info can net be kept")
 		return err
 	}
-
 	return nil
 }
 

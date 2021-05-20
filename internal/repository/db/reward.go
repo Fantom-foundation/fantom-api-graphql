@@ -82,26 +82,12 @@ func (db *MongoDbBridge) isRewardClaimKnown(col *mongo.Collection, rc *types.Rew
 
 // RewardsCountFiltered calculates total number of reward claims in the database for the given filter.
 func (db *MongoDbBridge) RewardsCountFiltered(filter *bson.D) (uint64, error) {
-	// make sure some filter is used
-	if nil == filter {
-		filter = &bson.D{}
-	}
-
-	// get the collection for delegations
-	col := db.client.Database(db.dbName).Collection(colRewards)
-
-	// do the counting
-	val, err := col.CountDocuments(context.Background(), *filter)
-	if err != nil {
-		db.log.Errorf("can not count documents in rewards collection; %s", err.Error())
-		return 0, err
-	}
-	return uint64(val), nil
+	return db.CountFiltered(db.client.Database(db.dbName).Collection(colRewards), filter)
 }
 
-// RewardsCount calculates total number of reward calims in the database.
+// RewardsCount calculates total number of reward claims in the database.
 func (db *MongoDbBridge) RewardsCount() (uint64, error) {
-	return db.RewardsCountFiltered(nil)
+	return db.EstimateCount(db.client.Database(db.dbName).Collection(colRewards))
 }
 
 // rewListInit initializes list of delegations based on provided cursor, count, and filter.
@@ -247,7 +233,7 @@ func (db *MongoDbBridge) rewListLoad(col *mongo.Collection, cursor *string, coun
 	ctx := context.Background()
 
 	// load the data
-	ld, err := col.Find(ctx, db.rewListFilter(cursor, count, list), db.dlgListOptions(count))
+	ld, err := col.Find(ctx, db.rewListFilter(cursor, count, list), db.rewListOptions(count))
 	if err != nil {
 		db.log.Errorf("error loading reward claims list; %s", err.Error())
 		return err

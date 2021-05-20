@@ -153,3 +153,18 @@ func (p *proxy) LockingAllowed() (bool, error) {
 func (p *proxy) IsSfcContract(addr *common.Address) bool {
 	return bytes.Equal(addr.Bytes(), p.cfg.Staking.SFCContract.Bytes())
 }
+
+// LastKnownEpoch returns the id of the last known and scanned epoch.
+func (p *proxy) LastKnownEpoch() (uint64, error) {
+	return p.db.LastKnownEpoch()
+}
+
+// AddEpoch stores an epoch reference in connected persistent storage.
+func (p *proxy) AddEpoch(e *types.Epoch) error {
+	return p.db.AddEpoch(e)
+}
+
+// Epochs pulls list of epochs starting at the specified cursor.
+func (p *proxy) Epochs(cursor *string, count int32) (*types.EpochList, error) {
+	return p.db.Epochs(cursor, count)
+}

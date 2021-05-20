@@ -1,0 +1,21 @@
+# EpochList is a list of epoch edges provided by sequential access request.
+type EpochList {
+    # Edges contains provided edges of the sequential list.
+    edges: [EpochListEdge!]!
+
+    # TotalCount is the maximum number of epochs
+    # available for sequential access.
+    totalCount: Long!
+
+    # PageInfo is an information about the current page of epoch list edges.
+    pageInfo: ListPageInfo!
+}
+
+# EpochListEdge is a single edge in a sequential list of epochs.
+type EpochListEdge {
+    #Cursor defines a scroll key to this edge.
+    cursor: Cursor!
+
+    # epoch represents the Epoch provided by this list edge.
+    epoch: Epoch!
+}

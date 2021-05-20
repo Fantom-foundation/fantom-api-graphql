@@ -264,24 +264,7 @@ func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *common.Hash, s
 
 // SwapCount returns the number of swaps stored in the database.
 func (db *MongoDbBridge) SwapCount() (uint64, error) {
-	// get the collection and context
-	col := db.client.Database(db.dbName).Collection(coUniswap)
-
-	// find how many swaps do we have in the database
-	total, err := col.CountDocuments(context.Background(), bson.D{})
-	if err != nil {
-		db.log.Errorf("can not count swaps")
-		return 0, err
-	}
-
-	// -1 is for configuration document with last correct swap block number
-	if total > 1 {
-		total--
-	}
-
-	// inform what we are about to do
-	db.log.Debugf("found %d swaps in off-chain database", total)
-	return uint64(total), nil
+	return db.EstimateCount(db.client.Database(db.dbName).Collection(coUniswap))
 }
 
 // LastKnownSwapBlock returns number of the last known block stored in the database.

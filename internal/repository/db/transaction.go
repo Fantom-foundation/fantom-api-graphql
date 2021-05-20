@@ -170,43 +170,6 @@ func (db *MongoDbBridge) IsTransactionKnown(col *mongo.Collection, hash *common.
 	return true, nil
 }
 
-// LastKnownBlock returns number of the last known block stored in the database.
-func (db *MongoDbBridge) LastKnownBlock() (uint64, error) {
-	// prep search options
-	opt := options.FindOne()
-	opt.SetSort(bson.D{{fiTransactionBlock, -1}})
-	opt.SetProjection(bson.D{{fiTransactionBlock, true}})
-
-	// get the collection for account transactions
-	col := db.client.Database(db.dbName).Collection(coTransactions)
-	res := col.FindOne(context.Background(), bson.D{}, opt)
-	if res.Err() != nil {
-		// may be no block at all
-		if res.Err() == mongo.ErrNoDocuments {
-			db.log.Info("no blocks found in database")
-			return 0, nil
-		}
-
-		// log issue
-		db.log.Error("can not get the top block")
-		return 0, res.Err()
-	}
-
-	// get the actual value
-	var tx struct {
-		Block uint64 `bson:"blk"`
-	}
-
-	// get the data
-	err := res.Decode(&tx)
-	if err != nil {
-		db.log.Error("can not decode the top block")
-		return 0, res.Err()
-	}
-
-	return tx.Block, nil
-}
-
 // initTrxList initializes list of transactions based on provided cursor and count.
 func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, count int32, filter *bson.D) (*types.TransactionList, error) {
 	// make sure some filter is used
@@ -409,19 +372,7 @@ func (db *MongoDbBridge) txListLoad(col *mongo.Collection, cursor *string, count
 
 // TransactionsCount returns the number of transactions stored in the database.
 func (db *MongoDbBridge) TransactionsCount() (uint64, error) {
-	// get the collection and context
-	col := db.client.Database(db.dbName).Collection(coTransactions)
-
-	// find how many transactions do we have in the database
-	total, err := col.CountDocuments(context.Background(), bson.D{})
-	if err != nil {
-		db.log.Errorf("can not count transactions")
-		return 0, err
-	}
-
-	// inform what we are about to do
-	db.log.Debugf("found %d transactions in off-chain database", total)
-	return uint64(total), nil
+	return db.EstimateCount(db.client.Database(db.dbName).Collection(coTransactions))
 }
 
 // Transactions pulls list of transaction hashes starting on the specified cursor.

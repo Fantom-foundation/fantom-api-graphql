@@ -175,6 +175,28 @@ type RewardClaimListEdge {
     claim: RewardClaim!
 }
 
+# EpochList is a list of epoch edges provided by sequential access request.
+type EpochList {
+    # Edges contains provided edges of the sequential list.
+    edges: [EpochListEdge!]!
+
+    # TotalCount is the maximum number of epochs
+    # available for sequential access.
+    totalCount: Long!
+
+    # PageInfo is an information about the current page of epoch list edges.
+    pageInfo: ListPageInfo!
+}
+
+# EpochListEdge is a single edge in a sequential list of epochs.
+type EpochListEdge {
+    #Cursor defines a scroll key to this edge.
+    cursor: Cursor!
+
+    # epoch represents the Epoch provided by this list edge.
+    epoch: Epoch!
+}
+
 # Price represents price information of core Opera token
 type Price {
     "Source unit symbol."
@@ -1718,6 +1740,9 @@ type Query {
     # Get information about specified epoch. Returns current epoch information
     # if id is not provided.
     epoch(id: Long): Epoch!
+
+    # Get a scrollable list of epochs sorted from the last one back by default.
+    epochs(cursor: Cursor, count: Int = 25): EpochList!
 
     # The last staker id in Opera blockchain.
     lastStakerId: Long!

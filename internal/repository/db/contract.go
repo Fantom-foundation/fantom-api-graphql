@@ -203,17 +203,7 @@ func (db *MongoDbBridge) Contract(addr *common.Address) (*types.Contract, error)
 
 // ContractCount calculates total number of contracts in the database.
 func (db *MongoDbBridge) ContractCount() (uint64, error) {
-	// get the collection for transactions
-	col := db.client.Database(db.dbName).Collection(coContract)
-
-	// do the counting
-	val, err := col.CountDocuments(context.Background(), bson.D{})
-	if err != nil {
-		db.log.Errorf("can not count documents in contracts collection; %s", err.Error())
-		return 0, err
-	}
-
-	return uint64(val), nil
+	return db.EstimateCount(db.client.Database(db.dbName).Collection(coContract))
 }
 
 // contractListTotal find the total amount of contracts for the criteria and populates the list

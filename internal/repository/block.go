@@ -32,6 +32,11 @@ func (p *proxy) LastKnownBlock() (uint64, error) {
 	return p.db.LastKnownBlock()
 }
 
+// UpdateLastKnownBlock update record about last known block.
+func (p *proxy) UpdateLastKnownBlock(blockNo *hexutil.Uint64) error {
+	return p.db.UpdateLastKnownBlock(blockNo)
+}
+
 // CacheBlock puts a block to the internal block cache.
 func (p *proxy) CacheBlock(blk *types.Block) {
 	p.cache.AddBlock(blk)
@@ -46,7 +51,6 @@ func (p *proxy) BlockByNumber(num *hexutil.Uint64) (*types.Block, error) {
 		tag := rpc.BlockTypeLatest
 		return p.blockByTag(&tag)
 	}
-
 	return p.getBlock(num.String(), p.blockByTag)
 }
 
@@ -59,8 +63,6 @@ func (p *proxy) BlockByHash(hash *common.Hash) (*types.Block, error) {
 		tag := rpc.BlockTypeLatest
 		return p.blockByTag(&tag)
 	}
-
-	// get the block by hash
 	return p.getBlock(hash.String(), p.rpc.BlockByHash)
 }
 

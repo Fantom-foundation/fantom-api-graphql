@@ -39,6 +39,12 @@ type ApiResolver interface {
 	// Version resolves current version of the API server.
 	Version() string
 
+	// Epochs resolves a list of epochs for the given cursor and count.
+	Epochs(args struct {
+		Cursor *Cursor
+		Count  int32
+	}) (*EpochList, error)
+
 	// Account resolves blockchain account by address.
 	Account(struct{ Address common.Address }) (*Account, error)
 

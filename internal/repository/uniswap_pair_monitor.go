@@ -231,12 +231,12 @@ func (pam *UniswapPairMonitor) getSwapData(swapEvent *contracts.UniswapPairSwap)
 	// get the block information
 	blk, err := pam.repo.BlockByNumber(&blkNumber)
 	if err != nil {
-		pam.log.Errorf("block was not found for swap on pair %s; %s", pam.pair.String(), err.Error())
+		pam.log.Errorf("block #%d was not found for swap on pair %s; %s", blkNumber, pam.pair.String(), err.Error())
 		return nil, err
 	}
 
 	// log action
-	pam.log.Debugf("loading swap from block nr# %d, tx: %s", swapEvent.Raw.BlockNumber, swapEvent.Raw.TxHash.String())
+	pam.log.Debugf("loading swap from block #%d, tx: %s", swapEvent.Raw.BlockNumber, swapEvent.Raw.TxHash.String())
 
 	// prep sending struct and advance transaction index
 	swap := &types.Swap{
@@ -264,7 +264,7 @@ func (pam *UniswapPairMonitor) getMintData(mintEvent *contracts.UniswapPairMint)
 
 	blk, err := pam.repo.BlockByNumber(&blkNumber)
 	if err != nil {
-		pam.log.Errorf("Block was not found for uniswap mint event on pair %s; %s", pam.pair.String(), err.Error())
+		pam.log.Errorf("block #%d not found for uniswap mint on pair %s; %s", blkNumber, pam.pair.String(), err.Error())
 		return nil, err
 	}
 
@@ -305,7 +305,7 @@ func (pam *UniswapPairMonitor) getBurnData(burnEvent *contracts.UniswapPairBurn)
 
 	blk, err := pam.repo.BlockByNumber(&blkNumber)
 	if err != nil {
-		pam.log.Errorf("block was not found for uniswap burn event on pair %s; %s", pam.pair.String(), err.Error())
+		pam.log.Errorf("block #%d not found for uniswap burn event on pair %s; %s", blkNumber, pam.pair.String(), err.Error())
 		return nil, err
 	}
 
@@ -346,7 +346,7 @@ func (pam *UniswapPairMonitor) getSyncData(syncEvent *contracts.UniswapPairSync)
 
 	blk, err := pam.repo.BlockByNumber(&blkNumber)
 	if err != nil {
-		pam.log.Errorf("Block was not found for uniswap sync event on pair %s; %s", pam.pair.String(), err.Error())
+		pam.log.Errorf("block #%d not found for uniswap sync on pair %s; %s", blkNumber, pam.pair.String(), err.Error())
 		return nil, err
 	}
 

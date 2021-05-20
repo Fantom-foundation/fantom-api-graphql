@@ -52,6 +52,7 @@ type orchestrator struct {
 	// chain state to catch up after the API service restarted
 	bls *blockScanner
 	uws *uniswapScanner
+	sfs *sfcScanner
 
 	// monitors watch for newly created objects on the block chain
 	// and push those object into their processing queues to be sorted out
@@ -102,6 +103,9 @@ func (or *orchestrator) init(cfg *config.Config) {
 	or.swapScanDone = make(chan bool, 1)
 	or.uws = newUniswapScanner(or.swapDispatcherQueue, or.swapScanDone, or.repo, or.log, or.wg)
 
+	// SFC scanner
+	or.sfs = newSFCScanner(or.repo, or.log, or.wg)
+
 	// create block monitor; it waits for sync blockScanner to finish
 	or.reScan = make(chan bool, orScannersCount)
 	or.blm = NewBlockMonitor(or.repo.FtmConnection(), or.trxDispatcherQueue, or.reScan, or.repo, or.log, or.wg)
@@ -129,6 +133,7 @@ func (or *orchestrator) run() {
 	// now the scanners so we sync the off-chain database
 	or.bls.run()
 	or.uws.run()
+	or.sfs.run()
 
 	// finally monitors
 	or.uwm.run()
@@ -181,6 +186,7 @@ func (or *orchestrator) closeServices() {
 	// signal scanners to close
 	or.bls.close()
 	or.uws.close()
+	or.sfs.close()
 
 	// signal closing to sti monitor as well, if it exists
 	if or.stm != nil {

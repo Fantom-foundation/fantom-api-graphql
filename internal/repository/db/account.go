@@ -38,7 +38,7 @@ const (
 	defaultERC20ListLength = 25
 )
 
-// the account base row
+// AccountRow is the account base row
 type AccountRow struct {
 	Address  string       `bson:"_id"`
 	Type     string       `bson:"type"`
@@ -140,7 +140,7 @@ func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 	return nil
 }
 
-// isAccountKnown checks if an account document already exists in the database.
+// IsAccountKnown checks if an account document already exists in the database.
 func (db *MongoDbBridge) IsAccountKnown(addr *common.Address) (bool, error) {
 	// get the collection for account transactions
 	col := db.client.Database(db.dbName).Collection(coAccounts)
@@ -166,17 +166,7 @@ func (db *MongoDbBridge) IsAccountKnown(addr *common.Address) (bool, error) {
 
 // AccountCount calculates total number of accounts in the database.
 func (db *MongoDbBridge) AccountCount() (uint64, error) {
-	// get the collection for transactions
-	col := db.client.Database(db.dbName).Collection(coAccounts)
-
-	// do the counting
-	val, err := col.CountDocuments(context.Background(), bson.D{})
-	if err != nil {
-		db.log.Errorf("can not count documents in accounts collection; %s", err.Error())
-		return 0, err
-	}
-
-	return uint64(val), nil
+	return db.EstimateCount(db.client.Database(db.dbName).Collection(coAccounts))
 }
 
 // AccountTransactions loads list of transaction hashes of an account.
