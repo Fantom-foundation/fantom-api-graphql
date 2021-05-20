@@ -7,6 +7,7 @@ import (
 	"fantom-api-graphql/internal/logger"
 	"fmt"
 	"sync"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -82,14 +83,18 @@ func connectDb(cfg *config.Database) (*mongo.Client, error) {
 func (db *MongoDbBridge) Close() {
 	// do we have a client?
 	if db.client != nil {
+		// prep context
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
 		// try to disconnect
-		err := db.client.Disconnect(context.Background())
+		err := db.client.Disconnect(ctx)
 		if err != nil {
 			db.log.Errorf("error on closing database connection; %s", err.Error())
 		}
 
 		// inform
 		db.log.Info("database connection is closed")
+		cancel()
 	}
 }
 

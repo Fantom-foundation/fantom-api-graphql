@@ -78,7 +78,7 @@ const (
 	defTokenLogoFilePath = "tokens.json"
 
 	// defBlockScanRescanDepth represents the amount of blocks re-scanned on server start
-	defBlockScanRescanDepth = 500
+	defBlockScanRescanDepth = 50
 )
 
 // default list of API peers

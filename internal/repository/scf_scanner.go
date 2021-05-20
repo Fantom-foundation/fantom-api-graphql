@@ -58,7 +58,7 @@ func (sfs *sfcScanner) scan(from uint64) {
 		current    = from
 		top        *types.Epoch
 		topTicker  = time.NewTicker(10 * time.Second)
-		scanTicker = time.NewTicker(50 * time.Millisecond)
+		scanTicker = time.NewTicker(100 * time.Millisecond)
 	)
 
 	// don't forget to sign off after we are done
