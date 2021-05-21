@@ -55,7 +55,7 @@ func (rs *rootResolver) TrxGasSpeed(args struct {
 	}
 
 	// collect target time
-	to := time.Now()
+	to := time.Now().UTC()
 	if args.To != nil {
 		to, err = time.Parse(time.RFC3339, *args.To)
 		if err != nil {
@@ -65,6 +65,9 @@ func (rs *rootResolver) TrxGasSpeed(args struct {
 
 	// get the value
 	from := to.Add(time.Duration(-args.Range) * time.Second)
+
+	// log what we do
+	rs.log.Noticef("calculating gas speed from %s to %s", from.String(), to.String())
 	return repository.R().TrxGasSpeed(&from, &to)
 }
 
