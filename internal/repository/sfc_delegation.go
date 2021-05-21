@@ -212,8 +212,15 @@ func handleSfcIncreasedStake(log *retypes.Log, ld *logsDispatcher) {
 	// get the validator ID
 	valID := new(big.Int).SetBytes(log.Topics[1].Bytes())
 
+	// get the validator address
+	addr, err := R().ValidatorAddress((*hexutil.Big)(valID))
+	if err != nil {
+		ld.log.Errorf("unknown validator #%d; %s", valID.Uint64(), err.Error())
+		return
+	}
+
 	// update the balance
-	if err := ld.repo.UpdateDelegationBalance(&log.Address, (*hexutil.Big)(valID)); err != nil {
+	if err := ld.repo.UpdateDelegationBalance(addr, (*hexutil.Big)(valID)); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
 	}
 }
@@ -309,8 +316,15 @@ func handleSfc1WithdrawnStake(log *retypes.Log, ld *logsDispatcher) {
 	// extract the basic info about the request
 	valID := (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[1].Bytes()))
 
+	// get the validator address
+	addr, err := R().ValidatorAddress(valID)
+	if err != nil {
+		ld.log.Errorf("unknown validator #%d; %s", valID.ToInt().Uint64(), err.Error())
+		return
+	}
+
 	// check active amount on the delegation
-	if err := ld.repo.UpdateDelegationBalance(&log.Address, valID); err != nil {
+	if err := ld.repo.UpdateDelegationBalance(addr, valID); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
 	}
 }
