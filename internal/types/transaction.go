@@ -21,6 +21,7 @@ const trxLargeInputWall = 32 * 8
 // TransactionDecimalsCorrection is used to manipulate precision of a transaction amount value
 // so it can be stored in database as INT64 without loosing too much data
 var TransactionDecimalsCorrection = new(big.Int).SetUint64(1000000000)
+var TransactionGasCorrection = new(big.Int).SetUint64(10000000)
 
 // Transaction represents a basic information provided by the API about transaction inside Opera blockchain.
 type Transaction struct {
@@ -108,6 +109,7 @@ type BsonTransaction struct {
 	UsedGas    *uint64   `bson:"gas_use"`
 	CumGas     *uint64   `bson:"gas_cum"`
 	GasPrice   string    `bson:"gas_pri"`
+	GasGWei    int64     `bson:"gwx100"`
 	Nonce      int64     `bson:"nonce"`
 	Contract   *string   `bson:"contr"`
 	Status     uint64    `bson:"stat"`
@@ -150,6 +152,7 @@ func (trx *Transaction) Marshal() ([]byte, error) {
 func (trx *Transaction) MarshalBSON() ([]byte, error) {
 	// calculate the value to 9 digits (and 18 billions remain available)
 	val := new(big.Int).Div(trx.Value.ToInt(), TransactionDecimalsCorrection)
+	gWei := new(big.Int).Div(trx.GasPrice.ToInt(), TransactionGasCorrection)
 
 	// prep the structure for saving
 	pom := BsonTransaction{
@@ -158,6 +161,7 @@ func (trx *Transaction) MarshalBSON() ([]byte, error) {
 		From:       trx.From.String(),
 		Gas:        int64(trx.Gas),
 		GasPrice:   trx.GasPrice.String(),
+		GasGWei:    gWei.Int64(),
 		Nonce:      int64(trx.Nonce),
 		Value:      trx.Value.String(),
 		Amount:     val.Int64(),
