@@ -96,7 +96,7 @@ func (p *proxy) getBlock(tag string, pull func(*string) (*types.Block, error)) (
 	// try to store the block in cache for future use
 	err = p.cache.PushBlock(tag, blk)
 	if err != nil {
-		p.log.Error(err)
+		p.log.Errorf("can not cache; %s", err.Error())
 	}
 
 	// inform what we do

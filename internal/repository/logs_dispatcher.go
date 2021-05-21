@@ -32,19 +32,28 @@ func newLogsDispatcher(buffer chan *eventTrxLog, repo Repository, log logger.Log
 		buffer:  buffer,
 		knownTopics: map[common.Hash]func(*retypes.Log, *logsDispatcher){
 			/* SFC1::CreatedDelegation(address indexed delegator, uint256 indexed toStakerID, uint256 amount) */
-			/* common.HexToHash("0xfd8c857fb9acd6f4ad59b8621a2a77825168b7b4b76de9586d08e00d4ed462be"): handleSfcCreatedDelegation, */
+			common.HexToHash("0xfd8c857fb9acd6f4ad59b8621a2a77825168b7b4b76de9586d08e00d4ed462be"): handleSfcCreatedDelegation,
 
 			/* SFC1::CreatedStake(uint256 indexed stakerID, address indexed dagSfcAddress, uint256 amount) */
-			/* common.HexToHash("0x0697dfe5062b9db8108e4b31254f47a912ae6bbb78837667b2e923a6f5160d39"): handleSfcCreatedStake, */
+			common.HexToHash("0x0697dfe5062b9db8108e4b31254f47a912ae6bbb78837667b2e923a6f5160d39"): handleSfcCreatedStake,
 
 			/* SFC1::IncreasedStake(uint256 indexed stakerID, uint256 newAmount, uint256 diff); */
-			/* common.HexToHash("0xa1d93e9a2a16bf4c2d0cdc6f47fe0fa054c741c96b3dac1297c79eaca31714e9"): handleSfcIncreasedStake, */
+			common.HexToHash("0xa1d93e9a2a16bf4c2d0cdc6f47fe0fa054c741c96b3dac1297c79eaca31714e9"): handleSfcIncreasedStake,
+
+			/* SFC1::IncreasedDelegation(address indexed delegator, uint256 indexed stakerID, uint256 newAmount, uint256 diff); */
+			common.HexToHash("0x4ca781bfe171e588a2661d5a7f2f5f59df879c53489063552fbad2145b707fc1"): handleSfcIncreasedDelegation,
 
 			/* SFC1::ClaimedDelegationReward(address indexed from, uint256 indexed stakerID, uint256 reward, uint256 fromEpoch, uint256 untilEpoch) */
 			common.HexToHash("0x2676e1697cf4731b93ddb4ef54e0e5a98c06cccbbbb2202848a3c6286595e6ce"): handleSfc1ClaimedDelegationReward,
 
 			/* SFC1::ClaimedValidatorReward(uint256 indexed stakerID, uint256 reward, uint256 fromEpoch, uint256 untilEpoch) */
 			common.HexToHash("0x2ea54c2b22a07549d19fb5eb8e4e48ebe1c653117215e94d5468c5612750d35c"): handleSfc1ClaimedValidatorReward,
+
+			/* SFC1::WithdrawnStake(uint256 indexed stakerID, uint256 penalty) */
+			common.HexToHash("0x8c6548258f8f12a9d4b593fa89a223417ed901d4ee9712ba09beb4d56f5262b6"): handleSfc1WithdrawnStake,
+
+			/* SFC1::WithdrawnDelegation(address indexed delegator, uint256 indexed stakerID, uint256 penalty) */
+			common.HexToHash("0x87e86b3710b72c10173ca52c6a9f9cf2df27e77ed177741a8b4feb12bb7a606f"): handleSfc1WithdrawnDelegation,
 
 			/* SFC3::Delegated(address indexed delegator, uint256 indexed toValidatorID, uint256 amount) */
 			common.HexToHash("0x9a8f44850296624dadfd9c246d17e47171d35727a181bd090aa14bbbe00238bb"): handleSfcCreatedDelegation,
