@@ -117,7 +117,7 @@ func (acd *accountDispatcher) processAccount(acc *types.Account, block *types.Bl
 // based on the account details (it still could be the SFC, be cautious about it)
 func (acd *accountDispatcher) processSimple(acc *types.Account, block *types.Block, trx *types.Transaction) error {
 	// notify new account detected
-	acd.log.Noticef("found new account %s", acc.Address.String())
+	acd.log.Debugf("found new account %s", acc.Address.String())
 
 	// check if the target address is not an SFC contract
 	acd.checkSfcContract(acc, block, trx)
