@@ -16,6 +16,34 @@ import (
 	"math/big"
 )
 
+// makeAdHocDelegation creates a new delegation with unknown initial conditions in case of an attempt
+// to update a non-existent delegation.
+func (ld *logsDispatcher) makeAdHocDelegation(log *retypes.Log, addr *common.Address, valID *hexutil.Big, amo *big.Int) error {
+	// get the block
+	block, err := ld.repo.BlockByNumber((*hexutil.Uint64)(&log.BlockNumber))
+	if err != nil {
+		return err
+	}
+
+	// get staker address
+	val, err := R().ValidatorAddress(valID)
+	if err != nil {
+		return err
+	}
+
+	// do the insert
+	ld.log.Noticef("creating ad-hoc delegation of %s to %d", addr.String(), valID.ToInt().Uint64())
+	return ld.repo.StoreDelegation(&types.Delegation{
+		Transaction:     log.TxHash,
+		Address:         *addr,
+		ToStakerId:      valID,
+		ToStakerAddress: *val,
+		AmountDelegated: (*hexutil.Big)(amo),
+		AmountStaked:    (*hexutil.Big)(amo),
+		CreatedTime:     block.TimeStamp,
+	})
+}
+
 // handleSfcCreatedStake handles a new stake event from SFC v1 and SFC v2 contract.
 // event CreatedStake(uint256 indexed stakerID, address indexed dagSfcAddress, uint256 amount)
 func handleSfcCreatedStake(log *retypes.Log, ld *logsDispatcher) {
@@ -48,33 +76,6 @@ func handleSfc1IncreasedStake(log *retypes.Log, ld *logsDispatcher) {
 	}); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
 	}
-}
-
-// makeAdHocDelegation creates a new delegation with unknown initial conditions in case of an attempt
-// to update a non-existent delegation.
-func (ld *logsDispatcher) makeAdHocDelegation(log *retypes.Log, addr *common.Address, valID *hexutil.Big, amo *big.Int) error {
-	// get the block
-	block, err := ld.repo.BlockByNumber((*hexutil.Uint64)(&log.BlockNumber))
-	if err != nil {
-		return err
-	}
-
-	// get staker address
-	val, err := R().ValidatorAddress(valID)
-	if err != nil {
-		return err
-	}
-
-	// do the insert
-	return ld.repo.StoreDelegation(&types.Delegation{
-		Transaction:     log.TxHash,
-		Address:         *addr,
-		ToStakerId:      valID,
-		ToStakerAddress: *val,
-		AmountDelegated: (*hexutil.Big)(amo),
-		AmountStaked:    (*hexutil.Big)(amo),
-		CreatedTime:     block.TimeStamp,
-	})
 }
 
 // handleSfc1WithdrawnStake handles a withdrawal request finalization event from SFC1.
