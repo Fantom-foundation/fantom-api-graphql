@@ -112,7 +112,9 @@ func handleSfcRewardClaim(log *retypes.Log, ld *logsDispatcher, isRestake bool) 
 	}
 
 	// check active amount on the delegation
-	if err := ld.repo.UpdateDelegationBalance(&addr, valID); err != nil {
+	if err := ld.repo.UpdateDelegationBalance(&addr, valID, func(amo *big.Int) error {
+		return ld.makeAdHocDelegation(log, &addr, valID, amo)
+	}); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
 	}
 }
@@ -168,7 +170,9 @@ func handleSfc1ClaimedDelegationReward(log *retypes.Log, ld *logsDispatcher) {
 	}
 
 	// check active amount on the delegation
-	if err := ld.repo.UpdateDelegationBalance(&addr, valID); err != nil {
+	if err := ld.repo.UpdateDelegationBalance(&addr, valID, func(amo *big.Int) error {
+		return ld.makeAdHocDelegation(log, &addr, valID, amo)
+	}); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
 	}
 }
@@ -218,7 +222,9 @@ func handleSfc1ClaimedValidatorReward(log *retypes.Log, ld *logsDispatcher) {
 	}
 
 	// check active amount on the delegation
-	if err := ld.repo.UpdateDelegationBalance(val, valID); err != nil {
+	if err := ld.repo.UpdateDelegationBalance(val, valID, func(amo *big.Int) error {
+		return ld.makeAdHocDelegation(log, val, valID, amo)
+	}); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
 	}
 }
