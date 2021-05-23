@@ -47,7 +47,7 @@ func (p *proxy) UpdateDelegationBalance(addr *common.Address, valID *hexutil.Big
 
 	// do the update
 	if err := p.db.UpdateDelegationBalance(addr, valID, (*hexutil.Big)(val)); err != nil {
-		p.log.Errorf("failed delegation balance update for %s to %d; %s", addr.String(), valID.ToInt().Uint64(), err.Error())
+		p.log.Errorf("delegation balance update failed for %s to %d; %s", addr.String(), valID.ToInt().Uint64(), err.Error())
 	}
 	return nil
 }
@@ -161,14 +161,21 @@ func handleDelegationLog(blk hexutil.Uint64, trx *common.Hash, stakerID *big.Int
 		return
 	}
 
+	// pull the current value of the stake
+	stAmo, err := ld.repo.DelegationAmountStaked(&addr, (*hexutil.Big)(stakerID))
+	if err != nil {
+		ld.log.Errorf("delegation balance not available for %s to %d; %s", addr.String(), stakerID.Uint64(), err.Error())
+		return
+	}
+
 	// make the delegation record
 	dl := types.Delegation{
 		Transaction:     *trx,
 		Address:         addr,
 		ToStakerId:      (*hexutil.Big)(stakerID),
 		ToStakerAddress: *val,
+		AmountDelegated: (*hexutil.Big)(stAmo),
 		AmountStaked:    (*hexutil.Big)(amo),
-		AmountDelegated: (*hexutil.Big)(amo),
 		CreatedTime:     block.TimeStamp,
 	}
 
@@ -193,41 +200,11 @@ func handleSfcCreatedDelegation(log *retypes.Log, ld *logsDispatcher) {
 	)
 }
 
-// handleSfcCreatedStake handles a new stake event from SFC v1 and SFC v2 contract.
-// event CreatedStake(uint256 indexed stakerID, address indexed dagSfcAddress, uint256 amount)
-func handleSfcCreatedStake(log *retypes.Log, ld *logsDispatcher) {
-	handleDelegationLog(
-		hexutil.Uint64(log.BlockNumber),
-		&log.TxHash,
-		new(big.Int).SetBytes(log.Topics[1].Bytes()),
-		common.BytesToAddress(log.Topics[2].Bytes()),
-		new(big.Int).SetBytes(log.Data),
-		ld,
-	)
-}
-
-// handleSfcCreatedStake handles a new stake event from SFC v1 and SFC v2 contract.
-// event IncreasedStake(uint256 indexed stakerID, uint256 newAmount, uint256 diff)
-func handleSfcIncreasedStake(log *retypes.Log, ld *logsDispatcher) {
-	// get the validator ID
-	valID := new(big.Int).SetBytes(log.Topics[1].Bytes())
-
-	// get the validator address
-	addr, err := R().ValidatorAddress((*hexutil.Big)(valID))
-	if err != nil {
-		ld.log.Errorf("unknown validator #%d; %s", valID.Uint64(), err.Error())
-		return
-	}
-
-	// update the balance
-	if err := ld.repo.UpdateDelegationBalance(addr, (*hexutil.Big)(valID)); err != nil {
-		ld.log.Errorf("failed to update delegation; %s", err.Error())
-	}
-}
-
-// handleSfcIncreasedDelegation handles delegation amount increase event in SFC v1 and SFC v2.
+// handleSfc1IncreasedDelegation handles delegation amount increase event in SFC v1 and SFC v2.
 // SFC1::IncreasedDelegation(address indexed delegator, uint256 indexed stakerID, uint256 newAmount, uint256 diff);
-func handleSfcIncreasedDelegation(log *retypes.Log, ld *logsDispatcher) {
+// SFC1::PreparedToWithdrawDelegation(address indexed delegator, uint256 indexed stakerID)
+// SFC1::DeactivatedDelegation(address indexed delegator, uint256 indexed stakerID)
+func handleSfc1IncreasedDelegation(log *retypes.Log, ld *logsDispatcher) {
 	// get the validator ID
 	addr := common.BytesToAddress(log.Topics[1].Bytes())
 	valID := new(big.Int).SetBytes(log.Topics[2].Bytes())
@@ -272,6 +249,58 @@ func handleSfcUndelegated(log *retypes.Log, ld *logsDispatcher) {
 	}
 }
 
+// handleSfc1CreatedWithdrawRequest handles withdraw request creation event in SFC1/2
+// CreatedWithdrawRequest(address indexed auth, address indexed receiver, uint256 indexed stakerID, uint256 wrID, bool delegation, uint256 amount)
+func handleSfc1CreatedWithdrawRequest(log *retypes.Log, ld *logsDispatcher) {
+	// sanity check for data (2x uint256 + 1x bool = 96 bytes)
+	if len(log.Data) != 96 {
+		ld.log.Criticalf("%s log invalid data length; expected 96 bytes, %d bytes given", log.TxHash.String(), len(log.Data))
+		return
+	}
+
+	// get the base data; we don't store SFC1 un-delegate requests anymore
+	addr := common.BytesToAddress(log.Topics[1].Bytes())
+	valID := (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[3].Bytes()))
+
+	// check active amount on the delegation
+	if err := ld.repo.UpdateDelegationBalance(&addr, valID); err != nil {
+		ld.log.Errorf("failed to update delegation; %s", err.Error())
+	}
+}
+
+// handleSfc1PartialWithdrawByRequest handles SFC1 withdraw finalization event.
+// PartialWithdrawnByRequest(address indexed auth, address indexed receiver, uint256 indexed stakerID, uint256 wrID, bool delegation, uint256 penalty)
+func handleSfc1PartialWithdrawByRequest(log *retypes.Log, ld *logsDispatcher) {
+	// re-use similar function
+	handleSfc1CreatedWithdrawRequest(log, ld)
+}
+
+// handleSfc1UpdatedDelegation handles delegation update event.
+// UpdatedDelegation(address indexed delegator, uint256 indexed oldStakerID, uint256 indexed newStakerID, uint256 amount)
+func handleSfc1UpdatedDelegation(log *retypes.Log, ld *logsDispatcher) {
+	// sanity check for data (1x uint256 (value) = 32 bytes)
+	if len(log.Data) != 32 {
+		ld.log.Criticalf("%s log invalid data length; expected 32 bytes, %d bytes given", log.TxHash.String(), len(log.Data))
+		return
+	}
+
+	// check active amount on the delegation
+	addr := common.BytesToAddress(log.Topics[1].Bytes())
+	if err := ld.repo.UpdateDelegationBalance(&addr, (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[2].Bytes()))); err != nil {
+		ld.log.Errorf("failed to update delegation; %s", err.Error())
+	}
+
+	// this should have created a new delegation
+	handleDelegationLog(
+		hexutil.Uint64(log.BlockNumber),
+		&log.TxHash,
+		new(big.Int).SetBytes(log.Topics[3].Bytes()),
+		addr,
+		new(big.Int).SetBytes(log.Data[:]),
+		ld,
+	)
+}
+
 // handleSfcWithdrawn handles a withdrawal request finalization event.
 // event Withdrawn(address indexed delegator, uint256 indexed toValidatorID, uint256 indexed wrID, uint256 amount)
 func handleSfcWithdrawn(log *retypes.Log, ld *logsDispatcher) {
@@ -306,25 +335,6 @@ func handleSfcWithdrawn(log *retypes.Log, ld *logsDispatcher) {
 
 	// check active amount on the delegation
 	if err := ld.repo.UpdateDelegationBalance(&req.Address, req.StakerID); err != nil {
-		ld.log.Errorf("failed to update delegation; %s", err.Error())
-	}
-}
-
-// handleSfc1WithdrawnStake handles a withdrawal request finalization event from SFC1.
-// event WithdrawnStake(uint256 indexed stakerID, uint256 penalty)
-func handleSfc1WithdrawnStake(log *retypes.Log, ld *logsDispatcher) {
-	// extract the basic info about the request
-	valID := (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[1].Bytes()))
-
-	// get the validator address
-	addr, err := R().ValidatorAddress(valID)
-	if err != nil {
-		ld.log.Errorf("unknown validator #%d; %s", valID.ToInt().Uint64(), err.Error())
-		return
-	}
-
-	// check active amount on the delegation
-	if err := ld.repo.UpdateDelegationBalance(addr, valID); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
 	}
 }
