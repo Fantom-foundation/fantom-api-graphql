@@ -231,7 +231,7 @@ type Repository interface {
 	StoreDelegation(*types.Delegation) error
 
 	// UpdateDelegationBalance updates active balance of the given delegation.
-	UpdateDelegationBalance(*common.Address, *hexutil.Big) error
+	UpdateDelegationBalance(*common.Address, *hexutil.Big, func(*big.Int) error) error
 
 	// Delegation returns a detail of delegation for the given address and validator ID.
 	Delegation(*common.Address, *hexutil.Big) (*types.Delegation, error)

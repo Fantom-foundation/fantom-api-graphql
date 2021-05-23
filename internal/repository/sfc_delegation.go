@@ -9,6 +9,7 @@ results. BigCache for in-memory object storage to speed up loading of frequently
 package repository
 
 import (
+	"fantom-api-graphql/internal/repository/db"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -37,7 +38,7 @@ func (p *proxy) StoreDelegation(dl *types.Delegation) error {
 }
 
 // UpdateDelegationBalance updates active balance of the given delegation.
-func (p *proxy) UpdateDelegationBalance(addr *common.Address, valID *hexutil.Big) error {
+func (p *proxy) UpdateDelegationBalance(addr *common.Address, valID *hexutil.Big, unknown func(*big.Int) error) error {
 	// pull the current value
 	val, err := p.DelegationAmountStaked(addr, valID)
 	if err != nil {
@@ -46,10 +47,17 @@ func (p *proxy) UpdateDelegationBalance(addr *common.Address, valID *hexutil.Big
 	}
 
 	// do the update
-	if err := p.db.UpdateDelegationBalance(addr, valID, (*hexutil.Big)(val)); err != nil {
-		p.log.Errorf("delegation balance update failed for %s to %d; %s", addr.String(), valID.ToInt().Uint64(), err.Error())
+	err = p.db.UpdateDelegationBalance(addr, valID, (*hexutil.Big)(val))
+	if err == nil {
+		return nil
 	}
-	return nil
+
+	// unknown delegation detected?
+	if err == db.ErrUnknownDelegation {
+		return unknown(val)
+	}
+	p.log.Errorf("delegation %s to %d update failed; %s", addr.String(), valID.ToInt().Uint64(), err.Error())
+	return err
 }
 
 // Delegation returns a detail of delegation for the given address.
@@ -210,7 +218,9 @@ func handleSfc1IncreasedDelegation(log *retypes.Log, ld *logsDispatcher) {
 	valID := new(big.Int).SetBytes(log.Topics[2].Bytes())
 
 	// update the balance
-	if err := ld.repo.UpdateDelegationBalance(&addr, (*hexutil.Big)(valID)); err != nil {
+	if err := ld.repo.UpdateDelegationBalance(&addr, (*hexutil.Big)(valID), func(amo *big.Int) error {
+		return ld.makeAdHocDelegation(log, &addr, (*hexutil.Big)(valID), amo)
+	}); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
 	}
 }
@@ -244,7 +254,9 @@ func handleSfcUndelegated(log *retypes.Log, ld *logsDispatcher) {
 	}
 
 	// check active amount on the delegation
-	if err := ld.repo.UpdateDelegationBalance(&wr.Address, wr.StakerID); err != nil {
+	if err := ld.repo.UpdateDelegationBalance(&wr.Address, wr.StakerID, func(amo *big.Int) error {
+		return ld.makeAdHocDelegation(log, &wr.Address, wr.StakerID, amo)
+	}); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
 	}
 }
@@ -263,7 +275,9 @@ func handleSfc1CreatedWithdrawRequest(log *retypes.Log, ld *logsDispatcher) {
 	valID := (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[3].Bytes()))
 
 	// check active amount on the delegation
-	if err := ld.repo.UpdateDelegationBalance(&addr, valID); err != nil {
+	if err := ld.repo.UpdateDelegationBalance(&addr, valID, func(amo *big.Int) error {
+		return ld.makeAdHocDelegation(log, &addr, valID, amo)
+	}); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
 	}
 }
@@ -286,7 +300,10 @@ func handleSfc1UpdatedDelegation(log *retypes.Log, ld *logsDispatcher) {
 
 	// check active amount on the delegation
 	addr := common.BytesToAddress(log.Topics[1].Bytes())
-	if err := ld.repo.UpdateDelegationBalance(&addr, (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[2].Bytes()))); err != nil {
+	valID := (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[2].Bytes()))
+	if err := ld.repo.UpdateDelegationBalance(&addr, valID, func(amo *big.Int) error {
+		return ld.makeAdHocDelegation(log, &addr, valID, amo)
+	}); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
 	}
 
@@ -334,7 +351,9 @@ func handleSfcWithdrawn(log *retypes.Log, ld *logsDispatcher) {
 	}
 
 	// check active amount on the delegation
-	if err := ld.repo.UpdateDelegationBalance(&req.Address, req.StakerID); err != nil {
+	if err := ld.repo.UpdateDelegationBalance(&req.Address, req.StakerID, func(amo *big.Int) error {
+		return ld.makeAdHocDelegation(log, &addr, valID, amo)
+	}); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
 	}
 }
@@ -347,7 +366,9 @@ func handleSfc1WithdrawnDelegation(log *retypes.Log, ld *logsDispatcher) {
 	valID := (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[2].Bytes()))
 
 	// check active amount on the delegation
-	if err := ld.repo.UpdateDelegationBalance(&addr, valID); err != nil {
+	if err := ld.repo.UpdateDelegationBalance(&addr, valID, func(amo *big.Int) error {
+		return ld.makeAdHocDelegation(log, &addr, valID, amo)
+	}); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
 	}
 }

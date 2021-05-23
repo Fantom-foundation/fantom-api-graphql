@@ -16,6 +16,9 @@ import (
 // colDelegations represents the name of the delegations collection
 const colDelegations = "delegations"
 
+// ErrUnknownDelegation represents an error given on an unknown delegation update attempt.
+var ErrUnknownDelegation = fmt.Errorf("unknown delegation")
+
 // initDelegationCollection initializes the delegation collection with
 // indexes and additional parameters needed by the app.
 func (db *MongoDbBridge) initDelegationCollection(col *mongo.Collection) {
@@ -153,6 +156,7 @@ func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *he
 	// any match?
 	if ur.MatchedCount == 0 {
 		db.log.Errorf("delegation %s to %d not found", addr.String(), valID.ToInt().Uint64())
+		return ErrUnknownDelegation
 	}
 	return nil
 }
