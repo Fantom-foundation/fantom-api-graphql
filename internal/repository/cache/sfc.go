@@ -3,14 +3,17 @@ package cache
 
 import (
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"strings"
 )
 
 // sfcMaxDelegatedRatioKey represents the key used to store SFC delegation ratio.
 const (
 	sfcMaxDelegatedRatioKey = "sfc_dlr"
 	sfcConfigurationKey     = "sfc_cfg"
+	sfcValidatorAddress     = "val_adr"
 )
 
 // PullSfcMaxDelegatedRatio extract the ratio from cache, if possible.
@@ -76,4 +79,41 @@ func (b *MemBridge) PushSfcConfig(val *types.SfcConfig) {
 	if err := b.cache.Set(sfcConfigurationKey, data); err != nil {
 		b.log.Errorf("can not store SFC configuration")
 	}
+}
+
+// validatorAddressKey generates cache key for address of the given validator id.
+func validatorAddressKey(valID *hexutil.Big) string {
+	var sb strings.Builder
+	sb.WriteString(sfcValidatorAddress)
+	sb.WriteString(valID.String())
+	return sb.String()
+}
+
+// PushValidatorAddress stores validator address in the memory cache.
+func (b *MemBridge) PushValidatorAddress(valID *hexutil.Big, adr *common.Address) {
+	// empty validator ID or address? nothing to do
+	if nil == valID || nil == adr {
+		return
+	}
+
+	// store the address
+	if err := b.cache.Set(validatorAddressKey(valID), adr.Bytes()); err != nil {
+		b.log.Errorf("can not store address of validator %d", valID.ToInt().Uint64())
+	}
+}
+
+// PullValidatorAddress tries to pull the validator address from memory cache.
+func (b *MemBridge) PullValidatorAddress(valID *hexutil.Big) *common.Address {
+	// empty validator ID?
+	if nil == valID {
+		return nil
+	}
+
+	// try to get the account data from the cache
+	data, err := b.cache.Get(validatorAddressKey(valID))
+	if err != nil {
+		return nil
+	}
+	adr := common.BytesToAddress(data)
+	return &adr
 }

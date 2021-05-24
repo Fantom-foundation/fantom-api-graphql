@@ -46,6 +46,11 @@ func (p *proxy) UpdateDelegationBalance(addr *common.Address, valID *hexutil.Big
 		return err
 	}
 
+	// check if we need to update it
+	if !p.stakedAmounts.Update(addr, valID, val) {
+		return nil
+	}
+
 	// do the update
 	err = p.db.UpdateDelegationBalance(addr, valID, (*hexutil.Big)(val))
 	if err == nil {

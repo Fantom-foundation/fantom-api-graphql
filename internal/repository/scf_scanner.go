@@ -30,7 +30,7 @@ func newSFCScanner(repo Repository, log logger.Logger, wg *sync.WaitGroup) *sfcS
 	return &sfcScanner{
 		service:      newService("sfc scanner", repo, log, wg),
 		sigTermQueue: make(chan bool, 1),
-		epochQueue:   make(chan *types.Epoch, 50),
+		epochQueue:   make(chan *types.Epoch, 100),
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
+	"time"
 )
 
 const (
@@ -16,6 +17,7 @@ const (
 	FiRewardClaimAddress     = "adr"
 	FiRewardClaimToValidator = "to"
 	FiRewardClaimedValue     = "val"
+	FiRewardClaimedTimeStamp = "stamp"
 )
 
 // RewardDecimalsCorrection is used to manipulate precision of a rewards value
@@ -36,14 +38,15 @@ type RewardClaim struct {
 
 // BsonRewardClaim represents BSON rew structure of the reward claim.
 type BsonRewardClaim struct {
-	ID        string `bson:"_id"`
-	Ordinal   uint64 `bson:"orx"`
-	Addr      string `bson:"addr"`
-	To        string `bson:"to"`
-	ClaimTime uint64 `bson:"when"`
-	Amount    string `bson:"amount"`
-	Value     uint64 `bson:"value"`
-	IsDlg     bool   `bson:"red"`
+	ID        string    `bson:"_id"`
+	Ordinal   uint64    `bson:"orx"`
+	Addr      string    `bson:"addr"`
+	To        string    `bson:"to"`
+	ClaimTime uint64    `bson:"when"`
+	TimeStamp time.Time `bson:"stamp"`
+	Amount    string    `bson:"amount"`
+	Value     uint64    `bson:"value"`
+	IsDlg     bool      `bson:"red"`
 }
 
 // Pk returns a unique primary key of the claim.
@@ -68,6 +71,7 @@ func (rwc *RewardClaim) MarshalBSON() ([]byte, error) {
 		Addr:      rwc.Delegator.String(),
 		To:        rwc.ToValidatorId.String(),
 		ClaimTime: uint64(rwc.Claimed),
+		TimeStamp: time.Unix(int64(rwc.Claimed), 0),
 		Amount:    rwc.Amount.String(),
 		Value:     val.Uint64(),
 		IsDlg:     rwc.IsDelegated,

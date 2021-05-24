@@ -32,7 +32,21 @@ func (p *proxy) IsValidator(addr *common.Address) (bool, error) {
 
 // ValidatorAddress extract a staker address for the given staker ID.
 func (p *proxy) ValidatorAddress(id *hexutil.Big) (*common.Address, error) {
-	return p.rpc.ValidatorAddress((*big.Int)(id))
+	// try to use cache
+	adr := p.cache.PullValidatorAddress(id)
+	if nil != adr {
+		return adr, nil
+	}
+
+	// pull from SFC
+	adr, err := p.rpc.ValidatorAddress((*big.Int)(id))
+	if err != nil {
+		return nil, err
+	}
+
+	// store to cache for future use and return the value we got
+	p.cache.PushValidatorAddress(id, adr)
+	return adr, nil
 }
 
 // Validator extract a staker information from SFC smart contract.

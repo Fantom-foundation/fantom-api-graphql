@@ -24,6 +24,7 @@ func (db *MongoDbBridge) initRewardsCollection(col *mongo.Collection) {
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiRewardClaimAddress, 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiRewardClaimToValidator, 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiRewardClaimOrdinal, -1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiRewardClaimedTimeStamp, -1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
