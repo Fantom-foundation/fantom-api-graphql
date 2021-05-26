@@ -24,7 +24,7 @@ type Erc20Token struct {
 	Decimals int32 `json:"decimals"`
 }
 
-// UnmarshalAccount parses the JSON-encoded account data.
+// UnmarshalErc20Token parses the JSON-encoded account data.
 func UnmarshalErc20Token(data []byte) (*Erc20Token, error) {
 	var erc20 Erc20Token
 	err := json.Unmarshal(data, &erc20)
