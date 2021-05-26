@@ -7,6 +7,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
+	"math/big"
+	"time"
 )
 
 const (
@@ -16,6 +18,7 @@ const (
 	FiErc20TransactionSender    = "from"
 	FiErc20TransactionRecipient = "to"
 	FiErc20TransactionType      = "type"
+	FiErc20TransactionStamp     = "stamp"
 
 	// ERC20TrxTypeTransfer represents transaction for transfers.
 	ERC20TrxTypeTransfer     = 1
@@ -43,16 +46,18 @@ type Erc20Transaction struct {
 
 // BsonErc20Transaction represents the BSON i/o struct for an ERC20 operation.
 type BsonErc20Transaction struct {
-	ID      string `bson:"_id"`
-	Trx     string `bson:"trx"`
-	Tix     uint64 `bson:"tix"`
-	Orx     uint64 `bson:"orx"`
-	Token   string `bson:"tok"`
-	Type    int32  `bson:"type"`
-	From    string `bson:"from"`
-	To      string `bson:"to"`
-	Amo     string `bson:"amo"`
-	Created uint64 `bson:"ts"`
+	ID      string    `bson:"_id"`
+	Trx     string    `bson:"trx"`
+	Tix     uint64    `bson:"tix"`
+	Orx     uint64    `bson:"orx"`
+	Token   string    `bson:"tok"`
+	Type    int32     `bson:"type"`
+	From    string    `bson:"from"`
+	To      string    `bson:"to"`
+	Amo     string    `bson:"amo"`
+	Created uint64    `bson:"ts"`
+	Value   int64     `bson:"val"`
+	Stamp   time.Time `bson:"stamp"`
 }
 
 // Erc20TrxTypeByName returns numeric type of the ERC20 transaction by its name.
@@ -104,6 +109,7 @@ func (etx *Erc20Transaction) OrdinalIndex() uint64 {
 
 // MarshalBSON creates a BSON representation of the ERC20 transaction record.
 func (etx *Erc20Transaction) MarshalBSON() ([]byte, error) {
+	val := new(big.Int).Div(etx.Amount.ToInt(), TransactionDecimalsCorrection)
 	return bson.Marshal(BsonErc20Transaction{
 		ID:      etx.Pk(),
 		Trx:     etx.Transaction.String(),
@@ -115,6 +121,8 @@ func (etx *Erc20Transaction) MarshalBSON() ([]byte, error) {
 		To:      etx.Recipient.String(),
 		Amo:     etx.Amount.String(),
 		Created: uint64(etx.TimeStamp),
+		Value:   val.Int64(),
+		Stamp:   time.Unix(int64(etx.TimeStamp), 0),
 	})
 }
 

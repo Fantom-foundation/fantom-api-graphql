@@ -10,6 +10,8 @@ package repository
 
 import (
 	"fantom-api-graphql/internal/logger"
+	"fantom-api-graphql/internal/repository/rpc"
+	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"sync"
@@ -213,19 +215,20 @@ func (acd *accountDispatcher) detectErc20(addr *common.Address, block *types.Blo
 		return nil
 	}
 
-	// try to detect total supply
-	if _, err := acd.repo.Erc20TotalSupply(addr); err != nil {
-		return nil
-	}
-
 	// try to detect balance of
 	if _, err := acd.repo.Erc20BalanceOf(addr, &testAddress); err != nil {
 		return nil
 	}
 
+	// try to detect total supply; if not found this is probably ERC721
+	if _, err := acd.repo.Erc20TotalSupply(addr); err != nil {
+		acd.log.Noticef("ERC721 token %s detected at %s", name, addr.String())
+		return types.NewErcTokenContract(addr, name, block, trx, types.AccountTypeERC20Token, rpc.ERC721TokenABI)
+	}
+
 	// log what we do
 	acd.log.Noticef("ERC20 token %s detected at %s", name, addr.String())
-	return types.NewErc20Contract(addr, name, block, trx)
+	return types.NewErcTokenContract(addr, name, block, trx, types.AccountTypeERC721Token, contracts.ERCTwentyABI)
 }
 
 // detectStiContract identifies Staker Information contract by checking interface.

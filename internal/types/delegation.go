@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
+	"time"
 )
 
 const (
@@ -21,6 +22,7 @@ const (
 	FiDelegationAmount             = "amo"
 	FiDelegationAmountActive       = "act"
 	FiDelegationValue              = "val"
+	FiDelegationStamp              = "stamp"
 )
 
 // Delegation represents a delegator in Opera blockchain.
@@ -36,16 +38,17 @@ type Delegation struct {
 
 // BsonDelegation represents the BSON i/o struct for a delegation.
 type BsonDelegation struct {
-	ID     string `bson:"_id"`
-	Orx    uint64 `bson:"orx"`
-	Trx    string `bson:"trx"`
-	Addr   string `bson:"adr"`
-	To     string `bson:"to"`
-	ToAddr string `bson:"toad"`
-	CrTime uint64 `bson:"crt"`
-	Staked string `bson:"amo"`
-	Active string `bson:"act"`
-	Value  uint64 `bson:"val"`
+	ID     string    `bson:"_id"`
+	Orx    uint64    `bson:"orx"`
+	Trx    string    `bson:"trx"`
+	Addr   string    `bson:"adr"`
+	To     string    `bson:"to"`
+	ToAddr string    `bson:"toad"`
+	CrTime uint64    `bson:"crt"`
+	Staked string    `bson:"amo"`
+	Active string    `bson:"act"`
+	Value  uint64    `bson:"val"`
+	Stamp  time.Time `bson:"stamp"`
 }
 
 // DelegationDecimalsCorrection is used to manipulate precision of a delegation active value
@@ -76,6 +79,7 @@ func (dl *Delegation) MarshalBSON() ([]byte, error) {
 		Staked: dl.AmountStaked.String(),
 		Active: dl.AmountDelegated.String(),
 		Value:  val,
+		Stamp:  time.Unix(int64(dl.CreatedTime), 0),
 	})
 }
 

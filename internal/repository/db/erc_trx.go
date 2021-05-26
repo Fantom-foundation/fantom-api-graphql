@@ -24,6 +24,7 @@ func (db *MongoDbBridge) initErc20TrxCollection(col *mongo.Collection) {
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiErc20TransactionSender, 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiErc20TransactionRecipient, 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiErc20TransactionOrdinal, -1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiErc20TransactionStamp, -1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {

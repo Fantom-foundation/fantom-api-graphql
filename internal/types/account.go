@@ -19,6 +19,9 @@ const (
 
 	// AccountTypeERC20Token identifies a contract of type ERC20 token
 	AccountTypeERC20Token = "ERC20"
+
+	// AccountTypeERC721Token identifies a contract of type ERC721 token
+	AccountTypeERC721Token = "ERC721"
 )
 
 // Account represents an Opera account at the blockchain.

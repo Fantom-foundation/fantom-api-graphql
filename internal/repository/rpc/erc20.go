@@ -24,6 +24,10 @@ import (
 //go:generate tools/abigen.sh --abi ./contracts/abi/erc20detailed.abi --pkg contracts --type ERCTwentyDetailed --out ./contracts/erc20detailed_token.go
 //go:generate tools/abigen.sh --abi ./contracts/abi/wftm.abi --pkg contracts --type ErcWrappedFtm --out ./contracts/erc20wftm_token.go
 
+// ERC721TokenABI represents the ABI of ERC721 token.
+// go:embed contracts/abi/erc721.abi
+var ERC721TokenABI string
+
 // Erc20Name provides information about the name of the ERC20 token.
 func (ftm *FtmBridge) Erc20Name(token *common.Address) (string, error) {
 	// connect the contract

@@ -6,6 +6,7 @@ import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
 	"fmt"
+	"math/big"
 	"sync"
 	"time"
 
@@ -31,6 +32,9 @@ type MongoDbBridge struct {
 	initErc20Trx     *sync.Once
 	initEpochs       *sync.Once
 }
+
+// intZero represents an empty big value.
+var intZero = new(big.Int)
 
 // New creates a new Mongo Db connection bridge.
 func New(cfg *config.Config, log logger.Logger) (*MongoDbBridge, error) {

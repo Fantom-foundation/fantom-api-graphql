@@ -38,6 +38,7 @@ func (db *MongoDbBridge) initDelegationCollection(col *mongo.Collection) {
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiDelegationAddress, 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiDelegationToValidator, 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiDelegationOrdinal, -1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiDelegationStamp, -1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {

@@ -123,14 +123,14 @@ func NewGenericContract(addr *common.Address, block *Block, trx *Transaction) *C
 	}
 }
 
-// NewErc20Contract creates new basic ERC20 contract
-func NewErc20Contract(addr *common.Address, name string, block *Block, trx *Transaction) *Contract {
+// NewErcTokenContract creates new basic ERC20 contract
+func NewErcTokenContract(addr *common.Address, name string, block *Block, trx *Transaction, tType string, abi string) *Contract {
 	// make the contract
 	con := NewGenericContract(addr, block, trx)
 
 	// set additional details
-	con.Type = AccountTypeERC20Token
-	con.Abi = contracts.ERCTwentyABI
+	con.Type = tType
+	con.Abi = abi
 	con.Name = name
 	return con
 }
