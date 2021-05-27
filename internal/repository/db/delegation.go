@@ -112,8 +112,6 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 		{types.FiDelegationOrdinal, dl.OrdinalIndex()},
 		{types.FiDelegationTransaction, dl.Transaction.String()},
 		{types.FiDelegationToValidatorAddress, dl.ToStakerAddress.String()},
-		{types.FiDelegationCreated, uint64(dl.CreatedTime)},
-		{types.FiDelegationAmount, dl.AmountStaked.String()},
 		{types.FiDelegationAmountActive, dl.AmountDelegated.String()},
 		{types.FiDelegationValue, val},
 	}}}, new(options.UpdateOptions).SetUpsert(true))
