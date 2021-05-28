@@ -132,6 +132,9 @@ func (db *MongoDbBridge) isUniqueWithdrawRequest(col *mongo.Collection, wr *type
 // shiftClosedWithdrawRequest updates a request ID of an existing withdraw request to preserve requests
 // history if the withdraw request is already closed.
 func (db *MongoDbBridge) shiftClosedWithdrawRequest(col *mongo.Collection, wr *types.WithdrawRequest) (bool, error) {
+	// generate new ID
+	reqID := (*hexutil.Big)(new(big.Int).SetBytes(wr.RequestTrx.Bytes()[:16])).String()
+
 	// try to shift a closed withdraw request to a different reqID by updating it in the database
 	er, err := col.UpdateOne(context.Background(), bson.D{
 		{types.FiWithdrawalAddress, wr.Address.String()},
@@ -139,7 +142,7 @@ func (db *MongoDbBridge) shiftClosedWithdrawRequest(col *mongo.Collection, wr *t
 		{types.FiWithdrawalRequestID, wr.WithdrawRequestID.String()},
 		{types.FiWithdrawalFinTime, bson.D{{"$exists", true}, {"$ne", nil}}},
 	}, bson.D{{"$set", bson.D{
-		{types.FiWithdrawalRequestID, wr.RequestTrx.String()},
+		{types.FiWithdrawalRequestID, reqID},
 	}}}, new(options.UpdateOptions).SetUpsert(true))
 	if err != nil {
 		db.log.Criticalf("can not shift withdrawal; %s", err.Error())
@@ -152,10 +155,11 @@ func (db *MongoDbBridge) shiftClosedWithdrawRequest(col *mongo.Collection, wr *t
 	}
 
 	// shift successful, log what we did
-	db.log.Infof("shifted withdrawal by %s to %d, request ID %s, by trx %s",
+	db.log.Infof("shifted withdrawal request ID %s to %s of delegation %s to %d",
 		wr.Address.String(),
 		wr.StakerID.ToInt().Uint64(),
 		wr.WithdrawRequestID.String(),
+		reqID,
 		wr.RequestTrx.String())
 	return true, nil
 }
