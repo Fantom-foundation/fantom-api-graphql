@@ -156,11 +156,10 @@ func (db *MongoDbBridge) shiftClosedWithdrawRequest(col *mongo.Collection, wr *t
 
 	// shift successful, log what we did
 	db.log.Infof("shifted withdrawal request ID %s to %s of delegation %s to %d",
-		wr.Address.String(),
-		wr.StakerID.ToInt().Uint64(),
 		wr.WithdrawRequestID.String(),
 		reqID,
-		wr.RequestTrx.String())
+		wr.Address.String(),
+		wr.StakerID.ToInt().Uint64())
 	return true, nil
 }
 
