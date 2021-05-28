@@ -22,6 +22,7 @@ const (
 	FiWithdrawalStamp       = "stamp"
 	FiWithdrawalValue       = "val"
 	FiWithdrawalSlash       = "slash"
+	FiWithdrawalRequestTrx  = "req_trx"
 	FiWithdrawalFinTrx      = "fin_trx"
 	FiWithdrawalFinTime     = "fin_time"
 
