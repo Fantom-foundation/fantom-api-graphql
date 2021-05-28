@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
 	"strings"
+	"time"
 )
 
 // colWithdrawals represents the name of the withdrawals collection in database.
@@ -116,6 +117,13 @@ func (db *MongoDbBridge) UpdateWithdrawal(wr *types.WithdrawRequest) error {
 		trx = &t
 	}
 
+	// penalty amount
+	var pen *string = nil
+	if wr.Penalty != nil {
+		p := wr.Penalty.String()
+		pen = &p
+	}
+
 	// try to update a withdraw request by replacing it in the database
 	// we use request ID identify unique withdrawal
 	er, err := col.UpdateOne(context.Background(), bson.D{
@@ -123,9 +131,12 @@ func (db *MongoDbBridge) UpdateWithdrawal(wr *types.WithdrawRequest) error {
 		{types.FiWithdrawalToValidator, wr.StakerID.String()},
 		{types.FiWithdrawalRequestID, wr.WithdrawRequestID.String()},
 	}, bson.D{{"$set", bson.D{
+		{types.FiWithdrawalType, wr.Type},
 		{types.FiWithdrawalOrdinal, wr.OrdinalIndex()},
 		{types.FiWithdrawalCreated, uint64(wr.CreatedTime)},
+		{types.FiWithdrawalStamp, time.Unix(int64(wr.CreatedTime), 0)},
 		{types.FiWithdrawalValue, val},
+		{types.FiWithdrawalSlash, pen},
 		{types.FiWithdrawalFinTrx, trx},
 		{types.FiWithdrawalFinTime, (*uint64)(wr.WithdrawTime)},
 	}}}, new(options.UpdateOptions).SetUpsert(true))

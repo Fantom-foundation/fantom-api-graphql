@@ -19,6 +19,9 @@ import (
 // trxDispatchQueueCapacity is the number of transactions kept in the dispatch buffer.
 const trxDispatchQueueCapacity = 50000
 
+// trxDispatchBlockUpdateTicker represents the period of block registry updater.
+const trxDispatchBlockUpdateTicker = 15 * time.Second
+
 // trxDispatcher implements dispatcher of new transactions in the blockchain.
 type trxDispatcher struct {
 	service
@@ -53,7 +56,7 @@ func (td *trxDispatcher) dispatch() {
 	td.log.Notice("trx dispatcher is running")
 
 	// make ticker for last known block updater
-	lnbTicker := time.NewTicker(5 * time.Second)
+	lnbTicker := time.NewTicker(trxDispatchBlockUpdateTicker)
 
 	// don't forget to sign off after we are done
 	defer func() {

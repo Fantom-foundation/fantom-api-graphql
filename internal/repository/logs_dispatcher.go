@@ -49,23 +49,23 @@ func newLogsDispatcher(buffer chan *eventTrxLog, repo Repository, log logger.Log
 			/* SFC1::ClaimedValidatorReward(uint256 indexed stakerID, uint256 reward, uint256 fromEpoch, uint256 untilEpoch) */
 			common.HexToHash("0x2ea54c2b22a07549d19fb5eb8e4e48ebe1c653117215e94d5468c5612750d35c"): handleSfc1ClaimedValidatorReward,
 
+			/* SFC1::DeactivatedStake(uint256 indexed stakerID) */
+			common.HexToHash("0xf7c308d0d978cce3aec157d1b34e355db4636b4e71ce91b4f5ec9e7a4f5cdc60"): handleSfc1DeactivatedStake,
+
+			/* SFC1::DeactivatedDelegation(address indexed delegator, uint256 indexed stakerID) */
+			common.HexToHash("0x912c4125a208704a342cbdc4726795d26556b0170b7fc95bc706d5cb1f506469"): handleSfc1DeactivatedDelegation,
+
+			/* SFC1::PreparedToWithdrawDelegation(address indexed delegator, uint256 indexed stakerID) */
+			common.HexToHash("0x5b1eea49e405ef6d509836aac841959c30bb0673b1fd70859bfc6ae5e4ee3df2"): handleSfc1DeactivatedDelegation,
+
+			/* SFC1::CreatedWithdrawRequest(address indexed auth, address indexed receiver, uint256 indexed stakerID, uint256 wrID, bool delegation, uint256 amount) */
+			common.HexToHash("0xde2d2a87af2fa2de55bde86f04143144eb632fa6be266dc224341a371fb8916d"): handleSfc1CreatedWithdrawRequest,
+
 			/* SFC1::WithdrawnStake(uint256 indexed stakerID, uint256 penalty) */
 			common.HexToHash("0x8c6548258f8f12a9d4b593fa89a223417ed901d4ee9712ba09beb4d56f5262b6"): handleSfc1WithdrawnStake,
 
 			/* SFC1::WithdrawnDelegation(address indexed delegator, uint256 indexed stakerID, uint256 penalty) */
 			common.HexToHash("0x87e86b3710b72c10173ca52c6a9f9cf2df27e77ed177741a8b4feb12bb7a606f"): handleSfc1WithdrawnDelegation,
-
-			/* SFC1::DeactivatedStake(uint256 indexed stakerID) */
-			common.HexToHash("0xf7c308d0d978cce3aec157d1b34e355db4636b4e71ce91b4f5ec9e7a4f5cdc60"): handleSfc1DeactivatedStake,
-
-			/* SFC1::CreatedWithdrawRequest(address indexed auth, address indexed receiver, uint256 indexed stakerID, uint256 wrID, bool delegation, uint256 amount) */
-			common.HexToHash("0xde2d2a87af2fa2de55bde86f04143144eb632fa6be266dc224341a371fb8916d"): handleSfc1CreatedWithdrawRequest,
-
-			/* SFC1::PreparedToWithdrawDelegation(address indexed delegator, uint256 indexed stakerID) */
-			common.HexToHash("0x5b1eea49e405ef6d509836aac841959c30bb0673b1fd70859bfc6ae5e4ee3df2"): handleSfc1IncreasedDelegation,
-
-			/* SFC1::DeactivatedDelegation(address indexed delegator, uint256 indexed stakerID) */
-			common.HexToHash("0x912c4125a208704a342cbdc4726795d26556b0170b7fc95bc706d5cb1f506469"): handleSfc1IncreasedDelegation,
 
 			/* SFC1::PartialWithdrawnByRequest(address indexed auth, address indexed receiver, uint256 indexed stakerID, uint256 wrID, bool delegation, uint256 penalty) */
 			common.HexToHash("0xd5304dabc5bd47105b6921889d1b528c4b2223250248a916afd129b1c0512ddd"): handleSfc1PartialWithdrawByRequest,
