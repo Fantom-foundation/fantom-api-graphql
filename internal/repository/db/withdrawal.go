@@ -137,7 +137,7 @@ func (db *MongoDbBridge) shiftClosedWithdrawRequest(col *mongo.Collection, wr *t
 		{types.FiWithdrawalAddress, wr.Address.String()},
 		{types.FiWithdrawalToValidator, wr.StakerID.String()},
 		{types.FiWithdrawalRequestID, wr.WithdrawRequestID.String()},
-		{types.FiWithdrawalFinTime, bson.D{{"$ne", nil}}},
+		{types.FiWithdrawalFinTime, bson.D{{"$exists", true}, {"$ne", nil}}},
 	}, bson.D{{"$set", bson.D{
 		{types.FiWithdrawalRequestID, wr.RequestTrx.String()},
 	}}}, new(options.UpdateOptions).SetUpsert(true))
