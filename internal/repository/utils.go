@@ -45,7 +45,7 @@ func (p *proxy) GasPriceExtended() (*types.GasPrice, error) {
 	}
 
 	// calculate the gas price in Gwei units
-	gWei := math.Round(float64(gp)/float64(100000000)) / 10.0
+	gWei := math.Round(float64(gp)/float64(10000000)) / 10.0
 	return &types.GasPrice{
 		Fast:    gWei,
 		Fastest: gWei,
