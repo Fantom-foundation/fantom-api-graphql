@@ -21,6 +21,7 @@ func GasPrice(log logger.Logger) http.Handler {
 		}
 
 		// respond
+		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(val)
 		if err != nil {
 			log.Critical("can not encode gas price structure; %s", err.Error())
