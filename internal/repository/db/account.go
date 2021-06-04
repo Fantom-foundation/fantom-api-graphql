@@ -48,6 +48,12 @@ type AccountRow struct {
 	ScHash   *common.Hash `bson:"-"`
 }
 
+// initAccountsCollection initializes the account collection with
+// indexes and additional parameters needed by the app.
+func (db *MongoDbBridge) initAccountsCollection() {
+	db.log.Debugf("accounts collection initialized")
+}
+
 // Account tries to load an account identified by the address given from
 // the off-chain database.
 func (db *MongoDbBridge) Account(addr *common.Address) (*types.Account, error) {
@@ -89,12 +95,6 @@ func (db *MongoDbBridge) Account(addr *common.Address) (*types.Account, error) {
 		LastActivity: hexutil.Uint64(row.Activity),
 		TrxCounter:   hexutil.Uint64(row.Counter),
 	}, nil
-}
-
-// initAccountsCollection initializes the account collection with
-// indexes and additional parameters needed by the app.
-func (db *MongoDbBridge) initAccountsCollection() {
-	db.log.Debugf("accounts collection initialized")
 }
 
 // AddAccount stores an account in the blockchain if not exists.

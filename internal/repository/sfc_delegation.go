@@ -46,13 +46,8 @@ func (p *proxy) UpdateDelegationBalance(addr *common.Address, valID *hexutil.Big
 		return err
 	}
 
-	// check if we need to update it
-	if !p.stakedAmounts.Update(addr, valID, val) {
-		return nil
-	}
-
 	// do the update
-	err = p.db.UpdateDelegationBalance(addr, valID, (*hexutil.Big)(val))
+	err = p.updateDelegationBalance(addr, valID, val)
 	if err == nil {
 		return nil
 	}
@@ -65,10 +60,41 @@ func (p *proxy) UpdateDelegationBalance(addr *common.Address, valID *hexutil.Big
 	return err
 }
 
+// updateDelegationBalance performs delegation balance update if needed.
+func (p *proxy) updateDelegationBalance(addr *common.Address, valID *hexutil.Big, amo *big.Int) error {
+	// get the delegation detail
+	dlg, err := p.Delegation(addr, valID)
+	if err != nil {
+		return err
+	}
+
+	// do we need to update?
+	if dlg.AmountStaked.ToInt().Cmp(amo) == 0 {
+		return nil
+	}
+
+	// update the delegation in cache
+	dlg.AmountDelegated = (*hexutil.Big)(amo)
+
+	// perform the update
+	return p.db.UpdateDelegationBalance(addr, valID, dlg.AmountDelegated)
+}
+
 // Delegation returns a detail of delegation for the given address.
 func (p *proxy) Delegation(addr *common.Address, valID *hexutil.Big) (*types.Delegation, error) {
+	// log what we do
 	p.log.Debugf("loading delegation of %s to #%d", addr.String(), valID.ToInt().Uint64())
-	return p.db.Delegation(addr, valID)
+
+	// try cache first
+
+	// pull from DB instead
+	dlg, err := p.db.Delegation(addr, valID)
+	if err != nil {
+		return nil, err
+	}
+
+	// store to cache for future reference
+	return dlg, nil
 }
 
 // DelegationAmountStaked returns the current amount of staked tokens for the given delegation.
