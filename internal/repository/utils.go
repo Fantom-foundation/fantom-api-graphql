@@ -15,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"strings"
 	"time"
@@ -44,7 +45,7 @@ func (p *proxy) GasPriceExtended() (*types.GasPrice, error) {
 	}
 
 	// calculate the gas price in Gwei units
-	gWei := int32(uint64(gp) / uint64(1000000000))
+	gWei := math.Round(float64(gp)/float64(100000000)) / 10.0
 	return &types.GasPrice{
 		Fast:    gWei,
 		Fastest: gWei,
