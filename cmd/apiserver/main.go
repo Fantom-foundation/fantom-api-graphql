@@ -94,9 +94,11 @@ func setupHandlers(mux *http.ServeMux, cfg *config.Config, log logger.Logger) re
 	mux.Handle("/api", h)
 	mux.Handle("/graphql", h)
 
+	// setup REST API
+	mux.Handle("/json/gas", handlers.GasPrice(log))
+
 	// handle GraphiQL interface
 	mux.Handle("/graphi", handlers.GraphiHandler(cfg.Server.DomainAddress, log))
-
 	return rs
 }
 

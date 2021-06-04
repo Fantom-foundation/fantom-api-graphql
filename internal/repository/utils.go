@@ -35,6 +35,24 @@ func (p *proxy) GasPrice() (hexutil.Uint64, error) {
 	return p.rpc.GasPrice()
 }
 
+// GasPriceExtended provides extended gas price information.
+func (p *proxy) GasPriceExtended() (*types.GasPrice, error) {
+	// get the current gas price
+	gp, err := p.rpc.GasPrice()
+	if err != nil {
+		return nil, err
+	}
+
+	// calculate the gas price in Gwei units
+	gWei := int32(uint64(gp) / uint64(1000000000))
+	return &types.GasPrice{
+		Fast:    gWei,
+		Fastest: gWei,
+		SafeLow: gWei,
+		Average: gWei,
+	}, nil
+}
+
 // GasEstimate calculates the estimated amount of Gas required to perform
 // transaction described by the input params.
 func (p *proxy) GasEstimate(trx *struct {

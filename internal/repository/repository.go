@@ -304,6 +304,9 @@ type Repository interface {
 	// GasPrice resolves the current amount of WEI for single Gas.
 	GasPrice() (hexutil.Uint64, error)
 
+	// GasPriceExtended provides extended gas price information.
+	GasPriceExtended() (*types.GasPrice, error)
+
 	// GasEstimate calculates the estimated amount of Gas required to perform
 	// transaction described by the input params.
 	GasEstimate(*struct {
