@@ -18,6 +18,10 @@ type Delegation struct {
 	cg *singleflight.Group
 }
 
+// delegationLockSafetyWallSec represents number of seconds used as a safety wall
+// for delegation lock evaluation
+const delegationLockSafetyWallSec = 300
+
 // NewDelegation creates new instance of resolvable Delegator.
 func NewDelegation(d *types.Delegation) *Delegation {
 	return &Delegation{Delegation: *d, cg: new(singleflight.Group)}
@@ -178,7 +182,7 @@ func (del Delegation) IsDelegationLocked() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return lock != nil && 0 > zeroInt.Cmp(lock.LockedAmount.ToInt()) && uint64(lock.LockedUntil) > uint64(time.Now().UTC().Unix()), nil
+	return lock != nil && uint64(lock.LockedUntil) > uint64(time.Now().UTC().Unix()-delegationLockSafetyWallSec), nil
 }
 
 // IsFluidStakingActive signals if the delegation is upgraded to Fluid Staking model.
