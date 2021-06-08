@@ -31,9 +31,13 @@ type Delegation struct {
 	Address         common.Address `json:"address"`
 	ToStakerId      *hexutil.Big   `json:"toStakerID"`
 	ToStakerAddress common.Address `json:"toStakerAddr"`
-	AmountStaked    *hexutil.Big   `json:"amountStaked"`
-	AmountDelegated *hexutil.Big   `json:"amountDelegated"`
 	CreatedTime     hexutil.Uint64 `json:"createdTime"`
+
+	// AmountStaked represents the current staked amount
+	AmountStaked *hexutil.Big `json:"amountStaked"`
+
+	// AmountDelegated is the original amount delegated
+	AmountDelegated *hexutil.Big `json:"amountDelegated"`
 }
 
 // BsonDelegation represents the BSON i/o struct for a delegation.

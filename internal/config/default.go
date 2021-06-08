@@ -53,6 +53,9 @@ const (
 	// defCacheEvictionTime holds default time for in-memory eviction periods
 	defCacheEvictionTime = 15 * time.Minute
 
+	// defCacheMax size represents the default max size of the cache in MB
+	defCacheMaxSize = 4096
+
 	// defSolCompilerPath represents the default SOL compiler path
 	defSolCompilerPath = "/usr/bin/solc"
 
@@ -108,12 +111,15 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyLachesisUrl, defLachesisUrl)
 	cfg.SetDefault(keyMongoUrl, defMongoUrl)
 	cfg.SetDefault(keyMongoDatabase, defMongoDatabase)
-	cfg.SetDefault(keyCacheEvictionTime, defCacheEvictionTime)
 	cfg.SetDefault(keySolCompilerPath, defSolCompilerPath)
 	cfg.SetDefault(keyApiPeers, defApiPeers)
 	cfg.SetDefault(keyApiStateOrigin, defApiStateOrigin)
 	cfg.SetDefault(keyErc20TokenMapFilePath, defTokenLogoFilePath)
 	cfg.SetDefault(keyErc20Logos, defERC20Logo)
+
+	// in-memory cache
+	cfg.SetDefault(keyCacheEvictionTime, defCacheEvictionTime)
+	cfg.SetDefault(keyCacheMaxSize, defCacheMaxSize)
 
 	// server timeouts
 	cfg.SetDefault(keyTimeoutRead, defReadTimeout)
