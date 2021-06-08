@@ -38,7 +38,7 @@ func (p *proxy) StoreDelegation(dl *types.Delegation) error {
 }
 
 // UpdateDelegationBalance updates active balance of the given delegation.
-func (p *proxy) UpdateDelegationBalance(addr *common.Address, valID *hexutil.Big, unknown func(*big.Int) error) error {
+func (p *proxy) UpdateDelegationBalance(addr *common.Address, valID *hexutil.Big, unknownDelegation func(*big.Int) error) error {
 	// pull the current value
 	val, err := p.DelegationAmountStaked(addr, valID)
 	if err != nil {
@@ -46,29 +46,65 @@ func (p *proxy) UpdateDelegationBalance(addr *common.Address, valID *hexutil.Big
 		return err
 	}
 
-	// check if we need to update it
-	if !p.stakedAmounts.Update(addr, valID, val) {
-		return nil
-	}
-
 	// do the update
-	err = p.db.UpdateDelegationBalance(addr, valID, (*hexutil.Big)(val))
+	err = p.updateDelegationBalance(addr, valID, val)
 	if err == nil {
 		return nil
 	}
 
 	// unknown delegation detected?
 	if err == db.ErrUnknownDelegation {
-		return unknown(val)
+		p.log.Errorf("delegation %s to %d not known yet", addr.String(), valID.ToInt().Uint64())
+		return unknownDelegation(val)
 	}
+
+	// some other error
 	p.log.Errorf("delegation %s to %d update failed; %s", addr.String(), valID.ToInt().Uint64(), err.Error())
 	return err
 }
 
+// updateDelegationBalance performs delegation balance update if needed.
+func (p *proxy) updateDelegationBalance(addr *common.Address, valID *hexutil.Big, amo *big.Int) error {
+	// get the delegation detail
+	dlg, err := p.Delegation(addr, valID)
+	if err != nil {
+		return err
+	}
+
+	// do we need to update? if the amount did not change, skip the update
+	if dlg.AmountStaked.ToInt().Cmp(amo) == 0 {
+		return nil
+	}
+
+	// update the delegation in DB and memory
+	dlg.AmountDelegated = (*hexutil.Big)(amo)
+	err = p.db.UpdateDelegationBalance(addr, valID, dlg.AmountDelegated)
+	if nil == err {
+		p.cache.PushDelegation(dlg)
+	}
+	return err
+}
+
 // Delegation returns a detail of delegation for the given address.
-func (p *proxy) Delegation(addr *common.Address, valID *hexutil.Big) (*types.Delegation, error) {
-	p.log.Debugf("loading delegation of %s to #%d", addr.String(), valID.ToInt().Uint64())
-	return p.db.Delegation(addr, valID)
+func (p *proxy) Delegation(adr *common.Address, valID *hexutil.Big) (*types.Delegation, error) {
+	// log what we do
+	p.log.Debugf("accessing delegation of %s to #%d", adr.String(), valID.ToInt().Uint64())
+
+	// try cache first
+	dlg := p.cache.PullDelegation(*adr, valID)
+	if dlg != nil {
+		return dlg, nil
+	}
+
+	// pull from DB instead; do we actually have it?
+	dlg, err := p.db.Delegation(adr, valID)
+	if err != nil {
+		return nil, err
+	}
+
+	// store to cache for future reference
+	p.cache.PushDelegation(dlg)
+	return dlg, nil
 }
 
 // DelegationAmountStaked returns the current amount of staked tokens for the given delegation.
