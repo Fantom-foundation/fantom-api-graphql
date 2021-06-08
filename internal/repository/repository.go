@@ -314,7 +314,7 @@ type Repository interface {
 		To    *common.Address
 		Value *hexutil.Big
 		Data  *string
-	}) *hexutil.Uint64
+	}) (*hexutil.Uint64, error)
 
 	// SetBlockChannel registers a channel for notifying new block events.
 	SetBlockChannel(chan *types.Block)
