@@ -33,6 +33,11 @@ type MongoDbBridge struct {
 	initEpochs       *sync.Once
 }
 
+// docListCountAggregationTimeout represents a max duration of DB query executed to calculate
+// exact document count in filtered collection. If this duration is exceeded, the query fails
+// ad we fall back to full collection documents count estimation.
+const docListCountAggregationTimeout = 500 * time.Millisecond
+
 // intZero represents an empty big value.
 var intZero = new(big.Int)
 
@@ -215,4 +220,25 @@ func (db *MongoDbBridge) EstimateCount(col *mongo.Collection) (uint64, error) {
 		return 0, err
 	}
 	return uint64(val), nil
+}
+
+// listDocumentsCount tries to calculate precise documents count and if it's not counted in limited
+// time, use general estimation to speed up the loader.
+func (db *MongoDbBridge) listDocumentsCount(col *mongo.Collection, filter *bson.D) (int64, error) {
+	// try to count the proper way
+	total, err := col.CountDocuments(context.Background(), filter, options.Count().SetMaxTime(docListCountAggregationTimeout))
+	if err == nil {
+		return total, nil
+	}
+
+	// it failed in the limited time we gave it
+	db.log.Errorf("can not count documents properly; %s", err.Error())
+
+	// just estimate the whole collection size
+	total, err = col.EstimatedDocumentCount(context.Background())
+	if err != nil {
+		db.log.Errorf("can not count documents")
+		return 0, err
+	}
+	return total, nil
 }

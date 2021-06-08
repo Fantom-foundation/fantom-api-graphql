@@ -178,7 +178,7 @@ func (db *MongoDbBridge) initTrxList(col *mongo.Collection, cursor *string, coun
 	}
 
 	// find how many transactions do we have in the database
-	total, err := col.CountDocuments(context.Background(), *filter)
+	total, err := db.listDocumentsCount(col, filter)
 	if err != nil {
 		db.log.Errorf("can not count transactions")
 		return nil, err
