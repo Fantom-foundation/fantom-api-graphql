@@ -36,7 +36,7 @@ func (rs *rootResolver) EstimateGas(args struct {
 	To    *common.Address
 	Value *hexutil.Big
 	Data  *string
-}) *hexutil.Uint64 {
+}) (*hexutil.Uint64, error) {
 	return repository.R().GasEstimate(&args)
 }
 

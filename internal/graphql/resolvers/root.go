@@ -141,7 +141,7 @@ type ApiResolver interface {
 		To    *common.Address
 		Value *hexutil.Big
 		Data  *string
-	}) *hexutil.Uint64
+	}) (*hexutil.Uint64, error)
 
 	// EstimateRewards resolves reward estimation for the given address or amount staked.
 	EstimateRewards(*struct {

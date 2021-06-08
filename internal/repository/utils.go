@@ -61,7 +61,7 @@ func (p *proxy) GasEstimate(trx *struct {
 	To    *common.Address
 	Value *hexutil.Big
 	Data  *string
-}) *hexutil.Uint64 {
+}) (*hexutil.Uint64, error) {
 	return p.rpc.GasEstimate(trx)
 }
 

@@ -50,7 +50,7 @@ func (ftm *FtmBridge) GasEstimate(trx *struct {
 	To    *common.Address
 	Value *hexutil.Big
 	Data  *string
-}) *hexutil.Uint64 {
+}) (*hexutil.Uint64, error) {
 	// keep track of the operation
 	ftm.log.Debugf("calling for gas amount estimation")
 
@@ -64,10 +64,10 @@ func (ftm *FtmBridge) GasEstimate(trx *struct {
 
 		// return error
 		ftm.log.Errorf("can not estimate gas; %s", err.Error())
-		return nil
+		return nil, err
 	}
 
-	return &val
+	return &val, nil
 }
 
 // GasEstimateWithBlock calculates the estimated amount of Gas required to perform
@@ -79,7 +79,7 @@ func (ftm *FtmBridge) GasEstimateWithBlock(trx *struct {
 	To    *common.Address
 	Value *hexutil.Big
 	Data  *string
-}) *hexutil.Uint64 {
+}) (*hexutil.Uint64, error) {
 	// keep track of the operation
 	ftm.log.Debugf("calling for gas amount estimation with block details")
 
@@ -88,8 +88,8 @@ func (ftm *FtmBridge) GasEstimateWithBlock(trx *struct {
 	if err != nil {
 		// return error
 		ftm.log.Errorf("can not estimate gas; %s", err.Error())
-		return nil
+		return nil, err
 	}
 
-	return &val
+	return &val, nil
 }
