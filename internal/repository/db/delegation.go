@@ -60,6 +60,11 @@ func (db *MongoDbBridge) Delegation(addr *common.Address, valID *hexutil.Big) (*
 		{types.FiDelegationToValidator, valID.String()},
 	})
 
+	// do we have the data?
+	if sr.Err() != nil {
+		return nil, sr.Err()
+	}
+
 	// try to decode
 	var dlg types.Delegation
 	if err := sr.Decode(&dlg); err != nil {

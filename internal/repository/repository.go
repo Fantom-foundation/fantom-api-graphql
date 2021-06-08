@@ -594,9 +594,6 @@ type proxy struct {
 
 	// service orchestrator reference
 	orc *orchestrator
-
-	// map of delegation balances for updates control
-	stakedAmounts *StakeAmountMap
 }
 
 // newRepository creates new instance of Repository implementation, namely proxy structure.
@@ -621,9 +618,6 @@ func newRepository() Repository {
 
 		// keep reference to the SOL compiler
 		solCompiler: cfg.Compiler.DefaultSolCompilerPath,
-
-		// map of delegation amounts
-		stakedAmounts: NewStakeAmountMap(),
 	}
 
 	// make the service orchestrator and start it's job
