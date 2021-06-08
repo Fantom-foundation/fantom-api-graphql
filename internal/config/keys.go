@@ -44,6 +44,7 @@ const (
 
 	// cache related options
 	keyCacheEvictionTime = "cache.eviction"
+	keyCacheMaxSize      = "cache.size"
 
 	// contract validation related
 	keySolCompilerPath = "compiler.sol"

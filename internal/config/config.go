@@ -108,6 +108,7 @@ type Database struct {
 // Cache represents the cache sub-system configuration.
 type Cache struct {
 	Eviction time.Duration `mapstructure:"eviction"`
+	MaxSize  int           `mapstructure:"size"`
 }
 
 // Compiler represents the contract compilers configuration.

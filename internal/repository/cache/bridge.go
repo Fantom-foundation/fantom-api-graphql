@@ -77,7 +77,7 @@ func cacheConfig(cfg *config.Config, log logger.Logger) bigcache.Config {
 		// cache will not allocate more memory than this limit, value in MB
 		// if value is reached then the oldest entries can be overridden for the new ones
 		// 0 value means no size limit
-		HardMaxCacheSize: 2048,
+		HardMaxCacheSize: cfg.Cache.MaxSize,
 
 		// callback fired when the oldest entry is removed because of its expiration time or no space left
 		// for the new entry, or because delete was called. A bitmask representing the reason will be returned.
