@@ -43,7 +43,7 @@ func (gp *GovernanceProposal) OptionState(args *struct{ OptionId hexutil.Big }) 
 func (gp *GovernanceProposal) OptionStates() ([]*types.GovernanceOptionState, error) {
 	// make sure to call this only once in parallel processing
 	ops, err, _ := gp.cg.Do("opt_states", func() (interface{}, error) {
-		return repository.R().GovernanceOptionStates(&gp.GovernanceId, &gp.Id)
+		return repository.R().GovernanceOptionStates(&gp.GovernanceId, &gp.Id, len(gp.Options))
 	})
 	return ops.([]*types.GovernanceOptionState), err
 }

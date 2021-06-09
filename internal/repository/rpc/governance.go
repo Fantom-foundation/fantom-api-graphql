@@ -165,7 +165,7 @@ func govConvertScales(sc []*big.Int) []hexutil.Uint64 {
 	return res
 }
 
-// GovernanceProposal provides a detail of Proposal of a governance contract
+// GovernanceProposalDetails provides a detail of Proposal of a governance contract
 // specified by its id.
 func (ftm *FtmBridge) GovernanceProposalDetails(prop *common.Address) (*govProposalExtended, error) {
 	// get the proposal contract
@@ -216,7 +216,7 @@ func (ftm *FtmBridge) GovernanceOptionState(gov *common.Address, propId *hexutil
 }
 
 // GovernanceOptionStates returns a list of states of options of a proposal.
-func (ftm *FtmBridge) GovernanceOptionStates(gov *common.Address, propId *hexutil.Big) ([]*types.GovernanceOptionState, error) {
+func (ftm *FtmBridge) GovernanceOptionStates(gov *common.Address, propId *hexutil.Big, optRange int) ([]*types.GovernanceOptionState, error) {
 	// get the contract
 	gc, err := contracts.NewGovernance(*gov, ftm.eth)
 	if err != nil {
@@ -224,36 +224,22 @@ func (ftm *FtmBridge) GovernanceOptionStates(gov *common.Address, propId *hexuti
 		return nil, err
 	}
 
-	// get the number of options
-	max, err := gc.MaxOptions(nil)
-	if err != nil {
-		ftm.log.Errorf("unknown options on governance %s; %s", gov.String(), err.Error())
-		return nil, err
-	}
-
 	// make the container and collect the states
-	zero := new(big.Int)
-	res := make([]*types.GovernanceOptionState, 0)
+	res := make([]*types.GovernanceOptionState, optRange)
 
 	// loop over all possible states and check them one by one
-	for i := int64(0); i < max.Int64(); i++ {
+	for i := 0; i < optRange; i++ {
 		// get the state of this option
-		gs, err := ftm.GovernanceOptionStateById(gc, propId, (*hexutil.Big)(big.NewInt(i)))
+		res[i], err = ftm.GovernanceOptionStateById(gc, propId, (*hexutil.Big)(big.NewInt(int64(i))))
 		if err != nil {
 			ftm.log.Errorf("unknown option #%d on governance %s; %s", i, gov.String(), err.Error())
 			break
 		}
-
-		// is this a state we would like to keep? e.g. any votes?
-		if 0 != zero.Cmp(gs.Votes.ToInt()) {
-			res = append(res, gs)
-		}
 	}
-
 	return res, nil
 }
 
-// GovernanceOptionState returns a state of the given option of a proposal.
+// GovernanceOptionStateById returns a state of the given option of a proposal.
 func (ftm *FtmBridge) GovernanceOptionStateById(gc *contracts.Governance, propId *hexutil.Big, optId *hexutil.Big) (*types.GovernanceOptionState, error) {
 	// get the state
 	data, err := gc.ProposalOptionState(nil, propId.ToInt(), optId.ToInt())
@@ -322,7 +308,7 @@ func (ftm *FtmBridge) GovernanceProposalsBy(gov *common.Address) ([]*types.Gover
 	}
 
 	// log what we do
-	ftm.log.Debugf("loading %d proposals of %s", maxProposalId.Uint64(), gov.String())
+	ftm.log.Noticef("loading %d proposals of %s", maxProposalId.Uint64(), gov.String())
 
 	// make the array; the maxProposalId starts with 1 so we need array for one less
 	result := make([]*types.GovernanceProposal, 0)
@@ -337,7 +323,7 @@ func (ftm *FtmBridge) GovernanceProposalsBy(gov *common.Address) ([]*types.Gover
 		}
 
 		// keep the proposal in the list
-		ftm.log.Debugf("found proposal #%d on %s", gp.Id.ToInt().Uint64(), gov.String())
+		ftm.log.Noticef("found proposal #%d on %s", gp.Id.ToInt().Uint64(), gov.String())
 		result = append(result, gp)
 	}
 
