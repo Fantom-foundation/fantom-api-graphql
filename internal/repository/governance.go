@@ -40,8 +40,8 @@ func (p *proxy) GovernanceOptionState(gov *common.Address, propId *hexutil.Big, 
 }
 
 // GovernanceOptionStates returns a list of states of options of a proposal.
-func (p *proxy) GovernanceOptionStates(gov *common.Address, propId *hexutil.Big) ([]*types.GovernanceOptionState, error) {
-	return p.rpc.GovernanceOptionStates(gov, propId)
+func (p *proxy) GovernanceOptionStates(gov *common.Address, propId *hexutil.Big, optRange int) ([]*types.GovernanceOptionState, error) {
+	return p.rpc.GovernanceOptionStates(gov, propId, optRange)
 }
 
 // GovernanceVote provides a single vote in the Governance Proposal context.

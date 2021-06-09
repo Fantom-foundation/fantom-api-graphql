@@ -488,7 +488,7 @@ type Repository interface {
 	GovernanceOptionState(*common.Address, *hexutil.Big, *hexutil.Big) (*types.GovernanceOptionState, error)
 
 	// GovernanceOptionStates returns a list of states of options of a proposal.
-	GovernanceOptionStates(*common.Address, *hexutil.Big) ([]*types.GovernanceOptionState, error)
+	GovernanceOptionStates(*common.Address, *hexutil.Big, int) ([]*types.GovernanceOptionState, error)
 
 	// GovernanceVote provides a single vote in the Governance Proposal context.
 	GovernanceVote(*common.Address, *hexutil.Big, *common.Address, *common.Address) (*types.GovernanceVote, error)
