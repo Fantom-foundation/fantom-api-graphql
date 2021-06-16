@@ -45,7 +45,7 @@ func (st Staker) Delegations(args struct {
 	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
 
 	// get delegations
-	dl, err := repository.R().DelegationsOfValidator(&st.Id, (*string)(args.Cursor), args.Count)
+	dl, err := repository.R().DelegationsOfValidator(&st.Id, decodeDelegationCursor(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}

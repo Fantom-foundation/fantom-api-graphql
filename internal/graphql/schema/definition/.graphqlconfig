@@ -1,6 +1,7 @@
 {
   "name": "Fantom GraphQL API Schema",
-  "schemaPath": "schema.graphql",
+  "schemaPath": "./schema.graphql",
+  "documents": "./**/*.graphql",
   "extensions": {
     "endpoints": {
       "Local GraphQL Endpoint": {
@@ -46,6 +47,14 @@
       "XAPI9 Fantom.Network": {
         "url": "https://xapi9.fantom.network/graphql",
         "introspect": false
+      },
+      "xAPI30 Fantom.Network": {
+        "url": "https://xapi30.fantom.network/graphql",
+        "introspect": false
+      },
+      "xAPI31 Fantom.Network": {
+        "url": "https://xapi31.fantom.network/graphql",
+        "introspect": true
       },
       "VM GraphQL Endpoint for TestNET": {
         "url": "http://crypto.vm.lan:16861/api",
