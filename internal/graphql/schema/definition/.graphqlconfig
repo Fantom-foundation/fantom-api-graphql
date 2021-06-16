@@ -54,7 +54,7 @@
       },
       "xAPI31 Fantom.Network": {
         "url": "https://xapi31.fantom.network/graphql",
-        "introspect": true
+        "introspect": false
       },
       "VM GraphQL Endpoint for TestNET": {
         "url": "http://crypto.vm.lan:16861/api",

@@ -14,7 +14,7 @@ import (
 const (
 	FiRewardClaimPk          = "_id"
 	FiRewardClaimOrdinal     = "orx"
-	FiRewardClaimAddress     = "adr"
+	FiRewardClaimAddress     = "addr"
 	FiRewardClaimToValidator = "to"
 	FiRewardClaimedValue     = "val"
 	FiRewardClaimedTimeStamp = "stamp"

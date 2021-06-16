@@ -300,6 +300,12 @@ func (db *MongoDbBridge) Epochs(cursor *string, count int32) (*types.EpochList, 
 		// reverse on negative so new-er delegations will be on top
 		if count < 0 {
 			list.Reverse()
+			count = -count
+		}
+
+		// cut the end?
+		if len(list.Collection) > int(count) {
+			list.Collection = list.Collection[:len(list.Collection)-1]
 		}
 	}
 	return list, nil

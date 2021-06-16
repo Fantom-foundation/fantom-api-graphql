@@ -465,6 +465,12 @@ func (db *MongoDbBridge) Withdrawals(cursor *string, count int32, filter *bson.D
 		// reverse on negative so new-er delegations will be on top
 		if count < 0 {
 			list.Reverse()
+			count = -count
+		}
+
+		// cut the end?
+		if len(list.Collection) > int(count) {
+			list.Collection = list.Collection[:len(list.Collection)-1]
 		}
 	}
 
