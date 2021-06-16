@@ -246,14 +246,14 @@ func (db *MongoDbBridge) dlgListCollectRangeMarks(col *mongo.Collection, list *t
 		// get the highest available pk
 		list.First, err = db.dlgListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{types.FiDelegationStamp, -1}}))
+			options.FindOne().SetSort(bson.D{{types.FiDelegationOrdinal, -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available pk
 		list.First, err = db.dlgListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{types.FiDelegationStamp, 1}}))
+			options.FindOne().SetSort(bson.D{{types.FiDelegationOrdinal, 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
@@ -328,7 +328,7 @@ func (db *MongoDbBridge) dlgListOptions(count int32) *options.FindOptions {
 	}
 
 	// sort with the direction we want
-	opt.SetSort(bson.D{{types.FiDelegationStamp, sd}})
+	opt.SetSort(bson.D{{types.FiDelegationOrdinal, sd}})
 
 	// prep the loading limit
 	var limit = int64(count)

@@ -13,7 +13,7 @@
     "resolver_timeout": 240
   },
   "node": {
-    "url": "/var/opera/opera/opera.ipc"
+    "url": "/var/opera/mainnet/opera.ipc"
   },
   "log": {
     "level": "Info"
