@@ -13,8 +13,7 @@ type RewardClaimList struct {
 
 // RewardClaimListEdge represents a single edge of a reward claim list structure.
 type RewardClaimListEdge struct {
-	Claim  *RewardClaim
-	Cursor Cursor
+	Claim *RewardClaim
 }
 
 // NewRewardClaimList builds new resolvable list of reward claims.
@@ -50,10 +49,12 @@ func (rl *RewardClaimList) Edges() []*RewardClaimListEdge {
 	// make the list
 	edges := make([]*RewardClaimListEdge, len(rl.Collection))
 	for i, d := range rl.Collection {
-		edges[i] = &RewardClaimListEdge{
-			Claim:  NewRewardClaim(d),
-			Cursor: Cursor(d.Pk()),
-		}
+		edges[i] = &RewardClaimListEdge{Claim: NewRewardClaim(d)}
 	}
 	return edges
+}
+
+// Cursor generates the list edge cursor.
+func (rce *RewardClaimListEdge) Cursor() Cursor {
+	return Cursor(rce.Claim.Pk())
 }

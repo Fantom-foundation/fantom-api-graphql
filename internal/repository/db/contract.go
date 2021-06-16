@@ -478,6 +478,12 @@ func (db *MongoDbBridge) Contracts(validatedOnly bool, cursor *string, count int
 	// reverse on negative so new-er contracts will be on top
 	if count < 0 {
 		list.Reverse()
+		count = -count
+	}
+
+	// cut the end?
+	if len(list.Collection) > int(count) {
+		list.Collection = list.Collection[:len(list.Collection)-1]
 	}
 	return list, nil
 }
