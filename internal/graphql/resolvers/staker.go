@@ -32,6 +32,9 @@ type Staker struct {
 
 // NewStaker creates a new resolvable staker structure
 func NewStaker(st *types.Validator) *Staker {
+	if nil == st {
+		return nil
+	}
 	return &Staker{Validator: *st, cg: new(singleflight.Group)}
 }
 
