@@ -16,7 +16,6 @@ type DelegationList struct {
 // DelegationListEdge represents a single edge of a delegations list structure.
 type DelegationListEdge struct {
 	Delegation *Delegation
-	Cursor     Cursor
 }
 
 // NewDelegationList builds new resolvable list of delegations.
@@ -37,8 +36,8 @@ func (dl *DelegationList) PageInfo() (*ListPageInfo, error) {
 	}
 
 	// get the first and last elements
-	first := Cursor(hexutil.Uint64(dl.Collection[0].OrdinalIndex()).String())
-	last := Cursor(hexutil.Uint64(dl.Collection[len(dl.Collection)-1].OrdinalIndex()).String())
+	first := Cursor(dl.Collection[0].Transaction.String())
+	last := Cursor(dl.Collection[len(dl.Collection)-1].Transaction.String())
 	return NewListPageInfo(&first, &last, !dl.IsEnd, !dl.IsStart)
 }
 
@@ -52,12 +51,14 @@ func (dl *DelegationList) Edges() []*DelegationListEdge {
 	// make the list
 	edges := make([]*DelegationListEdge, len(dl.Collection))
 	for i, d := range dl.Collection {
-		edges[i] = &DelegationListEdge{
-			Delegation: NewDelegation(d),
-			Cursor:     Cursor(hexutil.Uint64(d.OrdinalIndex()).String()),
-		}
+		edges[i] = &DelegationListEdge{Delegation: NewDelegation(d)}
 	}
 	return edges
+}
+
+// Cursor generates the cursor for the current delegation list edge.
+func (dle *DelegationListEdge) Cursor() Cursor {
+	return Cursor(dle.Delegation.Transaction.String())
 }
 
 // DelegationsOf resolves a list of delegations information of a staker.
@@ -71,13 +72,23 @@ func (rs *rootResolver) DelegationsOf(args *struct {
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get the list
-	dl, err := repository.R().DelegationsOfValidator(&args.Staker, (*string)(args.Cursor), args.Count)
+	dl, err := repository.R().DelegationsOfValidator(&args.Staker, decodeDelegationCursor(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}
 
 	// return the list
 	return NewDelegationList(dl), nil
+}
+
+// decodeOrdinalCursor decodes ordinal index cursor to the natural form.
+func decodeDelegationCursor(c *Cursor) *common.Hash {
+	var cr *common.Hash
+	if c != nil {
+		val := common.HexToHash((string)(*c))
+		cr = &val
+	}
+	return cr
 }
 
 // DelegationsByAddress resolves a list of own delegations by the account address.
@@ -91,7 +102,7 @@ func (rs *rootResolver) DelegationsByAddress(args *struct {
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get the list of delegations
-	dl, err := repository.R().DelegationsByAddress(&args.Address, (*string)(args.Cursor), args.Count)
+	dl, err := repository.R().DelegationsByAddress(&args.Address, decodeDelegationCursor(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}

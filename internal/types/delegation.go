@@ -18,8 +18,6 @@ const (
 	FiDelegationToValidator        = "to"
 	FiDelegationTransaction        = "trx"
 	FiDelegationToValidatorAddress = "toad"
-	FiDelegationCreated            = "crt"
-	FiDelegationAmount             = "amo"
 	FiDelegationAmountActive       = "act"
 	FiDelegationValue              = "val"
 	FiDelegationStamp              = "stamp"
@@ -32,6 +30,7 @@ type Delegation struct {
 	ToStakerId      *hexutil.Big   `json:"toStakerID"`
 	ToStakerAddress common.Address `json:"toStakerAddr"`
 	CreatedTime     hexutil.Uint64 `json:"createdTime"`
+	Index           uint64         `json:"ordinalIndex"`
 
 	// AmountStaked represents the current staked amount
 	AmountStaked *hexutil.Big `json:"amountStaked"`
@@ -109,5 +108,6 @@ func (dl *Delegation) UnmarshalBSON(data []byte) (err error) {
 	dl.CreatedTime = hexutil.Uint64(row.CrTime)
 	dl.AmountStaked = (*hexutil.Big)(hexutil.MustDecodeBig(row.Staked))
 	dl.AmountDelegated = (*hexutil.Big)(hexutil.MustDecodeBig(row.Active))
+	dl.Index = row.Orx
 	return nil
 }
