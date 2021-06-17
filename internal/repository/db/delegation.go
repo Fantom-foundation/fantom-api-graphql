@@ -325,19 +325,14 @@ func (db *MongoDbBridge) dlgListOptions(count int32) *options.FindOptions {
 	sd := -1
 	if count < 0 {
 		sd = 1
+		count = -count
 	}
 
 	// sort with the direction we want
 	opt.SetSort(bson.D{{types.FiDelegationOrdinal, sd}})
 
-	// prep the loading limit
-	var limit = int64(count)
-	if limit < 0 {
-		limit = -limit
-	}
-
 	// apply the limit, try to get one more record so we can detect list end
-	opt.SetLimit(limit + 1)
+	opt.SetLimit(int64(count) + 1)
 	return opt
 }
 
