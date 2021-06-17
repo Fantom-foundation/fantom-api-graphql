@@ -25,6 +25,7 @@ const (
 
 // Delegation represents a delegator in Opera blockchain.
 type Delegation struct {
+	ID              common.Hash    `json:"id"`
 	Transaction     common.Hash    `json:"trx"`
 	Address         common.Address `json:"address"`
 	ToStakerId      *hexutil.Big   `json:"toStakerID"`
@@ -101,6 +102,7 @@ func (dl *Delegation) UnmarshalBSON(data []byte) (err error) {
 	}
 
 	// transfer values
+	dl.ID = common.HexToHash(row.ID)
 	dl.Transaction = common.HexToHash(row.Trx)
 	dl.Address = common.HexToAddress(row.Addr)
 	dl.ToStakerId = (*hexutil.Big)(hexutil.MustDecodeBig(row.To))
