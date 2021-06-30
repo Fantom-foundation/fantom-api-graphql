@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"golang.org/x/sync/singleflight"
 	"math/big"
+	"strings"
 	"time"
 )
 
@@ -34,6 +35,12 @@ func (rs *rootResolver) Delegation(args *struct {
 	}
 
 	return NewDelegation(d), nil
+}
+
+// IsSelfStake checks if the delegation is actually a self stake
+// of the validator.
+func (del Delegation) IsSelfStake() bool {
+	return strings.EqualFold(del.Address.String(), del.ToStakerAddress.String())
 }
 
 // AmountDelegated resolves the active amount the delegation stands for.
