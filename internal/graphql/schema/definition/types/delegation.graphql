@@ -6,6 +6,10 @@ type Delegation {
     # Identifier of the staker the delegation belongs to.
     toStakerId: BigInt!
 
+    # Notifies the client that this stake is actually a self-stake
+    # of the validator.
+    isSelfStake: Boolean!
+
     # Time stamp of the delegation creation.
     createdTime: Long!
 
