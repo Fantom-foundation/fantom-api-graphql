@@ -203,6 +203,18 @@ func (del Delegation) LockedUntil() (hexutil.Uint64, error) {
 	return lock.LockedUntil, nil
 }
 
+// LockDuration resolves the original duration of the active delegation lock.
+func (del Delegation) LockDuration() (hexutil.Uint64, error) {
+	lock, err := del.DelegationLock()
+	if err != nil {
+		return 0, err
+	}
+	if lock == nil || 0 <= zeroInt.Cmp(lock.LockedAmount.ToInt()) {
+		return hexutil.Uint64(0), nil
+	}
+	return lock.Duration, nil
+}
+
 // LockedFromEpoch resolves the epoch om which the lock has been created.
 func (del Delegation) LockedFromEpoch() (hexutil.Uint64, error) {
 	lock, err := del.DelegationLock()
