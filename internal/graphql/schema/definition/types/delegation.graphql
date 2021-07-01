@@ -45,6 +45,9 @@ type Delegation {
     # lockedFromEpoch represents the id of epoch the lock has been created.
     lockedFromEpoch: Long!
 
+    # lockDuration represents the duration the lock has been placed for.
+    lockDuration: Long!
+
     # lockedUntil represents the time stamp up to which
     # the delegation is locked, zero if not locked.
     lockedUntil: Long!
