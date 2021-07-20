@@ -22,8 +22,8 @@ import (
 func (p *proxy) IsDelegating(addr *common.Address) (bool, error) {
 	// count only active delegations (with non-zero value)
 	count, err := p.db.DelegationsCountFiltered(&bson.D{
-		{types.FiDelegationAddress, addr.String()},
-		{types.FiDelegationValue, bson.D{{"$gt", 0}}},
+		{Key: types.FiDelegationAddress, Value: addr.String()},
+		{Key: types.FiDelegationValue, Value: bson.D{{Key: "$gt", Value: 0}}},
 	})
 	if err != nil {
 		p.log.Errorf("can not check delegation by address; %s", addr.String())
@@ -122,19 +122,19 @@ func (p *proxy) DelegationAmountStaked(addr *common.Address, valID *hexutil.Big)
 // DelegationsByAddress returns a list of all delegations of a given delegator address.
 func (p *proxy) DelegationsByAddress(addr *common.Address, cursor *common.Hash, count int32) (*types.DelegationList, error) {
 	p.log.Debugf("loading delegations of %s", addr.String())
-	return p.db.Delegations(cursor, count, &bson.D{{types.FiDelegationAddress, addr.String()}})
+	return p.db.Delegations(cursor, count, &bson.D{{Key: types.FiDelegationAddress, Value: addr.String()}})
 }
 
 // DelegationsByAddressAll returns a list of all delegations of the given address un-paged.
 func (p *proxy) DelegationsByAddressAll(addr *common.Address) ([]*types.Delegation, error) {
 	p.log.Debugf("loading all delegations of %s", addr.String())
-	return p.db.DelegationsAll(&bson.D{{types.FiDelegationAddress, addr.String()}})
+	return p.db.DelegationsAll(&bson.D{{Key: types.FiDelegationAddress, Value: addr.String()}})
 }
 
 // DelegationsOfValidator extract a list of delegations for a given validator.
 func (p *proxy) DelegationsOfValidator(valID *hexutil.Big, cursor *common.Hash, count int32) (*types.DelegationList, error) {
 	p.log.Debugf("loading delegations of #%d", valID.ToInt().Uint64())
-	return p.db.Delegations(cursor, count, &bson.D{{types.FiDelegationToValidator, valID.String()}})
+	return p.db.Delegations(cursor, count, &bson.D{{Key: types.FiDelegationToValidator, Value: valID.String()}})
 }
 
 // DelegationLock returns delegation lock information using SFC contract binding.
