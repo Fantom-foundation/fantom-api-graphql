@@ -41,9 +41,9 @@ func (db *MongoDbBridge) UpdateLastKnownBlock(blockNo *hexutil.Uint64) error {
 	col := db.client.Database(db.dbName).Collection(coConfiguration)
 
 	// insert/update
-	_, err := col.UpdateByID(context.Background(), keyConfigLastKnownBlock, bson.D{{"$set", bson.D{
-		{fiConfigPk, keyConfigLastKnownBlock},
-		{fiConfigValue, blockNo.String()},
+	_, err := col.UpdateByID(context.Background(), keyConfigLastKnownBlock, bson.D{{Key: "$set", Value: bson.D{
+		{Key: fiConfigPk, Value: keyConfigLastKnownBlock},
+		{Key: fiConfigValue, Value: blockNo.String()},
 	}}}, new(options.UpdateOptions).SetUpsert(true))
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func (db *MongoDbBridge) LastKnownBlock() (uint64, error) {
 	col := db.client.Database(db.dbName).Collection(coConfiguration)
 
 	// get the last known block from the config collection
-	res := col.FindOne(context.Background(), bson.D{{fiConfigPk, keyConfigLastKnownBlock}})
+	res := col.FindOne(context.Background(), bson.D{{Key: fiConfigPk, Value: keyConfigLastKnownBlock}})
 	if res.Err() == nil {
 		// get the data
 		var row ConfigRow
@@ -83,8 +83,8 @@ func (db *MongoDbBridge) LastKnownBlock() (uint64, error) {
 func (db *MongoDbBridge) lastKnownBlock() (uint64, error) {
 	// prep search options
 	opt := options.FindOne()
-	opt.SetSort(bson.D{{fiTransactionBlock, -1}})
-	opt.SetProjection(bson.D{{fiTransactionBlock, true}})
+	opt.SetSort(bson.D{{Key: fiTransactionBlock, Value: -1}})
+	opt.SetProjection(bson.D{{Key: fiTransactionBlock, Value: true}})
 
 	// get the collection for account transactions
 	col := db.client.Database(db.dbName).Collection(coTransactions)

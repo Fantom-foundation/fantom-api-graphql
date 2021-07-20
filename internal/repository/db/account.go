@@ -61,7 +61,7 @@ func (db *MongoDbBridge) Account(addr *common.Address) (*types.Account, error) {
 	col := db.client.Database(db.dbName).Collection(coAccounts)
 
 	// try to find the account
-	sr := col.FindOne(context.Background(), bson.D{{fiAccountPk, addr.String()}}, options.FindOne())
+	sr := col.FindOne(context.Background(), bson.D{{Key: fiAccountPk, Value: addr.String()}}, options.FindOne())
 
 	// error on lookup?
 	if sr.Err() != nil {
@@ -116,11 +116,11 @@ func (db *MongoDbBridge) AddAccount(acc *types.Account) error {
 
 	// do the update based on given PK; we don't need to pull the document updated
 	_, err := col.InsertOne(context.Background(), bson.D{
-		{fiAccountPk, acc.Address.String()},
-		{fiScCreationTx, conTx},
-		{fiAccountType, acc.Type},
-		{fiAccountLastActivity, uint64(acc.LastActivity)},
-		{fiAccountTransactionCounter, uint64(acc.TrxCounter)},
+		{Key: fiAccountPk, Value: acc.Address.String()},
+		{Key: fiScCreationTx, Value: conTx},
+		{Key: fiAccountType, Value: acc.Type},
+		{Key: fiAccountLastActivity, Value: uint64(acc.LastActivity)},
+		{Key: fiAccountTransactionCounter, Value: uint64(acc.TrxCounter)},
 	})
 
 	// error on lookup?
@@ -147,8 +147,8 @@ func (db *MongoDbBridge) IsAccountKnown(addr *common.Address) (bool, error) {
 
 	// try to find the account in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
-		{fiAccountPk, addr.String()},
-	}, options.FindOne().SetProjection(bson.D{{fiAccountPk, true}}))
+		{Key: fiAccountPk, Value: addr.String()},
+	}, options.FindOne().SetProjection(bson.D{{Key: fiAccountPk, Value: true}}))
 
 	// error on lookup?
 	if sr.Err() != nil {
@@ -185,7 +185,7 @@ func (db *MongoDbBridge) AccountTransactions(addr *common.Address, cursor *strin
 	db.log.Debugf("loading transactions of %s", addr.String())
 
 	// make the filter for [(from = Account) OR (to = Account)]
-	filter := bson.D{{"$or", bson.A{bson.D{{"from", addr.String()}}, bson.D{{"to", addr.String()}}}}}
+	filter := bson.D{{Key: "$or", Value: bson.A{bson.D{{Key: "from", Value: addr.String()}}, bson.D{{Key: "to", Value: addr.String()}}}}}
 
 	// return list of transactions filtered by the account
 	return db.Transactions(cursor, count, &filter)
@@ -201,10 +201,10 @@ func (db *MongoDbBridge) AccountMarkActivity(addr *common.Address, ts uint64) er
 
 	// update the contract details
 	if _, err := col.UpdateOne(context.Background(),
-		bson.D{{fiAccountPk, addr.String()}},
+		bson.D{{Key: fiAccountPk, Value: addr.String()}},
 		bson.D{
-			{"$set", bson.D{{fiAccountLastActivity, ts}}},
-			{"$inc", bson.D{{fiAccountTransactionCounter, 1}}},
+			{Key: "$set", Value: bson.D{{Key: fiAccountLastActivity, Value: ts}}},
+			{Key: "$inc", Value: bson.D{{Key: fiAccountTransactionCounter, Value: 1}}},
 		}); err != nil {
 		// log the issue
 		db.log.Errorf("can not update account %s details; %s", addr.String(), err.Error())
@@ -228,10 +228,10 @@ func (db *MongoDbBridge) Erc20TokensList(count int32) ([]common.Address, error) 
 	col := db.client.Database(db.dbName).Collection(coAccounts)
 
 	// make the filter for ERC20 tokens only and pull them ordered by activity
-	filter := bson.D{{"type", types.AccountTypeERC20Token}}
+	filter := bson.D{{Key: "type", Value: types.AccountTypeERC20Token}}
 	opt := options.Find().SetSort(bson.D{
-		{fiAccountTransactionCounter, -1},
-		{fiAccountLastActivity, -1},
+		{Key: fiAccountTransactionCounter, Value: -1},
+		{Key: fiAccountLastActivity, Value: -1},
 	}).SetLimit(int64(count))
 
 	// load the data
