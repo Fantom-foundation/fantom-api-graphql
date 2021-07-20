@@ -37,7 +37,7 @@ func (db *MongoDbBridge) initContractsCollection(col *mongo.Collection) {
 	// index ordinal key along with the primary key
 	unique := true
 	ix = append(ix, mongo.IndexModel{
-		Keys: bson.D{{fiContractPk, 1}, {fiContractOrdinalIndex, -1}},
+		Keys: bson.D{{Key: fiContractPk, Value: 1}, {Key: fiContractOrdinalIndex, Value: -1}},
 		Options: &options.IndexOptions{
 			Unique: &unique,
 		},
@@ -104,8 +104,8 @@ func (db *MongoDbBridge) UpdateContract(sc *types.Contract) error {
 
 	// update the contract details
 	if _, err := col.UpdateOne(context.Background(),
-		bson.D{{fiContractPk, sc.Address.String()}},
-		bson.D{{"$set", sc}}); err != nil {
+		bson.D{{Key: fiContractPk, Value: sc.Address.String()}},
+		bson.D{{Key: "$set", Value: sc}}); err != nil {
 		// log the issue
 		db.log.Errorf("can not update contract details at %s; %s", sc.Address.String(), err.Error())
 		return err
@@ -129,9 +129,9 @@ func (db *MongoDbBridge) IsContractKnown(addr *common.Address) bool {
 func (db *MongoDbBridge) isContractKnown(col *mongo.Collection, addr *common.Address) (bool, error) {
 	// try to find the contract in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
-		{fiContractPk, addr.String()},
+		{Key: fiContractPk, Value: addr.String()},
 	}, options.FindOne().SetProjection(bson.D{
-		{fiContractPk, true},
+		{Key: fiContractPk, Value: true},
 	}))
 
 	// error on lookup?
@@ -174,7 +174,7 @@ func (db *MongoDbBridge) Contract(addr *common.Address) (*types.Contract, error)
 	col := db.client.Database(db.dbName).Collection(coContract)
 
 	// try to find the contract in the database (it may already exist)
-	sr := col.FindOne(context.Background(), bson.D{{fiContractPk, addr.String()}})
+	sr := col.FindOne(context.Background(), bson.D{{Key: fiContractPk, Value: addr.String()}})
 
 	// error on lookup?
 	if sr.Err() != nil {
@@ -211,7 +211,7 @@ func (db *MongoDbBridge) contractListTotal(col *mongo.Collection, validatedOnly 
 	// validation filter
 	filter := bson.D{}
 	if validatedOnly {
-		filter = bson.D{{fiContractSourceValidated, bson.D{{"$ne", nil}}}}
+		filter = bson.D{{Key: fiContractSourceValidated, Value: bson.D{{Key: "$ne", Value: nil}}}}
 	}
 
 	// find how many contracts do we have in the database
@@ -244,17 +244,17 @@ func contractListTopFilter(validatedOnly bool, cursor *string) (*bson.D, error) 
 	// with cursor and any validation status
 	filter := bson.D{}
 	if cursor != nil && !validatedOnly {
-		filter = bson.D{{fiContractOrdinalIndex, ix}}
+		filter = bson.D{{Key: fiContractOrdinalIndex, Value: ix}}
 	}
 
 	// no cursor, but validation status filter
 	if cursor == nil && validatedOnly {
-		filter = bson.D{{fiContractSourceValidated, bson.D{{"$ne", nil}}}}
+		filter = bson.D{{Key: fiContractSourceValidated, Value: bson.D{{Key: "$ne", Value: nil}}}}
 	}
 
 	// with cursor and also the validation filter
 	if cursor != nil && validatedOnly {
-		filter = bson.D{{fiContractSourceValidated, bson.D{{"$ne", nil}}}, {fiContractOrdinalIndex, ix}}
+		filter = bson.D{{Key: fiContractSourceValidated, Value: bson.D{{Key: "$ne", Value: nil}}}, {Key: fiContractOrdinalIndex, Value: ix}}
 	}
 	return &filter, nil
 }
@@ -273,14 +273,14 @@ func (db *MongoDbBridge) contractListTop(col *mongo.Collection, validatedOnly bo
 		// get the highest available ordinal index (top smart contract)
 		list.First, err = db.findBorderOrdinalIndex(col,
 			*filter,
-			options.FindOne().SetSort(bson.D{{fiContractOrdinalIndex, -1}}))
+			options.FindOne().SetSort(bson.D{{Key: fiContractOrdinalIndex, Value: -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available ordinal index (bottom smart contract)
 		list.First, err = db.findBorderOrdinalIndex(col,
 			*filter,
-			options.FindOne().SetSort(bson.D{{fiContractOrdinalIndex, 1}}))
+			options.FindOne().SetSort(bson.D{{Key: fiContractOrdinalIndex, Value: 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
@@ -354,12 +354,12 @@ func (db *MongoDbBridge) contractListFilter(validatedOnly bool, cursor *string, 
 	if validatedOnly {
 		// filter validated only contracts
 		filter = bson.D{
-			{fiContractOrdinalIndex, bson.D{{ordinalOp, list.First}}},
-			{fiContractSourceValidated, bson.D{{"$ne", nil}}},
+			{Key: fiContractOrdinalIndex, Value: bson.D{{Key: ordinalOp, Value: list.First}}},
+			{Key: fiContractSourceValidated, Value: bson.D{{Key: "$ne", Value: nil}}},
 		}
 	} else {
 		// filter all contracts
-		filter = bson.D{{fiContractOrdinalIndex, bson.D{{ordinalOp, list.First}}}}
+		filter = bson.D{{Key: fiContractOrdinalIndex, Value: bson.D{{Key: ordinalOp, Value: list.First}}}}
 	}
 	return &filter
 }
@@ -372,10 +372,10 @@ func (db *MongoDbBridge) contractListOptions(count int32) *options.FindOptions {
 	// how to sort results in the collection
 	if count > 0 {
 		// from high (new) to low (old)
-		opt.SetSort(bson.D{{fiContractOrdinalIndex, -1}})
+		opt.SetSort(bson.D{{Key: fiContractOrdinalIndex, Value: -1}})
 	} else {
 		// from low (old) to high (new)
-		opt.SetSort(bson.D{{fiContractOrdinalIndex, 1}})
+		opt.SetSort(bson.D{{Key: fiContractOrdinalIndex, Value: 1}})
 	}
 
 	// prep the loading limit

@@ -30,7 +30,7 @@ func (db *MongoDbBridge) initEpochsCollection(col *mongo.Collection) {
 
 	// index ordinal key sorted from high to low since this is the way we usually list
 	ix = append(ix, mongo.IndexModel{
-		Keys:    bson.D{{fiEpochEndTime, -1}},
+		Keys:    bson.D{{Key: fiEpochEndTime, Value: -1}},
 		Options: new(options.IndexOptions).SetUnique(true),
 	})
 
@@ -77,9 +77,9 @@ func (db *MongoDbBridge) AddEpoch(e *types.Epoch) error {
 func (db *MongoDbBridge) isEpochKnown(col *mongo.Collection, e *types.Epoch) bool {
 	// try to find the epoch in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
-		{fiEpochPk, int64(e.Id)},
+		{Key: fiEpochPk, Value: int64(e.Id)},
 	}, options.FindOne().SetProjection(bson.D{
-		{fiEpochPk, true},
+		{Key: fiEpochPk, Value: true},
 	}))
 
 	// error on lookup?

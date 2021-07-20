@@ -29,17 +29,17 @@ func (db *MongoDbBridge) initDelegationCollection(col *mongo.Collection) {
 	// index delegation address and the validator; this is how we find a specific unique delegation
 	unique := true
 	ix = append(ix, mongo.IndexModel{
-		Keys: bson.D{{types.FiDelegationAddress, 1}, {types.FiDelegationToValidator, 1}},
+		Keys: bson.D{{Key: types.FiDelegationAddress, Value: 1}, {Key: types.FiDelegationToValidator, Value: 1}},
 		Options: &options.IndexOptions{
 			Unique: &unique,
 		},
 	})
 
 	// index delegator, receiving validator, and creation time stamp
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiDelegationAddress, 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiDelegationToValidator, 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiDelegationOrdinal, -1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiDelegationStamp, -1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiDelegationAddress, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiDelegationToValidator, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiDelegationOrdinal, Value: -1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiDelegationStamp, Value: -1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
@@ -57,8 +57,8 @@ func (db *MongoDbBridge) Delegation(addr *common.Address, valID *hexutil.Big) (*
 
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{types.FiDelegationAddress, addr.String()},
-		{types.FiDelegationToValidator, valID.String()},
+		{Key: types.FiDelegationAddress, Value: addr.String()},
+		{Key: types.FiDelegationToValidator, Value: valID.String()},
 	})
 
 	// do we have the data?
@@ -112,15 +112,15 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 	// try to update a delegation by replacing it in the database
 	// we use address and validator ID to identify unique delegation
 	er, err := col.UpdateOne(context.Background(), bson.D{
-		{types.FiDelegationAddress, dl.Address.String()},
-		{types.FiDelegationToValidator, dl.ToStakerId.String()},
-	}, bson.D{{"$set", bson.D{
-		{types.FiDelegationOrdinal, dl.OrdinalIndex()},
-		{types.FiDelegationStamp, time.Unix(int64(dl.CreatedTime), 0)},
-		{types.FiDelegationTransaction, dl.Transaction.String()},
-		{types.FiDelegationToValidatorAddress, dl.ToStakerAddress.String()},
-		{types.FiDelegationAmountActive, dl.AmountDelegated.String()},
-		{types.FiDelegationValue, val},
+		{Key: types.FiDelegationAddress, Value: dl.Address.String()},
+		{Key: types.FiDelegationToValidator, Value: dl.ToStakerId.String()},
+	}, bson.D{{Key: "$set", Value: bson.D{
+		{Key: types.FiDelegationOrdinal, Value: dl.OrdinalIndex()},
+		{Key: types.FiDelegationStamp, Value: time.Unix(int64(dl.CreatedTime), 0)},
+		{Key: types.FiDelegationTransaction, Value: dl.Transaction.String()},
+		{Key: types.FiDelegationToValidatorAddress, Value: dl.ToStakerAddress.String()},
+		{Key: types.FiDelegationAmountActive, Value: dl.AmountDelegated.String()},
+		{Key: types.FiDelegationValue, Value: val},
 	}}}, new(options.UpdateOptions).SetUpsert(true))
 	if err != nil {
 		db.log.Critical(err)
@@ -146,12 +146,12 @@ func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *he
 	// update the transaction details
 	ur, err := col.UpdateOne(context.Background(),
 		bson.D{
-			{types.FiDelegationAddress, addr.String()},
-			{types.FiDelegationToValidator, valID.String()},
+			{Key: types.FiDelegationAddress, Value: addr.String()},
+			{Key: types.FiDelegationToValidator, Value: valID.String()},
 		},
-		bson.D{{"$set", bson.D{
-			{types.FiDelegationAmountActive, amo.String()},
-			{types.FiDelegationValue, val},
+		bson.D{{Key: "$set", Value: bson.D{
+			{Key: types.FiDelegationAmountActive, Value: amo.String()},
+			{Key: types.FiDelegationValue, Value: val},
 		}}})
 	if err != nil {
 		// log the issue
@@ -171,10 +171,10 @@ func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *he
 func (db *MongoDbBridge) isDelegationKnown(col *mongo.Collection, dl *types.Delegation) bool {
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{types.FiDelegationAddress, dl.Address.String()},
-		{types.FiDelegationToValidator, dl.ToStakerId.String()},
+		{Key: types.FiDelegationAddress, Value: dl.Address.String()},
+		{Key: types.FiDelegationToValidator, Value: dl.ToStakerId.String()},
 	}, options.FindOne().SetProjection(bson.D{
-		{types.FiDelegationPk, true},
+		{Key: types.FiDelegationPk, Value: true},
 	}))
 
 	// error on lookup?
@@ -246,14 +246,14 @@ func (db *MongoDbBridge) dlgListCollectRangeMarks(col *mongo.Collection, list *t
 		// get the highest available pk
 		list.First, err = db.dlgListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{types.FiDelegationOrdinal, -1}}))
+			options.FindOne().SetSort(bson.D{{Key: types.FiDelegationOrdinal, Value: -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available pk
 		list.First, err = db.dlgListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{types.FiDelegationOrdinal, 1}}))
+			options.FindOne().SetSort(bson.D{{Key: types.FiDelegationOrdinal, Value: 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
@@ -282,7 +282,7 @@ func (db *MongoDbBridge) dlgListBorderPk(col *mongo.Collection, filter bson.D, o
 	}
 
 	// make sure we pull only what we need
-	opt.SetProjection(bson.D{{types.FiDelegationOrdinal, true}})
+	opt.SetProjection(bson.D{{Key: types.FiDelegationOrdinal, Value: true}})
 	sr := col.FindOne(context.Background(), filter, opt)
 
 	// try to decode
@@ -299,15 +299,15 @@ func (db *MongoDbBridge) dlgListFilter(cursor *common.Hash, count int32, list *t
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiDelegationOrdinal, Value: bson.D{{"$lte", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiDelegationOrdinal, Value: bson.D{{Key: "$lte", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiDelegationOrdinal, Value: bson.D{{"$gte", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiDelegationOrdinal, Value: bson.D{{Key: "$gte", Value: list.First}}})
 		}
 	} else {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiDelegationOrdinal, Value: bson.D{{"$lt", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiDelegationOrdinal, Value: bson.D{{Key: "$lt", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiDelegationOrdinal, Value: bson.D{{"$gt", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiDelegationOrdinal, Value: bson.D{{Key: "$gt", Value: list.First}}})
 		}
 	}
 
@@ -329,7 +329,7 @@ func (db *MongoDbBridge) dlgListOptions(count int32) *options.FindOptions {
 	}
 
 	// sort with the direction we want
-	opt.SetSort(bson.D{{types.FiDelegationOrdinal, sd}})
+	opt.SetSort(bson.D{{Key: types.FiDelegationOrdinal, Value: sd}})
 
 	// apply the limit, try to get one more record so we can detect list end
 	opt.SetLimit(int64(count) + 1)
@@ -434,7 +434,7 @@ func (db *MongoDbBridge) DelegationsAll(filter *bson.D) ([]*types.Delegation, er
 	ctx := context.Background()
 
 	// load the data
-	ld, err := col.Find(ctx, filter, options.Find().SetSort(bson.D{{types.FiDelegationStamp, -1}}))
+	ld, err := col.Find(ctx, filter, options.Find().SetSort(bson.D{{Key: types.FiDelegationStamp, Value: -1}}))
 	if err != nil {
 		db.log.Errorf("error loading full delegations list; %s", err.Error())
 		return nil, err
