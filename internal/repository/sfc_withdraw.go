@@ -42,14 +42,14 @@ func (p *proxy) WithdrawRequests(addr *common.Address, stakerID *hexutil.Big, cu
 	if stakerID == nil {
 		// log the action and pull the list for all vals
 		p.log.Debugf("loading withdraw requests of %s to any validator", addr.String())
-		return p.db.Withdrawals(cursor, count, &bson.D{{types.FiWithdrawalAddress, addr.String()}})
+		return p.db.Withdrawals(cursor, count, &bson.D{{Key: types.FiWithdrawalAddress, Value: addr.String()}})
 	}
 
 	// log the action and pull the list for specific address and val
 	p.log.Debugf("loading withdraw requests of %s to #%d", addr.String(), stakerID.ToInt().Uint64())
 	return p.db.Withdrawals(cursor, count, &bson.D{
-		{types.FiWithdrawalAddress, addr.String()},
-		{types.FiWithdrawalToValidator, stakerID.String()},
+		{Key: types.FiWithdrawalAddress, Value: addr.String()},
+		{Key: types.FiWithdrawalToValidator, Value: stakerID.String()},
 	})
 }
 
@@ -63,15 +63,15 @@ func (p *proxy) WithdrawRequestsPendingTotal(addr *common.Address, stakerID *hex
 	// all withdrawals for the address regardless of the target staker
 	if stakerID == nil {
 		return p.db.WithdrawalsSumValue(&bson.D{
-			{types.FiWithdrawalAddress, addr.String()},
-			{types.FiWithdrawalFinTrx, bson.D{{"$type", 10}}},
+			{Key: types.FiWithdrawalAddress, Value: addr.String()},
+			{Key: types.FiWithdrawalFinTrx, Value: bson.D{{Key: "$type", Value: 10}}},
 		})
 	}
 
 	// specific delegation withdrawal
 	return p.db.WithdrawalsSumValue(&bson.D{
-		{types.FiWithdrawalAddress, addr.String()},
-		{types.FiWithdrawalToValidator, stakerID.String()},
-		{types.FiWithdrawalFinTrx, bson.D{{"$type", 10}}},
+		{Key: types.FiWithdrawalAddress, Value: addr.String()},
+		{Key: types.FiWithdrawalToValidator, Value: stakerID.String()},
+		{Key: types.FiWithdrawalFinTrx, Value: bson.D{{Key: "$type", Value: 10}}},
 	})
 }
