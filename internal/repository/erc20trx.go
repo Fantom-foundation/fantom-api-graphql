@@ -61,6 +61,11 @@ func (p *proxy) Erc20Transactions(token *common.Address, acc *common.Address, tt
 	return p.db.Erc20Transactions(cursor, count, &fi)
 }
 
+// Erc20Assets provides a list of known assets for the given owner.
+func (p *proxy) Erc20Assets(owner common.Address, count int32) ([]common.Address, error) {
+	return p.db.Erc20Assets(owner, count)
+}
+
 // handleErc20Approval handles Approval event on an ERC20 token.
 // event Approval(address indexed owner, address indexed spender, uint256 value)
 func handleErc20Approval(log *retypes.Log, ld *logsDispatcher) {
