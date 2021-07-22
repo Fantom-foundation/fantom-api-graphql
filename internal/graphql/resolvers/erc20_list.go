@@ -6,9 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// maxAssetTokensToLoad defines the max mount of ERC20 tokens analyzed for assets list.
-const maxAssetTokensToLoad = 1000
-
 // Erc20TokenList resolves an instance of ERC20 token list if available.
 func (rs *rootResolver) Erc20TokenList(args struct{ Count int32 }) ([]*ERC20Token, error) {
 	// limit query size; the count can be either positive or negative
@@ -39,22 +36,16 @@ func (rs *rootResolver) Erc20Assets(args struct {
 	// this controls the loading direction
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
-	// get the list of addresses of active tokens
-	al, err := repository.R().Erc20TokensList(maxAssetTokensToLoad)
+	// get the list of addresses of active tokens for the owner
+	al, err := repository.R().Erc20Assets(args.Owner, args.Count)
 	if err != nil {
 		return nil, err
 	}
 
 	// make the container and build the list (limit to recognized assets)
-	list := make([]*ERC20Token, 0)
-	for _, token := range al {
-		// is there any balance of the token for the owner?
-		if rs.ownsErc20Asset(&token, &args.Owner) {
-			list = append(list, NewErc20Token(&token))
-			if args.Count == int32(len(list)) {
-				break
-			}
-		}
+	list := make([]*ERC20Token, len(al))
+	for i, token := range al {
+		list[i] = NewErc20Token(&token)
 	}
 
 	return list, nil

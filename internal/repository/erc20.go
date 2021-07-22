@@ -73,7 +73,7 @@ func (p *proxy) Erc20Symbol(token *common.Address) (string, error) {
 	return p.rpc.Erc20Symbol(token)
 }
 
-// Erc20Name provides information about the decimals of the ERC20 token.
+// Erc20Decimals provides information about the decimals of the ERC20 token.
 func (p *proxy) Erc20Decimals(token *common.Address) (int32, error) {
 	return p.rpc.Erc20Decimals(token)
 }
