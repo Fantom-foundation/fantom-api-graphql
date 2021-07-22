@@ -21,10 +21,10 @@ func (db *MongoDbBridge) initRewardsCollection(col *mongo.Collection) {
 	ix := make([]mongo.IndexModel, 0)
 
 	// index delegator, receiving validator, and creation time stamp
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiRewardClaimAddress, 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiRewardClaimToValidator, 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiRewardClaimOrdinal, -1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiRewardClaimedTimeStamp, -1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiRewardClaimAddress, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiRewardClaimToValidator, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiRewardClaimOrdinal, Value: -1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiRewardClaimedTimeStamp, Value: -1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
@@ -62,9 +62,9 @@ func (db *MongoDbBridge) AddRewardClaim(rc *types.RewardClaim) error {
 func (db *MongoDbBridge) isRewardClaimKnown(col *mongo.Collection, rc *types.RewardClaim) bool {
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{types.FiRewardClaimPk, rc.Pk()},
+		{Key: types.FiRewardClaimPk, Value: rc.Pk()},
 	}, options.FindOne().SetProjection(bson.D{
-		{types.FiRewardClaimPk, true},
+		{Key: types.FiRewardClaimPk, Value: true},
 	}))
 
 	// error on lookup?
@@ -136,20 +136,20 @@ func (db *MongoDbBridge) rewListCollectRangeMarks(col *mongo.Collection, list *t
 		// get the highest available pk
 		list.First, err = db.rewListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{types.FiRewardClaimOrdinal, -1}}))
+			options.FindOne().SetSort(bson.D{{Key: types.FiRewardClaimOrdinal, Value: -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available pk
 		list.First, err = db.rewListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{types.FiRewardClaimOrdinal, 1}}))
+			options.FindOne().SetSort(bson.D{{Key: types.FiRewardClaimOrdinal, Value: 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.rewListBorderPk(col,
-			bson.D{{types.FiRewardClaimPk, *cursor}},
+			bson.D{{Key: types.FiRewardClaimPk, Value: *cursor}},
 			options.FindOne())
 	}
 
@@ -172,7 +172,7 @@ func (db *MongoDbBridge) rewListBorderPk(col *mongo.Collection, filter bson.D, o
 	}
 
 	// make sure we pull only what we need
-	opt.SetProjection(bson.D{{types.FiRewardClaimOrdinal, true}})
+	opt.SetProjection(bson.D{{Key: types.FiRewardClaimOrdinal, Value: true}})
 
 	// try to decode
 	sr := col.FindOne(context.Background(), filter, opt)
@@ -188,15 +188,15 @@ func (db *MongoDbBridge) rewListFilter(cursor *string, count int32, list *types.
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiRewardClaimOrdinal, Value: bson.D{{"$lte", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiRewardClaimOrdinal, Value: bson.D{{Key: "$lte", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiRewardClaimOrdinal, Value: bson.D{{"$gte", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiRewardClaimOrdinal, Value: bson.D{{Key: "$gte", Value: list.First}}})
 		}
 	} else {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiRewardClaimOrdinal, Value: bson.D{{"$lt", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiRewardClaimOrdinal, Value: bson.D{{Key: "$lt", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiRewardClaimOrdinal, Value: bson.D{{"$gt", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiRewardClaimOrdinal, Value: bson.D{{Key: "$gt", Value: list.First}}})
 		}
 	}
 	// return the new filter
@@ -216,7 +216,7 @@ func (db *MongoDbBridge) rewListOptions(count int32) *options.FindOptions {
 	}
 
 	// sort with the direction we want
-	opt.SetSort(bson.D{{types.FiRewardClaimOrdinal, sd}})
+	opt.SetSort(bson.D{{Key: types.FiRewardClaimOrdinal, Value: sd}})
 
 	// prep the loading limit
 	var limit = int64(count)

@@ -28,9 +28,9 @@ func (db *MongoDbBridge) initWithdrawalsCollection(col *mongo.Collection) {
 	unique := true
 	ix = append(ix, mongo.IndexModel{
 		Keys: bson.D{
-			{types.FiWithdrawalAddress, 1},
-			{types.FiWithdrawalToValidator, 1},
-			{types.FiWithdrawalRequestID, 1},
+			{Key: types.FiWithdrawalAddress, Value: 1},
+			{Key: types.FiWithdrawalToValidator, Value: 1},
+			{Key: types.FiWithdrawalRequestID, Value: 1},
 		},
 		Options: &options.IndexOptions{
 			Unique: &unique,
@@ -38,8 +38,8 @@ func (db *MongoDbBridge) initWithdrawalsCollection(col *mongo.Collection) {
 	})
 
 	// index request ID, delegator address, and creation time stamp
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiWithdrawalAddress, 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiWithdrawalOrdinal, -1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiWithdrawalAddress, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiWithdrawalOrdinal, Value: -1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
@@ -57,9 +57,9 @@ func (db *MongoDbBridge) Withdrawal(addr *common.Address, valID *hexutil.Big, re
 
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{types.FiWithdrawalAddress, addr.String()},
-		{types.FiWithdrawalToValidator, valID.String()},
-		{types.FiWithdrawalRequestID, reqID.String()},
+		{Key: types.FiWithdrawalAddress, Value: addr.String()},
+		{Key: types.FiWithdrawalToValidator, Value: valID.String()},
+		{Key: types.FiWithdrawalRequestID, Value: reqID.String()},
 	})
 
 	// try to decode
@@ -137,12 +137,12 @@ func (db *MongoDbBridge) shiftClosedWithdrawRequest(col *mongo.Collection, wr *t
 
 	// try to shift a closed withdraw request to a different reqID by updating it in the database
 	er, err := col.UpdateOne(context.Background(), bson.D{
-		{types.FiWithdrawalAddress, wr.Address.String()},
-		{types.FiWithdrawalToValidator, wr.StakerID.String()},
-		{types.FiWithdrawalRequestID, wr.WithdrawRequestID.String()},
-		{types.FiWithdrawalFinTime, bson.D{{"$exists", true}, {"$ne", nil}}},
-	}, bson.D{{"$set", bson.D{
-		{types.FiWithdrawalRequestID, reqID},
+		{Key: types.FiWithdrawalAddress, Value: wr.Address.String()},
+		{Key: types.FiWithdrawalToValidator, Value: wr.StakerID.String()},
+		{Key: types.FiWithdrawalRequestID, Value: wr.WithdrawRequestID.String()},
+		{Key: types.FiWithdrawalFinTime, Value: bson.D{{Key: "$exists", Value: true}, {Key: "$ne", Value: nil}}},
+	}, bson.D{{Key: "$set", Value: bson.D{
+		{Key: types.FiWithdrawalRequestID, Value: reqID},
 	}}}, new(options.UpdateOptions).SetUpsert(true))
 	if err != nil {
 		db.log.Criticalf("can not shift withdrawal; %s", err.Error())
@@ -188,19 +188,19 @@ func (db *MongoDbBridge) UpdateWithdrawal(wr *types.WithdrawRequest) error {
 	// try to update a withdraw request by replacing it in the database
 	// we use request ID identify unique withdrawal
 	er, err := col.UpdateOne(context.Background(), bson.D{
-		{types.FiWithdrawalAddress, wr.Address.String()},
-		{types.FiWithdrawalToValidator, wr.StakerID.String()},
-		{types.FiWithdrawalRequestID, wr.WithdrawRequestID.String()},
-	}, bson.D{{"$set", bson.D{
-		{types.FiWithdrawalType, wr.Type},
-		{types.FiWithdrawalOrdinal, wr.OrdinalIndex()},
-		{types.FiWithdrawalCreated, uint64(wr.CreatedTime)},
-		{types.FiWithdrawalStamp, time.Unix(int64(wr.CreatedTime), 0)},
-		{types.FiWithdrawalValue, val},
-		{types.FiWithdrawalSlash, pen},
-		{types.FiWithdrawalRequestTrx, wr.RequestTrx.String()},
-		{types.FiWithdrawalFinTrx, trx},
-		{types.FiWithdrawalFinTime, (*uint64)(wr.WithdrawTime)},
+		{Key: types.FiWithdrawalAddress, Value: wr.Address.String()},
+		{Key: types.FiWithdrawalToValidator, Value: wr.StakerID.String()},
+		{Key: types.FiWithdrawalRequestID, Value: wr.WithdrawRequestID.String()},
+	}, bson.D{{Key: "$set", Value: bson.D{
+		{Key: types.FiWithdrawalType, Value: wr.Type},
+		{Key: types.FiWithdrawalOrdinal, Value: wr.OrdinalIndex()},
+		{Key: types.FiWithdrawalCreated, Value: uint64(wr.CreatedTime)},
+		{Key: types.FiWithdrawalStamp, Value: time.Unix(int64(wr.CreatedTime), 0)},
+		{Key: types.FiWithdrawalValue, Value: val},
+		{Key: types.FiWithdrawalSlash, Value: pen},
+		{Key: types.FiWithdrawalRequestTrx, Value: wr.RequestTrx.String()},
+		{Key: types.FiWithdrawalFinTrx, Value: trx},
+		{Key: types.FiWithdrawalFinTime, Value: (*uint64)(wr.WithdrawTime)},
 	}}}, new(options.UpdateOptions).SetUpsert(true))
 	if err != nil {
 		db.log.Critical(err)
@@ -218,11 +218,11 @@ func (db *MongoDbBridge) UpdateWithdrawal(wr *types.WithdrawRequest) error {
 func (db *MongoDbBridge) isWithdrawalKnown(col *mongo.Collection, wr *types.WithdrawRequest) bool {
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{types.FiWithdrawalAddress, wr.Address.String()},
-		{types.FiWithdrawalToValidator, wr.StakerID.String()},
-		{types.FiWithdrawalRequestID, wr.WithdrawRequestID.String()},
+		{Key: types.FiWithdrawalAddress, Value: wr.Address.String()},
+		{Key: types.FiWithdrawalToValidator, Value: wr.StakerID.String()},
+		{Key: types.FiWithdrawalRequestID, Value: wr.WithdrawRequestID.String()},
 	}, options.FindOne().SetProjection(bson.D{
-		{types.FiWithdrawalPk, true},
+		{Key: types.FiWithdrawalPk, Value: true},
 	}))
 
 	// error on lookup?
@@ -294,20 +294,20 @@ func (db *MongoDbBridge) wrListCollectRangeMarks(col *mongo.Collection, list *ty
 		// get the highest available pk
 		list.First, err = db.wrListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{types.FiWithdrawalOrdinal, -1}}))
+			options.FindOne().SetSort(bson.D{{Key: types.FiWithdrawalOrdinal, Value: -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available pk
 		list.First, err = db.wrListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{types.FiWithdrawalOrdinal, 1}}))
+			options.FindOne().SetSort(bson.D{{Key: types.FiWithdrawalOrdinal, Value: 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.wrListBorderPk(col,
-			bson.D{{types.FiWithdrawalPk, *cursor}},
+			bson.D{{Key: types.FiWithdrawalPk, Value: *cursor}},
 			options.FindOne())
 	}
 
@@ -330,7 +330,7 @@ func (db *MongoDbBridge) wrListBorderPk(col *mongo.Collection, filter bson.D, op
 	}
 
 	// make sure we pull only what we need
-	opt.SetProjection(bson.D{{types.FiWithdrawalOrdinal, true}})
+	opt.SetProjection(bson.D{{Key: types.FiWithdrawalOrdinal, Value: true}})
 	sr := col.FindOne(context.Background(), filter, opt)
 
 	// try to decode
@@ -345,15 +345,15 @@ func (db *MongoDbBridge) wrListFilter(cursor *string, count int32, list *types.W
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiWithdrawalOrdinal, Value: bson.D{{"$lte", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiWithdrawalOrdinal, Value: bson.D{{Key: "$lte", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiWithdrawalOrdinal, Value: bson.D{{"$gte", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiWithdrawalOrdinal, Value: bson.D{{Key: "$gte", Value: list.First}}})
 		}
 	} else {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiWithdrawalOrdinal, Value: bson.D{{"$lt", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiWithdrawalOrdinal, Value: bson.D{{Key: "$lt", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiWithdrawalOrdinal, Value: bson.D{{"$gt", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiWithdrawalOrdinal, Value: bson.D{{Key: "$gt", Value: list.First}}})
 		}
 	}
 
@@ -374,7 +374,7 @@ func (db *MongoDbBridge) wrListOptions(count int32) *options.FindOptions {
 	}
 
 	// sort with the direction we want
-	opt.SetSort(bson.D{{types.FiWithdrawalOrdinal, sd}})
+	opt.SetSort(bson.D{{Key: types.FiWithdrawalOrdinal, Value: sd}})
 
 	// prep the loading limit
 	var limit = int64(count)
@@ -499,10 +499,10 @@ func (db *MongoDbBridge) sumFieldValue(col *mongo.Collection, field string, filt
 
 	// get the collection
 	cr, err := col.Aggregate(context.Background(), mongo.Pipeline{
-		{{"$match", filter}},
-		{{"$group", bson.D{
-			{"_id", nil},
-			{"total", bson.D{{"$sum", sb.String()}}},
+		{{Key: "$match", Value: filter}},
+		{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil},
+			{Key: "total", Value: bson.D{{Key: "$sum", Value: sb.String()}}},
 		}}},
 	})
 	if err != nil {

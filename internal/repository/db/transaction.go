@@ -50,16 +50,16 @@ func (db *MongoDbBridge) initTransactionsCollection(col *mongo.Collection) {
 	// index ordinal key sorted from high to low since this is the way we usually list
 	unique := true
 	ix = append(ix, mongo.IndexModel{
-		Keys: bson.D{{fiTransactionOrdinalIndex, -1}},
+		Keys: bson.D{{Key: fiTransactionOrdinalIndex, Value: -1}},
 		Options: &options.IndexOptions{
 			Unique: &unique,
 		},
 	})
 
 	// index sender and recipient
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiTransactionSender, 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiTransactionRecipient, 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{fiTransactionTimeStamp, 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiTransactionSender, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiTransactionRecipient, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiTransactionTimeStamp, Value: 1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
@@ -124,12 +124,12 @@ func (db *MongoDbBridge) UpdateTransaction(col *mongo.Collection, trx *types.Tra
 	// try to update a delegation by replacing it in the database
 	// we use address and validator ID to identify unique delegation
 	er, err := col.UpdateOne(context.Background(), bson.D{
-		{fiTransactionPk, trx.Hash.String()},
-	}, bson.D{{"$set", bson.D{
-		{fiTransactionOrdinalIndex, trx.Uid()},
-		{fiTransactionSender, trx.From.String()},
-		{fiTransactionValue, trx.Value.String()},
-		{fiTransactionTimeStamp, trx.TimeStamp},
+		{Key: fiTransactionPk, Value: trx.Hash.String()},
+	}, bson.D{{Key: "$set", Value: bson.D{
+		{Key: fiTransactionOrdinalIndex, Value: trx.Uid()},
+		{Key: fiTransactionSender, Value: trx.From.String()},
+		{Key: fiTransactionValue, Value: trx.Value.String()},
+		{Key: fiTransactionTimeStamp, Value: trx.TimeStamp},
 	}}}, new(options.UpdateOptions).SetUpsert(false))
 	if err != nil {
 		db.log.Critical(err)
@@ -147,9 +147,9 @@ func (db *MongoDbBridge) UpdateTransaction(col *mongo.Collection, trx *types.Tra
 func (db *MongoDbBridge) IsTransactionKnown(col *mongo.Collection, hash *common.Hash) (bool, error) {
 	// try to find the transaction in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
-		{fiTransactionPk, hash.String()},
+		{Key: fiTransactionPk, Value: hash.String()},
 	}, options.FindOne().SetProjection(bson.D{
-		{fiTransactionPk, true},
+		{Key: fiTransactionPk, Value: true},
 	}))
 
 	// error on lookup?
@@ -221,20 +221,20 @@ func (db *MongoDbBridge) trxListWithRangeMarks(
 		// get the highest available ordinal index (top transaction)
 		list.First, err = db.findBorderOrdinalIndex(col,
 			*filter,
-			options.FindOne().SetSort(bson.D{{fiTransactionOrdinalIndex, -1}}))
+			options.FindOne().SetSort(bson.D{{Key: fiTransactionOrdinalIndex, Value: -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available ordinal index (top transaction)
 		list.First, err = db.findBorderOrdinalIndex(col,
 			*filter,
-			options.FindOne().SetSort(bson.D{{fiTransactionOrdinalIndex, 1}}))
+			options.FindOne().SetSort(bson.D{{Key: fiTransactionOrdinalIndex, Value: 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
 		// get the highest available ordinal index (top transaction)
 		list.First, err = db.findBorderOrdinalIndex(col,
-			bson.D{{fiTransactionPk, *cursor}},
+			bson.D{{Key: fiTransactionPk, Value: *cursor}},
 			options.FindOne())
 	}
 
@@ -258,7 +258,7 @@ func (db *MongoDbBridge) findBorderOrdinalIndex(col *mongo.Collection, filter bs
 	}
 
 	// make sure we pull only what we need
-	opt.SetProjection(bson.D{{"orx", true}})
+	opt.SetProjection(bson.D{{Key: "orx", Value: true}})
 	sr := col.FindOne(context.Background(), filter, opt)
 
 	// try to decode
@@ -278,15 +278,15 @@ func (db *MongoDbBridge) txListFilter(cursor *string, count int32, list *types.T
 	// build the filter query
 	if cursor == nil {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: fiTransactionOrdinalIndex, Value: bson.D{{"$lte", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: fiTransactionOrdinalIndex, Value: bson.D{{Key: "$lte", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: fiTransactionOrdinalIndex, Value: bson.D{{"$gte", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: fiTransactionOrdinalIndex, Value: bson.D{{Key: "$gte", Value: list.First}}})
 		}
 	} else {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: fiTransactionOrdinalIndex, Value: bson.D{{"$lt", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: fiTransactionOrdinalIndex, Value: bson.D{{Key: "$lt", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: fiTransactionOrdinalIndex, Value: bson.D{{"$gt", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: fiTransactionOrdinalIndex, Value: bson.D{{Key: "$gt", Value: list.First}}})
 		}
 	}
 
@@ -302,10 +302,10 @@ func (db *MongoDbBridge) txListOptions(count int32) *options.FindOptions {
 	// how to sort results in the collection
 	if count > 0 {
 		// from high (new) to low (old)
-		opt.SetSort(bson.D{{fiTransactionOrdinalIndex, -1}})
+		opt.SetSort(bson.D{{Key: fiTransactionOrdinalIndex, Value: -1}})
 	} else {
 		// from low (old) to high (new)
-		opt.SetSort(bson.D{{fiTransactionOrdinalIndex, 1}})
+		opt.SetSort(bson.D{{Key: fiTransactionOrdinalIndex, Value: 1}})
 	}
 
 	// prep the loading limit

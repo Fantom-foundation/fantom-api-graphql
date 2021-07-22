@@ -33,7 +33,7 @@ func (db *MongoDbBridge) TrxDailyFlowList(from *time.Time, to *time.Time) ([]*ty
 	col := db.client.Database(db.dbName).Collection(coTransactionVolume)
 
 	// pull the data; make sure there is a limit to the range
-	ld, err := col.Find(ctx, trxDailyFlowListFilter(from, to), options.Find().SetSort(bson.D{{fiTrxVolumePk, 1}}).SetLimit(365))
+	ld, err := col.Find(ctx, trxDailyFlowListFilter(from, to), options.Find().SetSort(bson.D{{Key: fiTrxVolumePk, Value: 1}}).SetLimit(365))
 	if err != nil {
 		db.log.Errorf("can not load daily flow; %s", err.Error())
 		return nil, err
@@ -65,10 +65,10 @@ func (db *MongoDbBridge) TrxGasSpeed(from *time.Time, to *time.Time) (float64, e
 
 	// aggregate the gas used from the given time range
 	cr, err := col.Aggregate(ctx, mongo.Pipeline{
-		{{"$match", trxDailyFlowListFilter(from, to)}},
-		{{"$group", bson.D{
-			{"_id", nil},
-			{"volume", bson.D{{"$sum", "$gas_use"}}},
+		{{Key: "$match", Value: trxDailyFlowListFilter(from, to)}},
+		{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil},
+			{Key: "volume", Value: bson.D{{Key: "$sum", Value: "$gas_use"}}},
 		}}},
 	})
 	if err != nil {
@@ -117,8 +117,8 @@ func (db *MongoDbBridge) TrxRecentTrxSpeed(sec int32) (float64, error) {
 
 	// find how many transactions do we have in the database
 	total, err := col.CountDocuments(context.Background(), bson.D{
-		{fiTransactionTimeStamp, bson.D{
-			{"$gte", from},
+		{Key: fiTransactionTimeStamp, Value: bson.D{
+			{Key: "$gte", Value: from},
 		}},
 	})
 	if err != nil {
@@ -183,31 +183,31 @@ func (db *MongoDbBridge) TrxDailyFlowUpdate(from time.Time) error {
 
 	// get the collection
 	cr, err := col.Aggregate(context.Background(), mongo.Pipeline{
-		{{"$match", bson.D{
-			{"stamp", bson.D{{"$gte", from}}},
+		{{Key: "$match", Value: bson.D{
+			{Key: "stamp", Value: bson.D{{Key: "$gte", Value: from}}},
 		}}},
-		{{"$group", bson.D{
-			{"_id", bson.D{
-				{"$dateToString", bson.D{
-					{"format", "%Y-%m-%d"},
-					{"date", "$stamp"},
+		{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: bson.D{
+				{Key: "$dateToString", Value: bson.D{
+					{Key: "format", Value: "%Y-%m-%d"},
+					{Key: "date", Value: "$stamp"},
 				}},
 			}},
-			{"volume", bson.D{{"$sum", "$amo"}}},
-			{"gas", bson.D{{"$sum", "$gas_use"}}},
-			{"value", bson.D{{"$sum", 1}}},
+			{Key: "volume", Value: bson.D{{Key: "$sum", Value: "$amo"}}},
+			{Key: "gas", Value: bson.D{{Key: "$sum", Value: "$gas_use"}}},
+			{Key: "value", Value: bson.D{{Key: "$sum", Value: 1}}},
 		}}},
-		{{"$project", bson.D{
-			{"stamp", bson.D{{"$toDate", "$_id"}}},
-			{"volume", 1},
-			{"value", 1},
-			{"gas", 1},
+		{{Key: "$project", Value: bson.D{
+			{Key: "stamp", Value: bson.D{{Key: "$toDate", Value: "$_id"}}},
+			{Key: "volume", Value: 1},
+			{Key: "value", Value: 1},
+			{Key: "gas", Value: 1},
 		}}},
-		{{"$merge", bson.D{
-			{"into", "trx_volume"},
-			{"on", "_id"},
-			{"whenMatched", "replace"},
-			{"whenNotMatched", "insert"},
+		{{Key: "$merge", Value: bson.D{
+			{Key: "into", Value: "trx_volume"},
+			{Key: "on", Value: "_id"},
+			{Key: "whenMatched", Value: "replace"},
+			{Key: "whenNotMatched", Value: "insert"},
 		}}},
 	})
 	if err != nil {
