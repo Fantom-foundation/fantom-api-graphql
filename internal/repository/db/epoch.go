@@ -93,7 +93,7 @@ func (db *MongoDbBridge) isEpochKnown(col *mongo.Collection, e *types.Epoch) boo
 
 // LastKnownEpoch provides the number of the newest epoch stored in the database.
 func (db *MongoDbBridge) LastKnownEpoch() (uint64, error) {
-	return db.epochListBorderPk(db.client.Database(db.dbName).Collection(colEpochs), options.FindOne().SetSort(bson.D{{fiEpochEndTime, -1}}))
+	return db.epochListBorderPk(db.client.Database(db.dbName).Collection(colEpochs), options.FindOne().SetSort(bson.D{{Key: fiEpochEndTime, Value: -1}}))
 }
 
 // EpochsCount calculates total number of epochs in the database.
@@ -137,12 +137,12 @@ func (db *MongoDbBridge) epochListCollectRangeMarks(col *mongo.Collection, list 
 	// find out the cursor ordinal index
 	if cursor == nil && count > 0 {
 		// get the highest available pk
-		list.First, err = db.epochListBorderPk(col, options.FindOne().SetSort(bson.D{{fiEpochEndTime, -1}}))
+		list.First, err = db.epochListBorderPk(col, options.FindOne().SetSort(bson.D{{Key: fiEpochEndTime, Value: -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available pk
-		list.First, err = db.epochListBorderPk(col, options.FindOne().SetSort(bson.D{{fiEpochEndTime, 1}}))
+		list.First, err = db.epochListBorderPk(col, options.FindOne().SetSort(bson.D{{Key: fiEpochEndTime, Value: 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
@@ -169,7 +169,7 @@ func (db *MongoDbBridge) epochListBorderPk(col *mongo.Collection, opt *options.F
 	}
 
 	// make sure we pull only what we need
-	opt.SetProjection(bson.D{{fiEpochPk, true}})
+	opt.SetProjection(bson.D{{Key: fiEpochPk, Value: true}})
 
 	// try to decode
 	sr := col.FindOne(context.Background(), bson.D{}, opt)
@@ -185,16 +185,16 @@ func (db *MongoDbBridge) epochListFilter(cursor *string, count int32, list *type
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
-			return &bson.D{{Key: fiEpochPk, Value: bson.D{{"$lte", list.First}}}}
+			return &bson.D{{Key: fiEpochPk, Value: bson.D{{Key: "$lte", Value: list.First}}}}
 		}
-		return &bson.D{{Key: fiEpochPk, Value: bson.D{{"$gte", list.First}}}}
+		return &bson.D{{Key: fiEpochPk, Value: bson.D{{Key: "$gte", Value: list.First}}}}
 	}
 
 	// with cursor provided we need to skip the identified line
 	if count > 0 {
-		return &bson.D{{Key: fiEpochPk, Value: bson.D{{"$lt", list.First}}}}
+		return &bson.D{{Key: fiEpochPk, Value: bson.D{{Key: "$lt", Value: list.First}}}}
 	}
-	return &bson.D{{Key: fiEpochPk, Value: bson.D{{"$gt", list.First}}}}
+	return &bson.D{{Key: fiEpochPk, Value: bson.D{{Key: "$gt", Value: list.First}}}}
 }
 
 // epochListOptions creates a filter options set for epochs list search.
@@ -210,7 +210,7 @@ func (db *MongoDbBridge) epochListOptions(count int32) *options.FindOptions {
 	}
 
 	// sort with the direction we want
-	opt.SetSort(bson.D{{fiEpochEndTime, sd}})
+	opt.SetSort(bson.D{{Key: fiEpochEndTime, Value: sd}})
 
 	// prep the loading limit
 	var limit = int64(count)

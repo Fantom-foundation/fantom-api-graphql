@@ -21,11 +21,11 @@ func (db *MongoDbBridge) initErc20TrxCollection(col *mongo.Collection) {
 	ix := make([]mongo.IndexModel, 0)
 
 	// index specific elements
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiErc20TransactionToken, 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiErc20TransactionSender, 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiErc20TransactionRecipient, 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiErc20TransactionOrdinal, -1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{types.FiErc20TransactionStamp, -1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiErc20TransactionToken, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiErc20TransactionSender, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiErc20TransactionRecipient, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiErc20TransactionOrdinal, Value: -1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiErc20TransactionStamp, Value: -1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
@@ -63,9 +63,9 @@ func (db *MongoDbBridge) AddERC20Transaction(trx *types.Erc20Transaction) error 
 func (db *MongoDbBridge) isErcTransactionKnown(col *mongo.Collection, trx *types.Erc20Transaction) bool {
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{types.FiErc20TransactionPk, trx.Pk()},
+		{Key: types.FiErc20TransactionPk, Value: trx.Pk()},
 	}, options.FindOne().SetProjection(bson.D{
-		{types.FiErc20TransactionPk, true},
+		{Key: types.FiErc20TransactionPk, Value: true},
 	}))
 
 	// error on lookup?
@@ -136,20 +136,20 @@ func (db *MongoDbBridge) ercTrxListCollectRangeMarks(col *mongo.Collection, list
 		// get the highest available pk
 		list.First, err = db.ercTrxListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{types.FiErc20TransactionOrdinal, -1}}))
+			options.FindOne().SetSort(bson.D{{Key: types.FiErc20TransactionOrdinal, Value: -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available pk
 		list.First, err = db.ercTrxListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{types.FiErc20TransactionOrdinal, 1}}))
+			options.FindOne().SetSort(bson.D{{Key: types.FiErc20TransactionOrdinal, Value: 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.ercTrxListBorderPk(col,
-			bson.D{{types.FiErc20TransactionPk, *cursor}},
+			bson.D{{Key: types.FiErc20TransactionPk, Value: *cursor}},
 			options.FindOne())
 	}
 
@@ -172,7 +172,7 @@ func (db *MongoDbBridge) ercTrxListBorderPk(col *mongo.Collection, filter bson.D
 	}
 
 	// make sure we pull only what we need
-	opt.SetProjection(bson.D{{types.FiErc20TransactionOrdinal, true}})
+	opt.SetProjection(bson.D{{Key: types.FiErc20TransactionOrdinal, Value: true}})
 
 	// try to decode
 	sr := col.FindOne(context.Background(), filter, opt)
@@ -188,15 +188,15 @@ func (db *MongoDbBridge) ercTrxListFilter(cursor *string, count int32, list *typ
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiErc20TransactionOrdinal, Value: bson.D{{"$lte", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiErc20TransactionOrdinal, Value: bson.D{{Key: "$lte", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiErc20TransactionOrdinal, Value: bson.D{{"$gte", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiErc20TransactionOrdinal, Value: bson.D{{Key: "$gte", Value: list.First}}})
 		}
 	} else {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiErc20TransactionOrdinal, Value: bson.D{{"$lt", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiErc20TransactionOrdinal, Value: bson.D{{Key: "$lt", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiErc20TransactionOrdinal, Value: bson.D{{"$gt", list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: types.FiErc20TransactionOrdinal, Value: bson.D{{Key: "$gt", Value: list.First}}})
 		}
 	}
 	// return the new filter
@@ -216,7 +216,7 @@ func (db *MongoDbBridge) ercTrxListOptions(count int32) *options.FindOptions {
 	}
 
 	// sort with the direction we want
-	opt.SetSort(bson.D{{types.FiErc20TransactionOrdinal, sd}})
+	opt.SetSort(bson.D{{Key: types.FiErc20TransactionOrdinal, Value: sd}})
 
 	// prep the loading limit
 	var limit = int64(count)
