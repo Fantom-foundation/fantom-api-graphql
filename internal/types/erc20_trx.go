@@ -14,7 +14,7 @@ import (
 const (
 	FiErc20TransactionPk        = "_id"
 	FiErc20TransactionOrdinal   = "orx"
-	FiErc20TransactionToken     = "erc"
+	FiErc20TransactionToken     = "tok"
 	FiErc20TransactionSender    = "from"
 	FiErc20TransactionRecipient = "to"
 	FiErc20TransactionType      = "type"
