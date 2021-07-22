@@ -5,6 +5,7 @@ import (
 	"context"
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -309,4 +310,32 @@ func (db *MongoDbBridge) Erc20Transactions(cursor *string, count int32, filter *
 		}
 	}
 	return list, nil
+}
+
+// Erc20Assets provides list of unique token addresses linked by transactions to the given owner address.
+func (db *MongoDbBridge) Erc20Assets(owner common.Address, count int32) ([]common.Address, error) {
+	// nothing to load?
+	if count <= 1 {
+		return nil, fmt.Errorf("nothing to do, zero erc assets requested")
+	}
+
+	// get the collection and context
+	col := db.client.Database(db.dbName).Collection(colErcTransactions)
+	refs, err := col.Distinct(context.Background(), types.FiErc20TransactionToken, bson.D{
+		{Key: "$or", Value: bson.A{
+			bson.D{{Key: "from", Value: owner.String()}},
+			bson.D{{Key: "to", Value: owner.String()}},
+		}},
+	})
+	if err != nil {
+		db.log.Errorf("can not pull assets for %s; %s", owner.String(), err.Error())
+		return nil, err
+	}
+
+	// prep the output array
+	res := make([]common.Address, len(refs))
+	for i, a := range refs {
+		res[i] = common.HexToAddress(a.(string))
+	}
+	return res, nil
 }
