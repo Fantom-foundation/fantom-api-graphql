@@ -113,7 +113,7 @@ func (del Delegation) PendingRewards() (types.PendingRewards, error) {
 
 // ClaimedReward resolves the total amount of rewards received on the delegation.
 func (del Delegation) ClaimedReward() (hexutil.Big, error) {
-	val, err := repository.R().RewardsClaimed(&del.Address, (*big.Int)(del.Delegation.ToStakerId))
+	val, err := repository.R().RewardsClaimed(&del.Address, (*big.Int)(del.Delegation.ToStakerId), nil, nil)
 	if err != nil {
 		return hexutil.Big{}, err
 	}

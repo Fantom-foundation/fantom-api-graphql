@@ -149,6 +149,15 @@ type ApiResolver interface {
 		Amount  *hexutil.Uint64
 	}) (EstimatedRewards, error)
 
+	// SfcRewardsCollectedAmount resolves the amount of collected rewards
+	// based on provided filtering criteria.
+	SfcRewardsCollectedAmount(struct {
+		Delegator *common.Address
+		Staker    *hexutil.Big
+		Since     *hexutil.Uint64
+		Until     *hexutil.Uint64
+	}) (hexutil.Big, error)
+
 	// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
 	SendTransaction(*struct{ Tx hexutil.Bytes }) (*Transaction, error)
 
