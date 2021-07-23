@@ -293,7 +293,7 @@ type Repository interface {
 
 	// RewardsClaimed returns the sum of all the claimed rewards
 	// for the given delegator address and validator ID.
-	RewardsClaimed(adr *common.Address, valId *big.Int) (*big.Int, error)
+	RewardsClaimed(adr *common.Address, valId *big.Int, since *int64, until *int64) (*big.Int, error)
 
 	// RewardClaims provides list of reward claims for the given criteria.
 	RewardClaims(*common.Address, *big.Int, *string, int32) (*types.RewardClaimsList, error)

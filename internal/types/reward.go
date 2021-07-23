@@ -16,7 +16,7 @@ const (
 	FiRewardClaimOrdinal     = "orx"
 	FiRewardClaimAddress     = "addr"
 	FiRewardClaimToValidator = "to"
-	FiRewardClaimedValue     = "val"
+	FiRewardClaimedValue     = "value"
 	FiRewardClaimedTimeStamp = "stamp"
 )
 
