@@ -1792,6 +1792,11 @@ type Query {
     # If you provide both, the address takes precedence and the amount is ignored.
     estimateRewards(address:Address, amount:Long):EstimatedRewards!
 
+    # sfcRewardsCollectedAmount provides an amount of rewards collected based on given
+    # filtering options, which are all optional. If no filter option is passed,
+    # the total amount of collected rewards is being presented.
+    sfcRewardsCollectedAmount(delegator: Address, staker: BigInt, since: Long, until: Long): BigInt!
+
     # defiConfiguration exposes the current DeFi contract setup.
     defiConfiguration:DefiSettings!
 
