@@ -55,6 +55,9 @@ func newLogsDispatcher(buffer chan *eventTrxLog, repo Repository, log logger.Log
 			/* SFC1::DeactivatedStake(uint256 indexed stakerID) */
 			common.HexToHash("0xf7c308d0d978cce3aec157d1b34e355db4636b4e71ce91b4f5ec9e7a4f5cdc60"): handleSfc1DeactivatedStake,
 
+			/* SFC1::PreparedToWithdrawStake(uint256 indexed stakerID) */
+			common.HexToHash("0x84244546a9da4942f506db48ff90ebc240c73bb399e3e47d58843c6bb60e7185"): handleSfc1DeactivatedStake,
+
 			/* SFC1::DeactivatedDelegation(address indexed delegator, uint256 indexed stakerID) */
 			common.HexToHash("0x912c4125a208704a342cbdc4726795d26556b0170b7fc95bc706d5cb1f506469"): handleSfc1DeactivatedDelegation,
 

@@ -195,7 +195,7 @@ func handleSfc1UnstashedReward(log *retypes.Log, ld *logsDispatcher) {
 	}
 
 	// extract the basic info about the request
-	addr := common.BytesToAddress(log.Topics[2].Bytes())
+	addr := common.BytesToAddress(log.Topics[1].Bytes())
 	amo := new(big.Int).SetBytes(log.Data[:32])
 
 	// debug the event
