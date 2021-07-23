@@ -49,6 +49,9 @@ func newLogsDispatcher(buffer chan *eventTrxLog, repo Repository, log logger.Log
 			/* SFC1::ClaimedValidatorReward(uint256 indexed stakerID, uint256 reward, uint256 fromEpoch, uint256 untilEpoch) */
 			common.HexToHash("0x2ea54c2b22a07549d19fb5eb8e4e48ebe1c653117215e94d5468c5612750d35c"): handleSfc1ClaimedValidatorReward,
 
+			/* SFC1::UnstashedRewards(address indexed auth, address indexed receiver, uint256 rewards) */
+			common.HexToHash("0x80b36a0e929d7e7925087e54acfeecf4c6043e451b9d71ac5e908b66f9e5d126"): handleSfc1UnstashedReward,
+
 			/* SFC1::DeactivatedStake(uint256 indexed stakerID) */
 			common.HexToHash("0xf7c308d0d978cce3aec157d1b34e355db4636b4e71ce91b4f5ec9e7a4f5cdc60"): handleSfc1DeactivatedStake,
 

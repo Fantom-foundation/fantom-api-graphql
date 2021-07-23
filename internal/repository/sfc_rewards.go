@@ -96,7 +96,7 @@ func handleSfcRewardClaim(log *retypes.Log, ld *logsDispatcher, isRestake bool) 
 	amo := new(big.Int).Add(amoA, new(big.Int).SetBytes(log.Data[64:]))
 
 	// debug the event
-	ld.log.Debugf("%s claimed %d in stake to  #%d", addr.String(), amo.Uint64(), valID.ToInt().Uint64())
+	ld.log.Debugf("%s claimed %d in stake to #%d", addr.String(), amo.Uint64(), valID.ToInt().Uint64())
 
 	// add the rewards claim into the repository
 	if err := ld.repo.StoreRewardClaim(&types.RewardClaim{
@@ -154,7 +154,7 @@ func handleSfc1ClaimedDelegationReward(log *retypes.Log, ld *logsDispatcher) {
 	amo := new(big.Int).SetBytes(log.Data[:32])
 
 	// debug the event
-	ld.log.Debugf("%s claimed %d in stake to  #%d", addr.String(), amo.Uint64(), valID.ToInt().Uint64())
+	ld.log.Debugf("%s claimed %d in stake to #%d", addr.String(), amo.Uint64(), valID.ToInt().Uint64())
 
 	// add the rewards claim into the repository
 	if err := ld.repo.StoreRewardClaim(&types.RewardClaim{
@@ -174,6 +174,44 @@ func handleSfc1ClaimedDelegationReward(log *retypes.Log, ld *logsDispatcher) {
 		return ld.makeAdHocDelegation(log, &addr, valID, amo)
 	}); err != nil {
 		ld.log.Errorf("failed to update delegation; %s", err.Error())
+	}
+}
+
+// handleSfc1UnstashedReward handles rewards un-stash request event.
+// event UnstashedRewards(address indexed auth, address indexed receiver, uint256 rewards)
+func handleSfc1UnstashedReward(log *retypes.Log, ld *logsDispatcher) {
+	// sanity check for data (1x uint256 = 1x32 bytes)
+	if len(log.Data) != 32 {
+		ld.log.Criticalf("%s log invalid data length; expected 32 bytes, given %d bytes", log.TxHash.String(), len(log.Data))
+		return
+	}
+
+	// get the block
+	blk := hexutil.Uint64(log.BlockNumber)
+	block, err := ld.repo.BlockByNumber(&blk)
+	if err != nil {
+		ld.log.Errorf("can not decode delegation log record; %s", err.Error())
+		return
+	}
+
+	// extract the basic info about the request
+	addr := common.BytesToAddress(log.Topics[2].Bytes())
+	amo := new(big.Int).SetBytes(log.Data[:32])
+
+	// debug the event
+	ld.log.Debugf("%s un-stashed %d from SFC", addr.String(), amo.Uint64())
+
+	// add the rewards claim into the repository
+	if err := ld.repo.StoreRewardClaim(&types.RewardClaim{
+		Delegator:     addr,
+		ToValidatorId: (hexutil.Big)(*new(big.Int)),
+		Claimed:       block.TimeStamp,
+		ClaimTrx:      log.TxHash,
+		Amount:        (hexutil.Big)(*amo),
+		IsDelegated:   false,
+	}); err != nil {
+		ld.log.Criticalf("can not store rewards un-stash; %s", err.Error())
+		return
 	}
 }
 
@@ -206,7 +244,7 @@ func handleSfc1ClaimedValidatorReward(log *retypes.Log, ld *logsDispatcher) {
 	}
 
 	// debug the event
-	ld.log.Debugf("%s claimed %d in stake to  #%d", val.String(), amo.Uint64(), valID.ToInt().Uint64())
+	ld.log.Debugf("%s claimed %d in stake to #%d", val.String(), amo.Uint64(), valID.ToInt().Uint64())
 
 	// add the rewards claim into the repository
 	if err := ld.repo.StoreRewardClaim(&types.RewardClaim{
