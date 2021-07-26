@@ -269,7 +269,7 @@ func (or *orchestrator) scheduleRescan() {
 	// calculate delay duration of this re-scan
 	// we increase delay between re-scans so we don't consume too much resources
 	// if the Lachesis is dropping subscriptions but is still available for RPC calls
-	var dur = time.Duration(or.reScanCounter*5) * time.Second
+	var dur = time.Duration(or.reScanCounter*10) * time.Second
 	or.log.Warningf("re-scan scheduled after %d seconds", dur)
 
 	// wait for either stop signal, or blockScanner to finish

@@ -127,7 +127,14 @@ func (bm *blockMonitor) monitor() {
 			bm.reScan <- true
 			return
 
-		case blk := <-bm.blkChan:
+		case blk, ok := <-bm.blkChan:
+			// do we have a working channel?
+			if !ok {
+				bm.log.Notice("block monitor subscription has been lost")
+				bm.reScan <- true
+				return
+			}
+
 			// log the action
 			bm.log.Debugf("new block #%d arrived", uint64(blk.Number))
 
