@@ -89,8 +89,8 @@ type FLendDeposit struct {
 	// deposit amount
 	Amount hexutil.Big
 
-	// referal code
-	ReferalCode int32
+	// referral code
+	ReferralCode int32
 
 	// time of deposit
 	Timestamp hexutil.Uint64
@@ -117,8 +117,8 @@ type FLendBorrow struct {
 	// borrow rate
 	BorrowRate int32
 
-	// referal code
-	ReferalCode int32
+	// referral code
+	ReferralCode int32
 
 	// time of deposit
 	Timestamp hexutil.Uint64

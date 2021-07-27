@@ -12,15 +12,32 @@ import (
 )
 
 const (
-	FiDelegationPk                 = "_id"
-	FiDelegationOrdinal            = "orx"
-	FiDelegationAddress            = "adr"
-	FiDelegationToValidator        = "to"
-	FiDelegationTransaction        = "trx"
+	// FiDelegationPk defines primary key column of the delegation table.
+	FiDelegationPk = "_id"
+
+	// FiDelegationOrdinal defines ordinal index column of the delegation table.
+	FiDelegationOrdinal = "orx"
+
+	// FiDelegationAddress defines delegation address column of the delegation table.
+	FiDelegationAddress = "adr"
+
+	// FiDelegationToValidator defines id of the validator column of the delegation table.
+	FiDelegationToValidator = "to"
+
+	// FiDelegationTransaction defines transaction has column of the delegation table.
+	FiDelegationTransaction = "trx"
+
+	// FiDelegationToValidatorAddress defines validator address column of the delegation table.
 	FiDelegationToValidatorAddress = "toad"
-	FiDelegationAmountActive       = "act"
-	FiDelegationValue              = "val"
-	FiDelegationStamp              = "stamp"
+
+	// FiDelegationAmountActive defines amount delegated column of the delegation table.
+	FiDelegationAmountActive = "act"
+
+	// FiDelegationValue defines value of the delegation column of the delegation table.
+	FiDelegationValue = "val"
+
+	// FiDelegationStamp defines time stamp column of the delegation table.
+	FiDelegationStamp = "stamp"
 )
 
 // Delegation represents a delegator in Opera blockchain.
