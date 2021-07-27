@@ -127,31 +127,36 @@ func (ftm *FtmBridge) isValidStakerInfo(info *types.StakerInfo) bool {
 	}
 
 	// check the logo URL
-	if nil != info.LogoUrl && 0 < len(*info.LogoUrl) {
-		u, err := url.ParseRequestURI(*info.LogoUrl)
-		if err != nil || u.Scheme != "https" {
-			ftm.log.Error("staker logo URL not valid")
-			return false
-		}
+	if !isValidStakerInfoUrl(info.LogoUrl, true) {
+		ftm.log.Error("staker logo URL not valid")
+		return false
 	}
 
 	// check the website
-	if nil != info.Website && 0 < len(*info.Website) {
-		u, err := url.ParseRequestURI(*info.Website)
-		if err != nil || u.Scheme == "" {
-			ftm.log.Error("staker website URL not valid")
-			return false
-		}
+	if !isValidStakerInfoUrl(info.Website, false) {
+		ftm.log.Error("staker website URL not valid")
+		return false
 	}
 
 	// check the contact URL
-	if nil != info.Contact && 0 < len(*info.Contact) {
-		u, err := url.ParseRequestURI(*info.Contact)
-		if err != nil || u.Scheme == "" {
-			ftm.log.Error("staker contact URL not valid")
-			return false
-		}
+	if !isValidStakerInfoUrl(info.Contact, false) {
+		ftm.log.Error("staker contact URL not valid")
+		return false
+	}
+	return true
+}
+
+// isValidStakerInfoUrl validates the given URL address from the staker info.
+func isValidStakerInfoUrl(addr *string, reqHttps bool) bool {
+	// do we even have an URL; it's ok if not
+	if nil == addr || 0 == len(*addr) {
+		return true
 	}
 
+	// try to decode the address
+	u, err := url.ParseRequestURI(*addr)
+	if err != nil || u.Scheme == "" || (reqHttps && u.Scheme != "https") {
+		return false
+	}
 	return true
 }

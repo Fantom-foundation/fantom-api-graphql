@@ -36,7 +36,7 @@ func (ftm *FtmBridge) DefiTokens() ([]types.DefiToken, error) {
 	return ftm.defiTokensList(contract)
 }
 
-// defiTokenList creates a list of addresses / identifiers of all the ERC20 tokens
+// DefiTokenList creates a list of addresses / identifiers of all the ERC20 tokens
 // involved with the fMint protocol.
 func (ftm *FtmBridge) DefiTokenList() ([]common.Address, error) {
 	// connect the contract

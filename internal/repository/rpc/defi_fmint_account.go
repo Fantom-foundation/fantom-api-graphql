@@ -167,7 +167,7 @@ func (ftm *FtmBridge) FMintTokenValue(owner *common.Address, token *common.Addre
 	return hexutil.Big(*value), nil
 }
 
-// DefiTokenPrice loads the current price of the given token from on-chain price oracle.
+// FMintTokenPrice loads the current price of the given token from on-chain price oracle.
 func (ftm *FtmBridge) FMintTokenPrice(token *common.Address) (hexutil.Big, error) {
 	// get the price oracle address
 	oracle, err := ftm.fMintCfg.priceOracleProxyContract()

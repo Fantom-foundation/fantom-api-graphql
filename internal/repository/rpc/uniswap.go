@@ -27,7 +27,7 @@ import (
 //go:generate tools/abigen.sh --abi ./contracts/abi/uniswap-pair.abi --pkg contracts --type UniswapPair --out ./contracts/uniswap_pair.go
 //go:generate tools/abigen.sh --abi ./contracts/abi/uniswap-router.abi --pkg contracts --type UniswapRouter --out ./contracts/uniswap_router.go
 
-// UniswapPairs returns list of all token pairs managed by Uniswap core.
+// NativeTokenAddress returns an address of native token.
 func (ftm *FtmBridge) NativeTokenAddress() (*common.Address, error) {
 	// get the router contract if possible
 	contract, err := contracts.NewUniswapRouter(ftm.uniswapConfig.Router, ftm.eth)
@@ -39,7 +39,7 @@ func (ftm *FtmBridge) NativeTokenAddress() (*common.Address, error) {
 	// get the native token address
 	adr, err := contract.WETH(nil)
 	if err != nil {
-		ftm.log.Errorf("Unative token address not available; %s", err.Error())
+		ftm.log.Errorf("Native token address not available; %s", err.Error())
 		return nil, err
 	}
 

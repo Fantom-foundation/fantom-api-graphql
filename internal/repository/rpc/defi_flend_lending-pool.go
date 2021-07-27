@@ -63,7 +63,7 @@ func (ftm *FtmBridge) FLendGetLendingPoolReserveData(assetAddress *common.Addres
 
 	rdt := &types.ReserveData{
 		AssetAddress:                *assetAddress,
-		ID:                          int32(byte(rd.Id)),
+		ID:                          int32(rd.Id),
 		Configuration:               hexutil.Big(*rd.Configuration.Data),
 		LiquidityIndex:              hexutil.Big(*rd.LiquidityIndex),
 		VariableBorrowIndex:         hexutil.Big(*rd.VariableBorrowIndex),
@@ -134,15 +134,14 @@ func (ftm *FtmBridge) FLendGetUserAccountData(userAddress *common.Address) (*typ
 
 // FLendGetUserDepositHistory resolves deposit event history data for specified user and asset address
 func (ftm *FtmBridge) FLendGetUserDepositHistory(userAddress *common.Address, assetAddress *common.Address) ([]*types.FLendDeposit, error) {
-
 	// create user filter
-	userFilter := []common.Address{}
+	userFilter := make([]common.Address, 0)
 	if userAddress != nil {
 		userFilter = append(userFilter, *userAddress)
 	}
 
 	// create asset filter
-	assetFilter := []common.Address{}
+	assetFilter := make([]common.Address, 0)
 	if assetAddress != nil {
 		assetFilter = append(assetFilter, *assetAddress)
 	}
@@ -161,7 +160,7 @@ func (ftm *FtmBridge) FLendGetUserDepositHistory(userAddress *common.Address, as
 		return nil, err
 	}
 
-	// results arrray
+	// results array
 	depositArray := make([]*types.FLendDeposit, 0)
 
 	// iterate thru filtered logs
@@ -180,7 +179,7 @@ func (ftm *FtmBridge) FLendGetUserDepositHistory(userAddress *common.Address, as
 			UserAddress:       fdi.Event.User,
 			OnBehalfOfAddress: fdi.Event.OnBehalfOf,
 			Amount:            hexutil.Big(*fdi.Event.Amount),
-			ReferalCode:       int32(byte(fdi.Event.Referral)),
+			ReferralCode:      int32(byte(fdi.Event.Referral)),
 			Timestamp:         blk.TimeStamp,
 		})
 	}
