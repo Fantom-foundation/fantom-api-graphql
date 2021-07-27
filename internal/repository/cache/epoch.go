@@ -35,7 +35,7 @@ func (b *MemBridge) PullEpoch(id *hexutil.Uint64) *types.Epoch {
 	return ep
 }
 
-// PushLastEpoch stores provided latest sealed Epoch in the in-memory cache.
+// PushEpoch stores provided Epoch in the in-memory cache.
 func (b *MemBridge) PushEpoch(ep *types.Epoch) {
 	// we need valid account
 	if nil == ep {

@@ -17,7 +17,7 @@ func uniswapPairTokensKey(pair *common.Address) string {
 	return sb.String()
 }
 
-// PushGovernanceTotalWeight stores governance total weight information
+// PushUniswapPairTokens stores uniswap tokens pair information
 // in the in-memory cache.
 func (b *MemBridge) PushUniswapPairTokens(pair *common.Address, tl []common.Address) {
 	// nothing to store or bad data?

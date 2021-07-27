@@ -26,7 +26,7 @@ func contractId(addr *common.Address) string {
 // PullContract extracts smart contract information from the in-memory cache if available.
 func (b *MemBridge) PullContract(addr *common.Address) *types.Contract {
 	// try to get the account data from the cache
-	data, err := b.cache.Get(contractId((*common.Address)(addr)))
+	data, err := b.cache.Get(contractId(addr))
 	if err != nil {
 		// cache returns ErrEntryNotFound if the key does not exist
 		return nil
@@ -42,7 +42,7 @@ func (b *MemBridge) PullContract(addr *common.Address) *types.Contract {
 	return sc
 }
 
-// PushAccount stores provided account in the in-memory cache.
+// PushContract stores provided contract in the in-memory cache.
 func (b *MemBridge) PushContract(sc *types.Contract) error {
 	// we need valid account
 	if nil == sc {
