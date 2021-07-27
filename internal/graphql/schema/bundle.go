@@ -13,7 +13,7 @@ type DailyTrxVolume {
     # by the network on the day.
     volume: Int!
 
-    # amount represents the total value of native tokens transfered
+    # amount represents the total value of native tokens transferred
     # by the network on the day. Please note this includes only direct
     # token transfers.
     amount: BigInt!
@@ -1369,16 +1369,15 @@ type FLendDeposit {
 	# deposit amount
 	amount: BigInt!
 
-	# referal code
-	referalCode: Int!
+	# referral code
+	referralCode: Int!
 
     # time of deposit
     timestamp: Long!
 }
 
-# FLendBorrow represents a lendingpool borrow event data.
+# FLendBorrow represents a lending pool borrow event data.
 type FLendBorrow {
-
     # address of the asset
 	assetAddress: Address!
 
@@ -1397,8 +1396,8 @@ type FLendBorrow {
     # borrow rate
     borrowRate: Int!
 
-	# referal code
-	referalCode: Int!
+	# referral code
+	referralCode: Int!
 
     # time of deposit
     timestamp: Long!

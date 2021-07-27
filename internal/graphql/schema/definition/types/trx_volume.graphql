@@ -9,7 +9,7 @@ type DailyTrxVolume {
     # by the network on the day.
     volume: Int!
 
-    # amount represents the total value of native tokens transfered
+    # amount represents the total value of native tokens transferred
     # by the network on the day. Please note this includes only direct
     # token transfers.
     amount: BigInt!

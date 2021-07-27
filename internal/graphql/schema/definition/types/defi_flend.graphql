@@ -102,16 +102,15 @@ type FLendDeposit {
 	# deposit amount
 	amount: BigInt!
 
-	# referal code
-	referalCode: Int!
+	# referral code
+	referralCode: Int!
 
     # time of deposit
     timestamp: Long!
 }
 
-# FLendBorrow represents a lendingpool borrow event data.
+# FLendBorrow represents a lending pool borrow event data.
 type FLendBorrow {
-
     # address of the asset
 	assetAddress: Address!
 
@@ -130,8 +129,8 @@ type FLendBorrow {
     # borrow rate
     borrowRate: Int!
 
-	# referal code
-	referalCode: Int!
+	# referral code
+	referralCode: Int!
 
     # time of deposit
     timestamp: Long!
