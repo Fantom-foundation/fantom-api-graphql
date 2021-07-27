@@ -133,7 +133,7 @@ func (sws *uniswapScanner) getUniswapBlock(blockNr uint64, actualBlock *types.Bl
 	return blk
 }
 
-// processSwaps loops thru filtered swaps and adds them into the chanel for processing
+// processSwaps loops thru filtered swaps and adds them into the channel for processing
 func (sws *uniswapScanner) processSwaps(contract *contracts.UniswapPair, pair *common.Address, filter *bind.FilterOpts) uint64 {
 	var (
 		swap      *types.Swap

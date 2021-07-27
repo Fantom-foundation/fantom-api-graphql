@@ -31,6 +31,7 @@ type DefiTimeVolume struct {
 	Value       hexutil.Big
 }
 
+// DefiTimeReserve represents the time reserve on a given Uniswap pair.
 type DefiTimeReserve struct {
 	types.DefiTimeReserve
 	*UniswapPair
@@ -81,7 +82,7 @@ func (rs *rootResolver) DefiUniswapAmountsOut(args *struct {
 	return repository.R().UniswapAmountsOut(args.AmountIn, args.Tokens)
 }
 
-// DefiUniswapAmountsOut resolves a list of input amounts for the given
+// DefiUniswapAmountsIn resolves a list of input amounts for the given
 // output amount and a list of tokens to be used to make the swap operation.
 func (rs *rootResolver) DefiUniswapAmountsIn(args *struct {
 	AmountOut hexutil.Big
@@ -378,8 +379,7 @@ func (up *UniswapPair) TotalSupply() (hexutil.Big, error) {
 	return repository.R().Erc20TotalSupply(&up.PairAddress)
 }
 
-// TotalSupply resolves the total amount of pair tokens, e.g. the share pool
-// of the given Uniswap pair.
+// ShareOf resolves the total amount of a share of the given user on the given Uniswap pair.
 func (up *UniswapPair) ShareOf(args *struct{ User common.Address }) (hexutil.Big, error) {
 	return repository.R().Erc20BalanceOf(&up.PairAddress, &args.User)
 }
@@ -389,9 +389,9 @@ func (up *UniswapPair) LastKValue() (hexutil.Big, error) {
 	return repository.R().UniswapLastKValue(&up.PairAddress)
 }
 
-func checkDate(tdate *int32) int64 {
-	if tdate != nil {
-		return (int64)(*tdate)
+func checkDate(td *int32) int64 {
+	if td != nil {
+		return (int64)(*td)
 	}
 	return 0
 }

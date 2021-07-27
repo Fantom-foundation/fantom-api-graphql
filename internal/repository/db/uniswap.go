@@ -383,25 +383,25 @@ func (db *MongoDbBridge) UniswapVolume(pairAddress *common.Address, fromTime int
 	if err != nil {
 		db.log.Errorf("Can not get swap volumes: %s", err.Error())
 		return def, err
-	} else {
-		// make sure to close the cursor
-		defer func() {
-			if err := cursor.Close(context.Background()); err != nil {
-				db.log.Errorf("can not close cursor; %s", err.Error())
-			}
-		}()
+	}
 
-		// get result and fill return data
-		for cursor.Next(context.Background()) {
-			var val Volume
-			err := cursor.Decode(&val)
-			if err != nil {
-				fmt.Println(err.Error())
-			}
-
-			v := returnDecimals(big.NewInt(val.Total))
-			def.Volume = v
+	// make sure to close the cursor
+	defer func() {
+		if err := cursor.Close(context.Background()); err != nil {
+			db.log.Errorf("can not close cursor; %s", err.Error())
 		}
+	}()
+
+	// get result and fill return data
+	for cursor.Next(context.Background()) {
+		var val Volume
+		err := cursor.Decode(&val)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+		v := returnDecimals(big.NewInt(val.Total))
+		def.Volume = v
 	}
 
 	return def, nil
@@ -446,27 +446,27 @@ func (db *MongoDbBridge) UniswapTimeVolumes(pairAddress *common.Address, resolut
 	if err != nil {
 		db.log.Errorf(err.Error())
 		return list, nil
-	} else {
-		defer func() {
-			if err := cursor.Close(context.Background()); err != nil {
-				db.log.Errorf("can not close cursor; %s", err.Error())
-			}
-		}()
+	}
 
-		// iterate thru results and construct data
-		for cursor.Next(context.Background()) {
-			var val Volume
-			err := cursor.Decode(&val)
-			if err != nil {
-				db.log.Errorf(err.Error())
-			}
-			def := types.DefiSwapVolume{
-				PairAddress: pairAddress,
-				Volume:      returnDecimals(big.NewInt(val.Total)),
-				DateString:  val.ID,
-			}
-			list = append(list, def)
+	defer func() {
+		if err := cursor.Close(context.Background()); err != nil {
+			db.log.Errorf("can not close cursor; %s", err.Error())
 		}
+	}()
+
+	// iterate thru results and construct data
+	for cursor.Next(context.Background()) {
+		var val Volume
+		err := cursor.Decode(&val)
+		if err != nil {
+			db.log.Errorf(err.Error())
+		}
+		def := types.DefiSwapVolume{
+			PairAddress: pairAddress,
+			Volume:      returnDecimals(big.NewInt(val.Total)),
+			DateString:  val.ID,
+		}
+		list = append(list, def)
 	}
 
 	return list, nil
@@ -588,23 +588,23 @@ func (db *MongoDbBridge) UniswapTimePrices(pairAddress *common.Address, resoluti
 	if err != nil {
 		db.log.Errorf(err.Error())
 		return list, nil
-	} else {
-		defer func() {
-			if err := cursor.Close(context.Background()); err != nil {
-				db.log.Errorf("can not close cursor; %s", err.Error())
-			}
-		}()
+	}
 
-		// iterate thru results and construct data
-		for cursor.Next(context.Background()) {
-			var priceVal types.DefiTimePrice
-			err := cursor.Decode(&priceVal)
-			if err != nil {
-				db.log.Errorf(err.Error())
-			}
-			priceVal.PairAddress = *pairAddress
-			list = append(list, priceVal)
+	defer func() {
+		if err := cursor.Close(context.Background()); err != nil {
+			db.log.Errorf("can not close cursor; %s", err.Error())
 		}
+	}()
+
+	// iterate thru results and construct data
+	for cursor.Next(context.Background()) {
+		var priceVal types.DefiTimePrice
+		err := cursor.Decode(&priceVal)
+		if err != nil {
+			db.log.Errorf(err.Error())
+		}
+		priceVal.PairAddress = *pairAddress
+		list = append(list, priceVal)
 	}
 
 	return list, nil
@@ -653,30 +653,30 @@ func (db *MongoDbBridge) UniswapTimeReserves(pairAddress *common.Address, resolu
 	if err != nil {
 		db.log.Errorf(err.Error())
 		return list, nil
-	} else {
-		defer func() {
-			if err := cursor.Close(context.Background()); err != nil {
-				db.log.Errorf("can not close cursor; %s", err.Error())
-			}
-		}()
+	}
 
-		// iterate thru results and construct data
-		for cursor.Next(context.Background()) {
-			var reserveVal TimeReserve
-			err := cursor.Decode(&reserveVal)
-			if err != nil {
-				db.log.Errorf(err.Error())
-			}
-
-			res := types.DefiTimeReserve{
-				Time: reserveVal.Time,
-				ReserveClose: []hexutil.Big{
-					hexutil.Big(*returnDecimals(new(big.Int).SetInt64(reserveVal.Close0))),
-					hexutil.Big(*returnDecimals(new(big.Int).SetInt64(reserveVal.Close1)))},
-			}
-
-			list = append(list, res)
+	defer func() {
+		if err := cursor.Close(context.Background()); err != nil {
+			db.log.Errorf("can not close cursor; %s", err.Error())
 		}
+	}()
+
+	// iterate thru results and construct data
+	for cursor.Next(context.Background()) {
+		var reserveVal TimeReserve
+		err := cursor.Decode(&reserveVal)
+		if err != nil {
+			db.log.Errorf(err.Error())
+		}
+
+		res := types.DefiTimeReserve{
+			Time: reserveVal.Time,
+			ReserveClose: []hexutil.Big{
+				hexutil.Big(*returnDecimals(new(big.Int).SetInt64(reserveVal.Close0))),
+				hexutil.Big(*returnDecimals(new(big.Int).SetInt64(reserveVal.Close1)))},
+		}
+
+		list = append(list, res)
 	}
 
 	return list, nil
