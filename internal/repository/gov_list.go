@@ -15,7 +15,8 @@ import (
 	"time"
 )
 
-// StakesByTotalStaked represents a list of staking sortable by their total staked amount.
+// GovernanceProposalsByStart represents a list of governance proposals
+// sortable by their voting start.
 type GovernanceProposalsByStart []*types.GovernanceProposal
 
 // Len returns size of the proposals list.
