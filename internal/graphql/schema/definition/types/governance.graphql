@@ -113,16 +113,22 @@ type GovernanceProposal {
     minAgreement: BigInt!
 
     # totalWeight represents the total voting weight
-    # of all voters allwed on the proposal. This is effectively
+    # of all voters allowed on the proposal. This is effectively
     # the maximum weight an option can gain if all the voters
     # would favor it with the top value of the scale.
     totalWeight: BigInt!
 
     # votedWeightRatio represents the percentage of the total voting weight
     # already counted towards the proposal options. The ratio increases
-    # as more voters place their votes. If no vote was placed the value is zero,
-    # if all the voters placed their votes aither directly, or over a delegation,
-    # the value is 100.
+    # as more voters place their votes.
+    # The value is normalised to 1 digit precision, to get a percentage
+    # you need to divide the value by 10.
+    # The value is zero if no vote was placed. The value is 1000
+    # if all the voters placed their votes either directly,
+    # or through a vote delegation mechanism.
+    # Please note the value is an estimation. The voting status
+    # does not closely reflect changes in the total voting power,
+    # especially after the voting is closed.
     votedWeightRatio: Int!
 
     # opinionScales is the scale of opinions on available options.
