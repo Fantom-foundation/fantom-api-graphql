@@ -60,6 +60,7 @@ type orchestrator struct {
 	blm *blockMonitor
 	stm *stiMonitor
 	txf *txFlowUpdater
+	gps *gasPriceSuggestionMonitor
 }
 
 // NewOrchestrator creates a new instance of repository orchestrator.
@@ -90,6 +91,7 @@ func newOrchestrator(repo Repository, log logger.Logger, cfg *config.Config) *or
 // init initiates the orchestrator work.
 func (or *orchestrator) init(cfg *config.Config) {
 	// make all the dispatchers first so they can receive and process objects
+	or.gps = newGasPriceSuggestionMonitor(or.repo, or.log, or.wg)
 	or.txd = newTrxDispatcher(or.trxDispatcherQueue, or.repo, or.log, or.wg)
 	or.acd = newAccountDispatcher(or.accountQueue, or.repo, or.log, or.wg)
 	or.uwd = newSwapDispatcher(or.swapDispatcherQueue, or.repo, or.log, or.wg)
@@ -138,6 +140,7 @@ func (or *orchestrator) run() {
 	// finally monitors
 	or.uwm.run()
 	or.txf.run()
+	or.gps.run()
 
 	// stakers info monitor may not be run at all
 	if or.stm != nil {
@@ -182,6 +185,7 @@ func (or *orchestrator) closeServices() {
 	or.blm.close()
 	or.uwm.close()
 	or.txf.close()
+	or.gps.close()
 
 	// signal scanners to close
 	or.bls.close()

@@ -301,11 +301,14 @@ type Repository interface {
 	// Price returns a price information for the given target symbol.
 	Price(sym string) (types.Price, error)
 
-	// GasPrice resolves the current amount of WEI for single Gas.
-	GasPrice() (hexutil.Uint64, error)
+	// GasPrice provides the raw suggested value for the gas price.
+	GasPrice() (hexutil.Big, error)
 
 	// GasPriceExtended provides extended gas price information.
 	GasPriceExtended() (*types.GasPrice, error)
+
+	// StoreGasPricePeriod stores gas price period data into the persistent storage.
+	StoreGasPricePeriod(*types.GasPricePeriod) error
 
 	// GasEstimate calculates the estimated amount of Gas required to perform
 	// transaction described by the input params.

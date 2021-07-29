@@ -22,7 +22,7 @@ const trxLargeInputWall = 32 * 8
 // so it can be stored in database as INT64 without loosing too much data
 var TransactionDecimalsCorrection = new(big.Int).SetUint64(1000000000)
 
-// TransactionGasCorrection is used to restore the precision on the transaction value calculations.
+// TransactionGasCorrection is used to restore the precision on the transaction gas value calculations.
 var TransactionGasCorrection = new(big.Int).SetUint64(10000000)
 
 // Transaction represents a basic information provided by the API about transaction inside Opera blockchain.
