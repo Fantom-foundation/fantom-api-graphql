@@ -26,7 +26,21 @@ func (rs *rootResolver) Price(args *struct{ To string }) (types.Price, error) {
 
 // GasPrice resolves the current amount of WEI for single Gas.
 func (rs *rootResolver) GasPrice() (hexutil.Uint64, error) {
-	return repository.R().GasPrice()
+	// get the actual value
+	price, err := repository.R().GasPrice()
+	if err != nil {
+		return hexutil.Uint64(0), err
+	}
+
+	// if the price safely within the range
+	if !price.ToInt().IsUint64() {
+		rs.log.Error("current gas price is too high and can not be extracted")
+		return hexutil.Uint64(0), err
+	}
+
+	// inform and return
+	rs.log.Debugf("current gas price is %d", price.ToInt().Uint64())
+	return hexutil.Uint64(price.ToInt().Uint64()), nil
 }
 
 // EstimateGas resolves the estimated amount of Gas required to perform

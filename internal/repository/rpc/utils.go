@@ -19,8 +19,8 @@ import (
 	"strings"
 )
 
-// GasPrice resolves the current amount of WEI for single Gas.
-func (ftm *FtmBridge) GasPrice() (hexutil.Uint64, error) {
+// GasPrice pulls the current amount of WEI for single Gas.
+func (ftm *FtmBridge) GasPrice() (hexutil.Big, error) {
 	// keep track of the operation
 	ftm.log.Debugf("checking current gas price")
 
@@ -29,18 +29,10 @@ func (ftm *FtmBridge) GasPrice() (hexutil.Uint64, error) {
 	err := ftm.rpc.Call(&price, "ftm_gasPrice")
 	if err != nil {
 		ftm.log.Error("current gas price could not be obtained")
-		return hexutil.Uint64(0), err
+		return price, err
 	}
 
-	// if the price safely within the range
-	if !price.ToInt().IsUint64() {
-		ftm.log.Error("current gas price is too high and can not be extracted")
-		return hexutil.Uint64(0), err
-	}
-
-	// inform and return
-	ftm.log.Debugf("current gas price is %d", price.ToInt().Uint64())
-	return hexutil.Uint64(price.ToInt().Uint64()), nil
+	return price, nil
 }
 
 // GasEstimate calculates the estimated amount of Gas required to perform

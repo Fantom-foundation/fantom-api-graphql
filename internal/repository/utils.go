@@ -31,8 +31,8 @@ const (
 	pricePullRequestTimeout = 5
 )
 
-// GasPrice resolves the current amount of WEI for single Gas.
-func (p *proxy) GasPrice() (hexutil.Uint64, error) {
+// GasPrice pulls the current amount of WEI for single Gas.
+func (p *proxy) GasPrice() (hexutil.Big, error) {
 	return p.rpc.GasPrice()
 }
 
@@ -45,7 +45,7 @@ func (p *proxy) GasPriceExtended() (*types.GasPrice, error) {
 	}
 
 	// calculate the gas price in Gwei units
-	gWei := math.Round(float64(gp)/float64(10000000)) / 10.0
+	gWei := math.Round(float64(gp.ToInt().Int64())/float64(10000000)) / 10.0
 	return &types.GasPrice{
 		Fast:    gWei,
 		Fastest: gWei,
