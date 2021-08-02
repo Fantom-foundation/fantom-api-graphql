@@ -66,7 +66,7 @@ func (db *MongoDbBridge) initTransactionsCollection(col *mongo.Collection) {
 		db.log.Panicf("can not create indexes for transaction collection; %s", err.Error())
 	}
 
-	// log we done that
+	// log we are done that
 	db.log.Debugf("transactions collection initialized")
 }
 

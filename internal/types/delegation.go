@@ -42,7 +42,7 @@ const (
 
 // Delegation represents a delegator in Opera blockchain.
 type Delegation struct {
-	ID              common.Hash    `json:"id"`
+	ID              string         `json:"id"`
 	Transaction     common.Hash    `json:"trx"`
 	Address         common.Address `json:"address"`
 	ToStakerId      *hexutil.Big   `json:"toStakerID"`
@@ -57,23 +57,7 @@ type Delegation struct {
 	AmountDelegated *hexutil.Big `json:"amountDelegated"`
 }
 
-// BsonDelegation represents the BSON i/o struct for a delegation.
-type BsonDelegation struct {
-	ID     string    `bson:"_id"`
-	Orx    uint64    `bson:"orx"`
-	Trx    string    `bson:"trx"`
-	Addr   string    `bson:"adr"`
-	To     string    `bson:"to"`
-	ToAddr string    `bson:"toad"`
-	CrTime uint64    `bson:"crt"`
-	Staked string    `bson:"amo"`
-	Active string    `bson:"act"`
-	Value  uint64    `bson:"val"`
-	Stamp  time.Time `bson:"stamp"`
-}
-
-// DelegationDecimalsCorrection is used to manipulate precision of a delegation active value
-// so it can be stored in database as UINT64 without loosing too much data
+// DelegationDecimalsCorrection is used to adjust decimal precision of a delegation active value.
 var DelegationDecimalsCorrection = new(big.Int).SetUint64(1000000000)
 
 // OrdinalIndex returns an ordinal index for the given delegation.
@@ -89,8 +73,18 @@ func (dl *Delegation) MarshalBSON() ([]byte, error) {
 	val := new(big.Int).Div(dl.AmountDelegated.ToInt(), DelegationDecimalsCorrection).Uint64()
 
 	// do BSON encoding
-	return bson.Marshal(BsonDelegation{
-		ID:     dl.Transaction.String(),
+	return bson.Marshal(struct {
+		Orx    uint64    `bson:"orx"`
+		Trx    string    `bson:"trx"`
+		Addr   string    `bson:"adr"`
+		To     string    `bson:"to"`
+		ToAddr string    `bson:"toad"`
+		CrTime uint64    `bson:"crt"`
+		Staked string    `bson:"amo"`
+		Active string    `bson:"act"`
+		Value  uint64    `bson:"val"`
+		Stamp  time.Time `bson:"stamp"`
+	}{
 		Orx:    dl.OrdinalIndex(),
 		Trx:    dl.Transaction.String(),
 		Addr:   dl.Address.String(),
@@ -113,13 +107,25 @@ func (dl *Delegation) UnmarshalBSON(data []byte) (err error) {
 	}()
 
 	// try to decode the BSON data
-	var row BsonDelegation
+	var row struct {
+		ID     string    `bson:"_id"`
+		Orx    uint64    `bson:"orx"`
+		Trx    string    `bson:"trx"`
+		Addr   string    `bson:"adr"`
+		To     string    `bson:"to"`
+		ToAddr string    `bson:"toad"`
+		CrTime uint64    `bson:"crt"`
+		Staked string    `bson:"amo"`
+		Active string    `bson:"act"`
+		Value  uint64    `bson:"val"`
+		Stamp  time.Time `bson:"stamp"`
+	}
 	if err = bson.Unmarshal(data, &row); err != nil {
 		return err
 	}
 
 	// transfer values
-	dl.ID = common.HexToHash(row.ID)
+	dl.ID = row.ID
 	dl.Transaction = common.HexToHash(row.Trx)
 	dl.Address = common.HexToAddress(row.Addr)
 	dl.ToStakerId = (*hexutil.Big)(hexutil.MustDecodeBig(row.To))

@@ -71,10 +71,7 @@ func (acd *accountDispatcher) dispatch() {
 
 	// don't forget to sign off after we are done
 	defer func() {
-		// log finish
-		acd.log.Notice("account dispatcher is closed")
-
-		// signal to wait group we are done
+		acd.log.Noticef("%s is closed", acd.name)
 		acd.wg.Done()
 	}()
 

@@ -36,8 +36,8 @@ func (dl *DelegationList) PageInfo() (*ListPageInfo, error) {
 	}
 
 	// get the first and last elements
-	first := Cursor(dl.Collection[0].ID.String())
-	last := Cursor(dl.Collection[len(dl.Collection)-1].ID.String())
+	first := Cursor(dl.Collection[0].ID)
+	last := Cursor(dl.Collection[len(dl.Collection)-1].ID)
 	return NewListPageInfo(&first, &last, !dl.IsEnd, !dl.IsStart)
 }
 
@@ -58,7 +58,7 @@ func (dl *DelegationList) Edges() []*DelegationListEdge {
 
 // Cursor generates the cursor for the current delegation list edge.
 func (dle *DelegationListEdge) Cursor() Cursor {
-	return Cursor(dle.Delegation.ID.String())
+	return Cursor(dle.Delegation.ID)
 }
 
 // DelegationsOf resolves a list of delegations information of a staker.

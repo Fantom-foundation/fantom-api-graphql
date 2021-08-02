@@ -108,10 +108,14 @@ func (sfs *sfcScanner) push(epochID hexutil.Uint64) error {
 		return err
 	}
 
-	// push the epoch for processing?
-	if ep.EndTime > 0 {
-		sfs.epochQueue <- ep
+	// log the epoch
+	if ep.EndTime == 0 {
+		sfs.log.Debugf("epoch %d details not available", epochID)
+		return nil
 	}
+
+	// push the epoch for processing?
+	sfs.epochQueue <- ep
 	return nil
 }
 
@@ -156,10 +160,10 @@ func (sfs *sfcScanner) monitor() {
 	}
 }
 
-// process processes the identified sealed epoch if possible.
+// process the identified sealed epoch if possible.
 func (sfs *sfcScanner) process(epoch *types.Epoch) {
 	// log what we do
-	sfs.log.Debugf("processing epoch #%d", epoch.Id)
+	sfs.log.Noticef("processing epoch #%d", epoch.Id)
 
 	// add the epoch to the database
 	err := sfs.repo.AddEpoch(epoch)

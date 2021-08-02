@@ -119,7 +119,12 @@ func (td *trxDispatcher) process(evt *eventTransaction) {
 	// process transaction logs
 	for _, lg := range evt.trx.Logs {
 		wg.Add(1)
-		td.repo.QueueTrxLog(&lg, &wg)
+		td.repo.QueueLogRecord(&types.LogRecord{
+			WatchDog: &wg,
+			Block:    evt.block,
+			Trx:      evt.trx,
+			Log:      lg,
+		})
 	}
 
 	// store the transaction into the database once the processing is done

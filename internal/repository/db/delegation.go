@@ -46,7 +46,7 @@ func (db *MongoDbBridge) initDelegationCollection(col *mongo.Collection) {
 		db.log.Panicf("can not create indexes for delegation collection; %s", err.Error())
 	}
 
-	// log we done that
+	// log we're done that
 	db.log.Debugf("delegation collection initialized")
 }
 
@@ -63,6 +63,10 @@ func (db *MongoDbBridge) Delegation(addr *common.Address, valID *hexutil.Big) (*
 
 	// do we have the data?
 	if sr.Err() != nil {
+		if sr.Err() == mongo.ErrNoDocuments {
+			db.log.Errorf("delegation %s to #%d not found", addr.String(), valID.ToInt().Uint64())
+			return nil, ErrUnknownDelegation
+		}
 		return nil, sr.Err()
 	}
 
@@ -86,7 +90,7 @@ func (db *MongoDbBridge) AddDelegation(dl *types.Delegation) error {
 
 	// try to do the insert
 	if _, err := col.InsertOne(context.Background(), dl); err != nil {
-		db.log.Critical(err)
+		db.log.Criticalf("can not add delegation %s to %d; %s", dl.Address.String(), dl.ToStakerId.ToInt().Uint64(), err.Error())
 		return err
 	}
 
@@ -129,7 +133,12 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 
 	// do we actually have the document
 	if 0 == er.MatchedCount {
-		return fmt.Errorf("can not update, the delegation not found in database")
+		db.log.Errorf("delegation %s to %d not found", dl.Address.String(), dl.ToStakerId.ToInt().Uint64())
+	}
+
+	// make sure delegation collection is initialized
+	if db.initDelegations != nil {
+		db.initDelegations.Do(func() { db.initDelegationCollection(col); db.initDelegations = nil })
 	}
 	return nil
 }

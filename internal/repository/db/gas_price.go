@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	// colEpochs represents the name of the epochs collection in database.
+	// colEpochs represents the name of the epochs' collection in database.
 	colGasPrice = "gas_price"
 )
 
@@ -29,7 +29,7 @@ func (db *MongoDbBridge) initGasPriceCollection(col *mongo.Collection) {
 		db.log.Panicf("can not create indexes for gas price collection; %s", err.Error())
 	}
 
-	// log we done that
+	// log we are done that
 	db.log.Debugf("gas price collection initialized")
 }
 

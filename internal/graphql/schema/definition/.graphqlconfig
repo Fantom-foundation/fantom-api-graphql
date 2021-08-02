@@ -24,6 +24,10 @@
         "url": "https://xapi3.fantom.network/graphql",
         "introspect": false
       },
+      "xAPI6 Fantom.Network": {
+        "url": "https://xapi6.fantom.network/graphql",
+        "introspect": false
+      },
       "xAPI30 Fantom.Network": {
         "url": "https://xapi30.fantom.network/graphql",
         "introspect": false

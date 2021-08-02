@@ -15,10 +15,10 @@ import (
 	"time"
 )
 
-// colWithdrawals represents the name of the withdrawals collection in database.
+// colWithdrawals represents the name of the withdrawals' collection in database.
 const colWithdrawals = "withdraws"
 
-// initWithdrawalsCollection initializes the withdraw requests collection with
+// initWithdrawalsCollection initializes the withdrawal requests collection with
 // indexes and additional parameters needed by the app.
 func (db *MongoDbBridge) initWithdrawalsCollection(col *mongo.Collection) {
 	// prepare index models
@@ -46,11 +46,11 @@ func (db *MongoDbBridge) initWithdrawalsCollection(col *mongo.Collection) {
 		db.log.Panicf("can not create indexes for withdrawals collection; %s", err.Error())
 	}
 
-	// log we done that
+	// log we are done that
 	db.log.Debugf("withdrawals collection initialized")
 }
 
-// Withdrawal returns details of a withdraw request specified by the request ID.
+// Withdrawal returns details of a withdrawal request specified by the request ID.
 func (db *MongoDbBridge) Withdrawal(addr *common.Address, valID *hexutil.Big, reqID *hexutil.Big) (*types.WithdrawRequest, error) {
 	// get the collection for withdrawals
 	col := db.client.Database(db.dbName).Collection(colWithdrawals)
@@ -62,6 +62,12 @@ func (db *MongoDbBridge) Withdrawal(addr *common.Address, valID *hexutil.Big, re
 		{Key: types.FiWithdrawalRequestID, Value: reqID.String()},
 	})
 
+	// do we know the request?
+	if sr.Err() == mongo.ErrNoDocuments {
+		db.log.Errorf("withdraw request [%s] of %s to #%d not found", reqID.String(), addr.String(), valID.ToInt().Uint64())
+		return nil, sr.Err()
+	}
+
 	// try to decode
 	var wr types.WithdrawRequest
 	if err := sr.Decode(&wr); err != nil {
@@ -70,12 +76,12 @@ func (db *MongoDbBridge) Withdrawal(addr *common.Address, valID *hexutil.Big, re
 	return &wr, nil
 }
 
-// AddWithdrawal stores a withdraw request in the database if it doesn't exist.
+// AddWithdrawal stores a withdrawal request in the database if it doesn't exist.
 func (db *MongoDbBridge) AddWithdrawal(wr *types.WithdrawRequest) error {
 	// get the collection for withdrawals
 	col := db.client.Database(db.dbName).Collection(colWithdrawals)
 
-	// do we already know this withdraw request
+	// do we already know this withdraws request
 	uni, err := db.isUniqueWithdrawRequest(col, wr)
 	if err != nil {
 		db.log.Errorf("can not proceed with withdraw request; %s", err.Error())
@@ -104,17 +110,17 @@ func (db *MongoDbBridge) AddWithdrawal(wr *types.WithdrawRequest) error {
 	return nil
 }
 
-// isUniqueWithdrawRequest checks if the withdraw request is unique
+// isUniqueWithdrawRequest checks if the withdrawal request is unique
 // and if not, it tries to push the existing and closed request to a different ID
 // to keep the history even for repeated requests.
 func (db *MongoDbBridge) isUniqueWithdrawRequest(col *mongo.Collection, wr *types.WithdrawRequest) (bool, error) {
-	// do we already know this withdraw request? if not than let it be saved
+	// do we already know this withdraws request? if not than let it be saved
 	if !db.isWithdrawalKnown(col, wr) {
 		return true, nil
 	}
 
-	// we already know this withdraw request
-	db.log.Infof("known withdraw by %s to %d, request ID %s, by trx %s",
+	// we already know this withdraws request
+	db.log.Infof("known withdraw by %s to #%d, request ID %s, by trx %s",
 		wr.Address.String(),
 		wr.StakerID.ToInt().Uint64(),
 		wr.WithdrawRequestID.String(),
@@ -129,13 +135,13 @@ func (db *MongoDbBridge) isUniqueWithdrawRequest(col *mongo.Collection, wr *type
 	return shifted, nil
 }
 
-// shiftClosedWithdrawRequest updates a request ID of an existing withdraw request to preserve requests
-// history if the withdraw request is already closed.
+// shiftClosedWithdrawRequest updates a request ID of an existing withdrawal request to preserve requests
+// history if the withdrawal request is already closed.
 func (db *MongoDbBridge) shiftClosedWithdrawRequest(col *mongo.Collection, wr *types.WithdrawRequest) (bool, error) {
 	// generate new ID
 	reqID := (*hexutil.Big)(new(big.Int).SetBytes(wr.RequestTrx.Bytes()[:16])).String()
 
-	// try to shift a closed withdraw request to a different reqID by updating it in the database
+	// try to shift a closed withdrawal request to a different reqID by updating it in the database
 	er, err := col.UpdateOne(context.Background(), bson.D{
 		{Key: types.FiWithdrawalAddress, Value: wr.Address.String()},
 		{Key: types.FiWithdrawalToValidator, Value: wr.StakerID.String()},
@@ -143,7 +149,7 @@ func (db *MongoDbBridge) shiftClosedWithdrawRequest(col *mongo.Collection, wr *t
 		{Key: types.FiWithdrawalFinTime, Value: bson.D{{Key: "$exists", Value: true}, {Key: "$ne", Value: nil}}},
 	}, bson.D{{Key: "$set", Value: bson.D{
 		{Key: types.FiWithdrawalRequestID, Value: reqID},
-	}}}, new(options.UpdateOptions).SetUpsert(true))
+	}}})
 	if err != nil {
 		db.log.Criticalf("can not shift withdrawal; %s", err.Error())
 		return false, err
@@ -151,6 +157,7 @@ func (db *MongoDbBridge) shiftClosedWithdrawRequest(col *mongo.Collection, wr *t
 
 	// do we actually have the document updated? if not the request was not closed and can not be shifted safely
 	if 0 == er.MatchedCount {
+		db.log.Criticalf("miss in withdrawal shift of %s to #%d on req %s", wr.Address.String(), wr.StakerID.ToInt().Uint64(), wr.WithdrawRequestID.String())
 		return false, nil
 	}
 

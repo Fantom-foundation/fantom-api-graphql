@@ -95,9 +95,7 @@ func (bm *blockMonitor) monitor() {
 		}
 
 		// log finish
-		bm.log.Notice("block monitor is closed")
-
-		// signal to wait group we are done
+		bm.log.Notice("%s is closed", bm.name)
 		bm.wg.Done()
 	}()
 

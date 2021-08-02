@@ -16,7 +16,6 @@ import (
 	"fantom-api-graphql/internal/repository/rpc"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
-	retypes "github.com/ethereum/go-ethereum/core/types"
 	"golang.org/x/sync/singleflight"
 	"math/big"
 	"sync"
@@ -185,8 +184,8 @@ type Repository interface {
 	// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
 	SendTransaction(hexutil.Bytes) (*types.Transaction, error)
 
-	// QueueTrxLog pushes a transaction log record into the log processing queue.
-	QueueTrxLog(log *retypes.Log, wg *sync.WaitGroup)
+	// QueueLogRecord pushes a transaction log record into the log processing queue.
+	QueueLogRecord(log *types.LogRecord)
 
 	// LastValidatorId returns the last validator id in Opera blockchain.
 	LastValidatorId() (uint64, error)
