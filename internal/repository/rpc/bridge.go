@@ -119,7 +119,7 @@ func (ftm *FtmBridge) DefaultCallOpts() *bind.CallOpts {
 		return &bind.CallOpts{
 			Pending:     false,
 			From:        ftm.sigConfig.Address,
-			BlockNumber: ftm.MustBlockHeight(),
+			BlockNumber: nil,
 			Context:     context.Background(),
 		}, nil
 	})
