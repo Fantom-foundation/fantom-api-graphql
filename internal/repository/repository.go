@@ -28,7 +28,7 @@ import (
 
 // Repository interface defines functions the underlying implementation provides to API resolvers.
 type Repository interface {
-	// Log provides access to the system wide logger.
+	// Log provides access to the system-wide logger.
 	Log() logger.Logger
 
 	// FtmConnection returns open connection to Opera/Lachesis full node.
