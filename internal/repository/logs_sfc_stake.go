@@ -12,76 +12,45 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	retypes "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 )
 
-// makeAdHocDelegation creates a new delegation with unknown initial conditions in case of an attempt
-// to update a non-existent delegation.
-func (ld *logsDispatcher) makeAdHocDelegation(log *retypes.Log, addr *common.Address, valID *hexutil.Big, amo *big.Int) error {
-	// get the block
-	block, err := ld.repo.BlockByNumber((*hexutil.Uint64)(&log.BlockNumber))
-	if err != nil {
-		return err
-	}
-
-	// get staker address
-	val, err := R().ValidatorAddress(valID)
-	if err != nil {
-		return err
-	}
-
-	// do the insert
-	ld.log.Noticef("creating ad-hoc delegation of %s to %d", addr.String(), valID.ToInt().Uint64())
-	return ld.repo.StoreDelegation(&types.Delegation{
-		Transaction:     log.TxHash,
-		Address:         *addr,
-		ToStakerId:      valID,
-		ToStakerAddress: *val,
-		AmountDelegated: (*hexutil.Big)(amo),
-		AmountStaked:    (*hexutil.Big)(amo),
-		CreatedTime:     block.TimeStamp,
-	})
-}
-
 // handleSfcCreatedStake handles a new stake event from SFC v1 and SFC v2 contract.
 // event CreatedStake(uint256 indexed stakerID, address indexed dagSfcAddress, uint256 amount)
-func handleSfcCreatedStake(log *retypes.Log, ld *logsDispatcher) {
+func handleSfcCreatedStake(log *types.LogRecord) {
 	handleNewDelegation(
-		hexutil.Uint64(log.BlockNumber),
-		&log.TxHash,
+		log,
 		new(big.Int).SetBytes(log.Topics[1].Bytes()),
 		common.BytesToAddress(log.Topics[2].Bytes()),
 		new(big.Int).SetBytes(log.Data),
-		ld,
 	)
 }
 
 // handleSfc1IncreasedStake handles a stake increase event from SFC v1 and SFC v2 contract.
 // event IncreasedStake(uint256 indexed stakerID, uint256 newAmount, uint256 diff)
-func handleSfc1IncreasedStake(log *retypes.Log, ld *logsDispatcher) {
+func handleSfc1IncreasedStake(log *types.LogRecord) {
 	// get the validator address
 	valID := (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[1].Bytes()))
 	addr, err := R().ValidatorAddress(valID)
 	if err != nil {
-		ld.log.Errorf("unknown validator #%d; %s", valID.ToInt().Uint64(), err.Error())
+		R().Log().Errorf("unknown validator #%d; %s", valID.ToInt().Uint64(), err.Error())
 		return
 	}
 
 	// update the balance
-	if err := ld.repo.UpdateDelegationBalance(addr, valID, func(amo *big.Int) error {
-		return ld.makeAdHocDelegation(log, addr, valID, amo)
+	if err := R().UpdateDelegationBalance(addr, valID, func(amo *big.Int) error {
+		return makeAdHocDelegation(log, addr, valID, amo)
 	}); err != nil {
-		ld.log.Errorf("failed to update delegation; %s", err.Error())
+		R().Log().Errorf("failed to update delegation; %s", err.Error())
 	}
 }
 
 // handleSfc1WithdrawnStake handles a withdrawal request finalization event from SFC1.
 // event WithdrawnStake(uint256 indexed stakerID, uint256 penalty)
-func handleSfc1WithdrawnStake(log *retypes.Log, ld *logsDispatcher) {
+func handleSfc1WithdrawnStake(log *types.LogRecord) {
 	// sanity check for data (1 uint256 = 32 bytes)
 	if len(log.Data) != 32 {
-		ld.log.Criticalf("%s log invalid data length; expected 32 bytes, %d bytes given, %d topics given", log.TxHash.String(), len(log.Data), len(log.Topics))
+		R().Log().Criticalf("%s log invalid data length; expected 32 bytes, %d bytes given, %d topics given", log.TxHash.String(), len(log.Data), len(log.Topics))
 		return
 	}
 
@@ -89,22 +58,22 @@ func handleSfc1WithdrawnStake(log *retypes.Log, ld *logsDispatcher) {
 	valID := new(big.Int).SetBytes(log.Topics[1].Bytes())
 	addr, err := R().ValidatorAddress((*hexutil.Big)(valID))
 	if err != nil {
-		ld.log.Errorf("unknown validator #%d; %s", valID.Uint64(), err.Error())
+		R().Log().Errorf("unknown validator #%d; %s", valID.Uint64(), err.Error())
 		return
 	}
 
 	// handle request closure
-	handleFinishedWithdrawRequest(*addr, valID, new(big.Int), new(big.Int).SetBytes(log.Data[:]), log, ld)
+	handleFinishedWithdrawRequest(*addr, valID, new(big.Int), new(big.Int).SetBytes(log.Data[:]), log)
 }
 
 // handleSfc1DeactivatedStake handles a validator stake deactivation event
 // so the stake could be withdrawn later, this basically creates a withdraw request on the stake
 // without request ID.
 // DeactivatedStake(uint256 indexed stakerID)
-func handleSfc1DeactivatedStake(log *retypes.Log, ld *logsDispatcher) {
+func handleSfc1DeactivatedStake(log *types.LogRecord) {
 	// sanity check for data
 	if len(log.Data) != 0 {
-		ld.log.Criticalf("%s log invalid data length; expected 0 bytes, %d bytes given, %d topics given", log.TxHash.String(), len(log.Data), len(log.Topics))
+		R().Log().Criticalf("%s log invalid data length; expected 0 bytes, %d bytes given, %d topics given", log.TxHash.String(), len(log.Data), len(log.Topics))
 		return
 	}
 
@@ -112,7 +81,7 @@ func handleSfc1DeactivatedStake(log *retypes.Log, ld *logsDispatcher) {
 	valID := new(big.Int).SetBytes(log.Topics[1].Bytes())
 	addr, err := R().ValidatorAddress((*hexutil.Big)(valID))
 	if err != nil {
-		ld.log.Errorf("unknown validator #%d; %s", valID.Uint64(), err.Error())
+		R().Log().Errorf("unknown validator #%d; %s", valID.Uint64(), err.Error())
 		return
 	}
 
@@ -125,25 +94,26 @@ func handleSfc1DeactivatedStake(log *retypes.Log, ld *logsDispatcher) {
 		/* reqID*/ zero,
 		/* amount */ zero,
 		log,
-		ld,
 	)
 }
 
-// handleSfc1UpdatedStake handles stake update event.
+// handleSfc1UpdatedStake handles stake update event; the event is emitted
+// when a stake and/or delegation amount changes on a validator  account.
 // UpdatedStake(uint256 indexed stakerID, uint256 amount, uint256 delegatedMe)
-func handleSfc1UpdatedStake(log *retypes.Log, ld *logsDispatcher) {
+func handleSfc1UpdatedStake(log *types.LogRecord) {
 	// get the validator address (we handle the stake as self-delegation in SFC3 context)
 	valID := (*hexutil.Big)(new(big.Int).SetBytes(log.Topics[1].Bytes()))
 	addr, err := R().ValidatorAddress(valID)
 	if err != nil {
-		ld.log.Errorf("unknown validator #%d; %s", valID.ToInt().Uint64(), err.Error())
+		R().Log().Errorf("unknown validator #%d; %s", valID.ToInt().Uint64(), err.Error())
 		return
 	}
 
 	// update the balance
-	if err := ld.repo.UpdateDelegationBalance(addr, valID, func(amo *big.Int) error {
-		return ld.makeAdHocDelegation(log, addr, valID, amo)
+	if err := R().UpdateDelegationBalance(addr, valID, func(amo *big.Int) error {
+		R().Log().Criticalf("expected validator %d stake not found at %s", valID.ToInt().Uint64(), log.TxHash.String())
+		return makeAdHocDelegation(log, addr, valID, amo)
 	}); err != nil {
-		ld.log.Errorf("failed to update delegation; %s", err.Error())
+		R().Log().Errorf("failed to update delegation; %s", err.Error())
 	}
 }

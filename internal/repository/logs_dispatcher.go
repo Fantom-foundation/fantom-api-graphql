@@ -2,8 +2,8 @@ package repository
 
 import (
 	"fantom-api-graphql/internal/logger"
+	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
-	retypes "github.com/ethereum/go-ethereum/core/types"
 	"sync"
 )
 
@@ -11,26 +11,20 @@ import (
 // allowed to be queued at a time before queue writer is slowed down
 const logQueueLength = 50000
 
-// eventTrxLog represents a log record to be processed.
-type eventTrxLog struct {
-	wg *sync.WaitGroup
-	retypes.Log
-}
-
 // logsDispatcher implements dispatcher of new log events in the blockchain.
 type logsDispatcher struct {
 	service
-	buffer      chan *eventTrxLog
-	knownTopics map[common.Hash]func(*retypes.Log, *logsDispatcher)
+	buffer      chan *types.LogRecord
+	knownTopics map[common.Hash]func(*types.LogRecord)
 }
 
 // newLogsDispatcher creates a new transaction logs dispatcher instance.
-func newLogsDispatcher(buffer chan *eventTrxLog, repo Repository, log logger.Logger, wg *sync.WaitGroup) *logsDispatcher {
+func newLogsDispatcher(buffer chan *types.LogRecord, repo Repository, log logger.Logger, wg *sync.WaitGroup) *logsDispatcher {
 	// create new dispatcher
 	return &logsDispatcher{
 		service: newService("logs dispatcher", repo, log, wg),
 		buffer:  buffer,
-		knownTopics: map[common.Hash]func(*retypes.Log, *logsDispatcher){
+		knownTopics: map[common.Hash]func(*types.LogRecord){
 			/* SFC1::CreatedDelegation(address indexed delegator, uint256 indexed toStakerID, uint256 amount) */
 			common.HexToHash("0xfd8c857fb9acd6f4ad59b8621a2a77825168b7b4b76de9586d08e00d4ed462be"): handleSfcCreatedDelegation,
 
@@ -97,11 +91,27 @@ func newLogsDispatcher(buffer chan *eventTrxLog, repo Repository, log logger.Log
 			/* SFC3::RestakedRewards(address indexed delegator, uint256 indexed toValidatorID, uint256 lockupExtraReward, uint256 lockupBaseReward, uint256 unlockedReward) */
 			common.HexToHash("0x4119153d17a36f9597d40e3ab4148d03261a439dddbec4e91799ab7159608e26"): handleSfcRestakeRewards,
 
+			/* ---------------- ERC20 and ERC721 contracts related event hooks below this line ---------------- */
+
 			/* ERC20::Approval(address indexed owner, address indexed spender, uint256 value) */
-			common.HexToHash("0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"): handleErc20Approval,
+			common.HexToHash("0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"): handleErcTokenApproval,
 
 			/* ERC20::Transfer(address indexed from, address indexed to, uint256 value) */
-			common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"): handleErc20Transfer,
+			common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"): handleErcTokenTransfer,
+
+			/* --------------------- Uniswap contract related event hooks below this line --------------------- */
+
+			/* UniswapPair::Swap(address indexed sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out, address indexed to) */
+			common.HexToHash("0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822"): handleUniswapSwap,
+
+			/* UniswapPair::Mint(address indexed sender, uint256 amount0, uint256 amount1) */
+			common.HexToHash("0x4c209b5fc8ad50758f13e2e1088ba56a560dff690a1c6fef26394f4c03821c4f"): handleUniswapMint,
+
+			/* UniswapPair::Burn(address indexed sender, uint256 amount0, uint256 amount1, address indexed to) */
+			common.HexToHash("0xdccd412f0b1252819cb1fd330b93224ca42612892bb3f4f789976e6d81936496"): handleUniswapBurn,
+
+			/* UniswapPair::Sync(uint112 reserve0, uint112 reserve1) */
+			common.HexToHash("0x1c411e9a96e071241c2f21f7726b17ae89e3cab4c78be50e062b03a9fffbbad1"): handleUniswapSync,
 		},
 	}
 }
@@ -131,16 +141,20 @@ func (ld *logsDispatcher) dispatch() {
 		case log := <-ld.buffer:
 			// try to find the topic handler
 			handler, ok := ld.knownTopics[log.Topics[0]]
-			if ok {
+			if ok && log.Block != nil && log.Trx != nil {
 				ld.log.Debugf("known topic %s found, processing", log.Topics[0].String())
-				handler(&log.Log, ld)
+				handler(log)
 			}
 
-			// mark the processing as finished
-			log.wg.Done()
-
+			// mark the processing of this log record as finished
+			log.WatchDog.Done()
 		case <-ld.sigStop:
 			return
 		}
 	}
+}
+
+// QueueLogRecord queues the given transaction log record for processing.
+func (p *proxy) QueueLogRecord(log *types.LogRecord) {
+	p.orc.logsQueue <- log
 }
