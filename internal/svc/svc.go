@@ -6,7 +6,7 @@ Internally it utilizes RPC to access Opera/Lachesis full node for blockchain int
 for fast, robust and scalable off-chain data storage, especially for aggregated and pre-calculated data mining
 results. BigCache for in-memory object storage to speed up loading of frequently accessed entities.
 */
-package repository
+package svc
 
 // Svc defines the interface required for a service
 // to be manageable by the orchestrator.

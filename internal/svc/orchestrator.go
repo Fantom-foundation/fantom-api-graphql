@@ -1,16 +1,10 @@
-/*
-Package repository implements repository for handling fast and efficient access to data required
-by the resolvers of the API server.
-
-Internally it utilizes RPC to access Opera/Lachesis full node for blockchain interaction. Mongo database
-for fast, robust and scalable off-chain data storage, especially for aggregated and pre-calculated data mining
-results. BigCache for in-memory object storage to speed up loading of frequently accessed entities.
-*/
-package repository
+// Package svc implements blockchain data processing services.
+package svc
 
 import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
+	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"sync"
 )
@@ -27,13 +21,14 @@ type Orchestrator struct {
 	bld *blockDispatcher
 	trd *trxDispatcher
 	acd *accDispatcher
+	lgd *logDispatcher
 
 	// collection of all the managed services
 	svc []Svc
 }
 
 // NewOrchestrator creates a new instance of service orchestrator.
-func NewOrchestrator(cfg *config.Config, log logger.Logger) *Orchestrator {
+func NewOrchestrator(cfg *config.Config) *Orchestrator {
 	// create new orchestrator
 	or := Orchestrator{
 		log: log,
@@ -98,6 +93,10 @@ func (or *Orchestrator) init(cfg *config.Config) {
 	// make account dispatcher
 	or.acd = &accDispatcher{or: or}
 	or.svc = append(or.svc, or.acd)
+
+	// make log dispatcher
+	or.lgd = &logDispatcher{or: or}
+	or.svc = append(or.svc, or.lgd)
 }
 
 // initServices initializes all the services added to the orchestrator
@@ -107,9 +106,10 @@ func (or *Orchestrator) ready() {
 		s.init()
 	}
 
-	// connect dependant services to their input channels
+	// connect services' input channels to their source
 	or.trd.inTransaction = or.bld.outTransaction
 	or.acd.inAccount = or.trd.outAccount
+	or.lgd.inLog = or.trd.outLog
 }
 
 // started signals to the orchestrator that the calling service
