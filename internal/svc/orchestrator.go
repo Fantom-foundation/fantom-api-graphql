@@ -9,12 +9,8 @@ import (
 	"sync"
 )
 
-// swapDispatchQueueCapacity is the number of Uniswap swap kept in the dispatch buffer.
-const swapDispatchQueueCapacity = 20000
-
 // Orchestrator implements service orchestration.
 type Orchestrator struct {
-	log logger.Logger
 	wg  *sync.WaitGroup
 
 	// special services with external dependency
@@ -27,14 +23,23 @@ type Orchestrator struct {
 	svc []Svc
 }
 
+// repo represents the repository used by services to handle data exchange.
+var repo repository.Repository
+
+// log represents the logger used by services to inform about performed actions.
+var log logger.Logger
+
 // NewOrchestrator creates a new instance of service orchestrator.
-func NewOrchestrator(cfg *config.Config) *Orchestrator {
+func NewOrchestrator(cfg *config.Config, r repository.Repository) *Orchestrator {
 	// create new orchestrator
 	or := Orchestrator{
-		log: log,
 		wg:  new(sync.WaitGroup),
 		svc: make([]Svc, 0, 10),
 	}
+
+	// update the package references
+	repo = r
+	log = r.Log()
 
 	// init the orchestration
 	or.init(cfg)
@@ -54,20 +59,20 @@ func (or *Orchestrator) Run() {
 
 // Close signals orchestrator to terminate all orchestrated services.
 func (or *Orchestrator) Close() {
-	or.log.Noticef("orchestrator received a close signal")
+	log.Noticef("orchestrator received a close signal")
 
 	// pass the signal to all the services
 	for _, s := range or.svc {
-		or.log.Noticef("closing %s", s.name())
+		log.Noticef("closing %s", s.name())
 		s.close()
 	}
 
 	// wait scanners to terminate
-	or.log.Notice("waiting for services to finish")
+	log.Notice("waiting for services to finish")
 	or.wg.Wait()
 
 	// we are done
-	or.log.Notice("orchestrator done")
+	log.Notice("orchestrator done")
 }
 
 // SetBlockChannel registers a channel for notifying new block events.
@@ -116,12 +121,12 @@ func (or *Orchestrator) ready() {
 // has been started and is functioning.
 func (or *Orchestrator) started(svc Svc) {
 	or.wg.Add(1)
-	or.log.Noticef("%s is running", svc.name())
+	log.Noticef("%s is running", svc.name())
 }
 
 // finished signals to the orchestrator that the calling service
 // has been terminated and is no longer running.
 func (or *Orchestrator) finished(svc Svc) {
 	or.wg.Done()
-	or.log.Noticef("%s terminated", svc.name())
+	log.Noticef("%s terminated", svc.name())
 }

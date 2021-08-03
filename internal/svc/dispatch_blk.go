@@ -2,7 +2,6 @@
 package svc
 
 import (
-	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -80,19 +79,19 @@ func (bld *blockDispatcher) dispatch() {
 		case blk, ok := <-bld.inBlock:
 			// do we have a working channel?
 			if !ok {
-				bld.or.log.Notice("block channel closed, terminating %s", bld.name())
+				log.Notice("block channel closed, terminating %s", bld.name())
 				return
 			}
 
 			// process the new block
-			bld.or.log.Debugf("block #%d arrived", uint64(blk.Number))
+			log.Debugf("block #%d arrived", uint64(blk.Number))
 			bld.process(blk)
 
 			// broadcast the block event
 			bld.onBlock <- blk
 
 			// add the block to the ring
-			repository.R().CacheBlock(blk)
+			repo.CacheBlock(blk)
 		}
 	}
 }
@@ -106,12 +105,12 @@ func (bld *blockDispatcher) process(blk *types.Block) {
 	}
 
 	// log the situation
-	bld.or.log.Debugf("%d transaction found in block #%d", len(blk.Txs), blk.Number)
+	log.Debugf("%d transaction found in block #%d", len(blk.Txs), blk.Number)
 
 	// loop transactions
 	for i, th := range blk.Txs {
 		// log
-		bld.or.log.Debugf("loading trx #%d from block #%d", i, blk.Number)
+		log.Debugf("loading trx #%d from block #%d", i, blk.Number)
 
 		// load the transaction
 		trx := bld.load(blk, th)
@@ -125,15 +124,15 @@ func (bld *blockDispatcher) process(blk *types.Block) {
 	}
 
 	// log the situation
-	bld.or.log.Debugf("block #%d processed", blk.Number)
+	log.Debugf("block #%d processed", blk.Number)
 }
 
 // load a transaction detail from repository, if possible.
 func (bld *blockDispatcher) load(blk *types.Block, th *common.Hash) *types.Transaction {
 	// get transaction
-	trx, err := repository.R().Transaction(th)
+	trx, err := repo.Transaction(th)
 	if err != nil {
-		bld.or.log.Errorf("transaction %s detail not available; %s", th.String(), err.Error())
+		log.Errorf("transaction %s detail not available; %s", th.String(), err.Error())
 		return nil
 	}
 

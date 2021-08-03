@@ -2,7 +2,6 @@
 package svc
 
 import (
-	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -100,13 +99,13 @@ func (trd *trxDispatcher) dispatch() {
 		case evt, ok := <-trd.inTransaction:
 			// is the channel even available for reading
 			if !ok {
-				trd.or.log.Notice("trx channel closed, terminating %s", trd.name())
+				log.Notice("trx channel closed, terminating %s", trd.name())
 				return
 			}
 
 			// validate incoming data
 			if evt.blk == nil || evt.trx == nil {
-				trd.or.log.Criticalf("dispatcher dry loop")
+				log.Criticalf("dispatcher dry loop")
 				continue
 			}
 
@@ -121,14 +120,12 @@ func (trd *trxDispatcher) dispatch() {
 func (trd *trxDispatcher) updateLastSeenBlock() {
 	// get the current value
 	lsb := trd.blkObserver.Load()
-
-	// log where we are
-	trd.or.log.Noticef("last seen block is #%d", lsb)
+	log.Noticef("last seen block is #%d", lsb)
 
 	// make the change in the database so the progress persists
-	err := repository.R().UpdateLastKnownBlock((*hexutil.Uint64)(&lsb))
+	err := repo.UpdateLastKnownBlock((*hexutil.Uint64)(&lsb))
 	if err != nil {
-		trd.or.log.Errorf("could not update last seen block; %s", err.Error())
+		log.Errorf("could not update last seen block; %s", err.Error())
 	}
 }
 
@@ -165,15 +162,15 @@ func (trd *trxDispatcher) waitAndStore(evt *eventTrx, wg *sync.WaitGroup) {
 	wg.Wait()
 
 	// store to the db
-	if err := repository.R().StoreTransaction(evt.blk, evt.trx); err != nil {
-		trd.or.log.Errorf("can not store trx %s from block #%d", evt.trx.Hash.String(), evt.blk.Number)
+	if err := repo.StoreTransaction(evt.blk, evt.trx); err != nil {
+		log.Errorf("can not store trx %s from block #%d", evt.trx.Hash.String(), evt.blk.Number)
 	}
 
 	// update estimator
-	repository.R().IncTrxCountEstimate(1)
+	repo.IncTrxCountEstimate(1)
 
 	// add the transaction to the ring cache
-	repository.R().CacheTransaction(evt.trx)
+	repo.CacheTransaction(evt.trx)
 
 	// update internal block observer value
 	trd.blkObserver.Store(uint64(evt.blk.Number))
@@ -211,7 +208,7 @@ func (trd *trxDispatcher) pushAccounts(evt *eventTrx, wg *sync.WaitGroup) {
 	}
 
 	// queue the new contract to be processed as well
-	trd.or.log.Debugf("contract %s found at trx %s", evt.trx.ContractAddress.String(), evt.trx.Hash.String())
+	log.Debugf("contract %s found at trx %s", evt.trx.ContractAddress.String(), evt.trx.Hash.String())
 	wg.Add(1)
 	trd.outAccount <- &eventAcc{
 		watchDog: wg,
