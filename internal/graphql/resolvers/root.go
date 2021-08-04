@@ -6,7 +6,7 @@ import (
 	"fantom-api-graphql/cmd/apiserver/build"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
-	"fantom-api-graphql/internal/repository"
+	"fantom-api-graphql/internal/svc"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -313,10 +313,11 @@ func New(cfg *config.Config, log logger.Logger) ApiResolver {
 		onTrxEvents:      make(chan *types.Transaction, onBlockChannelCapacity),
 	}
 
-	// register event channels with repository
-	repo := repository.R()
-	repo.SetBlockChannel(rs.onBlockEvents)
-	repo.SetTrxChannel(rs.onTrxEvents)
+	// pass subscription data source channels to the service manager
+	// to get them filled with relevant data
+	sm := svc.Manager()
+	sm.SetBlockChannel(rs.onBlockEvents)
+	sm.SetTrxChannel(rs.onTrxEvents)
 
 	// handle broadcast and subscriptions in a separate routine
 	rs.wg.Add(1)
