@@ -140,12 +140,12 @@ func (app *apiServer) terminate() {
 		app.log.Errorf("could not terminate HTTP listener")
 	}
 
-	// terminate services; this closes observers, scanners and dispatchers
+	// terminate observers, scanners and dispatchers, etc.
 	if mgr := svc.Manager(); mgr != nil {
 		mgr.Close()
 	}
 
-	// terminate repository; this closes connections
+	// terminate connections to DB, blockchain, etc.
 	if repo := repository.R(); repo != nil {
 		repo.Close()
 	}
