@@ -130,3 +130,8 @@ func (p *proxy) Transactions(cursor *string, count int32) (*types.TransactionLis
 	// use slow trx list pulling
 	return p.db.Transactions(cursor, count, nil)
 }
+
+// StoreGasPricePeriod stores the given gas price period data in the persistent storage
+func (p *proxy) StoreGasPricePeriod(gp *types.GasPricePeriod) error {
+	return p.db.AddGasPricePeriod(gp)
+}
