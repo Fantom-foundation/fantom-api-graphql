@@ -13,7 +13,7 @@ type Config struct {
 	// AppName holds the name of the application
 	AppName string `mapstructure:"app_name"`
 
-	// MySignature represents a signature of the server on block chain.
+	// MySignature represents a signature of the server on blockchain.
 	MySignature ServerSignature `mapstructure:"me"`
 
 	// Server configuration
@@ -61,8 +61,6 @@ type Config struct {
 
 // RepoCmd represents a repository command configuration.
 type RepoCmd struct {
-	BlockScanStart  uint64
-	BlockScanEnd    uint64
 	BlockScanReScan uint64
 	RestoreStake    string
 }
@@ -82,7 +80,7 @@ type Server struct {
 }
 
 // ServerSignature represents the signature used by this server
-// on sending requests to the block chain, especially signed requests.
+// on sending requests to the blockchain, especially signed requests.
 type ServerSignature struct {
 	Address    common.Address   `mapstructure:"address"`
 	PrivateKey ecdsa.PrivateKey `mapstructure:"pkey"`
