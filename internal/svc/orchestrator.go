@@ -2,131 +2,55 @@
 package svc
 
 import (
-	"fantom-api-graphql/internal/config"
-	"fantom-api-graphql/internal/logger"
-	"fantom-api-graphql/internal/repository"
-	"fantom-api-graphql/internal/types"
-	"sync"
+	"fmt"
 )
 
-// Orchestrator implements service orchestration.
-type Orchestrator struct {
-	wg  *sync.WaitGroup
-
-	// special services with external dependency
-	bld *blockDispatcher
-	trd *trxDispatcher
-	acd *accDispatcher
-	lgd *logDispatcher
-
-	// collection of all the managed services
-	svc []Svc
+// orchestrator implements service responsible for moderating connections between other services.
+type orchestrator struct {
+	service
 }
 
-// repo represents the repository used by services to handle data exchange.
-var repo repository.Repository
+// name returns the name of the service used by orchestrator.
+func (or *orchestrator) name() string {
+	return "moderator"
+}
 
-// log represents the logger used by services to inform about performed actions.
-var log logger.Logger
-
-// NewOrchestrator creates a new instance of service orchestrator.
-func NewOrchestrator(cfg *config.Config, r repository.Repository) *Orchestrator {
-	// create new orchestrator
-	or := Orchestrator{
-		wg:  new(sync.WaitGroup),
-		svc: make([]Svc, 0, 10),
+// run starts the block dispatcher
+func (or *orchestrator) run() {
+	// make sure we are orchestrated
+	if or.mgr == nil {
+		panic(fmt.Errorf("no svc manager set on %s", or.name()))
 	}
 
-	// update the package references
-	repo = r
-	log = r.Log()
-
-	// init the orchestration
-	or.init(cfg)
-	return &or
+	// signal orchestrator we started and go
+	or.mgr.started(or)
+	go or.execute()
 }
 
-// Run starts all the services prepared to be run.
-func (or *Orchestrator) Run() {
-	// ready services to be started
-	or.ready()
-
-	// start services
-	for _, s := range or.svc {
-		s.run()
-	}
-}
-
-// Close signals orchestrator to terminate all orchestrated services.
-func (or *Orchestrator) Close() {
-	log.Noticef("orchestrator received a close signal")
-
-	// pass the signal to all the services
-	for _, s := range or.svc {
-		log.Noticef("closing %s", s.name())
-		s.close()
-	}
-
-	// wait scanners to terminate
-	log.Notice("waiting for services to finish")
-	or.wg.Wait()
-
-	// we are done
-	log.Notice("orchestrator done")
-}
-
-// SetBlockChannel registers a channel for notifying new block events.
-func (or *Orchestrator) SetBlockChannel(ch chan *types.Block) {
-	or.bld.onBlock = ch
-}
-
-// SetTrxChannel registers a channel for notifying new transaction events.
-func (or *Orchestrator) SetTrxChannel(ch chan *types.Transaction) {
-	or.trd.onTransaction = ch
-}
-
-// Init the orchestrator.
-func (or *Orchestrator) init(cfg *config.Config) {
-	// make the block dispatcher
-	or.bld = &blockDispatcher{or: or}
-	or.svc = append(or.svc, or.bld)
-
-	// make the transaction dispatcher
-	or.trd = &trxDispatcher{or: or}
-	or.svc = append(or.svc, or.trd)
-
-	// make account dispatcher
-	or.acd = &accDispatcher{or: or}
-	or.svc = append(or.svc, or.acd)
-
-	// make log dispatcher
-	or.lgd = &logDispatcher{or: or}
-	or.svc = append(or.svc, or.lgd)
-}
-
-// initServices initializes all the services added to the orchestrator
-func (or *Orchestrator) ready() {
-	// init all the services
-	for _, s := range or.svc {
-		s.init()
-	}
+// init sets the initial connection state for the managed services
+func (or *orchestrator) init() {
+	or.sigStop = make(chan bool, 1)
 
 	// connect services' input channels to their source
-	or.trd.inTransaction = or.bld.outTransaction
-	or.acd.inAccount = or.trd.outAccount
-	or.lgd.inLog = or.trd.outLog
+	or.mgr.trd.inTransaction = or.mgr.bld.outTransaction
+	or.mgr.acd.inAccount = or.mgr.trd.outAccount
+	or.mgr.lgd.inLog = or.mgr.trd.outLog
+	or.mgr.bls.outBlock = or.mgr.bld.inBlock
 }
 
-// started signals to the orchestrator that the calling service
-// has been started and is functioning.
-func (or *Orchestrator) started(svc Svc) {
-	or.wg.Add(1)
-	log.Noticef("%s is running", svc.name())
-}
+// execute performs the service interaction management
+func (or *orchestrator) execute() {
+	defer func() {
+		close(or.sigStop)
+		or.mgr.finished(or)
+	}()
 
-// finished signals to the orchestrator that the calling service
-// has been terminated and is no longer running.
-func (or *Orchestrator) finished(svc Svc) {
-	or.wg.Done()
-	log.Noticef("%s terminated", svc.name())
+	// do the scan
+	for {
+		// capture stop signal
+		select {
+		case <-or.sigStop:
+			return
+		}
+	}
 }
