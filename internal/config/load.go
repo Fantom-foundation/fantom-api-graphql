@@ -43,8 +43,6 @@ func Load() (*Config, error) {
 
 // attachCliFlags connects CLI flags to certain configuration options.
 func attachCliFlags(cfg *Config) {
-	flag.Uint64Var(&cfg.RepoCommand.BlockScanStart, keyConfigCmdBlockScanStart, 0, "Force block scanner to start on this block.")
-	flag.Uint64Var(&cfg.RepoCommand.BlockScanEnd, keyConfigCmdBlockScanEnd, 18446744073709551615, "Force block scanner to end before this block.")
 	flag.Uint64Var(&cfg.RepoCommand.BlockScanReScan, keyConfigCmdBlockScanReScan, defBlockScanRescanDepth, "How many blocks are re-scanned on the server start.")
 	flag.StringVar(&cfg.RepoCommand.RestoreStake, keyConfigCmdRestoreStake, "", "Owner of the stake to be restored.")
 }
@@ -199,7 +197,7 @@ func stringToCommonAddress(str string) (interface{}, error) {
 
 // stringToAddress converts the given String to typed Address.
 func stringToAddress(str string) (interface{}, error) {
-	return common.Address(common.HexToAddress(str)), nil
+	return common.HexToAddress(str), nil
 }
 
 // reader provides instance of the config reader.
