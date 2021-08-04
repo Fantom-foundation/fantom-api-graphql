@@ -9,13 +9,12 @@ import (
 
 // logDispatcher implements dispatcher of new log events in the blockchain.
 type logDispatcher struct {
-	or          *Orchestrator
-	sigStop     chan bool
+	service
 	inLog       chan *types.LogRecord
 	knownTopics map[common.Hash]func(*types.LogRecord)
 }
 
-// name returns the name of the service.
+// name returns the name of the service used by orchestrator.
 func (lgd *logDispatcher) name() string {
 	return "log dispatcher"
 }
@@ -117,26 +116,21 @@ func (lgd *logDispatcher) init() {
 // run starts the transaction logs dispatcher job
 func (lgd *logDispatcher) run() {
 	// make sure we are orchestrated
-	if lgd.or == nil {
-		panic(fmt.Errorf("no orchestrator set"))
+	if lgd.mgr == nil {
+		panic(fmt.Errorf("no svc manager set on %s", lgd.name()))
 	}
 
 	// signal orchestrator we started and go
-	lgd.or.started(lgd)
-	go lgd.dispatch()
+	lgd.mgr.started(lgd)
+	go lgd.execute()
 }
 
-// close terminates the block dispatcher.
-func (lgd *logDispatcher) close() {
-	lgd.sigStop <- true
-}
-
-// dispatch implements the dispatcher reader and router routine.
-func (lgd *logDispatcher) dispatch() {
+// execute implements the dispatcher reader and router routine.
+func (lgd *logDispatcher) execute() {
 	// don't forget to sign off after we are done
 	defer func() {
 		close(lgd.sigStop)
-		lgd.or.finished(lgd)
+		lgd.mgr.finished(lgd)
 	}()
 
 	// wait for logs and process them

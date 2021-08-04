@@ -32,10 +32,8 @@ type eventAcc struct {
 
 // trxDispatcher implements dispatcher of new transactions in the blockchain.
 type trxDispatcher struct {
-	or            *Orchestrator
-	sigStop       chan bool
+	service
 	onTransaction chan *types.Transaction
-
 	bot           *time.Ticker
 	blkObserver   *atomic.Uint64
 	inTransaction chan *eventTrx
@@ -43,7 +41,7 @@ type trxDispatcher struct {
 	outLog        chan *types.LogRecord
 }
 
-// name returns the name of the service.
+// name returns the name of the service used by orchestrator.
 func (trd *trxDispatcher) name() string {
 	return "transaction dispatcher"
 }
@@ -59,33 +57,37 @@ func (trd *trxDispatcher) init() {
 // run starts the transaction dispatcher job
 func (trd *trxDispatcher) run() {
 	// make sure we are orchestrated
-	if trd.or == nil {
-		panic(fmt.Errorf("no orchestrator set"))
+	if trd.mgr == nil {
+		panic(fmt.Errorf("no svc manager set on %s", trd.name()))
 	}
 
 	// start the block observer ticker
 	trd.bot = time.NewTicker(trxDispatchBlockUpdateTicker)
 
 	// signal orchestrator we started and go
-	trd.or.started(trd)
-	go trd.dispatch()
+	trd.mgr.started(trd)
+	go trd.execute()
 }
 
 // close terminates the block dispatcher.
 func (trd *trxDispatcher) close() {
-	trd.bot.Stop()
-	trd.sigStop <- true
+	if trd.bot != nil {
+		trd.bot.Stop()
+	}
+	if trd.sigStop != nil {
+		trd.sigStop <- true
+	}
 }
 
-// dispatch implements the dispatcher reader and router routine.
-func (trd *trxDispatcher) dispatch() {
+// execute implements the dispatcher reader and router routine.
+func (trd *trxDispatcher) execute() {
 	// don't forget to sign off after we are done
 	defer func() {
 		close(trd.sigStop)
 		close(trd.outAccount)
 		close(trd.outLog)
 
-		trd.or.finished(trd)
+		trd.mgr.finished(trd)
 	}()
 
 	// wait for transactions and process them

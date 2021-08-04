@@ -5,7 +5,6 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"go.uber.org/atomic"
 	"time"
 )
 
@@ -21,65 +20,66 @@ const epsStoreQueueLength = 100
 // epochScanner implements blockchain epochs scanner.
 // We can not scan anything before epoch #5574 (migration); full data available after #5577
 type epochScanner struct {
-	or          *Orchestrator
-	sigStop     chan bool
+	service
 	observeTick *time.Ticker
 	scanTick    *time.Ticker
-	current     *atomic.Uint64
+	current     uint64
 	top         *types.Epoch
 	queue       chan *types.Epoch
 }
 
-// name returns the name of the service.
+// name returns the name of the service used by orchestrator.
 func (eps *epochScanner) name() string {
 	return "SFC epoch scanner"
 }
 
-// init prepares the epoch scanner to perform its function.
+// init prepares the epoch scanner sig channel and storage queue.
 func (eps *epochScanner) init() {
 	eps.sigStop = make(chan bool, 1)
 	eps.queue = make(chan *types.Epoch, epsStoreQueueLength)
 }
 
-// run starts the account queue to life.
+// run feeds initial state and starts the epoch scanner threads.
 func (eps *epochScanner) run() {
 	// make sure we are orchestrated
-	if eps.or == nil {
-		panic(fmt.Errorf("no orchestrator set"))
+	if eps.mgr == nil {
+		panic(fmt.Errorf("no svc manager set on %s", eps.name()))
 	}
 
-	// try to find the lats known epoch
-	cur, err := repo.LastKnownEpoch()
+	// try to find the last known epoch, we want to start where we left off
+	var err error
+	eps.current, err = repo.LastKnownEpoch()
 	if err != nil {
 		log.Criticalf("can not get the last known epoch; %s", err.Error())
-		cur = 1
+		eps.current = 1
 	}
 
-	// store the current epoch ID
-	eps.current = atomic.NewUint64(cur)
-
-	// signal orchestrator we started and go
-	eps.or.started(eps)
+	// signal orchestrator and start threads
+	eps.mgr.started(eps)
 	go eps.dequeue()
-	go eps.scan()
+	go eps.execute()
 }
 
 // close terminates the block dispatcher.
 func (eps *epochScanner) close() {
-	eps.observeTick.Stop()
-	eps.scanTick.Stop()
+	if eps.observeTick != nil {
+		eps.observeTick.Stop()
+		eps.scanTick.Stop()
+	}
 
-	eps.sigStop <- true
+	if eps.sigStop != nil {
+		eps.sigStop <- true
+	}
 }
 
-// scan performs the epoch scan starting from the given epoch ID.
-func (eps *epochScanner) scan() {
+// execute performs the epoch scan starting from the given epoch ID.
+func (eps *epochScanner) execute() {
 	// make sure to clean up
 	defer func() {
 		close(eps.sigStop)
 		close(eps.queue)
 
-		eps.or.finished(eps)
+		eps.mgr.finished(eps)
 	}()
 
 	// init tickers
@@ -87,7 +87,7 @@ func (eps *epochScanner) scan() {
 	eps.scanTick = time.NewTicker(epsScanTickerDuration)
 
 	// log the status
-	log.Noticef("epoch scan starts at #%d", eps.current.Load())
+	log.Noticef("epoch scan starts at #%d", eps.current)
 
 	for {
 		select {
@@ -123,37 +123,32 @@ func (eps *epochScanner) observe() {
 // next processes epoch data based on the stored current epoch number.
 func (eps *epochScanner) next() {
 	// do we have a space to grow to
-	if eps.top == nil || uint64(eps.top.Id) < eps.current.Load() {
+	if eps.top == nil || uint64(eps.top.Id) < eps.current {
 		return
 	}
 
 	// try to get the epoch data
-	id := eps.current.Load()
-	ep, err := repo.Epoch((*hexutil.Uint64)(&id))
+	ep, err := repo.Epoch((*hexutil.Uint64)(&eps.current))
 	if err != nil {
-		log.Errorf("can not get epoch #%d; %s", id, err.Error())
+		log.Errorf("can not get epoch #%d; %s", eps.current, err.Error())
 		return
 	}
 
 	// process and move to the next epoch
 	eps.queue <- ep
+	eps.current++
 }
 
 // dequeue consumes the queue and sends epochs to the persistent storage.
 func (eps *epochScanner) dequeue() {
 	for {
-		// pull the next epoch from the queue
+		// pull the next epoch from the queue if possible and store it
 		ep, ok := <-eps.queue
 		if !ok {
 			log.Noticef("epoch scanner queue terminated")
 			return
 		}
-
-		// store the epoch
 		eps.store(ep)
-
-		// update current epoch ID
-		eps.current.Store(uint64(ep.Id))
 	}
 }
 

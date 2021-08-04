@@ -20,22 +20,19 @@ type eventTrx struct {
 
 // blockDispatcher implements a service responsible for processing new blocks on the blockchain.
 type blockDispatcher struct {
-	or      *Orchestrator
-	sigStop chan bool
-	onBlock chan *types.Block
-
+	service
+	onBlock        chan *types.Block
 	inBlock        chan *types.Block
 	outTransaction chan *eventTrx
 }
 
-// name returns the name of the service.
+// name returns the name of the service used by orchestrator.
 func (bld *blockDispatcher) name() string {
 	return "block dispatcher"
 }
 
 // init prepares the block dispatcher to perform its function.
 func (bld *blockDispatcher) init() {
-	// make channels we need
 	bld.sigStop = make(chan bool, 1)
 	bld.outTransaction = make(chan *eventTrx, trxBufferCapacity)
 }
@@ -43,23 +40,18 @@ func (bld *blockDispatcher) init() {
 // run starts the block dispatcher
 func (bld *blockDispatcher) run() {
 	// make sure we are orchestrated
-	if bld.or == nil {
-		panic(fmt.Errorf("no orchestrator set"))
+	if bld.mgr == nil {
+		panic(fmt.Errorf("no svc manager set on %s", bld.name()))
 	}
 
 	// signal orchestrator we started and go
-	bld.or.started(bld)
-	go bld.dispatch()
+	bld.mgr.started(bld)
+	go bld.execute()
 }
 
-// close terminates the block dispatcher.
-func (bld *blockDispatcher) close() {
-	bld.sigStop <- true
-}
-
-// dispatch collects blocks from an input channel
+// execute collects blocks from an input channel
 // and processes them.
-func (bld *blockDispatcher) dispatch() {
+func (bld *blockDispatcher) execute() {
 	// make sure to clean up
 	defer func() {
 		// close our channels
@@ -67,7 +59,7 @@ func (bld *blockDispatcher) dispatch() {
 		close(bld.outTransaction)
 
 		// signal we are done
-		bld.or.finished(bld)
+		bld.mgr.finished(bld)
 	}()
 
 	// loop here

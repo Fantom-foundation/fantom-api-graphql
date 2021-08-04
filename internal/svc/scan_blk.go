@@ -23,9 +23,8 @@ const blsScanTickIdleDuration = 10 * time.Second
 
 // blkScanner implements scanner loading previous/unknown blockchain blocks.
 type blkScanner struct {
-	or          *Orchestrator
+	service
 	cfg         config.RepoCmd
-	sigStop     chan bool
 	outBlock    chan *types.Block
 	observeTick *time.Ticker
 	scanTick    *time.Ticker
@@ -40,15 +39,10 @@ func (bls *blkScanner) name() string {
 	return "block scanner"
 }
 
-// init prepares the block dispatcher to perform its function.
-func (bls *blkScanner) init() {
-	bls.sigStop = make(chan bool, 1)
-}
-
 // run starts the block dispatcher
 func (bls *blkScanner) run() {
-	if bls.or == nil {
-		panic(fmt.Errorf("no orchestrator set"))
+	if bls.mgr == nil {
+		panic(fmt.Errorf("no svc manager set on %s", bls.name()))
 	}
 
 	if bls.outBlock == nil {
@@ -66,8 +60,8 @@ func (bls *blkScanner) run() {
 	log.Noticef("block scan starts at #%d", start)
 	bls.from = start
 
-	bls.or.started(bls)
-	go bls.scan()
+	bls.mgr.started(bls)
+	go bls.execute()
 }
 
 // close terminates the block dispatcher.
@@ -98,12 +92,12 @@ func (bls *blkScanner) boundaries() (uint64, error) {
 	return lnb, nil
 }
 
-// scan blockchain blocks in the given range and push found blocks
+// execute scans blockchain blocks in the given range and push found blocks
 // to the output channel for processing.
-func (bls *blkScanner) scan() {
+func (bls *blkScanner) execute() {
 	defer func() {
 		close(bls.sigStop)
-		bls.or.finished(bls)
+		bls.mgr.finished(bls)
 	}()
 
 	// set initial state and start the tickers for observer and scanner

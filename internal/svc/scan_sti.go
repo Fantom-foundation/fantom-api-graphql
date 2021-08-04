@@ -13,8 +13,7 @@ const stiScannerTickDuration = 5 * time.Second
 
 // stiScanner implements staker information scanner service.
 type stiScanner struct {
-	or       *Orchestrator
-	sigStop  chan bool
+	service
 	scanTick *time.Ticker
 	current  uint64
 	top      uint64
@@ -25,35 +24,35 @@ func (sti *stiScanner) name() string {
 	return "staker info scanner"
 }
 
-// init prepares the staker information scanner.
-func (sti *stiScanner) init() {
-	sti.sigStop = make(chan bool, 1)
-}
-
 // run initializes and starts the staker information monitor.
 func (sti *stiScanner) run() {
 	// make sure we are orchestrated
-	if sti.or == nil {
-		panic(fmt.Errorf("no orchestrator set"))
+	if sti.mgr == nil {
+		panic(fmt.Errorf("no svc manager set on %s", sti.name()))
 	}
 
 	// signal orchestrator we started and go
-	sti.or.started(sti)
-	go sti.scan()
+	sti.mgr.started(sti)
+	go sti.execute()
 }
 
 // close terminates the staker information scanner.
 func (sti *stiScanner) close() {
-	sti.scanTick.Stop()
-	sti.sigStop <- true
+	if sti.scanTick != nil {
+		sti.scanTick.Stop()
+	}
+
+	if sti.sigStop != nil {
+		sti.sigStop <- true
+	}
 }
 
-// monitor runs the staker information monitoring task.
-func (sti *stiScanner) scan() {
+// execute runs the staker information monitoring task.
+func (sti *stiScanner) execute() {
 	// make sure to clean up on exit
 	defer func() {
 		close(sti.sigStop)
-		sti.or.finished(sti)
+		sti.mgr.finished(sti)
 	}()
 
 	// start the ticker

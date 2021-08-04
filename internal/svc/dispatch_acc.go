@@ -21,45 +21,34 @@ var testAddress = common.HexToAddress("0xabc00FA001230012300aBc0012300Fa00FACE00
 
 // accDispatcher implements account dispatcher queue
 type accDispatcher struct {
-	or        *Orchestrator
-	sigStop   chan bool
 	inAccount chan *eventAcc
+	service
 }
 
-// name returns the name of the service.
+// name returns the name of the service used by orchestrator.
 func (acd *accDispatcher) name() string {
 	return "account dispatcher"
-}
-
-// init prepares the account dispatcher to perform its function.
-func (acd *accDispatcher) init() {
-	acd.sigStop = make(chan bool, 1)
 }
 
 // run starts the account queue to life.
 func (acd *accDispatcher) run() {
 	// make sure we are orchestrated
-	if acd.or == nil {
-		panic(fmt.Errorf("no orchestrator set"))
+	if acd.mgr == nil {
+		panic(fmt.Errorf("no svc manager set on %s", acd.name()))
 	}
 
 	// signal orchestrator we started and go
-	acd.or.started(acd)
-	go acd.dispatch()
+	acd.mgr.started(acd)
+	go acd.execute()
 }
 
-// close terminates the block dispatcher.
-func (acd *accDispatcher) close() {
-	acd.sigStop <- true
-}
-
-// dispatch runs the main account requests monitor and dispatcher
+// execute runs the main account requests monitor and dispatcher
 // loop in a separate thread.
-func (acd *accDispatcher) dispatch() {
+func (acd *accDispatcher) execute() {
 	// don't forget to sign off after we are done
 	defer func() {
 		close(acd.sigStop)
-		acd.or.finished(acd)
+		acd.mgr.finished(acd)
 	}()
 
 	// wait for either stop signal, or an account request
