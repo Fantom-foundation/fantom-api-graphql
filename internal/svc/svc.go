@@ -1,25 +1,36 @@
-/*
-Package repository implements repository for handling fast and efficient access to data required
-by the resolvers of the API server.
-
-Internally it utilizes RPC to access Opera/Lachesis full node for blockchain interaction. Mongo database
-for fast, robust and scalable off-chain data storage, especially for aggregated and pre-calculated data mining
-results. BigCache for in-memory object storage to speed up loading of frequently accessed entities.
-*/
+// Package svc implements blockchain data processing services.
 package svc
 
 // Svc defines the interface required for a service
 // to be manageable by the orchestrator.
 type Svc interface {
-	// Name returns the name of the service
+	// name returns the name of the service
 	name() string
 
-	// Init initializes the service
+	// init initializes the service
 	init()
 
-	// Run executes the service
+	// run executes the service
 	run()
 
-	// Close signals the service to terminate
+	// close signals the service to terminate
 	close()
+}
+
+// service implements general base for services implementing svc interface.
+type service struct {
+	mgr     *ServiceManager
+	sigStop chan bool
+}
+
+// init prepares the account dispatcher to perform its function.
+func (s *service) init() {
+	s.sigStop = make(chan bool, 1)
+}
+
+// close terminates the block dispatcher.
+func (s *service) close() {
+	if s.sigStop != nil {
+		s.sigStop <- true
+	}
 }
