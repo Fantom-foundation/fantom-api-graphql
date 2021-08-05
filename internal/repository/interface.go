@@ -10,7 +10,6 @@ package repository
 
 import (
 	"fantom-api-graphql/internal/config"
-	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"math/big"
@@ -18,13 +17,11 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	etc "github.com/ethereum/go-ethereum/core/types"
 )
 
 // Repository interface defines functions the underlying implementation provides to API resolvers.
 type Repository interface {
-	// Log provides access to the system-wide logger.
-	Log() logger.Logger
-
 	// Account returns account at Opera blockchain for an address, nil if not found.
 	Account(*common.Address) (*types.Account, error)
 
@@ -70,6 +67,10 @@ type Repository interface {
 
 	// UpdateLastKnownBlock update record about last known block.
 	UpdateLastKnownBlock(blockNo *hexutil.Uint64) error
+
+	// ObservedHeaders provides a channel fed with new headers observed
+	// by the connected blockchain node.
+	ObservedHeaders() chan *etc.Header
 
 	// BlockByNumber returns a block at Opera blockchain represented by a number.
 	// Top block is returned if the number is not provided.

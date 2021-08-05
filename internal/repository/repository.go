@@ -14,6 +14,7 @@ import (
 	"fantom-api-graphql/internal/repository/cache"
 	"fantom-api-graphql/internal/repository/db"
 	"fantom-api-graphql/internal/repository/rpc"
+	"fmt"
 	"golang.org/x/sync/singleflight"
 	"sync"
 )
@@ -77,6 +78,13 @@ type proxy struct {
 
 // newRepository creates new instance of Repository implementation, namely proxy structure.
 func newRepository() Repository {
+	if cfg == nil {
+		panic(fmt.Errorf("missing configuration"))
+	}
+	if log == nil {
+		panic(fmt.Errorf("missing logger"))
+	}
+
 	// create connections
 	caBridge, dbBridge, rpcBridge, err := connect(cfg, log)
 	if err != nil {
@@ -138,7 +146,6 @@ func connect(cfg *config.Config, log logger.Logger) (*cache.MemBridge, *db.Mongo
 		log.Criticalf("can not connect Lachesis RPC interface, %s", err.Error())
 		return nil, nil, nil, err
 	}
-
 	return caBridge, dbBridge, rpcBridge, nil
 }
 
@@ -153,9 +160,4 @@ func (p *proxy) Close() {
 
 	// inform about actions
 	p.log.Notice("repository done")
-}
-
-// Log returns the logger used by the repository.
-func (p *proxy) Log() logger.Logger {
-	return p.log
 }

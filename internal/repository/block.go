@@ -16,11 +16,18 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	etc "github.com/ethereum/go-ethereum/core/types"
 	eth "github.com/ethereum/go-ethereum/rpc"
 )
 
 // ErrBlockNotFound represents an error returned if a block can not be found.
 var ErrBlockNotFound = errors.New("requested block can not be found in Opera blockchain")
+
+// ObservedHeaders provides a channel fed with new headers observed
+// by the connected blockchain node.
+func (p *proxy) ObservedHeaders() chan *etc.Header {
+	return p.rpc.ObservedBlockProxy()
+}
 
 // BlockHeight returns the current height of the Opera blockchain in blocks.
 func (p *proxy) BlockHeight() (*hexutil.Big, error) {
