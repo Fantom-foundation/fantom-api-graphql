@@ -10,9 +10,10 @@ import (
 // Ring represents a circular ring structure
 // with nodes being maintained by an array of unsafe pointers.
 type Ring struct {
-	nodes  []unsafe.Pointer
-	length int
-	head   int
+	nodes    []unsafe.Pointer
+	capacity int
+	head     int
+	depth    int
 	sync.RWMutex
 }
 
@@ -23,9 +24,10 @@ func New(capacity int) *Ring {
 		panic(fmt.Errorf("ring capacity too low, expected at least 2"))
 	}
 	return &Ring{
-		nodes:  make([]unsafe.Pointer, capacity),
-		length: capacity,
-		head:   0,
+		nodes:    make([]unsafe.Pointer, capacity),
+		capacity: capacity,
+		head:     0,
+		depth:    0,
 	}
 }
 
@@ -35,48 +37,58 @@ func (r *Ring) Add(value unsafe.Pointer) {
 	r.Lock()
 	defer r.Unlock()
 
-	// advance the head
+	// advance the head; loop back to zero if the top is reached
 	r.head++
-	if r.head == r.length {
+	if r.head == r.capacity {
 		r.head = 0
+	}
+
+	// keep track of number of stored elements
+	r.depth++
+	if r.depth > r.capacity {
+		r.depth = r.capacity
 	}
 
 	// store value
 	r.nodes[r.head] = value
 }
 
-// List returns a slice of at most length-1 items from the ring.
+// Reset the ring depth.
+func (r *Ring) Reset() {
+	r.Lock()
+	r.depth = 0
+	r.Unlock()
+}
+
+// List returns a slice of at most depth items from the ring.
 func (r *Ring) List(length int) []unsafe.Pointer {
-	// how many we can pull? make sure to stop at the ring capacity
-	tl := length
-	if length > r.length {
-		length = r.length
-	}
-
-	// make the container
-	l := make([]unsafe.Pointer, tl)
-
-	// set the read mode
+	// handle the read mode
 	r.RLock()
 	defer r.RUnlock()
 
+	// make sure to limit the pulled range to the ring depth
+	tl := length
+	if tl > r.depth {
+		tl = r.depth
+	}
+
+	l := make([]unsafe.Pointer, tl)
+
 	// load the data
 	for i := 0; i < tl; i++ {
-		// get the index of the next node to get
+		// start from the current head and loop array indexes down
+		// upper part is stitched to the bottom by adding capacity if needed
 		ix := r.head - i
 		if ix < 0 {
-			ix = r.length + ix
+			ix += r.capacity
 		}
 
-		// no data in the next node? return all we have so far
+		// if there is no content in the node, return all we have so far
+		// since all the subsequent nodes will also be empty
 		if nil == r.nodes[ix] {
 			return l[:i]
 		}
-
-		// copy the value
 		l[i] = r.nodes[ix]
 	}
-
-	// return it all
 	return l[:]
 }
