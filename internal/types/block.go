@@ -21,6 +21,9 @@ type Block struct {
 	// Miner represents the address of the beneficiary to whom the mining rewards were given.
 	Miner common.Address `json:"miner"`
 
+	// StateRoot represents the hash of the trie state root.
+	StateRoot  common.Hash `json:"stateRoot"`
+
 	// Difficulty represents integer of the difficulty for this block.
 	Difficulty hexutil.Uint64 `json:"difficulty"`
 
