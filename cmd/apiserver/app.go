@@ -46,6 +46,8 @@ func (app *apiServer) init() {
 	// make sure to pass logger and config to internals
 	repository.SetConfig(app.cfg)
 	repository.SetLogger(app.log)
+	resolvers.SetConfig(app.cfg)
+	resolvers.SetLogger(app.log)
 	svc.SetConfig(app.cfg)
 	svc.SetLogger(app.log)
 
@@ -64,6 +66,9 @@ func (app *apiServer) run() {
 	// make sure to capture terminate signals
 	app.observeSignals()
 
+	// run services
+	svc.Manager().Run()
+	
 	// start responding to requests
 	app.log.Infof("welcome to Fantom GraphQL API server")
 	app.log.Infof("listening for requests on %s", app.cfg.Server.BindAddress)
@@ -92,7 +97,7 @@ func (app *apiServer) makeHttpServer() {
 // setupHandlers initializes an array of handlers for our HTTP API end-points.
 func (app *apiServer) setupHandlers(mux *http.ServeMux) {
 	// create root resolver
-	app.api = resolvers.New(app.cfg, app.log)
+	app.api = resolvers.New()
 
 	// setup GraphQL API handler
 	h := http.TimeoutHandler(
