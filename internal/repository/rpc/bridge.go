@@ -5,7 +5,7 @@ We recommend using local IPC for fast and the most efficient inter-process commu
 and an Opera/Lachesis node. Any remote RPC connection will work, but the performance may be significantly degraded
 by extra networking overhead of remote RPC calls.
 
-You should also consider security implications of opening Lachesis RPC interface for a remote access.
+You should also consider security implications of opening Lachesis RPC interface for remote access.
 If you considering it as your deployment strategy, you should establish encrypted channel between the API server
 and Lachesis RPC interface with connection limited to specified endpoints.
 
@@ -20,11 +20,16 @@ import (
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	etc "github.com/ethereum/go-ethereum/core/types"
 	eth "github.com/ethereum/go-ethereum/ethclient"
 	ftm "github.com/ethereum/go-ethereum/rpc"
 	"golang.org/x/sync/singleflight"
 	"strings"
+	"sync"
 )
+
+// rpcHeadProxyChannelCapacity represents the capacity of the new received blocks proxy channel.
+const rpcHeadProxyChannelCapacity = 10000
 
 // FtmBridge represents Lachesis RPC abstraction layer.
 type FtmBridge struct {
@@ -45,36 +50,24 @@ type FtmBridge struct {
 	// common contracts
 	sfcAbi      *abi.ABI
 	sfcContract *contracts.SfcContract
+
+	// received blocks proxy
+	wg       *sync.WaitGroup
+	sigClose chan bool
+	headers  chan *etc.Header
 }
 
 // New creates new Lachesis RPC connection bridge.
 func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
-	// log what we do
-	log.Debugf("connecting block chain node at %s", cfg.Lachesis.Url)
-
-	// try to establish a connection
-	client, err := ftm.Dial(cfg.Lachesis.Url)
+	cli, con, err := connect(cfg, log)
 	if err != nil {
-		log.Critical(err)
+		log.Criticalf("can not open connection; %s", err.Error())
 		return nil, err
 	}
 
-	// log
-	log.Notice("block chain node online")
-
-	// try to establish a for smart contract interaction
-	con, err := eth.Dial(cfg.Lachesis.Url)
-	if err != nil {
-		log.Critical(err)
-		return nil, err
-	}
-
-	// log
-	log.Notice("smart contact connection open")
-
-	// return the Bridge
+	// build the bridge structure using the con we have
 	br := &FtmBridge{
-		rpc: client,
+		rpc: cli,
 		eth: con,
 		log: log,
 		cg:  new(singleflight.Group),
@@ -87,6 +80,11 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 			addressProvider: cfg.DeFi.FMint.AddressProvider,
 		},
 		fLendCfg: fLendConfig{lendigPoolAddress: cfg.DeFi.FLend.LendingPool},
+
+		// configure block observation loop
+		wg:       new(sync.WaitGroup),
+		sigClose: make(chan bool, 1),
+		headers:  make(chan *etc.Header, rpcHeadProxyChannelCapacity),
 	}
 
 	// inform about the local address of the API node
@@ -94,11 +92,52 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 
 	// add the bridge ref to the fMintCfg and return the instance
 	br.fMintCfg.bridge = br
+	br.run()
 	return br, nil
+}
+
+// connect opens connections we need to communicate with the blockchain node.
+func connect(cfg *config.Config, log logger.Logger) (*ftm.Client, *eth.Client, error) {
+	// log what we do
+	log.Debugf("connecting blockchain node at %s", cfg.Lachesis.Url)
+
+	// try to establish a connection
+	client, err := ftm.Dial(cfg.Lachesis.Url)
+	if err != nil {
+		log.Critical(err)
+		return nil, nil, err
+	}
+
+	// try to establish a for smart contract interaction
+	con, err := eth.Dial(cfg.Lachesis.Url)
+	if err != nil {
+		log.Critical(err)
+		return nil, nil, err
+	}
+
+	// log
+	log.Notice("node connection open")
+	return client, con, nil
+}
+
+// run starts the bridge threads required to collect blockchain data.
+func (ftm *FtmBridge) run() {
+	ftm.wg.Add(1)
+	go ftm.observeBlocks()
+}
+
+// terminate kills the bridge threads to end the bridge gracefully.
+func (ftm *FtmBridge) terminate() {
+	ftm.sigClose <- true
+	ftm.wg.Wait()
+	ftm.log.Noticef("rpc threads terminated")
 }
 
 // Close will finish all pending operations and terminate the Lachesis RPC connection
 func (ftm *FtmBridge) Close() {
+	// terminate threads before we close connections
+	ftm.terminate()
+
 	// do we have a connection?
 	if ftm.rpc != nil {
 		ftm.rpc.Close()
@@ -152,4 +191,10 @@ func (ftm *FtmBridge) SfcAbi() *abi.ABI {
 		ftm.sfcAbi = &ab
 	}
 	return ftm.sfcAbi
+}
+
+// ObservedBlockProxy provides a channel fed with new headers observed
+// by the connected blockchain node.
+func (ftm *FtmBridge) ObservedBlockProxy() chan *etc.Header {
+	return ftm.headers
 }

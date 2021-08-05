@@ -5,7 +5,7 @@ We recommend using local IPC for fast and the most efficient inter-process commu
 and an Opera/Lachesis node. Any remote RPC connection will work, but the performance may be significantly degraded
 by extra networking overhead of remote RPC calls.
 
-You should also consider security implications of opening Lachesis RPC interface for a remote access.
+You should also consider security implications of opening Lachesis RPC interface for remote access.
 If you considering it as your deployment strategy, you should establish encrypted channel between the API server
 and Lachesis RPC interface with connection limited to specified endpoints.
 
@@ -28,7 +28,7 @@ const (
 )
 
 // MustBlockHeight returns the current block height
-// of the block chain. It returns nil if the block height can not be pulled.
+// of the blockchain. It returns nil if the block height can not be pulled.
 func (ftm *FtmBridge) MustBlockHeight() *big.Int {
 	var val hexutil.Big
 	if err := ftm.rpc.Call(&val, "ftm_blockNumber"); err != nil {
