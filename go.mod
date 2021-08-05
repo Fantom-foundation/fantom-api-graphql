@@ -3,7 +3,7 @@ module fantom-api-graphql
 go 1.13
 
 require (
-	github.com/StackExchange/wmi v1.2.0 // indirect
+	github.com/StackExchange/wmi v1.2.1 // indirect
 	github.com/allegro/bigcache v1.2.1
 	github.com/btcsuite/btcd v0.22.0-beta // indirect
 	github.com/cespare/cp v1.1.1 // indirect
@@ -21,7 +21,7 @@ require (
 	github.com/huin/goupnp v1.0.2 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/karalabe/usb v0.0.0-20210518091819-4ea20957c210 // indirect
-	github.com/klauspost/compress v1.13.1
+	github.com/klauspost/compress v1.13.3
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.13 // indirect
@@ -34,7 +34,7 @@ require (
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/rs/cors v1.8.0
-	github.com/shirou/gopsutil v3.21.6+incompatible // indirect
+	github.com/shirou/gopsutil v3.21.7+incompatible // indirect
 	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/spf13/cast v1.4.0 // indirect
 	github.com/spf13/viper v1.8.1
@@ -43,8 +43,8 @@ require (
 	github.com/tklauser/go-sysconf v0.3.7 // indirect
 	github.com/tyler-smith/go-bip39 v1.1.0 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
-	go.mongodb.org/mongo-driver v1.7.0
-	go.uber.org/atomic v1.7.0
+	go.mongodb.org/mongo-driver v1.7.1
+	go.uber.org/atomic v1.9.0
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
 	golang.org/x/net v0.0.0-20210726213435-c6fcb2dbf985 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
