@@ -6,6 +6,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"go.uber.org/atomic"
 	"time"
 )
 
@@ -13,13 +14,16 @@ import (
 const blsObserverTickBaseDuration = 5 * time.Second
 
 // blsScanTickBaseDuration represents the frequency of the scanner default progress.
-const blsScanTickBaseDuration = 5 * time.Millisecond
+const blsScanTickBaseDuration = 10 * time.Millisecond
 
 // blsObserverTickIdleDuration represents the frequency of the scanner status observer on idle.
 const blsObserverTickIdleDuration = 15 * time.Second
 
 // blsScanTickIdleDuration represents the frequency of the scanner re-check on idle.
 const blsScanTickIdleDuration = 10 * time.Second
+
+// blsBlockBufferCapacity represents the capacity of the found blocks channel.
+const blsBlockBufferCapacity = 20000
 
 // blkScanner implements scanner loading previous/unknown blockchain blocks.
 type blkScanner struct {
@@ -28,7 +32,8 @@ type blkScanner struct {
 	outBlock    chan *types.Block
 	observeTick *time.Ticker
 	scanTick    *time.Ticker
-	onIdle      bool
+	onIdle      *atomic.Bool
+	toIdle      chan bool
 	from        uint64
 	current     uint64
 	to          uint64
@@ -37,6 +42,14 @@ type blkScanner struct {
 // name returns the name of the service used by orchestrator.
 func (bls *blkScanner) name() string {
 	return "block scanner"
+}
+
+// init prepares the block scanner.
+func (bls *blkScanner) init() {
+	bls.sigStop = make(chan bool, 1)
+	bls.toIdle = make(chan bool, 1)
+	bls.onIdle = atomic.NewBool(false)
+	bls.outBlock = make(chan *types.Block, blsBlockBufferCapacity)
 }
 
 // run starts the block dispatcher
@@ -97,6 +110,8 @@ func (bls *blkScanner) boundaries() (uint64, error) {
 func (bls *blkScanner) execute() {
 	defer func() {
 		close(bls.sigStop)
+		close(bls.outBlock)
+		close(bls.toIdle)
 		bls.mgr.finished(bls)
 	}()
 
@@ -125,7 +140,7 @@ func (bls *blkScanner) observe() bool {
 	bh, err := repo.BlockHeight()
 	if err != nil {
 		log.Errorf("can not get scanner target; %s", err.Error())
-		return true
+		return false
 	}
 
 	// log the progress of the scan process
@@ -139,22 +154,24 @@ func (bls *blkScanner) observe() bool {
 // idle change scanner idle state if needed by resetting the internal tickers.
 func (bls *blkScanner) idle(target bool) {
 	// if the state already match, nothing to do
-	if target == bls.onIdle {
+	if target == bls.onIdle.Load() {
 		return
 	}
 
-	// going to active state?
+	// switch the idle state
+	bls.onIdle.Toggle()
+
+	// going to active?
 	if !target {
 		bls.observeTick.Reset(blsObserverTickBaseDuration)
 		bls.scanTick.Reset(blsScanTickBaseDuration)
-		bls.onIdle = false
 		return
 	}
 
-	// going to idle state
+	// going to idle, signal to orchestrator
 	bls.observeTick.Reset(blsObserverTickIdleDuration)
 	bls.scanTick.Reset(blsScanTickIdleDuration)
-	bls.onIdle = false
+	bls.toIdle <- true
 }
 
 // next pulls the next block if available and pushes it for processing.
@@ -165,7 +182,7 @@ func (bls *blkScanner) next() {
 	}
 
 	// we may not need to pull at all, if on idle
-	if bls.onIdle {
+	if bls.onIdle.Load() {
 		return
 	}
 
