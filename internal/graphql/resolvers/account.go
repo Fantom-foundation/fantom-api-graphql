@@ -31,7 +31,7 @@ func (rs *rootResolver) Account(args struct{ Address common.Address }) (*Account
 	// simply pull the block by hash
 	acc, err := repository.R().Account(&args.Address)
 	if err != nil {
-		rs.log.Errorf("could not get the specified account")
+		log.Errorf("could not get the specified account")
 		return nil, err
 	}
 	return NewAccount(acc), nil

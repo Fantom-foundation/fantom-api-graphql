@@ -37,8 +37,8 @@ func (rs *rootResolver) addBlockSubscriber(sub *subscriptOnBlock) {
 		rs.blockSubscribers[id] = sub
 	} else {
 		// log critical issue
-		rs.log.Critical("can not generate UUID for new onBlock subscriber")
-		rs.log.Critical(err)
+		log.Critical("can not generate UUID for new onBlock subscriber")
+		log.Critical(err)
 	}
 }
 

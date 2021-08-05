@@ -38,7 +38,7 @@ func (rs *rootResolver) Transactions(args *struct {
 	// get the transaction hash list from repository
 	txs, err := repository.R().Transactions((*string)(args.Cursor), args.Count)
 	if err != nil {
-		rs.log.Errorf("can not get transactions list; %s", err.Error())
+		log.Errorf("can not get transactions list; %s", err.Error())
 		return nil, err
 	}
 	return NewTransactionList(txs), nil

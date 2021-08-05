@@ -25,7 +25,7 @@ func (rs *rootResolver) Transaction(args *struct{ Hash common.Hash }) (*Transact
 	// get the transaction from repository
 	trx, err := repository.R().Transaction(&args.Hash)
 	if err != nil {
-		rs.log.Warningf("can not get transaction %s", args.Hash)
+		log.Warningf("can not get transaction %s", args.Hash)
 		return nil, err
 	}
 
@@ -37,7 +37,7 @@ func (rs *rootResolver) SendTransaction(args *struct{ Tx hexutil.Bytes }) (*Tran
 	// get the transaction from repository
 	trx, err := repository.R().SendTransaction(args.Tx)
 	if err != nil {
-		rs.log.Warningf("can not send transaction %s", err.Error())
+		log.Warningf("can not send transaction %s", err.Error())
 		return nil, err
 	}
 

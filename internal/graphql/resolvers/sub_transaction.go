@@ -38,8 +38,8 @@ func (rs *rootResolver) addTrxSubscriber(sub *subscriptOnTrx) {
 		rs.trxSubscribers[id] = sub
 	} else {
 		// log critical issue
-		rs.log.Critical("can not generate UUID for new onTransaction subscriber")
-		rs.log.Critical(err)
+		log.Critical("can not generate UUID for new onTransaction subscriber")
+		log.Critical(err)
 	}
 }
 

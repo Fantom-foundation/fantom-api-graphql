@@ -12,7 +12,7 @@ func (rs *rootResolver) Stakers() ([]*Staker, error) {
 	// get the number
 	num, err := repository.R().LastValidatorId()
 	if err != nil {
-		rs.log.Errorf("can not get the highest staker id; %s", err.Error())
+		log.Errorf("can not get the highest staker id; %s", err.Error())
 		return nil, err
 	}
 
@@ -22,13 +22,13 @@ func (rs *rootResolver) Stakers() ([]*Staker, error) {
 		// extract the staker info
 		st, err := repository.R().Validator((*hexutil.Big)(new(big.Int).SetUint64(i)))
 		if err != nil {
-			rs.log.Criticalf("can not extract staker #%d information; %s", i, err.Error())
+			log.Criticalf("can not extract staker #%d information; %s", i, err.Error())
 			continue
 		}
 
 		// staker not valid?
 		if st.Id.ToInt().Uint64() == 0 {
-			rs.log.Debugf("staker #%d has invalid ID", i)
+			log.Debugf("staker #%d has invalid ID", i)
 			continue
 		}
 
@@ -37,7 +37,7 @@ func (rs *rootResolver) Stakers() ([]*Staker, error) {
 	}
 
 	// inform
-	rs.log.Debugf("found %d stakers", len(list))
+	log.Debugf("found %d stakers", len(list))
 
 	// sort the list by total amount delegated and return the result
 	sort.Sort(StakesByTotalStaked(list))

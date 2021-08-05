@@ -67,7 +67,7 @@ func (rs *rootResolver) TrxGasSpeed(args struct {
 	from := to.Add(time.Duration(-args.Range) * time.Second)
 
 	// log what we do
-	rs.log.Noticef("calculating gas speed from %s to %s", from.String(), to.String())
+	log.Noticef("calculating gas speed from %s to %s", from.String(), to.String())
 	return repository.R().TrxGasSpeed(&from, &to)
 }
 

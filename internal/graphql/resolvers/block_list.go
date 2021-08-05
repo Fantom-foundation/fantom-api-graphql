@@ -37,7 +37,7 @@ func (rs *rootResolver) Blocks(args *struct {
 	if args.Cursor != nil {
 		val, err := hexutil.DecodeUint64(string(*args.Cursor))
 		if err != nil {
-			rs.log.Errorf("invalid block cursor [%s]; %s", args.Cursor, err.Error())
+			log.Errorf("invalid block cursor [%s]; %s", args.Cursor, err.Error())
 		}
 		num = &val
 	}
@@ -55,7 +55,7 @@ func (rs *rootResolver) Blocks(args *struct {
 	// get the block list from repository
 	bl, err := repository.R().Blocks(num, args.Count)
 	if err != nil {
-		rs.log.Errorf("can not get blocks list; %s", err.Error())
+		log.Errorf("can not get blocks list; %s", err.Error())
 		return nil, err
 	}
 

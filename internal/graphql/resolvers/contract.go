@@ -181,21 +181,21 @@ func updateContractFromInput(con *ContractValidationInput, sc *types.Contract) {
 func (rs *rootResolver) ValidateContract(args *struct{ Contract ContractValidationInput }) (*Contract, error) {
 	// validate the input
 	if err := isValidationValid(&args.Contract); err != nil {
-		rs.log.Errorf("can not validate contract, validation request is not valid; %s", err.Error())
+		log.Errorf("can not validate contract, validation request is not valid; %s", err.Error())
 		return nil, err
 	}
 
 	// get a contract to be validated if any
 	sc, err := repository.R().Contract(&args.Contract.Address)
 	if err != nil {
-		rs.log.Errorf("contract [%s] not found", args.Contract.Address.String())
+		log.Errorf("contract [%s] not found", args.Contract.Address.String())
 		return nil, err
 	}
 
 	// if we already have this source code, no need to do any updates
 	hash := sourceHash(args.Contract.SourceCode)
 	if sc.SourceCodeHash != nil && hash.String() == sc.SourceCodeHash.String() {
-		rs.log.Debugf("contract [%s] source code is already known", sc.Address.String())
+		log.Debugf("contract [%s] source code is already known", sc.Address.String())
 		return NewContract(sc), nil
 	}
 
@@ -205,7 +205,7 @@ func (rs *rootResolver) ValidateContract(args *struct{ Contract ContractValidati
 
 	// do the validation
 	if err := repository.R().ValidateContract(sc); err != nil {
-		rs.log.Errorf("contract validation failed; %s", err.Error())
+		log.Errorf("contract validation failed; %s", err.Error())
 		return nil, err
 	}
 

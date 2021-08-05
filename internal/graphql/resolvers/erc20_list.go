@@ -56,7 +56,7 @@ func (rs *rootResolver) ownsErc20Asset(token *common.Address, owner *common.Addr
 	// get the balance for the owner
 	val, err := repository.R().Erc20BalanceOf(token, owner)
 	if err != nil {
-		rs.log.Errorf("token %s balance can not be loaded for %s; %s", token.String(), owner.String(), err.Error())
+		log.Errorf("token %s balance can not be loaded for %s; %s", token.String(), owner.String(), err.Error())
 		return false
 	}
 

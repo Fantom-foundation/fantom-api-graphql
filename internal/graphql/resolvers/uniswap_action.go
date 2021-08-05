@@ -58,7 +58,7 @@ func (rs *rootResolver) DefiUniswapActions(args *struct {
 	// get the uniswap action list from repository
 	al, err := repository.R().UniswapActions(args.PairAddress, (*string)(args.Cursor), args.Count, *args.ActionType)
 	if err != nil {
-		rs.log.Errorf("can not get uniswap action list; %s", err.Error())
+		log.Errorf("can not get uniswap action list; %s", err.Error())
 		return nil, err
 	}
 	return NewUniswapActionList(al), nil

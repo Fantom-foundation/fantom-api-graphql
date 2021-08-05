@@ -34,12 +34,12 @@ func (rs *rootResolver) GasPrice() (hexutil.Uint64, error) {
 
 	// if the price safely within the range
 	if !price.ToInt().IsUint64() {
-		rs.log.Error("current gas price is too high and can not be extracted")
+		log.Error("current gas price is too high and can not be extracted")
 		return hexutil.Uint64(0), err
 	}
 
 	// inform and return
-	rs.log.Debugf("current gas price is %d", price.ToInt().Uint64())
+	log.Debugf("current gas price is %d", price.ToInt().Uint64())
 	return hexutil.Uint64(price.ToInt().Uint64()), nil
 }
 

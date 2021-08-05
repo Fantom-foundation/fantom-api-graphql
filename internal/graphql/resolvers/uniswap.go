@@ -302,7 +302,7 @@ func (rs *rootResolver) DefiTimeVolumes(args *struct {
 	// get volumes from DB repository
 	swapVolumes, err := repository.R().UniswapTimeVolumes(&args.Address, resolution, fDate, tDate)
 	if err != nil {
-		rs.log.Errorf("Can not get swap volumes from DB repository: %s", err.Error())
+		log.Errorf("Can not get swap volumes from DB repository: %s", err.Error())
 		return make([]*DefiTimeVolume, 0)
 	}
 
@@ -351,7 +351,7 @@ func (rs *rootResolver) DefiTimePrices(args *struct {
 	// get prices from DB repository
 	swapPrices, err := repository.R().UniswapTimePrices(&args.Address, resolution, fDate, tDate, dir)
 	if err != nil {
-		rs.log.Errorf("Can not get uniswap prices from DB repository: %s", err.Error())
+		log.Errorf("Can not get uniswap prices from DB repository: %s", err.Error())
 		return make([]types.DefiTimePrice, 0)
 	}
 	return swapPrices
@@ -422,7 +422,7 @@ func (rs *rootResolver) DefiTimeReserves(args *struct {
 	// get reserves from DB repository
 	timeReserves, err := repository.R().UniswapTimeReserves(&args.Address, resolution, fDate, tDate)
 	if err != nil {
-		rs.log.Errorf("Can not get uniswap reserves from DB repository: %s", err.Error())
+		log.Errorf("Can not get uniswap reserves from DB repository: %s", err.Error())
 		return make([]DefiTimeReserve, 0)
 	}
 

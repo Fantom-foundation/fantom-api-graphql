@@ -38,7 +38,7 @@ func (rs *rootResolver) Contracts(args *struct {
 	// get the contract list from repository
 	cl, err := repository.R().Contracts(args.ValidatedOnly, (*string)(args.Cursor), args.Count)
 	if err != nil {
-		rs.log.Errorf("can not get contracts list; %s", err.Error())
+		log.Errorf("can not get contracts list; %s", err.Error())
 		return nil, err
 	}
 	return NewContractList(cl), nil

@@ -105,7 +105,7 @@ func (gc *GovernanceContract) DelegationsBy(args struct{ From common.Address }) 
 	}
 
 	// no delegations by default
-	repository.R().Log().Debugf("unknown governance type of %s", gc.Address.Hex())
+	log.Debugf("unknown governance type of %s", gc.Address.Hex())
 	return []common.Address{}, nil
 }
 
@@ -118,7 +118,7 @@ func (gc *GovernanceContract) CanVote(args struct{ From common.Address }) (bool,
 	}
 
 	// voting disabled by default
-	repository.R().Log().Debugf("unknown governance type of %s", gc.Address.Hex())
+	log.Debugf("unknown governance type of %s", gc.Address.Hex())
 	return false, nil
 }
 
@@ -135,14 +135,14 @@ func (gc *GovernanceContract) sfcDelegationsBy(addr common.Address) ([]common.Ad
 	for _, d := range dl {
 		// is the delegation ok for voting?
 		if 0 == d.AmountDelegated.ToInt().Uint64() {
-			repository.R().Log().Debugf("delegation to %d from address %s is deactivated", d.ToStakerId, addr.String())
+			log.Debugf("delegation to %d from address %s is deactivated", d.ToStakerId, addr.String())
 			continue
 		}
 		res = append(res, d.ToStakerAddress)
 	}
 
 	// log delegations found
-	repository.R().Log().Debugf("%d delegations on %s", len(res), addr.String())
+	log.Debugf("%d delegations on %s", len(res), addr.String())
 	return res, nil
 }
 

@@ -41,17 +41,17 @@ func (rs *rootResolver) estimateRewardsByAddress(addr *common.Address, ep *types
 	// try to get the address involved
 	acc, err := repository.R().Account(addr)
 	if err != nil {
-		rs.log.Error("invalid address or address not found")
+		log.Error("invalid address or address not found")
 		return EstimatedRewards{}, fmt.Errorf("address not found")
 	}
 
 	// inform to debug
-	rs.log.Debugf("calculating rewards estimation for address [%s]", acc.Address.String())
+	log.Debugf("calculating rewards estimation for address [%s]", acc.Address.String())
 
 	// get the address balance
 	balance, err := repository.R().AccountBalance(&acc.Address)
 	if err != nil {
-		rs.log.Errorf("can not get balance for address [%s]", acc.Address.String())
+		log.Errorf("can not get balance for address [%s]", acc.Address.String())
 		return EstimatedRewards{}, fmt.Errorf("address balance not found")
 	}
 
@@ -67,7 +67,7 @@ func (rs *rootResolver) EstimateRewards(args *struct {
 }) (EstimatedRewards, error) {
 	// at least one of the parameters must be present
 	if args == nil || (args.Address == nil && args.Amount == nil) {
-		rs.log.Error("can not calculate estimated rewards without parameters")
+		log.Error("can not calculate estimated rewards without parameters")
 		return EstimatedRewards{}, fmt.Errorf("missing both address and amount")
 	}
 
@@ -76,14 +76,14 @@ func (rs *rootResolver) EstimateRewards(args *struct {
 	// but we don't need that precise reflection here
 	ep, err := repository.R().CurrentSealedEpoch()
 	if err != nil {
-		rs.log.Errorf("can not get the current sealed epoch information; %s", err.Error())
+		log.Errorf("can not get the current sealed epoch information; %s", err.Error())
 		return EstimatedRewards{}, fmt.Errorf("current sealed epoch not found")
 	}
 
 	// get the current total staked amount
 	total, err := repository.R().TotalStaked()
 	if err != nil {
-		rs.log.Errorf("can not get the current total staked amount; %s", err.Error())
+		log.Errorf("can not get the current total staked amount; %s", err.Error())
 		return EstimatedRewards{}, fmt.Errorf("current total staked amount not found")
 	}
 

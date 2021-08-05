@@ -33,7 +33,7 @@ func (rs *rootResolver) Epochs(args struct {
 	// get the transaction hash list from repository
 	epl, err := repository.R().Epochs((*string)(args.Cursor), args.Count)
 	if err != nil {
-		rs.log.Errorf("can not get epoch list; %s", err.Error())
+		log.Errorf("can not get epoch list; %s", err.Error())
 		return nil, err
 	}
 	return NewEpochList(epl), nil
