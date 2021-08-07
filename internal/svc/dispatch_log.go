@@ -110,6 +110,23 @@ func (lgd *logDispatcher) init() {
 
 		/* UniswapPair::Sync(uint112 reserve0, uint112 reserve1) */
 		common.HexToHash("0x1c411e9a96e071241c2f21f7726b17ae89e3cab4c78be50e062b03a9fffbbad1"): handleUniswapSync,
+
+		/* ---------------------- fMint contract related event hooks below this line ----------------------- */
+
+		/* FantomMintCollateral::Deposited(address indexed token, address indexed user, uint256 amount) */
+		common.HexToHash("0x8752a472e571a816aea92eec8dae9baf628e840f4929fbcc2d155e6233ff68a7"): handleFMintDeposit,
+
+		/* FantomMintCollateral::Withdrawn(address indexed token, address indexed user, uint256 amount) */
+		common.HexToHash("0xd1c19fbcd4551a5edfb66d43d2e337c04837afda3482b42bdf569a8fccdae5fb"): handleFMintWithdraw,
+
+		/* FantomMintDebt::Minted(address indexed token, address indexed user, uint256 amount, uint256 fee) */
+		common.HexToHash("0x03f17d66ad3bf18e9412eb06582908831508cdb9b8da9cddb1431f645a5b8632"): handleFMintMint,
+
+		/* FantomMintDebt::Repaid(address indexed token, address indexed user, uint256 amount) */
+		common.HexToHash("0x0a3fbbea70e93f2daafa3102f5c9a1b8315e6d7a1e43e4bc020bc1162327470a"): handleFMintRepay,
+
+		/* FantomMintRewardManager::RewardPaid(address indexed user, uint256 reward) */
+		common.HexToHash("0xe2403640ba68fed3a2f88b7557551d1993f84b99bb10ff833f0cf8db0c5e0486"): handleFMintReward,
 	}
 }
 
