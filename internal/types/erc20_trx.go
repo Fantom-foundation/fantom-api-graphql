@@ -85,18 +85,19 @@ func Erc20TrxTypeByName(name string) *int32 {
 }
 
 // Pk generates unique identifier of the ERC20 transaction.
-// We use 24 bytes of the transaction hash and we add the index
-// of the transaction log record in the block to overcome possibility
-// of having multiple ERC20 log events inside the same trx.
+// We use 10 bytes of the sender address, 10 bytes of the recipient address,
+// and 10 bytes of the token address. The last 8 bytes are ten XOR-ed
+// with the transaction time stamp.
 func (etx *Erc20Transaction) Pk() string {
 	// make the base PK from the trx hash and log index
 	bytes := make([]byte, 32)
-	copy(bytes, etx.Transaction[:24])
-	binary.BigEndian.PutUint64(bytes[24:], uint64(etx.TrxIndex))
+	copy(bytes, etx.Sender.Bytes()[:10])
+	copy(bytes[10:], etx.Recipient.Bytes()[:10])
+	copy(bytes[20:], etx.TokenAddress.Bytes()[:10])
 
-	// xor in the timestamp
+	// xor in the timestamp and the root trx index
 	ts := make([]byte, 8)
-	binary.BigEndian.PutUint64(ts, uint64(etx.TimeStamp)<<24)
+	binary.BigEndian.PutUint64(ts, ((uint64(etx.TimeStamp)&0x7FFFFFFFFF)<<24)|(uint64(etx.TrxIndex)&0xFFFFFF))
 	for i := 0; i < 8; i++ {
 		bytes[24+i] = bytes[24+i] ^ ts[i]
 	}
@@ -105,8 +106,12 @@ func (etx *Erc20Transaction) Pk() string {
 
 // OrdinalIndex returns an ordinal index for the given ERC20 transaction.
 // We construct the UID from the time the transaction was processed (40 bits = 1099511627775s = 34000 years),
+// and the small fraction of the token address to distinguish between different transfers on the same block.
 func (etx *Erc20Transaction) OrdinalIndex() uint64 {
-	return (uint64(etx.TimeStamp)&0x7FFFFFFFFF)<<24 | uint64(etx.TrxIndex)&0xFFFFFF
+	ts := make([]byte, 8)
+	binary.BigEndian.PutUint64(ts, (uint64(etx.TimeStamp)&0x7FFFFFFFFF)<<24)
+	copy(ts[5:], etx.TokenAddress.Bytes()[:3])
+	return binary.BigEndian.Uint64(ts)
 }
 
 // MarshalBSON creates a BSON representation of the ERC20 transaction record.

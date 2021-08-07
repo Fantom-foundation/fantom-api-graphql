@@ -20,12 +20,12 @@ const (
 	FiRewardClaimedTimeStamp = "stamp"
 )
 
-// RewardDecimalsCorrection is used to manipulate precision of a rewards value
+// RewardDecimalsCorrection is used to manipulate precision of a rewards value,
 // so it can be stored in database as UINT64 without loosing too much data
 var RewardDecimalsCorrection = new(big.Int).SetUint64(1000000000)
 
 // RewardClaim represents a reward claim record in Opera staking
-// SFC contract. A reward can be claimed directly towards the account balance
+// SFC contract. A reward can be claimed directly towards the account balance,
 // or it can be re-staked into the SFC contract as an increased delegation.
 type RewardClaim struct {
 	Delegator     common.Address

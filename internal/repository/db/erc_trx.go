@@ -32,7 +32,7 @@ func (db *MongoDbBridge) initErc20TrxCollection(col *mongo.Collection) {
 		db.log.Panicf("can not create indexes for ERC20 trx collection; %s", err.Error())
 	}
 
-	// log we done that
+	// log we are done that
 	db.log.Debugf("ERC20 trx collection initialized")
 }
 
