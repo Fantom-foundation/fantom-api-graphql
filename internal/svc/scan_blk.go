@@ -134,12 +134,12 @@ func (bls *blkScanner) execute() {
 		case <-bls.sigStop:
 			return
 		case bin, ok := <-bls.inDispatched:
-			// ignore block re-scans
-			if ok && bin > bls.done {
+			// ignore block re-scans; do not skip blocks in dispatched # counter
+			if ok && (bls.done == 0 || int64(bin)-int64(bls.done) == 1) {
 				bls.done = bin
 			}
 		case <-bls.observeTick.C:
-			bls.idle(bls.observe())
+			bls.checkIdle(bls.observe())
 		case <-bls.scanTick.C:
 			bls.shift()
 		}
@@ -152,12 +152,13 @@ func (bls *blkScanner) observe() bool {
 	// try to get the block height
 	bh, err := repo.BlockHeight()
 	if err != nil {
-		log.Errorf("can not get scanner target; %s", err.Error())
+		log.Errorf("can not get current block height; %s", err.Error())
 		return false
 	}
 
 	// if on idle, wait for the dispatcher to catch up with the blocks
 	// we use a hysteresis boundary before the state is flipped to re-scan
+	// keep the idle state if the diff is below hysteresis
 	onIdle := bls.onIdle.Load()
 	target := bh.ToInt().Uint64()
 	diff := target - bls.done
@@ -165,7 +166,7 @@ func (bls *blkScanner) observe() bool {
 		bls.next = bls.done
 		bls.from = bls.done
 		log.Infof("block scanner idling on #%d, head on #%d", bls.next, target)
-		return false
+		return true
 	}
 
 	// log the progress of the scan process
@@ -176,15 +177,16 @@ func (bls *blkScanner) observe() bool {
 	return bls.to < bls.next
 }
 
-// idle change scanner idle state if needed by resetting the internal tickers.
-func (bls *blkScanner) idle(target bool) {
+// checkIdle change scanner idle state if needed.
+// It resets the internal tickers according to the target state.
+func (bls *blkScanner) checkIdle(target bool) {
 	// if the state already match, nothing to do
 	if target == bls.onIdle.Load() {
 		return
 	}
 
-	// switch the idle state
-	log.Noticef("block scanner idle toggled to %t", target)
+	// switch the checkIdle state
+	log.Noticef("block scanner idle state toggled to %t", target)
 	bls.onIdle.Toggle()
 
 	// going to active?
@@ -194,7 +196,7 @@ func (bls *blkScanner) idle(target bool) {
 		return
 	}
 
-	// going to idle, signal to orchestrator
+	// going to checkIdle, signal to orchestrator
 	bls.observeTick.Reset(blsObserverTickIdleDuration)
 	bls.scanTick.Reset(blsScanTickIdleDuration)
 	bls.toIdle <- true
@@ -207,7 +209,7 @@ func (bls *blkScanner) shift() {
 		return
 	}
 
-	// we may not need to pull at all, if on idle
+	// we may not need to pull at all, if on checkIdle
 	if bls.onIdle.Load() {
 		return
 	}

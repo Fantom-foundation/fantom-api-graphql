@@ -59,7 +59,7 @@ func (acd *accDispatcher) execute() {
 		case acc, ok := <-acd.inAccount:
 			// is the channel even available for reading
 			if !ok {
-				log.Notice("account channel closed, terminating %s", acd.name())
+				log.Noticef("account channel closed, terminating %s", acd.name())
 				return
 			}
 

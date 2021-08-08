@@ -146,7 +146,7 @@ func (eps *epochScanner) dequeue() {
 		// pull the next epoch from the queue if possible and store it
 		ep, ok := <-eps.queue
 		if !ok {
-			log.Noticef("epoch scanner queue terminated")
+			log.Noticef("SFC epoch scanner queue closed")
 			eps.mgr.finished(eps)
 			return
 		}

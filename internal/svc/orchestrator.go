@@ -11,7 +11,7 @@ import (
 )
 
 // orBlockCacheCapacity represents the capacity of the local block cache.
-const orBlockCacheCapacity = 25
+const orBlockCacheCapacity = 30
 
 // orchestrator implements service responsible for moderating connections between other services.
 type orchestrator struct {
@@ -87,7 +87,7 @@ func (or *orchestrator) handleNewHead(h *etc.Header) {
 		return
 	}
 
-	// if the block scanner is on idle, push to process
+	// if the block scanner is on checkIdle, push to process
 	if or.mgr.bls.onIdle.Load() {
 		or.mgr.bld.inBlock <- blk
 		return

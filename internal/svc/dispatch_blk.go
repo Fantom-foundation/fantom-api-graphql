@@ -11,9 +11,6 @@ import (
 // trxBufferCapacity is the number of new packed transactions kept in the trx channel.
 const trxBufferCapacity = 50000
 
-// bldDispatchedBlocksCapacity represents the capacity of the dispatched block numbers.
-const bldDispatchedBlocksCapacity = 50000
-
 // eventTrx represents a packed transaction event
 // sent between block dispatcher and transaction dispatcher
 type eventTrx struct {
@@ -39,7 +36,7 @@ func (bld *blockDispatcher) name() string {
 func (bld *blockDispatcher) init() {
 	bld.sigStop = make(chan bool, 1)
 	bld.outTransaction = make(chan *eventTrx, trxBufferCapacity)
-	bld.outDispatched = make(chan uint64, bldDispatchedBlocksCapacity)
+	bld.outDispatched = make(chan uint64, blsBlockBufferCapacity)
 }
 
 // run starts the block dispatcher
