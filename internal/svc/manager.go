@@ -38,7 +38,7 @@ func newServiceManager() *ServiceManager {
 	// create new orchestrator
 	sm := ServiceManager{
 		wg:  new(sync.WaitGroup),
-		svc: make([]Svc, 0, 10),
+		svc: make([]Svc, 0, 15),
 	}
 
 	// init the orchestration
@@ -58,7 +58,6 @@ func (mgr *ServiceManager) Run() {
 
 	// start services
 	for _, s := range mgr.svc {
-		log.Noticef("starting %s", s.name())
 		s.run()
 	}
 }
@@ -132,14 +131,14 @@ func (mgr *ServiceManager) init() {
 	mgr.svc = append(mgr.svc, mgr.ora)
 }
 
-// started signals to the orchestrator that the calling service
+// started signals to the manager that the calling service
 // has been started and is functioning.
 func (mgr *ServiceManager) started(svc Svc) {
 	mgr.wg.Add(1)
 	log.Noticef("%s is running", svc.name())
 }
 
-// finished signals to the orchestrator that the calling service
+// finished signals to the manager that the calling service
 // has been terminated and is no longer running.
 func (mgr *ServiceManager) finished(svc Svc) {
 	mgr.wg.Done()

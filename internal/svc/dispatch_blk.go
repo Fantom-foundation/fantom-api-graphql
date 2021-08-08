@@ -11,6 +11,9 @@ import (
 // trxBufferCapacity is the number of new packed transactions kept in the trx channel.
 const trxBufferCapacity = 50000
 
+// bldDispatchedBlocksCapacity represents the capacity of the dispatched block numbers.
+const bldDispatchedBlocksCapacity = 1000
+
 // eventTrx represents a packed transaction event
 // sent between block dispatcher and transaction dispatcher
 type eventTrx struct {
@@ -24,6 +27,7 @@ type blockDispatcher struct {
 	onBlock        chan *types.Block
 	inBlock        chan *types.Block
 	outTransaction chan *eventTrx
+	outDispatched  chan uint64
 }
 
 // name returns the name of the service used by orchestrator.
@@ -35,6 +39,7 @@ func (bld *blockDispatcher) name() string {
 func (bld *blockDispatcher) init() {
 	bld.sigStop = make(chan bool, 1)
 	bld.outTransaction = make(chan *eventTrx, trxBufferCapacity)
+	bld.outDispatched = make(chan uint64, bldDispatchedBlocksCapacity)
 }
 
 // run starts the block dispatcher
@@ -57,6 +62,7 @@ func (bld *blockDispatcher) execute() {
 		// close our channels
 		close(bld.sigStop)
 		close(bld.outTransaction)
+		close(bld.outDispatched)
 
 		// signal we are done
 		bld.mgr.finished(bld)
@@ -91,8 +97,11 @@ func (bld *blockDispatcher) execute() {
 // process the given block by loading its content and sending block transactions
 // into the trx dispatcher.
 func (bld *blockDispatcher) process(blk *types.Block) {
-	// any transactions within?
+	// dispatched block number is used by the block scanner
+	// to keep track of the work done vs. work pending
+	bld.outDispatched <- uint64(blk.Number)
 	if blk.Txs == nil || len(blk.Txs) == 0 {
+		log.Debugf("empty block #%d processed", blk.Number)
 		return
 	}
 

@@ -54,9 +54,10 @@ func (eps *epochScanner) run() {
 		eps.current = 1
 	}
 
-	// signal orchestrator and start threads
+	// signal orchestrator that we start two threads
 	eps.mgr.started(eps)
 	go eps.dequeue()
+	eps.mgr.started(eps)
 	go eps.execute()
 }
 
@@ -146,6 +147,7 @@ func (eps *epochScanner) dequeue() {
 		ep, ok := <-eps.queue
 		if !ok {
 			log.Noticef("epoch scanner queue terminated")
+			eps.mgr.finished(eps)
 			return
 		}
 		eps.store(ep)

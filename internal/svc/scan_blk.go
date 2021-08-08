@@ -17,10 +17,13 @@ const blsObserverTickBaseDuration = 5 * time.Second
 const blsScanTickBaseDuration = 5 * time.Millisecond
 
 // blsObserverTickIdleDuration represents the frequency of the scanner status observer on idle.
-const blsObserverTickIdleDuration = 15 * time.Second
+const blsObserverTickIdleDuration = 30 * time.Second
 
 // blsScanTickIdleDuration represents the frequency of the scanner re-check on idle.
 const blsScanTickIdleDuration = 10 * time.Second
+
+// blsReScanHysteresis is the number of blocks we wait from dispatcher until a re-scan kicks in.
+const blsReScanHysteresis = 50
 
 // blsBlockBufferCapacity represents the capacity of the found blocks channel.
 const blsBlockBufferCapacity = 20000
@@ -28,15 +31,17 @@ const blsBlockBufferCapacity = 20000
 // blkScanner implements scanner loading previous/unknown blockchain blocks.
 type blkScanner struct {
 	service
-	cfg         config.RepoCmd
-	outBlock    chan *types.Block
-	observeTick *time.Ticker
-	scanTick    *time.Ticker
-	onIdle      *atomic.Bool
-	toIdle      chan bool
-	from        uint64
-	current     uint64
-	to          uint64
+	cfg          config.RepoCmd
+	outBlock     chan *types.Block
+	inDispatched chan uint64
+	observeTick  *time.Ticker
+	scanTick     *time.Ticker
+	onIdle       *atomic.Bool
+	toIdle       chan bool
+	from         uint64
+	next         uint64
+	to           uint64
+	done         uint64
 }
 
 // name returns the name of the service used by orchestrator.
@@ -57,9 +62,11 @@ func (bls *blkScanner) run() {
 	if bls.mgr == nil {
 		panic(fmt.Errorf("no svc manager set on %s", bls.name()))
 	}
-
 	if bls.outBlock == nil {
 		panic(fmt.Errorf("no output block channel"))
+	}
+	if bls.inDispatched == nil {
+		panic(fmt.Errorf("no input block number channel"))
 	}
 
 	// get the scanner range
@@ -72,7 +79,7 @@ func (bls *blkScanner) run() {
 	// signal orchestrator we started and go
 	log.Noticef("block scan starts at #%d", start)
 	bls.from = start
-	bls.current = start
+	bls.next = start
 
 	bls.mgr.started(bls)
 	go bls.execute()
@@ -123,14 +130,18 @@ func (bls *blkScanner) execute() {
 
 	// do the scan
 	for {
-		// capture stop signal
 		select {
 		case <-bls.sigStop:
 			return
+		case bin, ok := <-bls.inDispatched:
+			// ignore block re-scans
+			if ok && bin > bls.done {
+				bls.done = bin
+			}
 		case <-bls.observeTick.C:
 			bls.idle(bls.observe())
 		case <-bls.scanTick.C:
-			bls.next()
+			bls.shift()
 		}
 	}
 }
@@ -145,12 +156,24 @@ func (bls *blkScanner) observe() bool {
 		return false
 	}
 
-	// log the progress of the scan process
-	bls.to = bh.ToInt().Uint64()
-	log.Infof("block scanner on #%d of <%d, %d>; idle: %t", bls.current, bls.from, bls.to, bls.onIdle.Load())
+	// if on idle, wait for the dispatcher to catch up with the blocks
+	// we use a hysteresis boundary before the state is flipped to re-scan
+	onIdle := bls.onIdle.Load()
+	target := bh.ToInt().Uint64()
+	diff := target - bls.done
+	if onIdle && diff < blsReScanHysteresis {
+		bls.next = bls.done
+		bls.from = bls.done
+		log.Infof("block scanner idling on #%d, head on #%d", bls.next, target)
+		return false
+	}
 
-	// should we turn the state to idle?
-	return bls.to < bls.current
+	// log the progress of the scan process
+	bls.to = target
+	log.Infof("block scanner on #%d of <#%d, #%d>, #%d dispatched", bls.next, bls.from, bls.to, bls.done)
+
+	// should we run on full speed (false), or on idle (true)?
+	return bls.to < bls.next
 }
 
 // idle change scanner idle state if needed by resetting the internal tickers.
@@ -178,9 +201,9 @@ func (bls *blkScanner) idle(target bool) {
 }
 
 // next pulls the next block if available and pushes it for processing.
-func (bls *blkScanner) next() {
+func (bls *blkScanner) shift() {
 	// are we on the end already
-	if bls.current > bls.to {
+	if bls.next > bls.to {
 		return
 	}
 
@@ -190,13 +213,13 @@ func (bls *blkScanner) next() {
 	}
 
 	// pull the current block
-	block, err := repo.BlockByNumber((*hexutil.Uint64)(&bls.current))
+	block, err := repo.BlockByNumber((*hexutil.Uint64)(&bls.next))
 	if err != nil {
-		log.Errorf("block #%d not available; %s", bls.current, err.Error())
+		log.Errorf("block #%d not available; %s", bls.next, err.Error())
 		return
 	}
 
 	// push the block for processing and advance to the next expected block
 	bls.outBlock <- block
-	bls.current++
+	bls.next++
 }

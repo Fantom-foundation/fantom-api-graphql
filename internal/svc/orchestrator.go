@@ -34,6 +34,7 @@ func (or *orchestrator) init() {
 	or.mgr.acd.inAccount = or.mgr.trd.outAccount
 	or.mgr.lgd.inLog = or.mgr.trd.outLog
 	or.mgr.bld.inBlock = or.mgr.bls.outBlock
+	or.mgr.bls.inDispatched = or.mgr.bld.outDispatched
 }
 
 // run starts the block dispatcher
@@ -62,10 +63,14 @@ func (or *orchestrator) execute() {
 		select {
 		case <-or.sigStop:
 			return
-		case h := <-heads:
-			or.handleNewHead(h)
-		case <-or.mgr.bls.toIdle:
-			or.unloadCache()
+		case h, ok := <-heads:
+			if ok {
+				or.handleNewHead(h)
+			}
+		case _, ok := <-or.mgr.bls.toIdle:
+			if ok {
+				or.unloadCache()
+			}
 		}
 	}
 }
