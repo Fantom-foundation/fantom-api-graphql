@@ -12,7 +12,7 @@ import (
 const trxBufferCapacity = 50000
 
 // bldDispatchedBlocksCapacity represents the capacity of the dispatched block numbers.
-const bldDispatchedBlocksCapacity = 1000
+const bldDispatchedBlocksCapacity = 100
 
 // eventTrx represents a packed transaction event
 // sent between block dispatcher and transaction dispatcher

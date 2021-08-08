@@ -14,7 +14,7 @@ import (
 const blsObserverTickBaseDuration = 5 * time.Second
 
 // blsScanTickBaseDuration represents the frequency of the scanner default progress.
-const blsScanTickBaseDuration = 5 * time.Millisecond
+const blsScanTickBaseDuration = 3 * time.Millisecond
 
 // blsObserverTickIdleDuration represents the frequency of the scanner status observer on idle.
 const blsObserverTickIdleDuration = 30 * time.Second
