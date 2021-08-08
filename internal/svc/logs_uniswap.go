@@ -8,6 +8,11 @@ import (
 	"math/big"
 )
 
+// uniswapOrdinalIndex calculates ordinal index of the given Uniswap transaction.
+func uniswapOrdinalIndex(lr *types.LogRecord) uint64 {
+	return ((uint64(lr.Block.Number) << 14) & 0x7FFFFFFFFFFFFFFF) | ((uint64(lr.TxIndex) << 8) & 0x3fff) | (uint64(lr.Index) & 0xff)
+}
+
 // handleUniswapSwap processes Uniswap Swap event lr emitted when a sender trades
 // input tokens to gain output tokens, this is the basic type of trade on an Uniswap pair.
 // UniswapPair::Swap(address indexed sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out, address indexed to)
@@ -43,7 +48,7 @@ func handleUniswapSwap(lr *types.LogRecord) {
 
 	// store the swap to repository
 	err := repo.UniswapAdd(&types.Swap{
-		OrdIndex:    lr.Trx.Uid(),
+		OrdIndex:    uniswapOrdinalIndex(lr),
 		BlockNumber: &lr.Block.Number,
 		Type:        types.SwapMint,
 		TimeStamp:   &lr.Block.TimeStamp,
@@ -93,7 +98,7 @@ func handleUniswapMint(lr *types.LogRecord) {
 
 	// store the swap to repository
 	err := repo.UniswapAdd(&types.Swap{
-		OrdIndex:    lr.Trx.Uid(),
+		OrdIndex:    uniswapOrdinalIndex(lr),
 		BlockNumber: &lr.Block.Number,
 		Type:        types.SwapMint,
 		TimeStamp:   &lr.Block.TimeStamp,
@@ -143,7 +148,7 @@ func handleUniswapBurn(lr *types.LogRecord) {
 
 	// store the swap to repository
 	err := repo.UniswapAdd(&types.Swap{
-		OrdIndex:    lr.Trx.Uid(),
+		OrdIndex:    uniswapOrdinalIndex(lr),
 		BlockNumber: &lr.Block.Number,
 		Type:        types.SwapBurn,
 		TimeStamp:   &lr.Block.TimeStamp,
@@ -190,7 +195,7 @@ func handleUniswapSync(lr *types.LogRecord) {
 
 	// store the swap to repository
 	err := repo.UniswapAdd(&types.Swap{
-		OrdIndex:    lr.Trx.Uid(),
+		OrdIndex:    uniswapOrdinalIndex(lr),
 		BlockNumber: &lr.Block.Number,
 		Type:        types.SwapSync,
 		TimeStamp:   &lr.Block.TimeStamp,
