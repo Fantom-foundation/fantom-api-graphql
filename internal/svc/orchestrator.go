@@ -21,7 +21,7 @@ type orchestrator struct {
 
 // name returns the name of the service used by orchestrator.
 func (or *orchestrator) name() string {
-	return "moderator"
+	return "orchestrator"
 }
 
 // init sets the initial connection state for the managed services
@@ -95,6 +95,9 @@ func (or *orchestrator) handleNewHead(h *etc.Header) {
 // unloadCache pushes all the blocks currently stored in cache
 // into the block processing queue to make sure they get all processed.
 func (or *orchestrator) unloadCache() {
+	// inform about the cache unloading
+	log.Noticef("unloading block cache for processing")
+
 	// pull all available cached blocks and send them to dispatch
 	l := or.blkCache.List(orBlockCacheCapacity)
 	for _, blk := range l {

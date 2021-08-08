@@ -68,7 +68,7 @@ func (app *apiServer) run() {
 
 	// run services
 	svc.Manager().Run()
-	
+
 	// start responding to requests
 	app.log.Infof("welcome to Fantom GraphQL API server")
 	app.log.Infof("listening for requests on %s", app.cfg.Server.BindAddress)
@@ -146,15 +146,18 @@ func (app *apiServer) terminate() {
 	}
 
 	// terminate observers, scanners and dispatchers, etc.
+	app.log.Notice("services terminate")
 	if mgr := svc.Manager(); mgr != nil {
 		mgr.Close()
 	}
 
 	// terminate connections to DB, blockchain, etc.
+	app.log.Notice("repository terminates")
 	if repo := repository.R(); repo != nil {
 		repo.Close()
 	}
 
 	// close resolvers
+	app.log.Notice("resolver terminates")
 	app.api.Close()
 }

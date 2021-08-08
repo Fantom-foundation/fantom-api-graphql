@@ -161,7 +161,7 @@ func (eps *epochScanner) store(ep *types.Epoch) {
 	}
 
 	// log what we do
-	log.Noticef("processing epoch #%d", ep.Id)
+	log.Debugf("processing epoch #%d", ep.Id)
 
 	// add the epoch to the database
 	err := repo.AddEpoch(ep)

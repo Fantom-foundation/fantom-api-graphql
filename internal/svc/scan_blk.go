@@ -14,7 +14,7 @@ import (
 const blsObserverTickBaseDuration = 5 * time.Second
 
 // blsScanTickBaseDuration represents the frequency of the scanner default progress.
-const blsScanTickBaseDuration = 10 * time.Millisecond
+const blsScanTickBaseDuration = 5 * time.Millisecond
 
 // blsObserverTickIdleDuration represents the frequency of the scanner status observer on idle.
 const blsObserverTickIdleDuration = 15 * time.Second
@@ -72,6 +72,7 @@ func (bls *blkScanner) run() {
 	// signal orchestrator we started and go
 	log.Noticef("block scan starts at #%d", start)
 	bls.from = start
+	bls.current = start
 
 	bls.mgr.started(bls)
 	go bls.execute()
@@ -135,6 +136,7 @@ func (bls *blkScanner) execute() {
 }
 
 // observe updates the scanner final block to scan towards and logs the progress.
+// Returns expected idle state (true in case the top block has been reached).
 func (bls *blkScanner) observe() bool {
 	// try to get the block height
 	bh, err := repo.BlockHeight()
@@ -145,10 +147,10 @@ func (bls *blkScanner) observe() bool {
 
 	// log the progress of the scan process
 	bls.to = bh.ToInt().Uint64()
-	log.Infof("block scanner on #%d of <%d, %d>", bls.current, bls.from, bls.to)
+	log.Infof("block scanner on #%d of <%d, %d>; idle: %t", bls.current, bls.from, bls.to, bls.onIdle.Load())
 
-	// update the target value
-	return bls.to >= bls.current
+	// should we turn the state to idle?
+	return bls.to < bls.current
 }
 
 // idle change scanner idle state if needed by resetting the internal tickers.
@@ -159,6 +161,7 @@ func (bls *blkScanner) idle(target bool) {
 	}
 
 	// switch the idle state
+	log.Noticef("block scanner idle toggled to %t", target)
 	bls.onIdle.Toggle()
 
 	// going to active?
