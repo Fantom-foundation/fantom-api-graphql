@@ -47,7 +47,7 @@ type UniswapAction {
     # Time represents UTC ISO time tag for this reserve value
     time: Long!
 
-    # amount0in is amount of incomming tokens for Token0 in this action
+    # amount0in is amount of incoming tokens for Token0 in this action
     amount0in: BigInt!
 
     # amount0out is amount of outgoing tokens for Token0 in this action

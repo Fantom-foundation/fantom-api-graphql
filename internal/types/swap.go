@@ -9,14 +9,14 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-// Swap represents a basic information provided by the API about finished swap from Uniswap contract.
+// Swap represents basic information provided by the API about finished swap from Uniswap contract.
 type Swap struct {
-	// OrdIndex represents the ordinal index of the transaction inside the block chain.
+	// OrdIndex represents the ordinal index of the transaction inside the blockchain.
 	// It's build from the block number and the index of the transaction inside the block
 	// when the transaction is stored in off-chain database.
 	OrdIndex uint64 `json:"orx" bson:"orx"`
 
-	// BlockNumber represents number of the block where this transaction was in. nil when its pending.
+	// BlockNumber represents number of the block where this transaction was in. nil when it's pending.
 	BlockNumber *hexutil.Uint64 `json:"blockNumber" bson:"blk"`
 
 	// Type represents type of event: swap, mint, burn, sync
@@ -101,15 +101,13 @@ type DefiTimePrice struct {
 
 // Swap types
 const (
-	SwapNormal = iota
-	SwapMint
+	SwapMint = iota
 	SwapBurn
 	SwapSync
 )
 
 // DefiTimeReserve represents a reserve for uniswap pair in history
 type DefiTimeReserve struct {
-
 	// Time represents UTC ISO time tag for this reserve values
 	Time string
 
@@ -139,7 +137,7 @@ type UniswapActionList struct {
 	IsEnd bool
 }
 
-// UniswapAction represents a Uniswap action - swap, mint, burn
+// UniswapAction represents an Uniswap action - swap, mint, burn
 type UniswapAction struct {
 
 	// ID of the action in the persistent db
@@ -168,7 +166,7 @@ type UniswapAction struct {
 	// Time represents UTC ISO time tag for this reserve value
 	Time hexutil.Uint64 `json:"date"`
 
-	// Amount0in is amount of incomming tokens for Token0 in this action
+	// Amount0in is amount of incoming tokens for Token0 in this action
 	Amount0in hexutil.Big `json:"am0in"`
 
 	// amount0out is amount of outgoing tokens for Token0 in this action

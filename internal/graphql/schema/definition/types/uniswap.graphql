@@ -26,7 +26,7 @@ type UniswapPair {
     # with the token position.
     cumulativePrices: [BigInt!]!
 
-    # lastKValue represents the last coeficient
+    # lastKValue represents the last coefficient
     # of reserves multiplied. It's the value Uniswap protocol
     # uses to control reserves growth on both sides of the pool.
     lastKValue: BigInt!
@@ -43,7 +43,7 @@ type UniswapPair {
 }
 
 
-# DefiUniswapVolume represents a calculated volume for swap pairs in history 
+# DefiUniswapVolume represents a calculated volume for swap pairs in history
 type DefiUniswapVolume {
 
     # UniswapPair represents the information about single
@@ -68,7 +68,7 @@ type DefiUniswapVolume {
     # IsInFUSD indicates if TokenA from the pair has a price value to be able
     # to calculate value in fUSD
     isInFUSD: Boolean!
-    
+
 }
 
 # DefiSwaps represents swap volume for given pair and time interval
@@ -94,7 +94,7 @@ type DefiTimePrice {
     time: String!
 
     # opening price for this time period
-	open: Float! 
+    open: Float!
 
     # closing price for this time period
 	close: Float!
@@ -106,7 +106,7 @@ type DefiTimePrice {
 	high: Float!
 
     # average price for this time period
-    average: Float! 
+    average: Float!
 }
 
 # DefiTimeReserve represents a Uniswap pair reserve in history
