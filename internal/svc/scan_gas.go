@@ -58,6 +58,15 @@ func (gps *gpsMonitor) name() string {
 	return "gas price monitor"
 }
 
+// init prepares the account dispatcher to perform its function.
+func (gps *gpsMonitor) init() {
+	gps.sigStop = make(chan bool, 1)
+
+	// calculate number of expected ticks and make the tick container for them
+	expTicks := int(gasPriceSuggestionPeriodInterval/gasPriceSuggestionTickerInterval) + 1
+	gps.ticks = make([]int64, expTicks)
+}
+
 // run starts the gas price suggestions tracking
 func (gps *gpsMonitor) run() {
 	// make sure we are orchestrated

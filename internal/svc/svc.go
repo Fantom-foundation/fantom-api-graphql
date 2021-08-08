@@ -23,12 +23,12 @@ type service struct {
 	sigStop chan bool
 }
 
-// init prepares the account dispatcher to perform its function.
+// init prepares the service stop signal channel.
 func (s *service) init() {
 	s.sigStop = make(chan bool, 1)
 }
 
-// close terminates the block dispatcher.
+// close terminates the service by sending the stop signal down the channel.
 func (s *service) close() {
 	if s.sigStop != nil {
 		s.sigStop <- true
