@@ -72,7 +72,15 @@ func (app *apiServer) run() {
 	// start responding to requests
 	app.log.Infof("welcome to Fantom GraphQL API server")
 	app.log.Infof("listening for requests on %s", app.cfg.Server.BindAddress)
-	log.Fatal(app.srv.ListenAndServe())
+
+	// listen the interface
+	err := app.srv.ListenAndServe()
+	if err != nil {
+		app.log.Errorf(err.Error())
+	}
+
+	// terminate the app
+	app.terminate()
 }
 
 // makeHttpServer creates and configures the HTTP server to be used to serve incoming requests
@@ -128,36 +136,31 @@ func (app *apiServer) observeSignals() {
 	go func() {
 		// wait for the signal
 		<-ts
-		app.terminate()
 
-		// we are done
-		app.log.Info("api server done")
-		os.Exit(0)
+		// terminate HTTP responder
+		app.log.Notice("closing HTTP server")
+		if err := app.srv.Close(); err != nil {
+			app.log.Errorf("could not terminate HTTP listener")
+			os.Exit(0)
+		}
 	}()
 }
 
 // terminate modules of the API server.
 func (app *apiServer) terminate() {
-	app.log.Notice("api server terminates")
-
-	// terminate responder
-	if err := app.srv.Close(); err != nil {
-		app.log.Errorf("could not terminate HTTP listener")
-	}
+	// close resolvers
+	app.log.Notice("closing resolver")
+	app.api.Close()
 
 	// terminate observers, scanners and dispatchers, etc.
-	app.log.Notice("services terminate")
+	app.log.Notice("closing services")
 	if mgr := svc.Manager(); mgr != nil {
 		mgr.Close()
 	}
 
 	// terminate connections to DB, blockchain, etc.
-	app.log.Notice("repository terminates")
+	app.log.Notice("closing repository")
 	if repo := repository.R(); repo != nil {
 		repo.Close()
 	}
-
-	// close resolvers
-	app.log.Notice("resolver terminates")
-	app.api.Close()
 }
