@@ -347,8 +347,11 @@ type Repository interface {
 	FMintCanReceiveRewards(*common.Address) (bool, error)
 
 	// FMintCanPushRewards signals if there are any rewards unlocked
-	// on the rewards distribution contract and can be pushed to accounts.
+	// on the rewards' distribution contract and can be pushed to account.
 	FMintCanPushRewards() (bool, error)
+
+	// AddFMintTransaction adds the specified fMint transaction to persistent storage.
+	AddFMintTransaction(*types.FMintTransaction) error
 
 	// UniswapPairs returns list of all token pairs managed by Uniswap core.
 	UniswapPairs() ([]common.Address, error)
