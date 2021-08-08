@@ -56,7 +56,7 @@ func (rwc *RewardClaim) Pk() string {
 
 // OrdinalIndex returns an ordinal index for the given reward claim request.
 func (rwc *RewardClaim) OrdinalIndex() uint64 {
-	return (uint64(rwc.Claimed)&0xFFFFFFFFFF)<<24 | (binary.BigEndian.Uint64(rwc.ClaimTrx[:8]) & 0xFFFFFF)
+	return (uint64(rwc.Claimed)&0x7FFFFFFFFF)<<24 | (binary.BigEndian.Uint64(rwc.ClaimTrx[:8]) & 0xFFFFFF)
 }
 
 // MarshalBSON creates a BSON representation of the reward claim request record.
