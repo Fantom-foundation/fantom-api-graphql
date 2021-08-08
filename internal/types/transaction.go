@@ -10,7 +10,6 @@ import (
 	retypes "github.com/ethereum/go-ethereum/core/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
-	"math/rand"
 	"time"
 )
 
@@ -25,7 +24,7 @@ var TransactionDecimalsCorrection = new(big.Int).SetUint64(1000000000)
 // TransactionGasCorrection is used to restore the precision on the transaction gas value calculations.
 var TransactionGasCorrection = new(big.Int).SetUint64(10000000)
 
-// Transaction represents a basic information provided by the API about transaction inside Opera blockchain.
+// Transaction represents basic information provided by the API about transaction inside Opera blockchain.
 type Transaction struct {
 	// BlockHash represents hash of the block where this transaction was in. nil when its pending.
 	BlockHash *common.Hash `json:"blockHash"`
@@ -117,19 +116,6 @@ type BsonTransaction struct {
 	Status     uint64    `bson:"stat"`
 	Stamp      time.Time `bson:"stamp"`
 	Logs       []BsonLog `bson:"logs"`
-}
-
-// TransactionIndex calculates an ordinal index a transaction
-// described by the block and trx instance.
-func TransactionIndex(block *Block, trx *Transaction) uint64 {
-	// what is the transaction index
-	var txIndex uint64
-	if trx.TrxIndex != nil {
-		txIndex = uint64(*trx.TrxIndex)
-	} else {
-		txIndex = uint64((rand.Uint32()<<10)|0xff) & 0x3fff
-	}
-	return (uint64(block.Number) << 14) | txIndex
 }
 
 // Uid calculates an ordinal index of the transaction referenced.

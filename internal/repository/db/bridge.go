@@ -30,6 +30,7 @@ type MongoDbBridge struct {
 	initWithdrawals  *sync.Once
 	initRewards      *sync.Once
 	initErc20Trx     *sync.Once
+	initFMintTrx     *sync.Once
 	initEpochs       *sync.Once
 	initGasPrice     *sync.Once
 }
@@ -172,6 +173,7 @@ func (db *MongoDbBridge) CheckDatabaseInitState() {
 	db.collectionNeedInit("withdrawals", db.WithdrawalsCount, &db.initWithdrawals)
 	db.collectionNeedInit("rewards", db.RewardsCount, &db.initRewards)
 	db.collectionNeedInit("erc20 transactions", db.ErcTransactionCount, &db.initErc20Trx)
+	db.collectionNeedInit("fmint transactions", db.FMintTransactionCount, &db.initFMintTrx)
 	db.collectionNeedInit("epochs", db.EpochsCount, &db.initEpochs)
 	db.collectionNeedInit("gas price periods", db.GasPricePeriodCount, &db.initGasPrice)
 }

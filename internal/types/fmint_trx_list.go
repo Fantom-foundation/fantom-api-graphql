@@ -3,12 +3,12 @@ package types
 
 import "go.mongodb.org/mongo-driver/bson"
 
-// Erc20TransactionList represents a list of ERC20 transactions.
-type Erc20TransactionList struct {
+// FMintTransactionList represents a list of fMint transactions.
+type FMintTransactionList struct {
 	// List keeps the actual Collection.
-	Collection []*Erc20Transaction
+	Collection []*FMintTransaction
 
-	// Total indicates total number of ERC transactions in the whole collection.
+	// Total indicates total number of fMint transactions in the whole collection.
 	Total uint64
 
 	// First is the index of the first item on the list
@@ -17,18 +17,18 @@ type Erc20TransactionList struct {
 	// Last is the index of the last item on the list
 	Last uint64
 
-	// IsStart indicates there are no ERC transactions available above the list currently.
+	// IsStart indicates there are no fMint transactions available above the list currently.
 	IsStart bool
 
-	// IsEnd indicates there are no ERC transactions available below the list currently.
+	// IsEnd indicates there are no fMint transactions available below the list currently.
 	IsEnd bool
 
 	// Filter represents the base filter used for filtering the list
 	Filter bson.D
 }
 
-// Reverse reverses the order of ERC transactions in the list.
-func (c *Erc20TransactionList) Reverse() {
+// Reverse reverses the order of fMint transactions in the list.
+func (c *FMintTransactionList) Reverse() {
 	// anything to swap at all?
 	if c.Collection == nil || len(c.Collection) < 2 {
 		return
