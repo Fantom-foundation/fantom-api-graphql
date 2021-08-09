@@ -41,7 +41,7 @@ const (
 )
 
 // decChange holds information, how many decimals will be added/removed
-var decChange = new(big.Int).SetUint64(1000000000)
+var decChange = new(big.Int).SetUint64(1000000000000)
 
 // getHash generates hash for swap from transaction hash and pair address
 func getHash(swap *types.Swap) *common.Hash {
@@ -73,7 +73,7 @@ func (db *MongoDbBridge) initUniswapCollection(col *mongo.Collection) {
 		db.log.Panicf("can not create indexes for swap collection; %s", err.Error())
 	}
 
-	// log we done that
+	// log we're done that
 	db.log.Debugf("swap collection initialized")
 }
 
@@ -133,14 +133,6 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 
 	// try to do the insert
 	if _, err := col.InsertOne(context.Background(),
-		/*
-			&bson.D{
-				{fiSwapPk, swapHash.String()},
-				{fiSwapBlock, uint64(*swap.BlockNumber)},
-				{fiSwapTimestamp, uint64(*swap.TimeStamp)},
-			}); err != nil {
-		*/
-		//primitive.Timestamp{T:uint32(time.Now().Unix())
 		swapData(&bson.D{
 			{Key: fiSwapPk, Value: swapHash.String()},
 			{Key: fiSwapBlock, Value: uint64(*swap.BlockNumber)},
@@ -163,14 +155,14 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 }
 
 // removeDecimals for a big.Int of the 1e18 wei
+// making amount numbers smaller to be able to call aggregate functions in database.
 func removeDecimals(nr1 *big.Int) uint64 {
-	// making amount numbers smaller to be able to call aggregate functions in database
 	return nr1.Div(nr1, decChange).Uint64()
 }
 
-// return Decimals for a big.Int of the 1e18 wei
+// return Decimals for big.Int of the 1e18 wei
+// Restores the WEI decimals (lost precision is not restored here).
 func returnDecimals(nr1 *big.Int) *big.Int {
-	// making amount numbers bigger again
 	return nr1.Mul(nr1, decChange)
 }
 
@@ -902,25 +894,25 @@ func (db *MongoDbBridge) uniswapActionListLoad(col *mongo.Collection, pairAddres
 
 		// try to decode the next row
 		ua := types.UniswapAction{}
-		var uadb UniswapActionDB
-		if err := ld.Decode(&uadb); err != nil {
+		var udb UniswapActionDB
+		if err := ld.Decode(&udb); err != nil {
 			db.log.Errorf("can not decode uniswap action list row; %s", err.Error())
 			return err
 		}
 
 		// decode data
-		ua.ID = common.HexToHash(uadb.ID)
-		ua.OrdIndex = uadb.OrdIndex
-		ua.BlockNr = uadb.BlockNr
-		ua.Type = uadb.Type
-		ua.PairAddress = common.HexToAddress(uadb.PairAddress)
-		ua.Sender = common.HexToAddress(uadb.Sender)
-		ua.TransactionHash = common.HexToHash(uadb.TransactionHash)
-		ua.Time = hexutil.Uint64(uadb.Time.UTC().Unix())
-		ua.Amount0in = *(*hexutil.Big)(returnDecimals(big.NewInt(uadb.Amount0in)))
-		ua.Amount0out = *(*hexutil.Big)(returnDecimals(big.NewInt(uadb.Amount0out)))
-		ua.Amount1in = *(*hexutil.Big)(returnDecimals(big.NewInt(uadb.Amount1in)))
-		ua.Amount1out = *(*hexutil.Big)(returnDecimals(big.NewInt(uadb.Amount1out)))
+		ua.ID = common.HexToHash(udb.ID)
+		ua.OrdIndex = udb.OrdIndex
+		ua.BlockNr = udb.BlockNr
+		ua.Type = udb.Type
+		ua.PairAddress = common.HexToAddress(udb.PairAddress)
+		ua.Sender = common.HexToAddress(udb.Sender)
+		ua.TransactionHash = common.HexToHash(udb.TransactionHash)
+		ua.Time = hexutil.Uint64(udb.Time.UTC().Unix())
+		ua.Amount0in = *(*hexutil.Big)(returnDecimals(big.NewInt(udb.Amount0in)))
+		ua.Amount0out = *(*hexutil.Big)(returnDecimals(big.NewInt(udb.Amount0out)))
+		ua.Amount1in = *(*hexutil.Big)(returnDecimals(big.NewInt(udb.Amount1in)))
+		ua.Amount1out = *(*hexutil.Big)(returnDecimals(big.NewInt(udb.Amount1out)))
 
 		// keep this one
 		uniswapAction = &ua

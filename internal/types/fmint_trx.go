@@ -25,7 +25,7 @@ const (
 )
 
 // FMintAmountDecimalsCorrection represents the correction applied to base fMint trx amount to get apr value.
-var FMintAmountDecimalsCorrection = new(big.Int).SetUint64(1000000000)
+var FMintAmountDecimalsCorrection = new(big.Int).SetUint64(1000000000000)
 
 // FMintTransaction represents a core transaction on fMint contract.
 type FMintTransaction struct {
