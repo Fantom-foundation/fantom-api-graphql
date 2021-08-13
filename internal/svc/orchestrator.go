@@ -17,6 +17,7 @@ const orBlockCacheCapacity = 50
 type orchestrator struct {
 	service
 	blkCache          *ring.Ring
+	pushHeads         bool
 	inScanStateSwitch chan bool
 }
 
@@ -37,6 +38,10 @@ func (or *orchestrator) init() {
 	or.mgr.bld.inBlock = or.mgr.bls.outBlock
 	or.mgr.bls.inDispatched = or.mgr.bld.outDispatched
 	or.inScanStateSwitch = or.mgr.bls.outStateSwitch
+
+	// read initial block scanner state
+	// no need to worry about race condition, init() is called sequentially and this is the last one
+	or.pushHeads = or.mgr.bls.onIdle
 }
 
 // run starts the block dispatcher
@@ -69,8 +74,11 @@ func (or *orchestrator) execute() {
 				or.handleNewHead(h)
 			}
 		case idle, ok := <-or.inScanStateSwitch:
-			if ok && idle {
-				or.unloadCache()
+			if ok {
+				or.pushHeads = idle
+				if idle {
+					or.unloadCache()
+				}
 			}
 		}
 	}
@@ -89,7 +97,7 @@ func (or *orchestrator) handleNewHead(h *etc.Header) {
 	}
 
 	// if the block scanner is on idle, push the block directly to processing queue
-	if or.mgr.bls.onIdle.Load() {
+	if or.pushHeads {
 		or.mgr.bld.inBlock <- blk
 		return
 	}

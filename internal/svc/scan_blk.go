@@ -6,7 +6,6 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"go.uber.org/atomic"
 	"time"
 )
 
@@ -38,7 +37,7 @@ type blkScanner struct {
 	inDispatched   chan uint64
 	observeTick    *time.Ticker
 	scanTick       *time.Ticker
-	onIdle         *atomic.Bool
+	onIdle         bool
 	outStateSwitch chan bool
 	from           uint64
 	next           uint64
@@ -55,7 +54,7 @@ func (bls *blkScanner) name() string {
 func (bls *blkScanner) init() {
 	bls.sigStop = make(chan bool, 1)
 	bls.outStateSwitch = make(chan bool, 1)
-	bls.onIdle = atomic.NewBool(false)
+	bls.onIdle = false
 	bls.outBlock = make(chan *types.Block, blsBlockBufferCapacity)
 }
 
@@ -162,8 +161,7 @@ func (bls *blkScanner) observe() bool {
 	// we use a hysteresis to delay state flip back to active scan
 	// we compare current block height with the latest known dispatched block number
 	target := bh.ToInt().Uint64()
-	diff := target - bls.done
-	if diff < blsReScanHysteresis && bls.onIdle.Load() {
+	if bls.onIdle && target < bls.done+blsReScanHysteresis {
 		bls.next = bls.done
 		bls.from = bls.done
 		log.Infof("block scanner idling ot #%d, head ot #%d", bls.next, target)
@@ -180,13 +178,13 @@ func (bls *blkScanner) observe() bool {
 // It resets the internal tickers according to the target state.
 func (bls *blkScanner) updateState(target bool) {
 	// if the state already match, do nothing
-	if target == bls.onIdle.Load() {
+	if target == bls.onIdle {
 		return
 	}
 
 	// switch the state; advertise the transition
 	log.Noticef("block scanner idle state toggled to %t", target)
-	bls.onIdle.Toggle()
+	bls.onIdle = target
 	bls.outStateSwitch <- target
 
 	// going full speed
@@ -204,7 +202,7 @@ func (bls *blkScanner) updateState(target bool) {
 // next pulls the next block if available and pushes it for processing.
 func (bls *blkScanner) shift() {
 	// we may not need to pull at all, if on updateState
-	if bls.onIdle.Load() {
+	if bls.onIdle {
 		return
 	}
 
