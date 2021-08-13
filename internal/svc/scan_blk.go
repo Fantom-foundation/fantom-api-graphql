@@ -17,16 +17,18 @@ const blsObserverTickBaseDuration = 5 * time.Second
 const blsScanTickBaseDuration = 5 * time.Millisecond
 
 // blsObserverTickIdleDuration represents the frequency of the scanner status observer on idle.
-const blsObserverTickIdleDuration = 30 * time.Second
+const blsObserverTickIdleDuration = 1 * time.Minute
 
 // blsScanTickIdleDuration represents the frequency of the scanner re-check on idle.
-const blsScanTickIdleDuration = 10 * time.Second
+const blsScanTickIdleDuration = 5 * time.Minute
+
+// blsBlockBufferCapacity represents the capacity of the found blocks channel.
+// When the channel is full, the push will have to wait for room here and the scanner
+// will be slowed down naturally.
+const blsBlockBufferCapacity = 1000
 
 // blsReScanHysteresis is the number of blocks we wait from dispatcher until a re-scan kicks in.
 const blsReScanHysteresis = 100
-
-// blsBlockBufferCapacity represents the capacity of the found blocks channel.
-const blsBlockBufferCapacity = 20000
 
 // blkScanner implements scanner loading previous/unknown blockchain blocks.
 type blkScanner struct {

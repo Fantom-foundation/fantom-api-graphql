@@ -106,6 +106,7 @@ func (or *orchestrator) unloadCache() {
 	// pull all available cached blocks and send them to dispatch
 	l := or.blkCache.List(orBlockCacheCapacity)
 	for _, blk := range l {
+		log.Infof("unloaded block #%d for processing", (*types.Block)(blk).Number)
 		or.mgr.bld.inBlock <- (*types.Block)(blk)
 	}
 
