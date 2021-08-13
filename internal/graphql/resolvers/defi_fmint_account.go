@@ -34,7 +34,7 @@ func NewFMintTokenBalance(owner common.Address, token common.Address, tp types.D
 	}
 }
 
-// FMintAccount resolves details of a DeFi account by it's address.
+// FMintAccount resolves details of a DeFi account by its address.
 func (rs *rootResolver) FMintAccount(args *struct{ Owner common.Address }) (*FMintAccount, error) {
 	// get the delegator detail from backend
 	ac, err := repository.R().FMintAccount(args.Owner)

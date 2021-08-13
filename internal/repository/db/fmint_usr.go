@@ -15,14 +15,14 @@ type fMintUserTokensRow struct {
 	Tokens []string `bson:"tokens"`
 }
 
-// FMintUsers loads the list of fMint users and their associated tokens used for a specified purpose
-// from the collected database using aggregation pipeline.
-func (db *MongoDbBridge) FMintUsers(purpose int32) ([]*types.FMintUserTokens, error) {
+// FMintUsers loads the list of fMint users and their associated tokens
+// used for a specified transaction type  from the collected database using aggregation pipeline.
+func (db *MongoDbBridge) FMintUsers(tt int32) ([]*types.FMintUserTokens, error) {
 	// prep the aggregation pipeline to be executed
 	ap := mongo.Pipeline{
-		/* match transactions of the given purpose */
+		/* match transactions of the given trx type */
 		{{Key: "$match", Value: bson.D{
-			{Key: "typ", Value: purpose},
+			{Key: "typ", Value: tt},
 		}}},
 		/* group by user account, collect list of tokens */
 		{{Key: "$group", Value: bson.D{
@@ -58,7 +58,7 @@ func (db *MongoDbBridge) FMintUsers(purpose int32) ([]*types.FMintUserTokens, er
 			return nil, err
 		}
 		list = append(list, &types.FMintUserTokens{
-			Purpose: purpose,
+			Purpose: tt,
 			User:    common.HexToAddress(row.User),
 			Tokens:  decodeFMintTokensList(row.Tokens),
 		})
