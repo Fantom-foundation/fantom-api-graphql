@@ -33,17 +33,17 @@ const blsReScanHysteresis = 100
 // blkScanner implements scanner loading previous/unknown blockchain blocks.
 type blkScanner struct {
 	service
-	cfg          config.RepoCmd
-	outBlock     chan *types.Block
-	inDispatched chan uint64
-	observeTick  *time.Ticker
-	scanTick     *time.Ticker
-	onIdle       *atomic.Bool
-	toIdle       chan bool
-	from         uint64
-	next         uint64
-	to           uint64
-	done         uint64
+	cfg            config.RepoCmd
+	outBlock       chan *types.Block
+	inDispatched   chan uint64
+	observeTick    *time.Ticker
+	scanTick       *time.Ticker
+	onIdle         *atomic.Bool
+	outStateSwitch chan bool
+	from           uint64
+	next           uint64
+	to             uint64
+	done           uint64
 }
 
 // name returns the name of the service used by orchestrator.
@@ -54,7 +54,7 @@ func (bls *blkScanner) name() string {
 // init prepares the block scanner.
 func (bls *blkScanner) init() {
 	bls.sigStop = make(chan bool, 1)
-	bls.toIdle = make(chan bool, 1)
+	bls.outStateSwitch = make(chan bool, 1)
 	bls.onIdle = atomic.NewBool(false)
 	bls.outBlock = make(chan *types.Block, blsBlockBufferCapacity)
 }
@@ -121,7 +121,7 @@ func (bls *blkScanner) execute() {
 	defer func() {
 		close(bls.sigStop)
 		close(bls.outBlock)
-		close(bls.toIdle)
+		close(bls.outStateSwitch)
 		bls.mgr.finished(bls)
 	}()
 
@@ -141,15 +141,15 @@ func (bls *blkScanner) execute() {
 				bls.done = bin
 			}
 		case <-bls.observeTick.C:
-			bls.checkIdle(bls.observe())
+			bls.updateState(bls.observe())
 		case <-bls.scanTick.C:
 			bls.shift()
 		}
 	}
 }
 
-// observe updates the scanner final block to scan towards and logs the progress.
-// Returns expected idle state (true in case the top block has been reached).
+// observe updates the scanner final block and logs the progress.
+// It returns expected idle state to be used to transition if needed.
 func (bls *blkScanner) observe() bool {
 	// try to get the block height
 	bh, err := repo.BlockHeight()
@@ -159,61 +159,58 @@ func (bls *blkScanner) observe() bool {
 	}
 
 	// if on idle, wait for the dispatcher to catch up with the blocks
-	// we use a hysteresis boundary before the state is flipped to re-scan
-	// keep the idle state if the diff is below hysteresis
-	onIdle := bls.onIdle.Load()
+	// we use a hysteresis to delay state flip back to active scan
+	// we compare current block height with the latest known dispatched block number
 	target := bh.ToInt().Uint64()
 	diff := target - bls.done
-	if onIdle && diff < blsReScanHysteresis {
+	if diff < blsReScanHysteresis && bls.onIdle.Load() {
 		bls.next = bls.done
 		bls.from = bls.done
-		log.Infof("block scanner idling on #%d, head on #%d", bls.next, target)
+		log.Infof("block scanner idling ot #%d, head ot #%d", bls.next, target)
 		return true
 	}
 
-	// log the progress of the scan process
+	// adjust target block number; log the progress of the scan
 	bls.to = target
-	log.Infof("block scanner on #%d of <#%d, #%d>, #%d dispatched", bls.next, bls.from, bls.to, bls.done)
-
-	// should we run on full speed (false), or on idle (true)?
+	log.Infof("block scanner ot #%d of <#%d, #%d>, #%d dispatched", bls.next, bls.from, bls.to, bls.done)
 	return bls.to < bls.next
 }
 
-// checkIdle change scanner idle state if needed.
+// updateState change scanner state if needed.
 // It resets the internal tickers according to the target state.
-func (bls *blkScanner) checkIdle(target bool) {
-	// if the state already match, nothing to do
+func (bls *blkScanner) updateState(target bool) {
+	// if the state already match, do nothing
 	if target == bls.onIdle.Load() {
 		return
 	}
 
-	// switch the checkIdle state
+	// switch the state; advertise the transition
 	log.Noticef("block scanner idle state toggled to %t", target)
 	bls.onIdle.Toggle()
+	bls.outStateSwitch <- target
 
-	// going to active?
+	// going full speed
 	if !target {
 		bls.observeTick.Reset(blsObserverTickBaseDuration)
 		bls.scanTick.Reset(blsScanTickBaseDuration)
 		return
 	}
 
-	// going to checkIdle, signal to orchestrator
+	// going idle
 	bls.observeTick.Reset(blsObserverTickIdleDuration)
 	bls.scanTick.Reset(blsScanTickIdleDuration)
-	bls.toIdle <- true
 }
 
 // next pulls the next block if available and pushes it for processing.
 func (bls *blkScanner) shift() {
-	// we may not need to pull at all, if on checkIdle
+	// we may not need to pull at all, if on updateState
 	if bls.onIdle.Load() {
 		return
 	}
 
-	// are we on the end already
+	// are we at the end? check the status
 	if bls.next > bls.to {
-		bls.checkIdle(bls.observe())
+		bls.updateState(bls.observe())
 		return
 	}
 

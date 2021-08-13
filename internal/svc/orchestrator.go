@@ -16,10 +16,11 @@ const orBlockCacheCapacity = 50
 // orchestrator implements service responsible for moderating connections between other services.
 type orchestrator struct {
 	service
-	blkCache *ring.Ring
+	blkCache          *ring.Ring
+	inScanStateSwitch chan bool
 }
 
-// name returns the name of the service used by orchestrator.
+// name returns the name of the service used by manager.
 func (or *orchestrator) name() string {
 	return "orchestrator"
 }
@@ -35,6 +36,7 @@ func (or *orchestrator) init() {
 	or.mgr.lgd.inLog = or.mgr.trd.outLog
 	or.mgr.bld.inBlock = or.mgr.bls.outBlock
 	or.mgr.bls.inDispatched = or.mgr.bld.outDispatched
+	or.inScanStateSwitch = or.mgr.bls.outStateSwitch
 }
 
 // run starts the block dispatcher
@@ -56,9 +58,8 @@ func (or *orchestrator) execute() {
 		or.mgr.finished(or)
 	}()
 
+	// access the heads queue; it's filled with new heads (blocks) as the node processes them
 	heads := repo.ObservedHeaders()
-
-	// do the scan
 	for {
 		select {
 		case <-or.sigStop:
@@ -67,8 +68,8 @@ func (or *orchestrator) execute() {
 			if ok {
 				or.handleNewHead(h)
 			}
-		case _, ok := <-or.mgr.bls.toIdle:
-			if ok {
+		case idle, ok := <-or.inScanStateSwitch:
+			if ok && idle {
 				or.unloadCache()
 			}
 		}
@@ -87,29 +88,33 @@ func (or *orchestrator) handleNewHead(h *etc.Header) {
 		return
 	}
 
-	// if the block scanner is on checkIdle, push to process
+	// if the block scanner is on idle, push the block directly to processing queue
 	if or.mgr.bls.onIdle.Load() {
 		or.mgr.bld.inBlock <- blk
 		return
 	}
 
-	// store the block in the cache for now
+	// store the block in the ring cache for now; we build up an in-memory collection of the latest blocks
+	// after the block scanner goes idle, we unload these blocks from ring cache
+	// into the processing queue to make sure we didn't miss any of them on scan to idle transition
 	or.blkCache.Add(unsafe.Pointer(blk))
 }
 
-// unloadCache pushes all the blocks currently stored in cache
-// into the block processing queue to make sure they get all processed.
+// unloadCache pushes all the blocks currently stored in cache (e.g. blocks of the most recent heads)
+// into the block processing queue to make sure they get all processed, and we don't miss any
+// on block scanner full speed to idle transition (ensured consistency feature, may not be needed).
 func (or *orchestrator) unloadCache() {
 	// inform about the cache unloading
 	log.Noticef("unloading block cache for processing")
 
-	// pull all available cached blocks and send them to dispatch
+	// pull all available cached blocks and reset the ring to make sure
+	// we don't re-send the same blocks again
 	l := or.blkCache.List(orBlockCacheCapacity)
+	or.blkCache.Reset()
+
+	// push them all to dispatcher for processing
 	for _, blk := range l {
-		log.Infof("unloaded block #%d for processing", (*types.Block)(blk).Number)
+		log.Infof("cached block #%d sent for processing", (*types.Block)(blk).Number)
 		or.mgr.bld.inBlock <- (*types.Block)(blk)
 	}
-
-	// reset the ring cache depth, so we don't process those blocks again
-	or.blkCache.Reset()
 }
