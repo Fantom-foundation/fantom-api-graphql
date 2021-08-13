@@ -14,7 +14,7 @@ import (
 const blsObserverTickBaseDuration = 5 * time.Second
 
 // blsScanTickBaseDuration represents the frequency of the scanner default progress.
-const blsScanTickBaseDuration = 4 * time.Millisecond
+const blsScanTickBaseDuration = 5 * time.Millisecond
 
 // blsObserverTickIdleDuration represents the frequency of the scanner status observer on idle.
 const blsObserverTickIdleDuration = 30 * time.Second
@@ -23,7 +23,7 @@ const blsObserverTickIdleDuration = 30 * time.Second
 const blsScanTickIdleDuration = 10 * time.Second
 
 // blsReScanHysteresis is the number of blocks we wait from dispatcher until a re-scan kicks in.
-const blsReScanHysteresis = 50
+const blsReScanHysteresis = 100
 
 // blsBlockBufferCapacity represents the capacity of the found blocks channel.
 const blsBlockBufferCapacity = 20000
@@ -204,13 +204,14 @@ func (bls *blkScanner) checkIdle(target bool) {
 
 // next pulls the next block if available and pushes it for processing.
 func (bls *blkScanner) shift() {
-	// are we on the end already
-	if bls.next > bls.to {
+	// we may not need to pull at all, if on checkIdle
+	if bls.onIdle.Load() {
 		return
 	}
 
-	// we may not need to pull at all, if on checkIdle
-	if bls.onIdle.Load() {
+	// are we on the end already
+	if bls.next > bls.to {
+		bls.checkIdle(bls.observe())
 		return
 	}
 

@@ -11,7 +11,7 @@ import (
 )
 
 // orBlockCacheCapacity represents the capacity of the local block cache.
-const orBlockCacheCapacity = 30
+const orBlockCacheCapacity = 50
 
 // orchestrator implements service responsible for moderating connections between other services.
 type orchestrator struct {

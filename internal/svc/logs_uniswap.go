@@ -19,7 +19,7 @@ func uniswapOrdinalIndex(lr *types.LogRecord) uint64 {
 func handleUniswapSwap(lr *types.LogRecord) {
 	// sanity check for data (4 x uint256 = 4x32 bytes = 128 bytes), (1 x subject topic + 2 x address = 3 topics)
 	if len(lr.Data) != 128 || len(lr.Topics) != 3 {
-		log.Criticalf("%s lr invalid data length; expected 128 bytes, %d bytes given; expected 3 topics, %d given",
+		log.Errorf("%s invalid data length; expected 128 bytes, %d bytes given; expected 3 topics, %d given",
 			lr.TxHash.String(),
 			len(lr.Data),
 			len(lr.Topics),
@@ -73,7 +73,7 @@ func handleUniswapSwap(lr *types.LogRecord) {
 func handleUniswapMint(lr *types.LogRecord) {
 	// sanity check for data (2 x uint256 = 2x32 bytes = 64 bytes), (1 x subject topic + 1 x address = 2 topics)
 	if len(lr.Data) != 64 || len(lr.Topics) != 2 {
-		log.Criticalf("%s lr invalid data length; expected 64 bytes, %d bytes given; expected 2 topics, %d given",
+		log.Errorf("%s invalid data length; expected 64 bytes, %d bytes given; expected 2 topics, %d given",
 			lr.TxHash.String(),
 			len(lr.Data),
 			len(lr.Topics),
@@ -123,7 +123,7 @@ func handleUniswapMint(lr *types.LogRecord) {
 func handleUniswapBurn(lr *types.LogRecord) {
 	// sanity check for data (2 x uint256 = 2x32 bytes = 64 bytes), (1 x subject topic + 2 x address = 3 topics)
 	if len(lr.Data) != 64 || len(lr.Topics) != 3 {
-		log.Criticalf("%s lr invalid data length; expected 64 bytes, %d bytes given; expected 3 topics, %d given",
+		log.Errorf("%s invalid data length; expected 64 bytes, %d bytes given; expected 3 topics, %d given",
 			lr.TxHash.String(),
 			len(lr.Data),
 			len(lr.Topics),
@@ -172,7 +172,7 @@ func handleUniswapBurn(lr *types.LogRecord) {
 func handleUniswapSync(lr *types.LogRecord) {
 	// sanity check for data (2 x uint112 = 2x32 bytes = 64 bytes)
 	if len(lr.Data) != 64 {
-		log.Criticalf("%s lr invalid data length; expected 64 bytes, %d bytes given; expected 1 topic, %d given",
+		log.Errorf("%s invalid data length; expected 64 bytes, %d bytes given; expected 1 topic, %d given",
 			lr.TxHash.String(),
 			len(lr.Data),
 			len(lr.Topics),
