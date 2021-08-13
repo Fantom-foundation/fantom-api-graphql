@@ -350,6 +350,9 @@ type Repository interface {
 	// on the rewards' distribution contract and can be pushed to account.
 	FMintCanPushRewards() (bool, error)
 
+	// FMintUsers loads the list of fMint users and their associated tokens used for a specified purpose.
+	FMintUsers(int32) ([]*types.FMintUserTokens, error)
+
 	// AddFMintTransaction adds the specified fMint transaction to persistent storage.
 	AddFMintTransaction(*types.FMintTransaction) error
 

@@ -14,3 +14,8 @@ import "fantom-api-graphql/internal/types"
 func (p *proxy) AddFMintTransaction(trx *types.FMintTransaction) error {
 	return p.db.AddFMintTransaction(trx)
 }
+
+// FMintUsers loads the list of fMint users and their associated tokens used for a specified purpose.
+func (p *proxy) FMintUsers(purpose int32) ([]*types.FMintUserTokens, error) {
+	return p.db.FMintUsers(purpose)
+}
