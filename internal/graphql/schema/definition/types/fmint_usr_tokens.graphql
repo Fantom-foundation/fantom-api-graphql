@@ -1,0 +1,25 @@
+# FMintUserToken represents a pair of fMint protocol user
+# and a token used by the user for a specific operation
+# as reported by fMint users listings.
+type FMintUserToken {
+    # purpose represents the type of usage of the token by the user.
+    purpose: FMintUserTokenPurpose!
+
+    # userAddress represents the address of the user account.
+    userAddress: Address!
+
+    # account represents the full record of the fMint account
+    account: FMintAccount!
+
+    # tokenAddress represents the address of the associated token.
+    tokenAddress: Address!
+
+    # token represents the detail of the token associated.
+    token: ERC20Token!
+}
+
+# FMintUserTokenPurpose represents the purpose of the fMint user token pair.
+enum FMintUserTokenPurpose {
+    FMINT_COLLATERAL
+    FMINT_DEBT
+}

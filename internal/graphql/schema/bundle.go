@@ -2,6 +2,31 @@ package gqlschema
 
 // Auto generated GraphQL schema bundle
 const schema = `
+# FMintUserToken represents a pair of fMint protocol user
+# and a token used by the user for a specific operation
+# as reported by fMint users listings.
+type FMintUserToken {
+    # purpose represents the type of usage of the token by the user.
+    purpose: FMintUserTokenPurpose!
+
+    # userAddress represents the address of the user account.
+    userAddress: Address!
+
+    # account represents the full record of the fMint account
+    account: FMintAccount!
+
+    # tokenAddress represents the address of the associated token.
+    tokenAddress: Address!
+
+    # token represents the detail of the token associated.
+    token: ERC20Token!
+}
+
+# FMintUserTokenPurpose represents the purpose of the fMint user token pair.
+enum FMintUserTokenPurpose {
+    FMINT_COLLATERAL
+    FMINT_DEBT
+}
 # DailyTrxVolume represents a view of an aggregated flow
 # of transactions on the network on specific day.
 type DailyTrxVolume {
@@ -839,7 +864,7 @@ type UniswapAction {
     # Time represents UTC ISO time tag for this reserve value
     time: Long!
 
-    # amount0in is amount of incomming tokens for Token0 in this action
+    # amount0in is amount of incoming tokens for Token0 in this action
     amount0in: BigInt!
 
     # amount0out is amount of outgoing tokens for Token0 in this action
@@ -1167,7 +1192,7 @@ type UniswapPair {
     # with the token position.
     cumulativePrices: [BigInt!]!
 
-    # lastKValue represents the last coeficient
+    # lastKValue represents the last coefficient
     # of reserves multiplied. It's the value Uniswap protocol
     # uses to control reserves growth on both sides of the pool.
     lastKValue: BigInt!
@@ -1184,7 +1209,7 @@ type UniswapPair {
 }
 
 
-# DefiUniswapVolume represents a calculated volume for swap pairs in history 
+# DefiUniswapVolume represents a calculated volume for swap pairs in history
 type DefiUniswapVolume {
 
     # UniswapPair represents the information about single
@@ -1209,7 +1234,7 @@ type DefiUniswapVolume {
     # IsInFUSD indicates if TokenA from the pair has a price value to be able
     # to calculate value in fUSD
     isInFUSD: Boolean!
-    
+
 }
 
 # DefiSwaps represents swap volume for given pair and time interval
@@ -1235,7 +1260,7 @@ type DefiTimePrice {
     time: String!
 
     # opening price for this time period
-	open: Float! 
+    open: Float!
 
     # closing price for this time period
 	close: Float!
@@ -1247,7 +1272,7 @@ type DefiTimePrice {
 	high: Float!
 
     # average price for this time period
-    average: Float! 
+    average: Float!
 }
 
 # DefiTimeReserve represents a Uniswap pair reserve in history
@@ -1573,16 +1598,22 @@ type GovernanceProposal {
     minAgreement: BigInt!
 
     # totalWeight represents the total voting weight
-    # of all voters allwed on the proposal. This is effectively
+    # of all voters allowed on the proposal. This is effectively
     # the maximum weight an option can gain if all the voters
     # would favor it with the top value of the scale.
     totalWeight: BigInt!
 
     # votedWeightRatio represents the percentage of the total voting weight
     # already counted towards the proposal options. The ratio increases
-    # as more voters place their votes. If no vote was placed the value is zero,
-    # if all the voters placed their votes aither directly, or over a delegation,
-    # the value is 100.
+    # as more voters place their votes.
+    # The value is normalised to 1 digit precision, to get a percentage
+    # you need to divide the value by 10.
+    # The value is zero if no vote was placed. The value is 1000
+    # if all the voters placed their votes either directly,
+    # or through a vote delegation mechanism.
+    # Please note the value is an estimation. The voting status
+    # does not closely reflect changes in the total voting power,
+    # especially after the voting is closed.
     votedWeightRatio: Int!
 
     # opinionScales is the scale of opinions on available options.
@@ -1813,6 +1844,10 @@ type Query {
     # fMintTokenAllowance resolves the amount of ERC20 tokens unlocked
     # by the token owner for DeFi/fMint operations.
     fMintTokenAllowance(owner: Address!, token: Address!):BigInt!
+
+    # fMintUserTokens resolves a list of pairs of fMint users and their tokens
+    # used for a specified purpose.
+    fMintUserTokens(purpose:FMintUserTokenPurpose=FMINT_COLLATERAL):[FMintUserToken!]!
 
     # defiUniswapPairs represents a list of all pairs managed
     # by the Uniswap Core contract on Opera blockchain.
