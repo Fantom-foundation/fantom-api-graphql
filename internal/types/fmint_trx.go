@@ -17,7 +17,10 @@ const (
 	FiFMintTransactionUser      = "usr"
 	FiFMintTransactionTimestamp = "stamp"
 	FiFMintTransactionOrdinal   = "orx"
+)
 
+// define types of fMint operations used on the protocol
+const (
 	FMintTrxTypeDeposit = iota
 	FMintTrxTypeWithdraw
 	FMintTrxTypeMint
@@ -26,6 +29,14 @@ const (
 
 // FMintAmountDecimalsCorrection represents the correction applied to base fMint trx amount to get apr value.
 var FMintAmountDecimalsCorrection = new(big.Int).SetUint64(1000000000000)
+
+// FMintUserTokens represents a user with its fMint tokens aggregated
+// for the specific purpose.
+type FMintUserTokens struct {
+	Purpose int32
+	User    common.Address
+	Tokens  []common.Address
+}
 
 // FMintTransaction represents a core transaction on fMint contract.
 type FMintTransaction struct {
