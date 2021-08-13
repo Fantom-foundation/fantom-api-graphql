@@ -34,11 +34,11 @@ type blkScanner struct {
 	service
 	cfg            config.RepoCmd
 	outBlock       chan *types.Block
+	outStateSwitch chan bool
 	inDispatched   chan uint64
 	observeTick    *time.Ticker
 	scanTick       *time.Ticker
 	onIdle         bool
-	outStateSwitch chan bool
 	from           uint64
 	next           uint64
 	to             uint64
@@ -52,9 +52,9 @@ func (bls *blkScanner) name() string {
 
 // init prepares the block scanner.
 func (bls *blkScanner) init() {
+	bls.onIdle = false
 	bls.sigStop = make(chan bool, 1)
 	bls.outStateSwitch = make(chan bool, 1)
-	bls.onIdle = false
 	bls.outBlock = make(chan *types.Block, blsBlockBufferCapacity)
 }
 
@@ -62,9 +62,6 @@ func (bls *blkScanner) init() {
 func (bls *blkScanner) run() {
 	if bls.mgr == nil {
 		panic(fmt.Errorf("no svc manager set on %s", bls.name()))
-	}
-	if bls.outBlock == nil {
-		panic(fmt.Errorf("no output block channel"))
 	}
 	if bls.inDispatched == nil {
 		panic(fmt.Errorf("no input block number channel"))
