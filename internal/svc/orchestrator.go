@@ -44,26 +44,30 @@ func (or *orchestrator) init() {
 	or.pushHeads = or.mgr.bls.onIdle
 }
 
-// run starts the block dispatcher
+// run starts the orchestrator service business
 func (or *orchestrator) run() {
 	// make sure we are orchestrated
 	if or.mgr == nil {
 		panic(fmt.Errorf("no svc manager set on %s", or.name()))
 	}
 
-	// signal orchestrator we started and go
+	// signal manager we started and go
 	or.mgr.started(or)
 	go or.execute()
 }
 
-// execute performs the service interaction management
+// execute performs the active data routing between received heads
+// and either local blocks cache, or the block dispatcher,
+// based on the block scanner state. The scanner state transition is observed
+// by an inbound channel.
 func (or *orchestrator) execute() {
 	defer func() {
 		close(or.sigStop)
 		or.mgr.finished(or)
 	}()
 
-	// access the heads queue; it's filled with new heads (blocks) as the node processes them
+	// access the new heads queue
+	// it's filled with new heads as the connected node processes blocks from the network
 	heads := repo.ObservedHeaders()
 	for {
 		select {
@@ -84,9 +88,9 @@ func (or *orchestrator) execute() {
 	}
 }
 
-// handleNewHead processes incoming observed header and handles it according
+// handleNewHead processes incoming header and handles it according
 // to the state of the block scanner by either pushing the corresponding block
-// to dispatcher queue, or by putting the block to the ring for future use.
+// to dispatcher queue, or by putting the block to the local ring cache for future use.
 func (or *orchestrator) handleNewHead(h *etc.Header) {
 	// get the block
 	bn := h.Number.Uint64()
@@ -110,7 +114,7 @@ func (or *orchestrator) handleNewHead(h *etc.Header) {
 
 // unloadCache pushes all the blocks currently stored in cache (e.g. blocks of the most recent heads)
 // into the block processing queue to make sure they get all processed, and we don't miss any
-// on block scanner full speed to idle transition (ensured consistency feature, may not be needed).
+// on block scanner full speed to idle transition (consistency feature, may not be needed).
 func (or *orchestrator) unloadCache() {
 	// inform about the cache unloading
 	log.Noticef("unloading block cache for processing")
