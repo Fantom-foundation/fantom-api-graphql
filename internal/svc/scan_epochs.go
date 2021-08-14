@@ -136,8 +136,12 @@ func (eps *epochScanner) next() {
 	}
 
 	// process and move to the next epoch
-	eps.queue <- ep
-	eps.current++
+	select {
+	case eps.queue <- ep:
+		eps.current++
+	case <-eps.sigStop:
+		eps.sigStop <- true
+	}
 }
 
 // dequeue consumes the queue and sends epochs to the persistent storage.

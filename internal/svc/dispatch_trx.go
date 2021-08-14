@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	retypes "github.com/ethereum/go-ethereum/core/types"
 	"go.uber.org/atomic"
 	"sync"
 	"time"
@@ -105,13 +106,10 @@ func (trd *trxDispatcher) execute() {
 				return
 			}
 
-			// validate incoming data
 			if evt.blk == nil || evt.trx == nil {
 				log.Criticalf("dispatcher dry loop")
 				continue
 			}
-
-			// dispatch the received
 			trd.process(evt)
 		}
 	}
@@ -133,20 +131,16 @@ func (trd *trxDispatcher) updateLastSeenBlock() {
 
 // process the given transaction event into the required targets.
 func (trd *trxDispatcher) process(evt *eventTrx) {
-	// make the work group for this trx
+	// process transaction accounts; exit if terminated
 	var wg sync.WaitGroup
+	if !trd.pushAccounts(evt, &wg) {
+		return
+	}
 
-	// process transaction accounts
-	trd.pushAccounts(evt, &wg)
-
-	// process transaction logs
+	// process transaction logs; exit if terminated
 	for _, lg := range evt.trx.Logs {
-		wg.Add(1)
-		trd.outLog <- &types.LogRecord{
-			WatchDog: &wg,
-			Block:    evt.blk,
-			Trx:      evt.trx,
-			Log:      lg,
+		if !trd.pushLog(lg, evt.blk, evt.trx, &wg) {
+			return
 		}
 	}
 
@@ -154,70 +148,80 @@ func (trd *trxDispatcher) process(evt *eventTrx) {
 	// we spawn a lot of go-routines here, so we should test the optimal queue length above
 	go trd.waitAndStore(evt, &wg)
 
-	// broadcast new transaction
-	trd.onTransaction <- evt.trx
+	// broadcast new transaction; if it can not be broadcast quickly, skip
+	select {
+	case trd.onTransaction <- evt.trx:
+	case <-time.After(200 * time.Millisecond):
+	}
 }
 
 // waitAndStore waits for the transaction processing to finish and stores the transaction into db.
 func (trd *trxDispatcher) waitAndStore(evt *eventTrx, wg *sync.WaitGroup) {
-	// wait until the trx is processed
+	// wait until all the sub-processors finish their job
 	wg.Wait()
-
-	// store to the db
 	if err := repo.StoreTransaction(evt.blk, evt.trx); err != nil {
 		log.Errorf("can not store trx %s from block #%d", evt.trx.Hash.String(), evt.blk.Number)
 	}
 
-	// update estimator
 	repo.IncTrxCountEstimate(1)
-
-	// add the transaction to the ring cache
 	repo.CacheTransaction(evt.trx)
-
-	// update internal block observer value
 	trd.blkObserver.Store(uint64(evt.blk.Number))
 }
 
-// pushAccounts pushes given transaction accounts on both sides.
-func (trd *trxDispatcher) pushAccounts(evt *eventTrx, wg *sync.WaitGroup) {
+// pushAccounts pushes given transaction accounts on both sides observing terminate signal on process.
+func (trd *trxDispatcher) pushAccounts(evt *eventTrx, wg *sync.WaitGroup) bool {
 	// the sender is always present
-	wg.Add(1)
-	trd.outAccount <- &eventAcc{
-		watchDog: wg,
-		addr:     &evt.trx.From,
-		act:      types.AccountTypeWallet,
-		blk:      evt.blk,
-		trx:      evt.trx,
-		deploy:   nil,
+	if !trd.pushAccount(types.AccountTypeWallet, &evt.trx.From, evt.blk, evt.trx, wg) {
+		return false
 	}
 
 	// do we have a recipient?
-	if evt.trx.To != nil {
-		wg.Add(1)
-		trd.outAccount <- &eventAcc{
-			watchDog: wg,
-			act:      types.AccountTypeWallet,
-			addr:     evt.trx.To,
-			blk:      evt.blk,
-			trx:      evt.trx,
-			deploy:   nil,
-		}
+	if evt.trx.To != nil && !trd.pushAccount(types.AccountTypeWallet, evt.trx.To, evt.blk, evt.trx, wg) {
+		return false
 	}
 
 	// if there is no contract created, we are done here
 	if evt.trx.ContractAddress == nil {
-		return
+		return true
 	}
 
 	// queue the new contract to be processed as well
 	log.Debugf("contract %s found at trx %s", evt.trx.ContractAddress.String(), evt.trx.Hash.String())
+	return trd.pushAccount(types.AccountTypeContract, evt.trx.ContractAddress, evt.blk, evt.trx, wg)
+}
+
+// pushAccount pushes given account event to output queue observing terminate signal.
+func (trd *trxDispatcher) pushAccount(at string, adr *common.Address, blk *types.Block, trx *types.Transaction, wg *sync.WaitGroup) bool {
 	wg.Add(1)
-	trd.outAccount <- &eventAcc{
+	select {
+	case trd.outAccount <- &eventAcc{
 		watchDog: wg,
-		addr:     evt.trx.ContractAddress,
-		act:      types.AccountTypeContract,
-		blk:      evt.blk,
-		trx:      evt.trx,
-		deploy:   &evt.trx.Hash,
+		addr:     adr,
+		act:      at,
+		blk:      blk,
+		trx:      trx,
+		deploy:   nil,
+	}:
+	case <-trd.sigStop:
+		trd.sigStop <- true
+		return false
 	}
+	return true
+}
+
+// pushLog pushes specified log record into a processing queue observing terminate signal.
+func (trd *trxDispatcher) pushLog(lg retypes.Log, blk *types.Block, trx *types.Transaction, wg *sync.WaitGroup) bool {
+	wg.Add(1)
+	select {
+	case trd.outLog <- &types.LogRecord{
+		WatchDog: wg,
+		Block:    blk,
+		Trx:      trx,
+		Log:      lg,
+	}:
+	case <-trd.sigStop:
+		trd.sigStop <- true
+		return false
+	}
+	return true
 }

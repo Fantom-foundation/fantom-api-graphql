@@ -182,7 +182,13 @@ func (bls *blkScanner) updateState(target bool) {
 	// switch the state; advertise the transition
 	log.Noticef("block scanner idle state toggled to %t", target)
 	bls.onIdle = target
-	bls.outStateSwitch <- target
+
+	select {
+	case bls.outStateSwitch <- target:
+	case <-bls.sigStop:
+		bls.sigStop <- true
+		return
+	}
 
 	// going full speed
 	if !target {
@@ -217,6 +223,11 @@ func (bls *blkScanner) shift() {
 	}
 
 	// push the block for processing and advance to the next expected block
-	bls.outBlock <- block
-	bls.next++
+	// observe possible stop signal during a wait for the block queue slot
+	select {
+	case bls.outBlock <- block:
+		bls.next++
+	case <-bls.sigStop:
+		bls.sigStop <- true
+	}
 }

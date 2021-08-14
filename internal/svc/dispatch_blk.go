@@ -80,10 +80,15 @@ func (bld *blockDispatcher) execute() {
 
 			// process the new block
 			log.Debugf("block #%d arrived", uint64(blk.Number))
-			bld.process(blk)
+			if !bld.process(blk) {
+				continue
+			}
 
 			// broadcast the block event
-			bld.onBlock <- blk
+			select {
+			case bld.onBlock <- blk:
+			case <-time.After(200 * time.Millisecond):
+			}
 
 			// add the block to the ring
 			repo.CacheBlock(blk)
@@ -92,37 +97,51 @@ func (bld *blockDispatcher) execute() {
 }
 
 // process the given block by loading its content and sending block transactions
-// into the trx dispatcher.
-func (bld *blockDispatcher) process(blk *types.Block) {
+// into the trx dispatcher. Observe terminate signal.
+func (bld *blockDispatcher) process(blk *types.Block) bool {
 	// dispatched block number is used by the block scanner
 	// to keep track of the work done vs. work pending
-	bld.outDispatched <- uint64(blk.Number)
-	if blk.Txs == nil || len(blk.Txs) == 0 {
-		log.Debugf("empty block #%d processed", blk.Number)
-		return
+	select {
+	case bld.outDispatched <- uint64(blk.Number):
+	case <-bld.sigStop:
+		bld.sigStop <- true
+		return false
 	}
 
-	// log the situation
+	if blk.Txs == nil || len(blk.Txs) == 0 {
+		log.Debugf("empty block #%d processed", blk.Number)
+		return true
+	}
+
 	log.Debugf("%d transaction found in block #%d", len(blk.Txs), blk.Number)
+	if !bld.processTxs(blk) {
+		return false
+	}
 
-	// loop transactions
+	log.Debugf("block #%d processed", blk.Number)
+	return true
+}
+
+// processTxs loops all the transactions in the block and pushes them
+// into the transaction dispatcher queue observing the term signal.
+func (bld *blockDispatcher) processTxs(blk *types.Block) bool {
 	for i, th := range blk.Txs {
-		// log
 		log.Debugf("loading trx #%d from block #%d", i, blk.Number)
-
-		// load the transaction
 		trx := bld.load(blk, th)
 		if trx != nil {
 			// queue and broadcast the transaction
-			bld.outTransaction <- &eventTrx{
+			select {
+			case bld.outTransaction <- &eventTrx{
 				blk: blk,
 				trx: trx,
+			}:
+			case <-bld.sigStop:
+				bld.sigStop <- true
+				return false
 			}
 		}
 	}
-
-	// log the situation
-	log.Debugf("block #%d processed", blk.Number)
+	return true
 }
 
 // load a transaction detail from repository, if possible.
