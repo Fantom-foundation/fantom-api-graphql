@@ -40,8 +40,11 @@ const (
 	fiSwapReserve1   = "reserve1"
 )
 
-// decChange holds information, how many decimals will be added/removed
-var decChange = new(big.Int).SetUint64(1000000000000)
+// swapAmountDecimalsCorrection represents the decimal correction on swap value.
+var swapAmountDecimalsCorrection = new(big.Int).SetUint64(1000000000)
+
+// swapReserveDecimalsCorrection represents the decimal correction on swap reserve amount.
+var swapReserveDecimalsCorrection = new(big.Int).SetUint64(1000000000000000)
 
 // getHash generates hash for swap from transaction hash and pair address
 func getHash(swap *types.Swap) *common.Hash {
@@ -50,6 +53,16 @@ func getHash(swap *types.Swap) *common.Hash {
 	sum := sha256.Sum256(append(hashBytes, pairBytes...))
 	swapHash := common.BytesToHash(sum[:])
 	return &swapHash
+}
+
+// removeDecimals applies decimal correction to the given value.
+func removeDecimals(am *big.Int, cr *big.Int) uint64 {
+	return new(big.Int).Div(am, cr).Uint64()
+}
+
+// removes decimal correction from the given value.
+func returnDecimals(am *big.Int, cr *big.Int) *big.Int {
+	return new(big.Int).Mul(am, cr)
 }
 
 // initUniswapCollection initializes the swap collection with
@@ -96,14 +109,9 @@ func isZeroSwap(swap *types.Swap) bool {
 	if swap.Type == types.SwapSync {
 		return false
 	}
-	am := big.Int{}
-	am0small := removeDecimals(am.Add(swap.Amount0In, swap.Amount0Out))
-	am1small := removeDecimals(am.Add(swap.Amount1In, swap.Amount1Out))
-
-	if am0small == 0 || am1small == 0 {
-		return true
-	}
-	return false
+	am0small := removeDecimals(new(big.Int).Add(swap.Amount0In, swap.Amount0Out), swapAmountDecimalsCorrection)
+	am1small := removeDecimals(new(big.Int).Add(swap.Amount1In, swap.Amount1Out), swapAmountDecimalsCorrection)
+	return am0small == 0 || am1small == 0
 }
 
 // UniswapAdd stores a swap reference in connected persistent storage.
@@ -118,7 +126,7 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 
 	// check for zero amounts in the swap, because of future div by 0 during aggregation in db
 	if isZeroSwap(swap) {
-		db.log.Debugf("Swap from block %v will not be added, because swap amount is 0 after removing decimals", uint64(*swap.BlockNumber))
+		db.log.Debugf("swap from block %d will not be added, because swap amount is 0 after removing decimals", uint64(*swap.BlockNumber))
 		return nil
 	}
 
@@ -154,18 +162,6 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 	return nil
 }
 
-// removeDecimals for a big.Int of the 1e18 wei
-// making amount numbers smaller to be able to call aggregate functions in database.
-func removeDecimals(nr1 *big.Int) uint64 {
-	return nr1.Div(nr1, decChange).Uint64()
-}
-
-// return Decimals for big.Int of the 1e18 wei
-// Restores the WEI decimals (lost precision is not restored here).
-func returnDecimals(nr1 *big.Int) *big.Int {
-	return nr1.Mul(nr1, decChange)
-}
-
 // swapData collects the data for the given swap.
 func swapData(base *bson.D, swap *types.Swap) bson.D {
 	// make a new instance if needed
@@ -179,12 +175,12 @@ func swapData(base *bson.D, swap *types.Swap) bson.D {
 		bson.E{Key: fiSwapTxHash, Value: swap.Hash.String()},
 		bson.E{Key: fiSwapPair, Value: swap.Pair.String()},
 		bson.E{Key: fiSwapSender, Value: swap.Sender.String()},
-		bson.E{Key: fiSwapAmount0in, Value: removeDecimals(swap.Amount0In)},
-		bson.E{Key: fiSwapAmount0out, Value: removeDecimals(swap.Amount0Out)},
-		bson.E{Key: fiSwapAmount1in, Value: removeDecimals(swap.Amount1In)},
-		bson.E{Key: fiSwapAmount1out, Value: removeDecimals(swap.Amount1Out)},
-		bson.E{Key: fiSwapReserve0, Value: removeDecimals(swap.Reserve0)},
-		bson.E{Key: fiSwapReserve1, Value: removeDecimals(swap.Reserve1)},
+		bson.E{Key: fiSwapAmount0in, Value: removeDecimals(swap.Amount0In, swapAmountDecimalsCorrection)},
+		bson.E{Key: fiSwapAmount0out, Value: removeDecimals(swap.Amount0Out, swapAmountDecimalsCorrection)},
+		bson.E{Key: fiSwapAmount1in, Value: removeDecimals(swap.Amount1In, swapAmountDecimalsCorrection)},
+		bson.E{Key: fiSwapAmount1out, Value: removeDecimals(swap.Amount1Out, swapAmountDecimalsCorrection)},
+		bson.E{Key: fiSwapReserve0, Value: removeDecimals(swap.Reserve0, swapReserveDecimalsCorrection)},
+		bson.E{Key: fiSwapReserve1, Value: removeDecimals(swap.Reserve1, swapReserveDecimalsCorrection)},
 	)
 	return *base
 }
@@ -218,13 +214,12 @@ func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *common.Hash, s
 		_, err := col.UpdateOne(context.Background(),
 			bson.M{fiSwapPk: hash.String()},
 			bson.D{
-				{Key: "$set", Value: bson.M{fiSwapReserve0: removeDecimals(swap.Reserve0)}},
-				{Key: "$set", Value: bson.M{fiSwapReserve1: removeDecimals(swap.Reserve1)}}})
+				{Key: "$set", Value: bson.M{fiSwapReserve0: removeDecimals(swap.Reserve0, swapReserveDecimalsCorrection)}},
+				{Key: "$set", Value: bson.M{fiSwapReserve1: removeDecimals(swap.Reserve1, swapReserveDecimalsCorrection)}}})
 		if err != nil {
-			db.log.Errorf("Unable to update reserves for Swap %s", hash.String())
+			db.log.Errorf("unable to update reserves for swap %s", hash.String())
 		}
 	} else {
-
 		// in case the sync event was recorded first, update reserves into actual swap
 		// and delete sync record.
 		type Values struct {
@@ -245,12 +240,11 @@ func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *common.Hash, s
 				db.log.Errorf("can not delete swap data; %s", err.Error())
 			}
 
-			swap.Reserve0 = returnDecimals(big.NewInt(values.Reserve0))
-			swap.Reserve1 = returnDecimals(big.NewInt(values.Reserve1))
+			swap.Reserve0 = returnDecimals(big.NewInt(values.Reserve0), swapReserveDecimalsCorrection)
+			swap.Reserve1 = returnDecimals(big.NewInt(values.Reserve1), swapReserveDecimalsCorrection)
 			return false, nil
 		}
 	}
-	// no need to change data
 	return true, nil
 }
 
@@ -261,7 +255,6 @@ func (db *MongoDbBridge) SwapCount() (uint64, error) {
 
 // LastKnownSwapBlock returns number of the last known block stored in the database.
 func (db *MongoDbBridge) LastKnownSwapBlock() (uint64, error) {
-
 	// search for document with last swap block number
 	query := bson.D{
 		{Key: "lastSwapSyncBlk", Value: bson.D{
@@ -392,7 +385,7 @@ func (db *MongoDbBridge) UniswapVolume(pairAddress *common.Address, fromTime int
 			fmt.Println(err.Error())
 		}
 
-		v := returnDecimals(big.NewInt(val.Total))
+		v := returnDecimals(big.NewInt(val.Total), swapAmountDecimalsCorrection)
 		def.Volume = v
 	}
 
@@ -455,7 +448,7 @@ func (db *MongoDbBridge) UniswapTimeVolumes(pairAddress *common.Address, resolut
 		}
 		def := types.DefiSwapVolume{
 			PairAddress: pairAddress,
-			Volume:      returnDecimals(big.NewInt(val.Total)),
+			Volume:      returnDecimals(big.NewInt(val.Total), swapAmountDecimalsCorrection),
 			DateString:  val.ID,
 		}
 		list = append(list, def)
@@ -531,7 +524,6 @@ func getDateBsonD(fromTime int64, toTime int64) bson.D {
 // UniswapTimePrices resolves price of swap trades for specified pair grouped by date interval.
 // If toTime is 0, then it calculates prices till now
 func (db *MongoDbBridge) UniswapTimePrices(pairAddress *common.Address, resolution string, fromTime int64, toTime int64, direction int32) ([]types.DefiTimePrice, error) {
-
 	tokenASum := bson.D{{Key: "$add", Value: bson.A{"$am0in", "$am0out"}}}
 	tokenBSum := bson.D{{Key: "$add", Value: bson.A{"$am1in", "$am1out"}}}
 
@@ -664,8 +656,8 @@ func (db *MongoDbBridge) UniswapTimeReserves(pairAddress *common.Address, resolu
 		res := types.DefiTimeReserve{
 			Time: reserveVal.Time,
 			ReserveClose: []hexutil.Big{
-				hexutil.Big(*returnDecimals(new(big.Int).SetInt64(reserveVal.Close0))),
-				hexutil.Big(*returnDecimals(new(big.Int).SetInt64(reserveVal.Close1)))},
+				hexutil.Big(*returnDecimals(new(big.Int).SetInt64(reserveVal.Close0), swapReserveDecimalsCorrection)),
+				hexutil.Big(*returnDecimals(new(big.Int).SetInt64(reserveVal.Close1), swapReserveDecimalsCorrection))},
 		}
 
 		list = append(list, res)
@@ -909,10 +901,10 @@ func (db *MongoDbBridge) uniswapActionListLoad(col *mongo.Collection, pairAddres
 		ua.Sender = common.HexToAddress(udb.Sender)
 		ua.TransactionHash = common.HexToHash(udb.TransactionHash)
 		ua.Time = hexutil.Uint64(udb.Time.UTC().Unix())
-		ua.Amount0in = *(*hexutil.Big)(returnDecimals(big.NewInt(udb.Amount0in)))
-		ua.Amount0out = *(*hexutil.Big)(returnDecimals(big.NewInt(udb.Amount0out)))
-		ua.Amount1in = *(*hexutil.Big)(returnDecimals(big.NewInt(udb.Amount1in)))
-		ua.Amount1out = *(*hexutil.Big)(returnDecimals(big.NewInt(udb.Amount1out)))
+		ua.Amount0in = *(*hexutil.Big)(returnDecimals(big.NewInt(udb.Amount0in), swapAmountDecimalsCorrection))
+		ua.Amount0out = *(*hexutil.Big)(returnDecimals(big.NewInt(udb.Amount0out), swapAmountDecimalsCorrection))
+		ua.Amount1in = *(*hexutil.Big)(returnDecimals(big.NewInt(udb.Amount1in), swapAmountDecimalsCorrection))
+		ua.Amount1out = *(*hexutil.Big)(returnDecimals(big.NewInt(udb.Amount1out), swapAmountDecimalsCorrection))
 
 		// keep this one
 		uniswapAction = &ua
