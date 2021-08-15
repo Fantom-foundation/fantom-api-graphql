@@ -63,7 +63,7 @@ func handleUniswapSwap(lr *types.LogRecord) {
 		Reserve1:    z,
 	})
 	if err != nil {
-		log.Errorf("could not store uniswap event; %s", err.Error())
+		log.Errorf("%s could not store uniswap event #%d; %s", lr.TxHash.String(), lr.Index, err.Error())
 	}
 }
 
@@ -113,7 +113,7 @@ func handleUniswapMint(lr *types.LogRecord) {
 		Reserve1:    z,
 	})
 	if err != nil {
-		log.Errorf("could not store uniswap event; %s", err.Error())
+		log.Errorf("%s could not store uniswap event #%d; %s", lr.TxHash.String(), lr.Index, err.Error())
 	}
 }
 
@@ -163,7 +163,7 @@ func handleUniswapBurn(lr *types.LogRecord) {
 		Reserve1:    z,
 	})
 	if err != nil {
-		log.Errorf("could not store uniswap event; %s", err.Error())
+		log.Errorf("%s could not store uniswap event #%d; %s", lr.TxHash.String(), lr.Index, err.Error())
 	}
 }
 
@@ -210,6 +210,6 @@ func handleUniswapSync(lr *types.LogRecord) {
 		Reserve1:    r1,
 	})
 	if err != nil {
-		log.Errorf("could not store uniswap event; %s", err.Error())
+		log.Errorf("%s could not store uniswap event #%d; %s", lr.TxHash.String(), lr.Index, err.Error())
 	}
 }
