@@ -9,6 +9,9 @@ import (
 // uniswapPairTokensPrefix represents a prefix used for uniswap pair tokens caching key.
 const uniswapPairTokensPrefix = "unp"
 
+// uniswapPairListKey represents a key used for uniswap pair list caching key.
+const uniswapPairListKey = "unpairs"
+
 // uniswapPairTokensKey generates cache key for uniswap tokens pair entry.
 func uniswapPairTokensKey(pair *common.Address) string {
 	var sb strings.Builder
@@ -51,7 +54,40 @@ func (b *MemBridge) PullUniswapPairTokens(pair *common.Address) []common.Address
 	// restore addresses from received raw data
 	// bytes <0..19> belong to the first address; bytes 20+ are for the second one
 	tl := make([]common.Address, 2)
-	tl[0].SetBytes(data[:20])
-	tl[1].SetBytes(data[20:])
+	tl[0].SetBytes(data[:common.AddressLength])
+	tl[1].SetBytes(data[common.AddressLength:])
 	return tl
+}
+
+// PushAllPairsList caches the list of all uniswap pairs.
+func (b *MemBridge) PushAllPairsList(list []common.Address) {
+	if nil == list || len(list) == 0 {
+		return
+	}
+
+	set := make([]byte, len(list)*common.AddressLength)
+	for i, a := range list {
+		copy(set[i*common.AddressLength:i*common.AddressLength+common.AddressLength], a.Bytes())
+	}
+
+	if err := b.cache.Set(uniswapPairListKey, set); err != nil {
+		b.log.Errorf("can not store uniswap pairs list of len %d; %s", len(list), err.Error())
+	}
+}
+
+// PullAllPairsList loads the list of all uniswap pairs from memory cache.
+func (b *MemBridge) PullAllPairsList() []common.Address {
+	data, err := b.cache.Get(uniswapPairListKey)
+	if err != nil {
+		return nil
+	}
+
+	ac := len(data) / common.AddressLength
+	list := make([]common.Address, ac)
+	for i := 0; i < ac; i++ {
+		a := common.Address{}
+		a.SetBytes(data[i*common.AddressLength : i*common.AddressLength+common.AddressLength])
+		list[i] = a
+	}
+	return list
 }

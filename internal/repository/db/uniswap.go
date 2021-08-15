@@ -44,7 +44,7 @@ const (
 var swapAmountDecimalsCorrection = new(big.Int).SetUint64(1000000000)
 
 // swapReserveDecimalsCorrection represents the decimal correction on swap reserve amount.
-var swapReserveDecimalsCorrection = new(big.Int).SetUint64(1000000000000000)
+var swapReserveDecimalsCorrection = new(big.Int).SetUint64(1000000000000)
 
 // getHash generates hash for swap from transaction hash and pair address
 func getHash(swap *types.Swap) *common.Hash {

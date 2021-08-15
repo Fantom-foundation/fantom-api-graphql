@@ -66,7 +66,7 @@ func (ftm *FtmBridge) UniswapPair(tokenA *common.Address, tokenB *common.Address
 }
 
 // UniswapPairs returns list of all token pairs managed by Uniswap core.
-func (ftm *FtmBridge) UniswapPairs() ([]common.Address, error) {
+func (ftm *FtmBridge) UniswapPairs(whiteListedOnly bool) ([]common.Address, error) {
 	// get the router contract if possible
 	contract, err := contracts.NewUniswapFactory(ftm.uniswapConfig.Core, ftm.eth)
 	if err != nil {
@@ -96,7 +96,7 @@ func (ftm *FtmBridge) UniswapPairs() ([]common.Address, error) {
 
 		// check the pair (is it on the white list?)
 		// add the address to the list, if it's ok
-		if ftm.isUniswapPairWhitelisted(&adr) {
+		if !whiteListedOnly || ftm.isUniswapPairWhitelisted(&adr) {
 			list = append(list, adr)
 		}
 	}

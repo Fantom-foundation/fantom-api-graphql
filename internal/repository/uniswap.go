@@ -14,8 +14,27 @@ func (p *proxy) NativeTokenAddress() (*common.Address, error) {
 }
 
 // UniswapPairs returns list of all token pairs managed by Uniswap core.
+// We use cache to store the list temporarily, the list is refreshed from RCP when the cache record expires.
 func (p *proxy) UniswapPairs() ([]common.Address, error) {
-	return p.rpc.UniswapPairs()
+	// try the cache first
+	l := p.cache.PullAllPairsList()
+	if l != nil {
+		return l, nil
+	}
+
+	// use RPC to get the fresh list and cache it for future use
+	l, err := p.rpc.UniswapPairs(false)
+	if err != nil {
+		log.Errorf("uniswap pairs not available; %s", err.Error())
+		return nil, err
+	}
+	p.cache.PushAllPairsList(l)
+	return l, nil
+}
+
+// UniswapKnownPairs returns list of all known and whitelisted token pairs managed by Uniswap core.
+func (p *proxy) UniswapKnownPairs() ([]common.Address, error) {
+	return p.rpc.UniswapPairs(true)
 }
 
 // UniswapPair returns an address of an Uniswap pair for the given tokens.

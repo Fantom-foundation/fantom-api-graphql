@@ -13,10 +13,31 @@ func uniswapOrdinalIndex(lr *types.LogRecord) uint64 {
 	return ((uint64(lr.Block.Number) << 14) & 0x7FFFFFFFFFFFFFFF) | ((uint64(lr.TxIndex) << 8) & 0x3fff) | (uint64(lr.Index) & 0xff)
 }
 
+// isKnownUniswapPair checks if the given (expected) uniswap pair address
+// belongs to our approved Uniswap instance.
+func isKnownUniswapPair(pair *common.Address) bool {
+	l, err := repo.UniswapPairs()
+	if err != nil {
+		log.Errorf("unknown uniswap pairs list; %s", err.Error())
+		return false
+	}
+	for _, a := range l {
+		if a.String() == pair.String() {
+			return true
+		}
+	}
+	return false
+}
+
 // handleUniswapSwap processes Uniswap Swap event lr emitted when a sender trades
 // input tokens to gain output tokens, this is the basic type of trade on an Uniswap pair.
 // UniswapPair::Swap(address indexed sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out, address indexed to)
 func handleUniswapSwap(lr *types.LogRecord) {
+	if !isKnownUniswapPair(&lr.Address) {
+		log.Infof("rejected %s uniswap swap #%d on unknown pair", lr.TxHash.String(), lr.Index)
+		return
+	}
+
 	// sanity check for data (4 x uint256 = 4x32 bytes = 128 bytes), (1 x subject topic + 2 x address = 3 topics)
 	if len(lr.Data) != 128 || len(lr.Topics) != 3 {
 		log.Errorf("%s invalid data length; expected 128 bytes, %d bytes given; expected 3 topics, %d given",
@@ -71,6 +92,11 @@ func handleUniswapSwap(lr *types.LogRecord) {
 // to an Uniswap token pair to increase their share on the pair rewards.
 // UniswapPair::Mint(address indexed sender, uint256 amount0, uint256 amount1)
 func handleUniswapMint(lr *types.LogRecord) {
+	if !isKnownUniswapPair(&lr.Address) {
+		log.Infof("rejected %s uniswap mint #%d on unknown pair", lr.TxHash.String(), lr.Index)
+		return
+	}
+
 	// sanity check for data (2 x uint256 = 2x32 bytes = 64 bytes), (1 x subject topic + 1 x address = 2 topics)
 	if len(lr.Data) != 64 || len(lr.Topics) != 2 {
 		log.Errorf("%s invalid data length; expected 64 bytes, %d bytes given; expected 2 topics, %d given",
@@ -121,6 +147,11 @@ func handleUniswapMint(lr *types.LogRecord) {
 // from an Uniswap token pair to decrease their share on the pair and claim accumulated rewards.
 // UniswapPair::Burn(address indexed sender, uint256 amount0, uint256 amount1, address indexed to)
 func handleUniswapBurn(lr *types.LogRecord) {
+	if !isKnownUniswapPair(&lr.Address) {
+		log.Infof("rejected %s uniswap burn #%d on unknown pair", lr.TxHash.String(), lr.Index)
+		return
+	}
+
 	// sanity check for data (2 x uint256 = 2x32 bytes = 64 bytes), (1 x subject topic + 2 x address = 3 topics)
 	if len(lr.Data) != 64 || len(lr.Topics) != 3 {
 		log.Errorf("%s invalid data length; expected 64 bytes, %d bytes given; expected 3 topics, %d given",
@@ -170,6 +201,11 @@ func handleUniswapBurn(lr *types.LogRecord) {
 // handleUniswapSync processes Uniswap Sync event lr.
 // UniswapPair::Sync(uint112 reserve0, uint112 reserve1)
 func handleUniswapSync(lr *types.LogRecord) {
+	if !isKnownUniswapPair(&lr.Address) {
+		log.Infof("rejected %s uniswap sync #%d on unknown pair", lr.TxHash.String(), lr.Index)
+		return
+	}
+
 	// sanity check for data (2 x uint112 = 2x32 bytes = 64 bytes)
 	if len(lr.Data) != 64 {
 		log.Errorf("%s invalid data length; expected 64 bytes, %d bytes given; expected 1 topic, %d given",

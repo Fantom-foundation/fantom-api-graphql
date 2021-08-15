@@ -359,6 +359,9 @@ type Repository interface {
 	// UniswapPairs returns list of all token pairs managed by Uniswap core.
 	UniswapPairs() ([]common.Address, error)
 
+	// UniswapKnownPairs returns list of all known and whitelisted token pairs managed by Uniswap core.
+	UniswapKnownPairs() ([]common.Address, error)
+
 	// UniswapPair returns an address of an Uniswap pair for the given tokens.
 	UniswapPair(*common.Address, *common.Address) (*common.Address, error)
 
@@ -374,7 +377,7 @@ type Repository interface {
 	// self reserves of the analyzed token.
 	UniswapQuoteInput(amountIn hexutil.Big, reserveMy hexutil.Big, reserveSibling hexutil.Big) (hexutil.Big, error)
 
-	// UniswapTokens returns list of addresses of tokens involved in a Uniswap pair.
+	// UniswapTokens returns list of addresses of tokens involved in an Uniswap pair.
 	UniswapTokens(*common.Address) ([]common.Address, error)
 
 	// UniswapReserves returns list of token reserve amounts in a Uniswap pair.

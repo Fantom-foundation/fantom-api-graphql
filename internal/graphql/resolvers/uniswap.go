@@ -50,7 +50,7 @@ func (rs *rootResolver) defiUniswapPairs() []*UniswapPair {
 	// make sure to do this only once
 	list, err, _ := rs.cg.Do("uniswap-pairs", func() (interface{}, error) {
 		// get the list of pair addresses
-		pairs, err := repository.R().UniswapPairs()
+		pairs, err := repository.R().UniswapKnownPairs()
 		if err != nil || pairs == nil {
 			return make([]*UniswapPair, 0), nil
 		}
