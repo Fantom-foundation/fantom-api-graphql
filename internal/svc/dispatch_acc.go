@@ -168,7 +168,7 @@ func (acd *accDispatcher) contract(acc *eventAcc) error {
 // detectContract tries to identify the contract type.
 func (acd *accDispatcher) detect(addr *common.Address, ct *string, block *types.Block, trx *types.Transaction) (*types.Contract, error) {
 	// identify ERC20 token
-	con := acd.detectErc20(addr, block, trx)
+	con := acd.detectErcToken(addr, block, trx)
 	if con != nil {
 		*ct = types.AccountTypeERC20Token
 		return con, nil
@@ -182,8 +182,8 @@ func (acd *accDispatcher) detect(addr *common.Address, ct *string, block *types.
 	return types.NewGenericContract(addr, block, trx), nil
 }
 
-// detectErc20 identifies ERC20 token contracts by checking common contract end points.
-func (acd *accDispatcher) detectErc20(addr *common.Address, block *types.Block, trx *types.Transaction) *types.Contract {
+// detectErcToken identifies ERC20/ERC721 token contracts by checking common contract end points.
+func (acd *accDispatcher) detectErcToken(addr *common.Address, block *types.Block, trx *types.Transaction) *types.Contract {
 	// try to get the token name
 	name, err := repo.Erc20Name(addr)
 	if err != nil {
@@ -203,10 +203,10 @@ func (acd *accDispatcher) detectErc20(addr *common.Address, block *types.Block, 
 	// try to detect total supply; if not found this is probably ERC721
 	if _, err := repo.Erc20TotalSupply(addr); err != nil {
 		log.Noticef("ERC721 token %s detected at %s", name, addr.String())
-		return types.NewErcTokenContract(addr, name, block, trx, types.AccountTypeERC20Token, rpc.ERC721TokenABI)
+		return types.NewErcTokenContract(addr, name, block, trx, types.AccountTypeERC721Token, rpc.ERC721TokenABI)
 	}
 
 	// log what we do
 	log.Noticef("ERC20 token %s detected at %s", name, addr.String())
-	return types.NewErcTokenContract(addr, name, block, trx, types.AccountTypeERC721Token, contracts.ERCTwentyABI)
+	return types.NewErcTokenContract(addr, name, block, trx, types.AccountTypeERC20Token, contracts.ERCTwentyABI)
 }
