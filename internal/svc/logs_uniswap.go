@@ -8,6 +8,9 @@ import (
 	"math/big"
 )
 
+// uniswapKnownPairs represents a map of known pairs and their participation in our approved Uniswap instance.
+var uniswapKnownPairs = make(map[common.Address]bool, 1000)
+
 // uniswapOrdinalIndex calculates ordinal index of the given Uniswap transaction.
 func uniswapOrdinalIndex(lr *types.LogRecord) uint64 {
 	return ((uint64(lr.Block.Number) << 14) & 0x7FFFFFFFFFFFFFFF) | ((uint64(lr.TxIndex) << 8) & 0x3fff) | (uint64(lr.Index) & 0xff)
@@ -16,17 +19,28 @@ func uniswapOrdinalIndex(lr *types.LogRecord) uint64 {
 // isKnownUniswapPair checks if the given (expected) uniswap pair address
 // belongs to our approved Uniswap instance.
 func isKnownUniswapPair(pair *common.Address) bool {
-	l, err := repo.UniswapPairs()
-	if err != nil {
-		log.Errorf("unknown uniswap pairs list; %s", err.Error())
-		return false
-	}
-	for _, a := range l {
-		if a.String() == pair.String() {
-			return true
+	// do we know the address already?
+	apr, ok := uniswapKnownPairs[*pair]
+	if !ok {
+		apr = false
+
+		// get the full list of all known pairs and use it to check this one
+		l, err := repo.UniswapPairs()
+		if err != nil {
+			log.Errorf("unknown uniswap pairs list; %s", err.Error())
+			return false
 		}
+		for _, a := range l {
+			if a.String() == pair.String() {
+				apr = true
+				break
+			}
+		}
+
+		// store the value locally for future use
+		uniswapKnownPairs[*pair] = apr
 	}
-	return false
+	return apr
 }
 
 // handleUniswapSwap processes Uniswap Swap event lr emitted when a sender trades
@@ -34,7 +48,7 @@ func isKnownUniswapPair(pair *common.Address) bool {
 // UniswapPair::Swap(address indexed sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out, address indexed to)
 func handleUniswapSwap(lr *types.LogRecord) {
 	if !isKnownUniswapPair(&lr.Address) {
-		log.Infof("rejected %s uniswap swap #%d on unknown pair", lr.TxHash.String(), lr.Index)
+		log.Debugf("rejected %s uniswap swap #%d on unknown pair", lr.TxHash.String(), lr.Index)
 		return
 	}
 
@@ -93,7 +107,7 @@ func handleUniswapSwap(lr *types.LogRecord) {
 // UniswapPair::Mint(address indexed sender, uint256 amount0, uint256 amount1)
 func handleUniswapMint(lr *types.LogRecord) {
 	if !isKnownUniswapPair(&lr.Address) {
-		log.Infof("rejected %s uniswap mint #%d on unknown pair", lr.TxHash.String(), lr.Index)
+		log.Debugf("rejected %s uniswap mint #%d on unknown pair", lr.TxHash.String(), lr.Index)
 		return
 	}
 
@@ -148,7 +162,7 @@ func handleUniswapMint(lr *types.LogRecord) {
 // UniswapPair::Burn(address indexed sender, uint256 amount0, uint256 amount1, address indexed to)
 func handleUniswapBurn(lr *types.LogRecord) {
 	if !isKnownUniswapPair(&lr.Address) {
-		log.Infof("rejected %s uniswap burn #%d on unknown pair", lr.TxHash.String(), lr.Index)
+		log.Debugf("rejected %s uniswap burn #%d on unknown pair", lr.TxHash.String(), lr.Index)
 		return
 	}
 
@@ -202,7 +216,7 @@ func handleUniswapBurn(lr *types.LogRecord) {
 // UniswapPair::Sync(uint112 reserve0, uint112 reserve1)
 func handleUniswapSync(lr *types.LogRecord) {
 	if !isKnownUniswapPair(&lr.Address) {
-		log.Infof("rejected %s uniswap sync #%d on unknown pair", lr.TxHash.String(), lr.Index)
+		log.Debugf("rejected %s uniswap sync #%d on unknown pair", lr.TxHash.String(), lr.Index)
 		return
 	}
 
