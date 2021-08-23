@@ -15,7 +15,7 @@ type CurrentState struct {
 
 // State resolves details of the current state of the blockchain and network.
 func (rs *rootResolver) State() (CurrentState, error) {
-	return CurrentState{rs.cfg.Staking}, nil
+	return CurrentState{cfg.Staking}, nil
 }
 
 // SealedEpoch resolves the most recent sealed epoch details.

@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fantom-api-graphql/internal/types"
-	"github.com/ethereum/go-ethereum/common"
 	"net/http"
 	"sync"
 	"time"
@@ -27,7 +26,7 @@ const (
 func contractSyncInput(con *types.Contract) ContractValidationInput {
 	// prep the validation input to be synced
 	var cInput = ContractValidationInput{
-		Address:      common.Address(con.Address),
+		Address:      con.Address,
 		Name:         &con.Name,
 		SourceCode:   con.SourceCode,
 		OptimizeRuns: con.OptimizeRuns,
@@ -79,7 +78,7 @@ func constructMutationPayload(con *types.Contract) (bytes.Buffer, error) {
 // SyncContract synchronizes contract across all the peers in the API network.
 func (rs *rootResolver) syncContract(con types.Contract) {
 	// no peers to sync against
-	if len(rs.cfg.Server.Peers) <= 0 {
+	if len(cfg.Server.Peers) <= 0 {
 		log.Debugf("no peers for contract validation syncing")
 		return
 	}
@@ -95,12 +94,12 @@ func (rs *rootResolver) syncContract(con types.Contract) {
 	var wg sync.WaitGroup
 
 	// loop over the peers and sync each of them
-	for _, peer := range rs.cfg.Server.Peers {
+	for _, peer := range cfg.Server.Peers {
 		// add this sync to the wait group
 		wg.Add(1)
 
 		// run the sync
-		go syncContractToPeer(&payload, peer, rs.cfg.Server.DomainAddress, &wg)
+		go syncContractToPeer(&payload, peer, cfg.Server.DomainAddress, &wg)
 	}
 
 	// wait for all the sync to finish

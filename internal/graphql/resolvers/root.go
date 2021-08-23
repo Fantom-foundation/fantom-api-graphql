@@ -25,8 +25,6 @@ const (
 
 // rootResolver represents the ApiResolver implementation.
 type rootResolver struct {
-	cfg *config.Config
-
 	// service terminator
 	wg      sync.WaitGroup
 	cg      singleflight.Group
@@ -72,7 +70,7 @@ func New() ApiResolver {
 	if log == nil {
 		panic(fmt.Errorf("missing logger"))
 	}
-	
+
 	// create new resolver
 	rs := rootResolver{
 		// create terminator
@@ -181,12 +179,7 @@ func listLimitCount(count int32, limit uint32) int32 {
 	return int32(limit)
 }
 
-// Config returns the application configuration.
-func (rs *rootResolver) Config() *config.Config {
-	return rs.cfg
-}
-
 // Version resolves the current version of the API server.
 func (rs *rootResolver) Version() string {
-	return build.Short(rs.cfg)
+	return build.Short(cfg)
 }

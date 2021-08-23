@@ -40,13 +40,13 @@ func (rs *rootResolver) GovContract(args struct{ Address common.Address }) (*Gov
 // GovContracts resolves list of governance contracts details recognized by the API.
 func (rs *rootResolver) GovContracts() ([]*GovernanceContract, error) {
 	// do we know any contracts?
-	if nil == rs.cfg.Governance.Contracts || 0 == len(rs.cfg.Governance.Contracts) {
+	if nil == cfg.Governance.Contracts || 0 == len(cfg.Governance.Contracts) {
 		return nil, fmt.Errorf("no governance contracts recognized")
 	}
 
 	// make the output array
-	res := make([]*GovernanceContract, len(rs.cfg.Governance.Contracts))
-	for i, gc := range rs.cfg.Governance.Contracts {
+	res := make([]*GovernanceContract, len(cfg.Governance.Contracts))
+	for i, gc := range cfg.Governance.Contracts {
 		// add to the structure
 		res[i] = &GovernanceContract{
 			Name:    gc.Name,

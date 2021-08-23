@@ -38,8 +38,8 @@ func (rs *rootResolver) GovProposals(args struct {
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// prep list of governance contracts we are interested in
-	gcl := make([]*common.Address, len(rs.cfg.Governance.Contracts))
-	for i, gc := range rs.cfg.Governance.Contracts {
+	gcl := make([]*common.Address, len(cfg.Governance.Contracts))
+	for i, gc := range cfg.Governance.Contracts {
 		gcl[i] = &gc.Address
 	}
 

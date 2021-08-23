@@ -3,7 +3,6 @@ package resolvers
 
 import (
 	"context"
-	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -11,9 +10,6 @@ import (
 
 // ApiResolver represents the API interface expected to handle API access points
 type ApiResolver interface {
-	// Config returns the app configuration.
-	Config() *config.Config
-
 	// State resolves current state of the blockchain.
 	State() (CurrentState, error)
 
