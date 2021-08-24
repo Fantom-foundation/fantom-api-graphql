@@ -161,7 +161,7 @@ func (bls *blkScanner) observe() bool {
 	if bls.onIdle && target < bls.done+blsReScanHysteresis {
 		bls.next = bls.done
 		bls.from = bls.done
-		log.Infof("block scanner idling at #%d, head ot #%d", bls.next, target)
+		log.Infof("block scanner idling at #%d, head at #%d", bls.next, target)
 		return true
 	}
 
