@@ -26,7 +26,7 @@ func handleErcTokenTransfer(lr *types.LogRecord) {
 func handleErc20Transaction(lr *types.LogRecord, t int32) {
 	// sanity check for data (1x uint256 (value) = 32 bytes)
 	if len(lr.Data) != 32 || len(lr.Topics) != 3 {
-		log.Errorf("%s log invalid for ERC20; expected 32 bytes data, %d bytes given, %d topics given", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
+		log.Debugf("%s log invalid for ERC20; expected 32 bytes data, %d bytes given, %d topics given", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
 		handleErc721Transaction(lr, t)
 		return
 	}
@@ -41,7 +41,7 @@ func handleErc20Transaction(lr *types.LogRecord, t int32) {
 func handleErc721Transaction(lr *types.LogRecord, t int32) {
 	// sanity check for data (1x uint256 (value) = 32 bytes)
 	if len(lr.Data) != 0 || len(lr.Topics) != 4 {
-		log.Errorf("%s log invalid for ERC721; expected 0 bytes data, %d bytes given, %d topics given", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
+		log.Debugf("%s log invalid for ERC721; expected 0 bytes data, %d bytes given, %d topics given", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
 		return
 	}
 
