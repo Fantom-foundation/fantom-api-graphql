@@ -226,13 +226,13 @@ type Repository interface {
 	DelegationAmountStaked(*common.Address, *hexutil.Big) (*big.Int, error)
 
 	// DelegationsByAddress returns a list of all delegations of a given delegator address.
-	DelegationsByAddress(*common.Address, *common.Hash, int32) (*types.DelegationList, error)
+	DelegationsByAddress(*common.Address, *string, int32) (*types.DelegationList, error)
 
 	// DelegationsByAddressAll returns a list of all delegations of the given address un-paged.
 	DelegationsByAddressAll(addr *common.Address) ([]*types.Delegation, error)
 
 	// DelegationsOfValidator extracts a list of delegations for a validator by its ID.
-	DelegationsOfValidator(*hexutil.Big, *common.Hash, int32) (*types.DelegationList, error)
+	DelegationsOfValidator(*hexutil.Big, *string, int32) (*types.DelegationList, error)
 
 	// DelegationLock returns delegation lock information using SFC contract binding.
 	DelegationLock(*common.Address, *hexutil.Big) (*types.DelegationLock, error)

@@ -149,7 +149,7 @@ func (acc *Account) Delegations(args *struct {
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// pull the list
-	dl, err := repository.R().DelegationsByAddress(&acc.Address, decodeDelegationCursor(args.Cursor), args.Count)
+	dl, err := repository.R().DelegationsByAddress(&acc.Address, (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}

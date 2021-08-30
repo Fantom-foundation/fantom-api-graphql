@@ -72,23 +72,13 @@ func (rs *rootResolver) DelegationsOf(args *struct {
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get the list
-	dl, err := repository.R().DelegationsOfValidator(&args.Staker, decodeDelegationCursor(args.Cursor), args.Count)
+	dl, err := repository.R().DelegationsOfValidator(&args.Staker, (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}
 
 	// return the list
 	return NewDelegationList(dl), nil
-}
-
-// decodeOrdinalCursor decodes ordinal index cursor to the natural form.
-func decodeDelegationCursor(c *Cursor) *common.Hash {
-	var cr *common.Hash
-	if c != nil {
-		val := common.HexToHash((string)(*c))
-		cr = &val
-	}
-	return cr
 }
 
 // DelegationsByAddress resolves a list of own delegations by the account address.
@@ -102,7 +92,7 @@ func (rs *rootResolver) DelegationsByAddress(args *struct {
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get the list of delegations
-	dl, err := repository.R().DelegationsByAddress(&args.Address, decodeDelegationCursor(args.Cursor), args.Count)
+	dl, err := repository.R().DelegationsByAddress(&args.Address, (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}
