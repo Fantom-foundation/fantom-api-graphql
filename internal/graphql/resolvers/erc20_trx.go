@@ -7,6 +7,13 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+const (
+	ERC20TrxTypeNameTransfer = "TRANSFER"
+	ERC20TrxTypeNameMint     = "MINT"
+	ERC20TrxTypeNameBurn     = "BURN"
+	ERC20TrxTypeNameApproval = "APPROVAL"
+)
+
 // ERC20Transaction represents a resolvable ERC20 token transaction.
 type ERC20Transaction struct {
 	types.Erc20Transaction
@@ -43,16 +50,38 @@ func (trx *ERC20Transaction) TrxType() string {
 	case types.ERC20TrxTypeTransfer:
 		// minting
 		if config.EmptyAddress == trx.Sender.String() {
-			return types.ERC20TrxTypeNameMint
+			return ERC20TrxTypeNameMint
 		}
 		// burning
 		if config.EmptyAddress == trx.Recipient.String() {
-			return types.ERC20TrxTypeNameBurn
+			return ERC20TrxTypeNameBurn
 		}
 		//regular transfer
-		return types.ERC20TrxTypeNameTransfer
+		return ERC20TrxTypeNameTransfer
 	case types.ERC20TrxTypeApproval:
-		return types.ERC20TrxTypeNameApproval
+		return ERC20TrxTypeNameApproval
 	}
 	return "OTHER"
+}
+
+// erc20TrxTypeByName returns numeric type of the ERC20 transaction by its name.
+// Returns nil if the name is not recognized.
+func erc20TrxTypeByName(name string) *int32 {
+	// decode the transaction type filter
+	var txType *int32
+	switch name {
+	case ERC20TrxTypeNameMint:
+		i := int32(types.ERC20TrxTypeTransfer)
+		txType = &i
+	case ERC20TrxTypeNameBurn:
+		i := int32(types.ERC20TrxTypeTransfer)
+		txType = &i
+	case ERC20TrxTypeNameTransfer:
+		i := int32(types.ERC20TrxTypeTransfer)
+		txType = &i
+	case ERC20TrxTypeNameApproval:
+		i := int32(types.ERC20TrxTypeApproval)
+		txType = &i
+	}
+	return txType
 }

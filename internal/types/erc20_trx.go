@@ -22,13 +22,9 @@ const (
 
 	// ERC20TrxTypeTransfer represents transaction for transfers.
 	ERC20TrxTypeTransfer     = 1
-	ERC20TrxTypeNameTransfer = "TRANSFER"
-	ERC20TrxTypeNameMint     = "MINT"
-	ERC20TrxTypeNameBurn     = "BURN"
 
 	// ERC20TrxTypeApproval represents transaction for granting approvals.
 	ERC20TrxTypeApproval     = 2
-	ERC20TrxTypeNameApproval = "APPROVAL"
 )
 
 // Erc20Transaction represents an operation with ERC20 token.
@@ -60,28 +56,6 @@ type BsonErc20Transaction struct {
 	Created   uint64    `bson:"ts"`
 	Value     int64     `bson:"val"`
 	Stamp     time.Time `bson:"stamp"`
-}
-
-// Erc20TrxTypeByName returns numeric type of the ERC20 transaction by its name.
-// Returns nil if the name is not recognized.
-func Erc20TrxTypeByName(name string) *int32 {
-	// decode the transaction type filter
-	var txType *int32
-	switch name {
-	case ERC20TrxTypeNameMint:
-		i := int32(ERC20TrxTypeTransfer)
-		txType = &i
-	case ERC20TrxTypeNameBurn:
-		i := int32(ERC20TrxTypeTransfer)
-		txType = &i
-	case ERC20TrxTypeNameTransfer:
-		i := int32(ERC20TrxTypeTransfer)
-		txType = &i
-	case ERC20TrxTypeNameApproval:
-		i := int32(ERC20TrxTypeApproval)
-		txType = &i
-	}
-	return txType
 }
 
 // Pk generates unique identifier of the ERC20 transaction.

@@ -116,7 +116,7 @@ func (acc *Account) Erc20TxList(args struct {
 	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
 
 	// get the transaction hash list from repository
-	tl, err := repository.R().Erc20Transactions(args.Token, &acc.Address, types.Erc20TrxTypeByName(args.TxType), (*string)(args.Cursor), args.Count)
+	tl, err := repository.R().Erc20Transactions(args.Token, &acc.Address, erc20TrxTypeByName(args.TxType), (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}
