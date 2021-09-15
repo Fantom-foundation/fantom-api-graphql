@@ -463,6 +463,9 @@ type Repository interface {
 	// StoreErc20Transaction stores ERC20 transaction into the repository.
 	StoreErc20Transaction(*types.Erc20Transaction) error
 
+	// Erc165SupportsInterface provides information about support of the interface by the contract.
+	Erc165SupportsInterface(contract *common.Address, interfaceID [4]byte) (bool, error)
+
 	// GovernanceContractBy provides governance contract details by its address.
 	GovernanceContractBy(*common.Address) (*config.GovernanceContract, error)
 

@@ -23,7 +23,7 @@ const (
 	// ERC20TrxTypeTransfer represents transaction for transfers.
 	ERC20TrxTypeTransfer     = 1
 
-	// ERC20TrxTypeApproval represents transaction for granting approvals.
+	// ERC20TrxTypeApproval represents transaction for granting transfer approvals.
 	ERC20TrxTypeApproval     = 2
 )
 

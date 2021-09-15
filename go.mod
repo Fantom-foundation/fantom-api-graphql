@@ -1,6 +1,6 @@
 module fantom-api-graphql
 
-go 1.13
+go 1.16
 
 require (
 	github.com/StackExchange/wmi v1.2.1 // indirect

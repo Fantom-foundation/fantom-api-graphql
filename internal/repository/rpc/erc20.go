@@ -21,19 +21,14 @@ import (
 )
 
 //go:generate tools/abigen.sh --abi ./contracts/abi/erc20.abi --pkg contracts --type ERCTwenty --out ./contracts/erc20_token.go
-//go:generate tools/abigen.sh --abi ./contracts/abi/erc20detailed.abi --pkg contracts --type ERCTwentyDetailed --out ./contracts/erc20detailed_token.go
 //go:generate tools/abigen.sh --abi ./contracts/abi/wftm.abi --pkg contracts --type ErcWrappedFtm --out ./contracts/erc20wftm_token.go
-
-// ERC721TokenABI represents the ABI of ERC721 token.
-// go:embed contracts/abi/erc721.abi
-var ERC721TokenABI string
 
 // Erc20Name provides information about the name of the ERC20 token.
 func (ftm *FtmBridge) Erc20Name(token *common.Address) (string, error) {
 	// connect the contract
-	contract, err := contracts.NewERCTwentyDetailed(*token, ftm.eth)
+	contract, err := contracts.NewERCTwenty(*token, ftm.eth)
 	if err != nil {
-		ftm.log.Errorf("can not contact ERC20Detailed contract; %s", err.Error())
+		ftm.log.Errorf("can not contact ERC20 contract; %s", err.Error())
 		return "", err
 	}
 
@@ -50,9 +45,9 @@ func (ftm *FtmBridge) Erc20Name(token *common.Address) (string, error) {
 // Erc20Symbol provides information about the symbol of the ERC20 token.
 func (ftm *FtmBridge) Erc20Symbol(token *common.Address) (string, error) {
 	// connect the contract
-	contract, err := contracts.NewERCTwentyDetailed(*token, ftm.eth)
+	contract, err := contracts.NewERCTwenty(*token, ftm.eth)
 	if err != nil {
-		ftm.log.Errorf("can not contact ERC20Detailed contract; %s", err.Error())
+		ftm.log.Errorf("can not contact ERC20 contract; %s", err.Error())
 		return "", err
 	}
 
@@ -69,9 +64,9 @@ func (ftm *FtmBridge) Erc20Symbol(token *common.Address) (string, error) {
 // Erc20Decimals provides information about the decimals of the ERC20 token.
 func (ftm *FtmBridge) Erc20Decimals(token *common.Address) (int32, error) {
 	// connect the contract
-	contract, err := contracts.NewERCTwentyDetailed(*token, ftm.eth)
+	contract, err := contracts.NewERCTwenty(*token, ftm.eth)
 	if err != nil {
-		ftm.log.Errorf("can not contact ERC20Detailed contract; %s", err.Error())
+		ftm.log.Errorf("can not contact ERC20 contract; %s", err.Error())
 		return 0, err
 	}
 
@@ -161,7 +156,7 @@ func (ftm *FtmBridge) Erc20TotalSupply(token *common.Address) (hexutil.Big, erro
 	// get the amount of tokens allowed for DeFi
 	val, err := contract.TotalSupply(nil)
 	if err != nil {
-		ftm.log.Errorf("can not get defi ERC20 %s total supply; %s", token.String(), err.Error())
+		ftm.log.Errorf("can not get ERC20 %s total supply; %s", token.String(), err.Error())
 		return hexutil.Big{}, err
 	}
 
