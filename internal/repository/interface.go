@@ -428,7 +428,7 @@ type Repository interface {
 	// Erc20Transactions provides list of ERC20 transactions based on given filters.
 	Erc20Transactions(token *common.Address, acc *common.Address, tt *int32, cursor *string, count int32) (*types.Erc20TransactionList, error)
 
-	// Erc20Token returns an ERC20 token rfor the given address, if available.
+	// Erc20Token returns an ERC20 token for the given address, if available.
 	Erc20Token(*common.Address) (*types.Erc20Token, error)
 
 	// Erc20TokensList returns a list of known ERC20 tokens ordered by their activity.
@@ -465,6 +465,36 @@ type Repository interface {
 
 	// Erc165SupportsInterface provides information about support of the interface by the contract.
 	Erc165SupportsInterface(contract *common.Address, interfaceID [4]byte) (bool, error)
+
+	// Erc721Token returns an ERC721 token for the given address, if available.
+	Erc721Token(*common.Address) (*types.Erc721Token, error)
+
+	// Erc721TokensList returns a list of known ERC721 tokens ordered by their activity.
+	Erc721TokensList(int32) ([]common.Address, error)
+
+	// Erc721Name provides information about the name of the ERC721 token.
+	Erc721Name(*common.Address) (string, error)
+
+	// Erc721Symbol provides information about the symbol of the ERC721 token.
+	Erc721Symbol(*common.Address) (string, error)
+
+	// Erc721TotalSupply provides information about all available tokens.
+	Erc721TotalSupply(token *common.Address) (hexutil.Big, error)
+
+	// Erc721BalanceOf provides amount of NFT tokens owned by given owner in given ERC721 contract.
+	Erc721BalanceOf(token *common.Address, owner *common.Address) (hexutil.Big, error)
+
+	// Erc721TokenURI provides URI of Metadata JSON Schema of the ERC721 token.
+	Erc721TokenURI(token *common.Address, tokenId *big.Int) (string, error)
+
+	// Erc721OwnerOf provides information about NFT token ownership.
+	Erc721OwnerOf(token *common.Address, tokenId *big.Int) (common.Address, error)
+
+	// Erc721GetApproved provides information about operator approved to manipulate with the NFT token.
+	Erc721GetApproved(token *common.Address, tokenId *big.Int) (common.Address, error)
+
+	// Erc721IsApprovedForAll provides information about operator approved to manipulate with NFT tokens of given owner.
+	Erc721IsApprovedForAll(token *common.Address, owner *common.Address, operator *common.Address) (bool, error)
 
 	// GovernanceContractBy provides governance contract details by its address.
 	GovernanceContractBy(*common.Address) (*config.GovernanceContract, error)

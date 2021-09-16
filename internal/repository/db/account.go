@@ -34,8 +34,8 @@ const (
 	// which created the contract, if the account is a contract.
 	fiScCreationTx = "sc"
 
-	// defaultERC20ListLength is the number of ERC20 tokens pulled by default on negative count
-	defaultERC20ListLength = 25
+	// defaultTokenListLength is the number of ERC20 tokens pulled by default on negative count
+	defaultTokenListLength = 25
 )
 
 // AccountRow is the account base row
@@ -218,7 +218,7 @@ func (db *MongoDbBridge) AccountMarkActivity(addr *common.Address, ts uint64) er
 func (db *MongoDbBridge) Erc20TokensList(count int32) ([]common.Address, error) {
 	// make sure the count is positive; use default size if not
 	if count <= 0 {
-		count = defaultERC20ListLength
+		count = defaultTokenListLength
 	}
 
 	// log what we do
@@ -261,6 +261,63 @@ func (db *MongoDbBridge) loadErc20TokensList(cursor *mongo.Cursor) ([]common.Add
 		// try to decode the next row
 		if err := cursor.Decode(&row); err != nil {
 			db.log.Errorf("can not decodeERC20 list row; %s", err.Error())
+			return nil, err
+		}
+
+		// decode the value
+		list = append(list, common.HexToAddress(row.Address))
+	}
+
+	return list, nil
+}
+
+// Erc721TokensList returns a list of known ERC20 tokens ordered by their activity.
+func (db *MongoDbBridge) Erc721TokensList(count int32) ([]common.Address, error) {
+	// make sure the count is positive; use default size if not
+	if count <= 0 {
+		count = defaultTokenListLength
+	}
+
+	// log what we do
+	db.log.Debugf("loading %d most active ERC721 token accounts", count)
+
+	// get the collection for contracts
+	col := db.client.Database(db.dbName).Collection(coAccounts)
+
+	// make the filter for ERC20 tokens only and pull them ordered by activity
+	filter := bson.D{{Key: "type", Value: types.AccountTypeERC721Token}}
+	opt := options.Find().SetSort(bson.D{
+		{Key: fiAccountTransactionCounter, Value: -1},
+		{Key: fiAccountLastActivity, Value: -1},
+	}).SetLimit(int64(count))
+
+	// load the data
+	cursor, err := col.Find(context.Background(), filter, opt)
+	if err != nil {
+		db.log.Errorf("error loading ERC721 tokens list; %s", err.Error())
+		return nil, err
+	}
+
+	return db.loadErc721TokensList(cursor)
+}
+
+// Erc20TokensList returns a list of known ERC20 tokens ordered by their activity.
+func (db *MongoDbBridge) loadErc721TokensList(cursor *mongo.Cursor) ([]common.Address, error) {
+	// close the cursor as we leave
+	defer func() {
+		err := cursor.Close(context.Background())
+		if err != nil {
+			db.log.Errorf("error closing ERC721 list cursor; %s", err.Error())
+		}
+	}()
+
+	// loop and load
+	list := make([]common.Address, 0)
+	var row AccountRow
+	for cursor.Next(context.Background()) {
+		// try to decode the next row
+		if err := cursor.Decode(&row); err != nil {
+			db.log.Errorf("can not decodeERC721 list row; %s", err.Error())
 			return nil, err
 		}
 

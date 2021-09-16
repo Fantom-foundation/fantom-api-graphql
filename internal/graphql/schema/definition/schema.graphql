@@ -219,6 +219,12 @@ type Query {
     # by the token owner for the spender to be manipulated with.
     ercTokenAllowance(token: Address!, owner: Address!, spender: Address!):BigInt!
 
+    # erc721Token provides the information about ERC721 non-fungible token (NFT) by it's address.
+    erc721Token(token: Address!):ERC721Token
+
+    # erc721TokenList provides list of the most active ERC721 non-fungible tokens (NFT) on the block chain.
+    erc721TokenList(count: Int = 50):[ERC721Token!]!
+
     # govContracts provides list of governance contracts.
     govContracts:[GovernanceContract!]!
 
