@@ -24,5 +24,6 @@ type ERC721Token {
     # getApproved provides the operator approved by owner
     getApproved(tokenId: BigInt!): Address
 
+    # isApprovedForAll queries the approval status of an operator for a given owner.
     isApprovedForAll(owner: Address!, operator: Address!): Boolean
 }

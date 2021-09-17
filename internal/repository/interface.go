@@ -496,6 +496,21 @@ type Repository interface {
 	// Erc721IsApprovedForAll provides information about operator approved to manipulate with NFT tokens of given owner.
 	Erc721IsApprovedForAll(token *common.Address, owner *common.Address, operator *common.Address) (bool, error)
 
+	// Erc1155ContractsList returns a list of known ERC1155 contracts ordered by their activity.
+	Erc1155ContractsList(int32) ([]common.Address, error)
+
+	// Erc1155Uri provides URI of Metadata JSON Schema of the token.
+	Erc1155Uri(token *common.Address, tokenId *big.Int) (string, error)
+
+	// Erc1155BalanceOf provides amount of NFT tokens owned by given owner.
+	Erc1155BalanceOf(token *common.Address, owner *common.Address, tokenId *big.Int) (*big.Int, error)
+
+	// Erc1155BalanceOfBatch provides amount of NFT tokens owned by given owner.
+	Erc1155BalanceOfBatch(token *common.Address, owners *[]common.Address, tokenIds []*big.Int) ([]*big.Int, error)
+
+	// Erc1155IsApprovedForAll provides information about operator approved to manipulate with NFT tokens of given owner.
+	Erc1155IsApprovedForAll(token *common.Address, owner *common.Address, operator *common.Address) (bool, error)
+
 	// GovernanceContractBy provides governance contract details by its address.
 	GovernanceContractBy(*common.Address) (*config.GovernanceContract, error)
 

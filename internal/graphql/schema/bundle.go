@@ -229,6 +229,12 @@ type Query {
     # erc721TokenList provides list of the most active ERC721 non-fungible tokens (NFT) on the block chain.
     erc721TokenList(count: Int = 50):[ERC721Token!]!
 
+    # erc1155Token provides the information about ERC1155 multi-token contract by it's address.
+    erc1155Contract(address: Address!):ERC1155Contract
+
+    # erc1155ContractList provides list of the most active ERC1155 multi-token contract on the block chain.
+    erc1155ContractList(count: Int = 50):[ERC1155Contract!]!
+
     # govContracts provides list of governance contracts.
     govContracts:[GovernanceContract!]!
 
@@ -434,6 +440,24 @@ type Epoch {
 
     # Total supply amount.
     totalSupply: BigInt!
+}
+
+# ERC1155Contract represents a generic ERC1155 multi-token contract.
+type ERC1155Contract {
+    # address of the token is used as the token's unique identifier.
+    address: Address!
+
+    # uri provides URI of Metadata JSON Schema for given token.
+    uri(tokenId: BigInt!): String
+
+    # balanceOf represents amount of tokens on the account.
+    balanceOf(owner: Address!, tokenId: BigInt!): BigInt!
+
+    # balanceOf represents amount of tokens on the account.
+    balanceOfBatch(owners: [Address!]!, tokenIds: [BigInt!]!): [BigInt!]!
+
+    # isApprovedForAll queries the approval status of an operator for a given owner.
+    isApprovedForAll(owner: Address!, operator: Address!): Boolean
 }
 
 # ERC20Token represents a generic ERC20 token.
@@ -1991,6 +2015,7 @@ type ERC721Token {
     # getApproved provides the operator approved by owner
     getApproved(tokenId: BigInt!): Address
 
+    # isApprovedForAll queries the approval status of an operator for a given owner.
     isApprovedForAll(owner: Address!, operator: Address!): Boolean
 }
 

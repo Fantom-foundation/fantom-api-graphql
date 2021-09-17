@@ -225,6 +225,12 @@ type Query {
     # erc721TokenList provides list of the most active ERC721 non-fungible tokens (NFT) on the block chain.
     erc721TokenList(count: Int = 50):[ERC721Token!]!
 
+    # erc1155Token provides the information about ERC1155 multi-token contract by it's address.
+    erc1155Contract(address: Address!):ERC1155Contract
+
+    # erc1155ContractList provides list of the most active ERC1155 multi-token contract on the block chain.
+    erc1155ContractList(count: Int = 50):[ERC1155Contract!]!
+
     # govContracts provides list of governance contracts.
     govContracts:[GovernanceContract!]!
 
