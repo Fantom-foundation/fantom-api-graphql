@@ -12,6 +12,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
+	"math/big"
 )
 
 // StoreTokenTransaction stores ERC20/ERC721/ERC1155 transaction into the repository.
@@ -20,15 +21,29 @@ func (p *proxy) StoreTokenTransaction(trx *types.TokenTransaction) error {
 }
 
 // TokenTransactions provides list of ERC20/ERC721/ERC1155 transactions based on given filters.
-func (p *proxy) TokenTransactions(token *common.Address, acc *common.Address, tt *int32, cursor *string, count int32) (*types.TokenTransactionList, error) {
+func (p *proxy) TokenTransactions(tokenType string, token *common.Address, tokenId *big.Int, acc *common.Address, txType *int32, cursor *string, count int32) (*types.TokenTransactionList, error) {
 	// prep the filter
 	fi := bson.D{}
+
+	// token type (ERC20/ERC721/ERC1155...)
+	fi = append(fi, bson.E{
+		Key:   types.FiTokenTransactionTokenType,
+		Value: tokenType,
+	})
 
 	// filter specific token
 	if token != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiErc20TransactionToken,
+			Key:   types.FiTokenTransactionToken,
 			Value: token.String(),
+		})
+	}
+
+	// filter specific token id (for multi-token contracts)
+	if tokenId != nil {
+		fi = append(fi, bson.E{
+			Key:   types.FiTokenTransactionTokenId,
+			Value: tokenId.String(),
 		})
 	}
 
@@ -37,20 +52,20 @@ func (p *proxy) TokenTransactions(token *common.Address, acc *common.Address, tt
 		fi = append(fi, bson.E{
 			Key: "$or",
 			Value: bson.A{bson.D{{
-				Key:   types.FiErc20TransactionSender,
+				Key:   types.FiTokenTransactionSender,
 				Value: acc.String(),
 			}}, bson.D{{
-				Key:   types.FiErc20TransactionRecipient,
+				Key:   types.FiTokenTransactionRecipient,
 				Value: acc.String(),
 			}}},
 		})
 	}
 
 	// type of the transaction
-	if tt != nil {
+	if txType != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiErc20TransactionType,
-			Value: *tt,
+			Key:   types.FiTokenTransactionType,
+			Value: *txType,
 		})
 	}
 

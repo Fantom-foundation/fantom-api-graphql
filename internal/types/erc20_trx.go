@@ -12,13 +12,15 @@ import (
 )
 
 const (
-	FiErc20TransactionPk        = "_id"
-	FiErc20TransactionOrdinal   = "orx"
-	FiErc20TransactionToken     = "tok"
-	FiErc20TransactionSender    = "from"
-	FiErc20TransactionRecipient = "to"
-	FiErc20TransactionType      = "type"
-	FiErc20TransactionStamp     = "stamp"
+	FiTokenTransactionPk        = "_id"
+	FiTokenTransactionOrdinal   = "orx"
+	FiTokenTransactionTokenType = "tty"
+	FiTokenTransactionToken     = "tok"
+	FiTokenTransactionTokenId   = "tid"
+	FiTokenTransactionType      = "type"
+	FiTokenTransactionSender    = "from"
+	FiTokenTransactionRecipient = "to"
+	FiTokenTransactionTime      = "stamp"
 
 	// TokenTrxTypeTransfer represents transaction for transfers.
 	TokenTrxTypeTransfer = 1
