@@ -130,6 +130,7 @@ func (acc *Account) Erc721TxList(args struct {
 	Cursor *Cursor
 	Count  int32
 	Token  *common.Address
+	TokenId *hexutil.Big
 	TxType string
 }) (*ERC721TransactionList, error) {
 	// limit query size; the count can be either positive or negative
@@ -138,7 +139,7 @@ func (acc *Account) Erc721TxList(args struct {
 
 	// get the transaction hash list from repository
 	txType := ercTrxTypeFromName(args.TxType)
-	tl, err := repository.R().TokenTransactions(types.AccountTypeERC721Token, args.Token, nil, &acc.Address, &txType, (*string)(args.Cursor), args.Count)
+	tl, err := repository.R().TokenTransactions(types.AccountTypeERC721Token, args.Token, (*big.Int)(args.TokenId), &acc.Address, &txType, (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}
@@ -151,6 +152,7 @@ func (acc *Account) Erc1155TxList(args struct {
 	Cursor *Cursor
 	Count  int32
 	Token  *common.Address
+	TokenId *hexutil.Big
 	TxType string
 }) (*ERC1155TransactionList, error) {
 	// limit query size; the count can be either positive or negative
@@ -159,7 +161,7 @@ func (acc *Account) Erc1155TxList(args struct {
 
 	// get the transaction hash list from repository
 	txType := ercTrxTypeFromName(args.TxType)
-	tl, err := repository.R().TokenTransactions(types.AccountTypeERC1155Contract, args.Token, nil, &acc.Address, &txType, (*string)(args.Cursor), args.Count)
+	tl, err := repository.R().TokenTransactions(types.AccountTypeERC1155Contract, args.Token, (*big.Int)(args.TokenId), &acc.Address, &txType, (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}

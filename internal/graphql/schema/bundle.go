@@ -312,10 +312,10 @@ type Account {
     erc20TxList(cursor:Cursor, count:Int = 25, token: Address, txType: String = TRANSFER): ERC20TransactionList!
 
     # erc721TxList represents list of ERC721 transactions of the account.
-    erc721TxList(cursor:Cursor, count:Int = 25, token: Address, txType: String = TRANSFER): ERC721TransactionList!
+    erc721TxList(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, txType: String = TRANSFER): ERC721TransactionList!
 
     # erc1155TxList represents list of ERC1155 transactions of the account.
-    erc1155TxList(cursor:Cursor, count:Int = 25, token: Address, txType: String = TRANSFER): ERC1155TransactionList!
+    erc1155TxList(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, txType: String = TRANSFER): ERC1155TransactionList!
 
     # Details of a staker, if the account is a staker.
     staker: Staker
