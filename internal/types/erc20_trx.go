@@ -32,12 +32,13 @@ type Erc20Transaction struct {
 	ID           string         `json:"_id"`
 	Transaction  common.Hash    `json:"trx"`
 	TrxIndex     hexutil.Uint64 `json:"tix"`
-	TokenAddress common.Address `json:"erc"`
+	TokenAddress common.Address `json:"erc"` // contract address
 	TokenType    string         `json:"tty"`
 	Type         int32          `json:"type"`
 	Sender       common.Address `json:"from"`
 	Recipient    common.Address `json:"to"`
 	Amount       hexutil.Big    `json:"amo"`
+	TokenId      hexutil.Big    `json:"tid"` // for ERC-721/ERC-1155
 	TimeStamp    hexutil.Uint64 `json:"ts"`
 }
 
@@ -53,6 +54,7 @@ type BsonErc20Transaction struct {
 	From      string    `bson:"from"`
 	To        string    `bson:"to"`
 	Amo       string    `bson:"amo"`
+	TokenId   string    `bson:"tid"`
 	Created   uint64    `bson:"ts"`
 	Value     int64     `bson:"val"`
 	Stamp     time.Time `bson:"stamp"`
@@ -108,6 +110,7 @@ func (etx *Erc20Transaction) MarshalBSON() ([]byte, error) {
 		From:      etx.Sender.String(),
 		To:        etx.Recipient.String(),
 		Amo:       etx.Amount.String(),
+		TokenId:   etx.TokenId.String(),
 		Created:   uint64(etx.TimeStamp),
 		Value:     val.Int64(),
 		Stamp:     time.Unix(int64(etx.TimeStamp), 0),
@@ -139,5 +142,6 @@ func (etx *Erc20Transaction) UnmarshalBSON(data []byte) (err error) {
 	etx.Sender = common.HexToAddress(row.From)
 	etx.Recipient = common.HexToAddress(row.To)
 	etx.Amount = (hexutil.Big)(*hexutil.MustDecodeBig(row.Amo))
+	etx.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
 	return nil
 }
