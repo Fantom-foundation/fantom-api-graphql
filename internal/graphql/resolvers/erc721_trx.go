@@ -1,17 +1,9 @@
 package resolvers
 
 import (
-	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
-)
-
-const (
-	ERC721TrxTypeNameTransfer = "TRANSFER"
-	ERC721TrxTypeNameMint     = "MINT"
-	ERC721TrxTypeNameBurn     = "BURN"
-	ERC721TrxTypeNameApproval = "APPROVAL"
 )
 
 // ERC721Transaction represents a resolvable ERC721 token transaction.
@@ -46,42 +38,5 @@ func (trx *ERC721Transaction) Token() *ERC721Token {
 
 // TrxType resolves the type of the ERC721 transaction.
 func (trx *ERC721Transaction) TrxType() string {
-	switch trx.Type {
-	case types.TokenTrxTypeTransfer:
-		// minting
-		if config.EmptyAddress == trx.Sender.String() {
-			return ERC721TrxTypeNameMint
-		}
-		// burning
-		if config.EmptyAddress == trx.Recipient.String() {
-			return ERC721TrxTypeNameBurn
-		}
-		//regular transfer
-		return ERC721TrxTypeNameTransfer
-	case types.TokenTrxTypeApproval:
-		return ERC721TrxTypeNameApproval
-	}
-	return "OTHER"
-}
-
-// erc721TrxTypeByName returns numeric type of the ERC721 transaction by its name.
-// Returns nil if the name is not recognized.
-func erc721TrxTypeByName(name string) *int32 {
-	// decode the transaction type filter
-	var txType *int32
-	switch name {
-	case ERC721TrxTypeNameMint:
-		i := int32(types.TokenTrxTypeTransfer)
-		txType = &i
-	case ERC721TrxTypeNameBurn:
-		i := int32(types.TokenTrxTypeTransfer)
-		txType = &i
-	case ERC721TrxTypeNameTransfer:
-		i := int32(types.TokenTrxTypeTransfer)
-		txType = &i
-	case ERC721TrxTypeNameApproval:
-		i := int32(types.TokenTrxTypeApproval)
-		txType = &i
-	}
-	return txType
+	return ercTrxTypeToName(trx.Type)
 }

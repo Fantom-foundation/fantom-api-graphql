@@ -945,6 +945,7 @@ enum Erc1155TransactionType {
     BURN
     APPROVAL
     APPROVAL_FOR_ALL
+    OTHER
 }
 
 # ERC1155Transaction represents a transaction on an ERC1155 NFT token.
@@ -1100,6 +1101,7 @@ enum Erc721TransactionType {
     BURN
     APPROVAL
     APPROVAL_FOR_ALL
+    OTHER
 }
 
 # ERC721Transaction represents a transaction on an ERC721 NFT token.
@@ -1291,6 +1293,7 @@ enum Erc20TransactionType {
     MINT
     BURN
     APPROVAL
+    OTHER
 }
 
 # ERC20Transaction represents a transaction on an ERC20 token.

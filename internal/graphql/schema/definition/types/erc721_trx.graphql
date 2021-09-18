@@ -5,6 +5,7 @@ enum Erc721TransactionType {
     BURN
     APPROVAL
     APPROVAL_FOR_ALL
+    OTHER
 }
 
 # ERC721Transaction represents a transaction on an ERC721 NFT token.

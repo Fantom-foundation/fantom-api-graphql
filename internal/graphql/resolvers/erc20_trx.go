@@ -1,17 +1,9 @@
 package resolvers
 
 import (
-	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
-)
-
-const (
-	ERC20TrxTypeNameTransfer = "TRANSFER"
-	ERC20TrxTypeNameMint     = "MINT"
-	ERC20TrxTypeNameBurn     = "BURN"
-	ERC20TrxTypeNameApproval = "APPROVAL"
 )
 
 // ERC20Transaction represents a resolvable ERC20 token transaction.
@@ -46,42 +38,5 @@ func (trx *ERC20Transaction) Token() *ERC20Token {
 
 // TrxType resolves the type of the ERC20 transaction.
 func (trx *ERC20Transaction) TrxType() string {
-	switch trx.Type {
-	case types.TokenTrxTypeTransfer:
-		// minting
-		if config.EmptyAddress == trx.Sender.String() {
-			return ERC20TrxTypeNameMint
-		}
-		// burning
-		if config.EmptyAddress == trx.Recipient.String() {
-			return ERC20TrxTypeNameBurn
-		}
-		//regular transfer
-		return ERC20TrxTypeNameTransfer
-	case types.TokenTrxTypeApproval:
-		return ERC20TrxTypeNameApproval
-	}
-	return "OTHER"
-}
-
-// erc20TrxTypeByName returns numeric type of the ERC20 transaction by its name.
-// Returns nil if the name is not recognized.
-func erc20TrxTypeByName(name string) *int32 {
-	// decode the transaction type filter
-	var txType *int32
-	switch name {
-	case ERC20TrxTypeNameMint:
-		i := int32(types.TokenTrxTypeTransfer)
-		txType = &i
-	case ERC20TrxTypeNameBurn:
-		i := int32(types.TokenTrxTypeTransfer)
-		txType = &i
-	case ERC20TrxTypeNameTransfer:
-		i := int32(types.TokenTrxTypeTransfer)
-		txType = &i
-	case ERC20TrxTypeNameApproval:
-		i := int32(types.TokenTrxTypeApproval)
-		txType = &i
-	}
-	return txType
+	return ercTrxTypeToName(trx.Type)
 }

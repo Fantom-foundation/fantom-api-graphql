@@ -116,7 +116,8 @@ func (acc *Account) Erc20TxList(args struct {
 	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
 
 	// get the transaction hash list from repository
-	tl, err := repository.R().TokenTransactions(types.AccountTypeERC20Token, args.Token, nil, &acc.Address, erc20TrxTypeByName(args.TxType), (*string)(args.Cursor), args.Count)
+	txType := ercTrxTypeFromName(args.TxType)
+	tl, err := repository.R().TokenTransactions(types.AccountTypeERC20Token, args.Token, nil, &acc.Address, &txType, (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +137,8 @@ func (acc *Account) Erc721TxList(args struct {
 	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
 
 	// get the transaction hash list from repository
-	tl, err := repository.R().TokenTransactions(types.AccountTypeERC721Token, args.Token, nil, &acc.Address, erc721TrxTypeByName(args.TxType), (*string)(args.Cursor), args.Count)
+	txType := ercTrxTypeFromName(args.TxType)
+	tl, err := repository.R().TokenTransactions(types.AccountTypeERC721Token, args.Token, nil, &acc.Address, &txType, (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +158,8 @@ func (acc *Account) Erc1155TxList(args struct {
 	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
 
 	// get the transaction hash list from repository
-	tl, err := repository.R().TokenTransactions(types.AccountTypeERC1155Contract, args.Token, nil, &acc.Address, erc1155TrxTypeByName(args.TxType), (*string)(args.Cursor), args.Count)
+	txType := ercTrxTypeFromName(args.TxType)
+	tl, err := repository.R().TokenTransactions(types.AccountTypeERC1155Contract, args.Token, nil, &acc.Address, &txType, (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}

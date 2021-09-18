@@ -4,6 +4,7 @@ enum Erc20TransactionType {
     MINT
     BURN
     APPROVAL
+    OTHER
 }
 
 # ERC20Transaction represents a transaction on an ERC20 token.

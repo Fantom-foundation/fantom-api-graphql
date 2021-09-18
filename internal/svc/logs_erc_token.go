@@ -2,6 +2,7 @@
 package svc
 
 import (
+	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -25,7 +26,7 @@ func handleErcTokenTransfer(lr *types.LogRecord) {
 // event Transfer(address indexed from,  address indexed to, uint256 indexed _tokenId); // ERC721
 // event Approval(address indexed owner, address indexed operator, uint256 value); // ERC20
 // event Approval(address indexed owner, address indexed operator, uint256 indexed _tokenId); // ERC721
-func handleErcTransaction(lr *types.LogRecord, eventType int32) {
+func handleErcTransaction(lr *types.LogRecord, trxType int32) {
 
 	// ERC20 has 2 indexed params (=> 3 topics) and 1 non-indexed uint256 param (=> 32 bytes)
 	if len(lr.Topics) == 3 && len(lr.Data) == 32 {
@@ -33,7 +34,7 @@ func handleErcTransaction(lr *types.LogRecord, eventType int32) {
 		to := common.BytesToAddress(lr.Topics[2].Bytes())
 		amount := new(big.Int).SetBytes(lr.Data[:])
 		tokenId := big.NewInt(0)
-		storeTokenTransaction(lr, types.AccountTypeERC20Token, eventType, from, to, *amount, *tokenId)
+		storeTokenTransaction(lr, types.AccountTypeERC20Token, tokenTrxType(trxType, from, to), from, to, *amount, *tokenId)
 		return
 	}
 
@@ -43,7 +44,7 @@ func handleErcTransaction(lr *types.LogRecord, eventType int32) {
 		to := common.BytesToAddress(lr.Topics[2].Bytes())
 		amount := big.NewInt(1)
 		tokenId := new(big.Int).SetBytes(lr.Topics[3].Bytes())
-		storeTokenTransaction(lr, types.AccountTypeERC721Token, eventType, from, to, *amount, *tokenId)
+		storeTokenTransaction(lr, types.AccountTypeERC721Token, tokenTrxType(trxType, from, to), from, to, *amount, *tokenId)
 		return
 	}
 
@@ -58,7 +59,7 @@ func handleErc1155TransferSingle(lr *types.LogRecord) {
 		to := common.BytesToAddress(lr.Topics[3].Bytes())
 		tokenId := new(big.Int).SetBytes(lr.Data[0:32])
 		amount := new(big.Int).SetBytes(lr.Data[32:64])
-		storeTokenTransaction(lr, types.AccountTypeERC1155Contract, types.TokenTrxTypeTransfer, from, to, *amount, *tokenId)
+		storeTokenTransaction(lr, types.AccountTypeERC1155Contract, tokenTrxType(types.TokenTrxTypeTransfer, from, to), from, to, *amount, *tokenId)
 		return
 	}
 	log.Debugf("Unrecognized ERC-1155 TransferSingle from tx %s (%d data bytes, %d topics)", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
@@ -80,6 +81,16 @@ func handleErc1155TransferBatch(lr *types.LogRecord) {
 		return
 	}
 	log.Debugf("Unrecognized ERC-1155 TransferBatch from tx %s (%d data bytes, %d topics)", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
+}
+
+func tokenTrxType(trxType int32, from common.Address, to common.Address) int32 {
+	if trxType == types.TokenTrxTypeTransfer && config.EmptyAddress == from.String() {
+		return types.TokenTrxTypeMint
+	}
+	if trxType == types.TokenTrxTypeTransfer && config.EmptyAddress == to.String() {
+		return types.TokenTrxTypeBurn
+	}
+	return trxType
 }
 
 // storeTokenTransaction handles general token (ERC20/ERC721/ERC1155) transaction.

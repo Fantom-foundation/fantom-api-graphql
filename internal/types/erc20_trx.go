@@ -22,11 +22,20 @@ const (
 	FiTokenTransactionRecipient = "to"
 	FiTokenTransactionTime      = "stamp"
 
-	// TokenTrxTypeTransfer represents transaction for transfers.
+	// TokenTrxTypeTransfer represents token transfer transaction.
 	TokenTrxTypeTransfer = 1
 
-	// TokenTrxTypeApproval represents transaction for granting transfer approvals.
+	// TokenTrxTypeApproval represents token transfer approval.
 	TokenTrxTypeApproval = 2
+
+	// TokenTrxTypeMint represents token minting (transfer from 0x0).
+	TokenTrxTypeMint = 3
+
+	// TokenTrxTypeBurn represents token burning (transfer into 0x0).
+	TokenTrxTypeBurn = 4
+
+	// TokenTrxTypeApprovalForAll represents universal token transfer approval.
+	TokenTrxTypeApprovalForAll = 5
 )
 
 // TokenTransaction represents an operation with ERC20 token.

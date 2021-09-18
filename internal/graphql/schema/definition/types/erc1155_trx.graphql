@@ -5,6 +5,7 @@ enum Erc1155TransactionType {
     BURN
     APPROVAL
     APPROVAL_FOR_ALL
+    OTHER
 }
 
 # ERC1155Transaction represents a transaction on an ERC1155 NFT token.
