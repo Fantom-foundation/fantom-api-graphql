@@ -1,0 +1,17 @@
+# ERC721TransactionList is a list of ERC721 transaction edges provided by sequential access request.
+type ERC721TransactionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ERC721TransactionListEdge!]!
+
+    # TotalCount is the maximum number of ERC721 transactions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of ERC721 transaction edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of ERC721 transactions.
+type ERC721TransactionListEdge {
+    cursor: Cursor!
+    trx: ERC721Transaction!
+}

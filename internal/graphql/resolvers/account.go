@@ -116,12 +116,52 @@ func (acc *Account) Erc20TxList(args struct {
 	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
 
 	// get the transaction hash list from repository
-	tl, err := repository.R().Erc20Transactions(args.Token, &acc.Address, erc20TrxTypeByName(args.TxType), (*string)(args.Cursor), args.Count)
+	tl, err := repository.R().TokenTransactions(args.Token, &acc.Address, erc20TrxTypeByName(args.TxType), (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}
 
 	return NewERC20TransactionList(tl), nil
+}
+
+// Erc721TxList resolves list of ERC721 transactions associated with the account.
+func (acc *Account) Erc721TxList(args struct {
+	Cursor *Cursor
+	Count  int32
+	Token  *common.Address
+	TxType string
+}) (*ERC721TransactionList, error) {
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
+
+	// get the transaction hash list from repository
+	tl, err := repository.R().TokenTransactions(args.Token, &acc.Address, erc721TrxTypeByName(args.TxType), (*string)(args.Cursor), args.Count)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewERC721TransactionList(tl), nil
+}
+
+// Erc1155TxList resolves list of ERC1155 transactions associated with the account.
+func (acc *Account) Erc1155TxList(args struct {
+	Cursor *Cursor
+	Count  int32
+	Token  *common.Address
+	TxType string
+}) (*ERC1155TransactionList, error) {
+	// limit query size; the count can be either positive or negative
+	// this controls the loading direction
+	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
+
+	// get the transaction hash list from repository
+	tl, err := repository.R().TokenTransactions(args.Token, &acc.Address, erc1155TrxTypeByName(args.TxType), (*string)(args.Cursor), args.Count)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewERC1155TransactionList(tl), nil
 }
 
 // Staker resolves the account staker detail, if the account is a staker.

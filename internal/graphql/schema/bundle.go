@@ -306,10 +306,16 @@ type Account {
     txCount: Long!
 
     # txList represents list of transactions of the account in form of TransactionList.
-    txList (cursor:Cursor, count:Int!): TransactionList!
+    txList(cursor:Cursor, count:Int!): TransactionList!
 
     # erc20TxList represents list of ERC20 transactions of the account.
-    erc20TxList (cursor:Cursor, count:Int = 25, token: Address, txType: String = TRANSFER): ERC20TransactionList!
+    erc20TxList(cursor:Cursor, count:Int = 25, token: Address, txType: String = TRANSFER): ERC20TransactionList!
+
+    # erc721TxList represents list of ERC721 transactions of the account.
+    erc721TxList(cursor:Cursor, count:Int = 25, token: Address, txType: String = TRANSFER): ERC721TransactionList!
+
+    # erc1155TxList represents list of ERC1155 transactions of the account.
+    erc1155TxList(cursor:Cursor, count:Int = 25, token: Address, txType: String = TRANSFER): ERC1155TransactionList!
 
     # Details of a staker, if the account is a staker.
     staker: Staker
@@ -932,6 +938,58 @@ type Transaction {
     status: Long
 }
 
+# Erc1155TransactionType represents a type of transaction.
+enum Erc1155TransactionType {
+    TRANSFER
+    MINT
+    BURN
+    APPROVAL
+    APPROVAL_FOR_ALL
+}
+
+# ERC1155Transaction represents a transaction on an ERC1155 NFT token.
+type ERC1155Transaction {
+    # trxHash represents a hash of the transaction
+    # executing the ERC1155 call.
+    trxHash: Bytes32!
+
+    # transaction represents the transaction
+    # executing the ERC1155 call.
+    transaction: Transaction!
+
+    # trxIndex represents the index
+    # of the ERC1155 call in the transaction logs.
+    trxIndex: Long!
+
+    # tokenAddress represents the address
+    # of the ERC1155 token contract.
+    tokenAddress: Address!
+
+    # token represents the ERC1155 contract detail involved.
+    token: ERC1155Contract!
+
+    # tokenId represents the NFT token - one ERC1155 contract can handle multiple NFTs.
+    tokenId: BigInt!
+
+    # trxType is the type of the transaction.
+    trxType: Erc1155TransactionType!
+
+    # sender represents the address of the token owner
+    # sending the tokens, e.g. the sender.
+    sender: Address!
+
+    # recipient represents the address of the token recipient.
+    recipient: Address!
+
+    # amount represents the amount of tokens involved in the transaction;
+    # please make sure to interpret the amount with the correct number of decimals
+    # from the token Metadata JSON Schema.
+    amount: BigInt!
+
+    # timeStamp represents the Unix epoch time stamp
+    # of the ERC1155 transaction processing.
+    timeStamp: Long!
+}
 # Contract defines block-chain smart contract information container
 type Contract {
     "Address represents the contract address."
@@ -1035,6 +1093,58 @@ type RewardClaimListEdge {
     claim: RewardClaim!
 }
 
+# Erc721TransactionType represents a type of transaction.
+enum Erc721TransactionType {
+    TRANSFER
+    MINT
+    BURN
+    APPROVAL
+    APPROVAL_FOR_ALL
+}
+
+# ERC721Transaction represents a transaction on an ERC721 NFT token.
+type ERC721Transaction {
+    # trxHash represents a hash of the transaction
+    # executing the ERC721 call.
+    trxHash: Bytes32!
+
+    # transaction represents the transaction
+    # executing the ERC721 call.
+    transaction: Transaction!
+
+    # trxIndex represents the index
+    # of the ERC721 call in the transaction logs.
+    trxIndex: Long!
+
+    # tokenAddress represents the address
+    # of the ERC721 token contract.
+    tokenAddress: Address!
+
+    # token represents the ERC721 contract detail involved.
+    token: ERC721Token!
+
+    # tokenId represents the NFT token - one ERC721 contract can handle multiple NFTs.
+    tokenId: BigInt!
+
+    # trxType is the type of the transaction.
+    trxType: Erc721TransactionType!
+
+    # sender represents the address of the token owner
+    # sending the tokens, e.g. the sender.
+    sender: Address!
+
+    # recipient represents the address of the token recipient.
+    recipient: Address!
+
+    # amount represents the amount of tokens involved
+    # in the transaction; please make sure to interpret the amount
+    # with the correct number of decimals from the ERC721 token detail.
+    amount: BigInt!
+
+    # timeStamp represents the Unix epoch time stamp
+    # of the ERC721 transaction processing.
+    timeStamp: Long!
+}
 # Delegation represents a delegation on Opera block chain.
 type Delegation {
     # Address of the delegator account.
@@ -1220,9 +1330,27 @@ type ERC20Transaction {
     amount: BigInt!
 
     # timeStamp represents the Unix epoch time stamp
-    # of the ERC20 transaction procvessing.
+    # of the ERC20 transaction processing.
     timeStamp: Long!
 }
+# ERC721TransactionList is a list of ERC721 transaction edges provided by sequential access request.
+type ERC721TransactionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ERC721TransactionListEdge!]!
+
+    # TotalCount is the maximum number of ERC721 transactions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of ERC721 transaction edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of ERC721 transactions.
+type ERC721TransactionListEdge {
+    cursor: Cursor!
+    trx: ERC721Transaction!
+}
+
 # ContractList is a list of smart contract edges provided by sequential access request.
 type ContractList {
     # Edges contains provided edges of the sequential list.
@@ -1239,6 +1367,24 @@ type ContractList {
 type ContractListEdge {
     cursor: Cursor!
     contract: Contract!
+}
+
+# ERC1155TransactionList is a list of ERC1155 transaction edges provided by sequential access request.
+type ERC1155TransactionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ERC1155TransactionListEdge!]!
+
+    # TotalCount is the maximum number of ERC1155 transactions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of ERC1155 transaction edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of ERC1155 transactions.
+type ERC1155TransactionListEdge {
+    cursor: Cursor!
+    trx: ERC1155Transaction!
 }
 
 # TransactionList is a list of transaction edges provided by sequential access request.

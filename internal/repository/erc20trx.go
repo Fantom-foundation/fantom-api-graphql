@@ -14,13 +14,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// StoreErc20Transaction stores ERC20 transaction into the repository.
-func (p *proxy) StoreErc20Transaction(trx *types.Erc20Transaction) error {
+// StoreTokenTransaction stores ERC20/ERC721/ERC1155 transaction into the repository.
+func (p *proxy) StoreTokenTransaction(trx *types.TokenTransaction) error {
 	return p.db.AddERC20Transaction(trx)
 }
 
-// Erc20Transactions provides list of ERC20 transactions based on given filters.
-func (p *proxy) Erc20Transactions(token *common.Address, acc *common.Address, tt *int32, cursor *string, count int32) (*types.Erc20TransactionList, error) {
+// TokenTransactions provides list of ERC20/ERC721/ERC1155 transactions based on given filters.
+func (p *proxy) TokenTransactions(token *common.Address, acc *common.Address, tt *int32, cursor *string, count int32) (*types.TokenTransactionList, error) {
 	// prep the filter
 	fi := bson.D{}
 

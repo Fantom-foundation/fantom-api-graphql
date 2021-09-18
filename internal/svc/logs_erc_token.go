@@ -11,13 +11,13 @@ import (
 // handleErcTokenApproval handles Approval event on ERC20 or ERC721 token.
 // event Approval(address indexed owner, address indexed spender, uint256 value)
 func handleErcTokenApproval(lr *types.LogRecord) {
-	handleErcTransaction(lr, types.ERC20TrxTypeApproval)
+	handleErcTransaction(lr, types.TokenTrxTypeApproval)
 }
 
 // handleErcTokenTransfer handles Transfer event on ERC20 or ERC721 token.
 // event Transfer(address indexed from, address indexed to, uint256 value)
 func handleErcTokenTransfer(lr *types.LogRecord) {
-	handleErcTransaction(lr, types.ERC20TrxTypeTransfer)
+	handleErcTransaction(lr, types.TokenTrxTypeTransfer)
 }
 
 // handleErcTransaction handles Approval and/or Transfer event on an ERC20/ERC721 token.
@@ -58,7 +58,7 @@ func handleErc1155TransferSingle(lr *types.LogRecord) {
 		to := common.BytesToAddress(lr.Topics[3].Bytes())
 		tokenId := new(big.Int).SetBytes(lr.Data[0:32])
 		amount := new(big.Int).SetBytes(lr.Data[32:64])
-		storeTokenTransaction(lr, types.AccountTypeERC1155Contract, types.ERC20TrxTypeTransfer, from, to, *amount, *tokenId)
+		storeTokenTransaction(lr, types.AccountTypeERC1155Contract, types.TokenTrxTypeTransfer, from, to, *amount, *tokenId)
 		return
 	}
 	log.Debugf("Unrecognized ERC-1155 TransferSingle from tx %s (%d data bytes, %d topics)", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
@@ -75,7 +75,7 @@ func handleErc1155TransferBatch(lr *types.LogRecord) {
 		from := common.BytesToAddress(lr.Topics[2].Bytes())
 		to := common.BytesToAddress(lr.Topics[3].Bytes())
 
-		storeTokenTransaction(lr, types.AccountTypeERC1155Contract, types.ERC20TrxTypeTransfer, from, to, *amount, *tokenId)
+		storeTokenTransaction(lr, types.AccountTypeERC1155Contract, types.TokenTrxTypeTransfer, from, to, *amount, *tokenId)
 		 */
 		return
 	}
@@ -84,7 +84,7 @@ func handleErc1155TransferBatch(lr *types.LogRecord) {
 
 // storeTokenTransaction handles general token (ERC20/ERC721/ERC1155) transaction.
 func storeTokenTransaction(lr *types.LogRecord, tokenType string, eventType int32, from common.Address, to common.Address, amount big.Int, tokenId big.Int) {
-	if err := repo.StoreErc20Transaction(&types.Erc20Transaction{
+	if err := repo.StoreTokenTransaction(&types.TokenTransaction{
 		Transaction:  lr.TxHash,
 		TrxIndex:     hexutil.Uint64(uint64(lr.TxIndex)),
 		TokenAddress: lr.Address,

@@ -1,34 +1,38 @@
-# Erc20TransactionType represents a type of transaction.
-enum Erc20TransactionType {
+# Erc721TransactionType represents a type of transaction.
+enum Erc721TransactionType {
     TRANSFER
     MINT
     BURN
     APPROVAL
+    APPROVAL_FOR_ALL
 }
 
-# ERC20Transaction represents a transaction on an ERC20 token.
-type ERC20Transaction {
+# ERC721Transaction represents a transaction on an ERC721 NFT token.
+type ERC721Transaction {
     # trxHash represents a hash of the transaction
-    # executing the ERC20 call.
+    # executing the ERC721 call.
     trxHash: Bytes32!
 
     # transaction represents the transaction
-    # executing the ERC20 call.
+    # executing the ERC721 call.
     transaction: Transaction!
 
     # trxIndex represents the index
-    # of the ERC20 call in the transaction logs.
+    # of the ERC721 call in the transaction logs.
     trxIndex: Long!
 
     # tokenAddress represents the address
-    # of the ERC20 token contract.
+    # of the ERC721 token contract.
     tokenAddress: Address!
 
-    # token represents the token detail involved.
-    token: ERC20Token!
+    # token represents the ERC721 contract detail involved.
+    token: ERC721Token!
+
+    # tokenId represents the NFT token - one ERC721 contract can handle multiple NFTs.
+    tokenId: BigInt!
 
     # trxType is the type of the transaction.
-    trxType: Erc20TransactionType!
+    trxType: Erc721TransactionType!
 
     # sender represents the address of the token owner
     # sending the tokens, e.g. the sender.
@@ -39,10 +43,10 @@ type ERC20Transaction {
 
     # amount represents the amount of tokens involved
     # in the transaction; please make sure to interpret the amount
-    # with the correct number of decimals from the ERC20 token detail.
+    # with the correct number of decimals from the ERC721 token detail.
     amount: BigInt!
 
     # timeStamp represents the Unix epoch time stamp
-    # of the ERC20 transaction processing.
+    # of the ERC721 transaction processing.
     timeStamp: Long!
 }

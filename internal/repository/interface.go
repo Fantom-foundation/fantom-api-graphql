@@ -425,8 +425,8 @@ type Repository interface {
 	// NativeTokenAddress returns address of the native token wrapper, if available.
 	NativeTokenAddress() (*common.Address, error)
 
-	// Erc20Transactions provides list of ERC20 transactions based on given filters.
-	Erc20Transactions(token *common.Address, acc *common.Address, tt *int32, cursor *string, count int32) (*types.Erc20TransactionList, error)
+	// TokenTransactions provides list of ERC20/ERC721/ERC1155 transactions based on given filters.
+	TokenTransactions(token *common.Address, acc *common.Address, tt *int32, cursor *string, count int32) (*types.TokenTransactionList, error)
 
 	// Erc20Token returns an ERC20 token for the given address, if available.
 	Erc20Token(*common.Address) (*types.Erc20Token, error)
@@ -460,8 +460,8 @@ type Repository interface {
 	// Erc20LogoURL provides URL address of a logo of the ERC20 token.
 	Erc20LogoURL(*common.Address) string
 
-	// StoreErc20Transaction stores ERC20 transaction into the repository.
-	StoreErc20Transaction(*types.Erc20Transaction) error
+	// StoreTokenTransaction stores ERC20/ERC721/ERC1155 transaction into the repository.
+	StoreTokenTransaction(*types.TokenTransaction) error
 
 	// Erc165SupportsInterface provides information about support of the interface by the contract.
 	Erc165SupportsInterface(contract *common.Address, interfaceID [4]byte) (bool, error)

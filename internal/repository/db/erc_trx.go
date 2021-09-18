@@ -37,7 +37,7 @@ func (db *MongoDbBridge) initErc20TrxCollection(col *mongo.Collection) {
 }
 
 // AddERC20Transaction stores an ERC20 transaction in the database if it doesn't exist.
-func (db *MongoDbBridge) AddERC20Transaction(trx *types.Erc20Transaction) error {
+func (db *MongoDbBridge) AddERC20Transaction(trx *types.TokenTransaction) error {
 	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colErcTransactions)
 
@@ -60,7 +60,7 @@ func (db *MongoDbBridge) AddERC20Transaction(trx *types.Erc20Transaction) error 
 }
 
 // isErcTransactionKnown checks if the given delegation exists in the database.
-func (db *MongoDbBridge) isErcTransactionKnown(col *mongo.Collection, trx *types.Erc20Transaction) bool {
+func (db *MongoDbBridge) isErcTransactionKnown(col *mongo.Collection, trx *types.TokenTransaction) bool {
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
 		{Key: types.FiErc20TransactionPk, Value: trx.Pk()},
@@ -93,7 +93,7 @@ func (db *MongoDbBridge) ErcTransactionCount() (uint64, error) {
 }
 
 // ercTrxListInit initializes list of ERC20 transactions based on provided cursor, count, and filter.
-func (db *MongoDbBridge) ercTrxListInit(col *mongo.Collection, cursor *string, count int32, filter *bson.D) (*types.Erc20TransactionList, error) {
+func (db *MongoDbBridge) ercTrxListInit(col *mongo.Collection, cursor *string, count int32, filter *bson.D) (*types.TokenTransactionList, error) {
 	// make sure some filter is used
 	if nil == filter {
 		filter = &bson.D{}
@@ -108,8 +108,8 @@ func (db *MongoDbBridge) ercTrxListInit(col *mongo.Collection, cursor *string, c
 
 	// make the list and notify the size of it
 	db.log.Debugf("found %d filtered ERC20 transactions", total)
-	list := types.Erc20TransactionList{
-		Collection: make([]*types.Erc20Transaction, 0),
+	list := types.TokenTransactionList{
+		Collection: make([]*types.TokenTransaction, 0),
 		Total:      uint64(total),
 		First:      0,
 		Last:       0,
@@ -128,7 +128,7 @@ func (db *MongoDbBridge) ercTrxListInit(col *mongo.Collection, cursor *string, c
 }
 
 // ercTrxListCollectRangeMarks returns a list of ERC20 transactions with proper First/Last marks.
-func (db *MongoDbBridge) ercTrxListCollectRangeMarks(col *mongo.Collection, list *types.Erc20TransactionList, cursor *string, count int32) (*types.Erc20TransactionList, error) {
+func (db *MongoDbBridge) ercTrxListCollectRangeMarks(col *mongo.Collection, list *types.TokenTransactionList, cursor *string, count int32) (*types.TokenTransactionList, error) {
 	var err error
 
 	// find out the cursor ordinal index
@@ -184,7 +184,7 @@ func (db *MongoDbBridge) ercTrxListBorderPk(col *mongo.Collection, filter bson.D
 }
 
 // ercTrxListFilter creates a filter for ERC20 transaction list loading.
-func (db *MongoDbBridge) ercTrxListFilter(cursor *string, count int32, list *types.Erc20TransactionList) *bson.D {
+func (db *MongoDbBridge) ercTrxListFilter(cursor *string, count int32, list *types.TokenTransactionList) *bson.D {
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
@@ -230,7 +230,7 @@ func (db *MongoDbBridge) ercTrxListOptions(count int32) *options.FindOptions {
 }
 
 // ercTrxListLoad load the initialized list of ERC20 transactions from database.
-func (db *MongoDbBridge) ercTrxListLoad(col *mongo.Collection, cursor *string, count int32, list *types.Erc20TransactionList) (err error) {
+func (db *MongoDbBridge) ercTrxListLoad(col *mongo.Collection, cursor *string, count int32, list *types.TokenTransactionList) (err error) {
 	// get the context for loader
 	ctx := context.Background()
 
@@ -250,7 +250,7 @@ func (db *MongoDbBridge) ercTrxListLoad(col *mongo.Collection, cursor *string, c
 	}()
 
 	// loop and load the list; we may not store the last value
-	var trx *types.Erc20Transaction
+	var trx *types.TokenTransaction
 	for ld.Next(ctx) {
 		// append a previous value to the list, if we have one
 		if trx != nil {
@@ -258,7 +258,7 @@ func (db *MongoDbBridge) ercTrxListLoad(col *mongo.Collection, cursor *string, c
 		}
 
 		// try to decode the next row
-		var row types.Erc20Transaction
+		var row types.TokenTransaction
 		if err = ld.Decode(&row); err != nil {
 			db.log.Errorf("can not decode the ERC20 transaction list row; %s", err.Error())
 			return err
@@ -280,7 +280,7 @@ func (db *MongoDbBridge) ercTrxListLoad(col *mongo.Collection, cursor *string, c
 }
 
 // Erc20Transactions pulls list of ERC20 transactions starting at the specified cursor.
-func (db *MongoDbBridge) Erc20Transactions(cursor *string, count int32, filter *bson.D) (*types.Erc20TransactionList, error) {
+func (db *MongoDbBridge) Erc20Transactions(cursor *string, count int32, filter *bson.D) (*types.TokenTransactionList, error) {
 	// nothing to load?
 	if count == 0 {
 		return nil, fmt.Errorf("nothing to do, zero erc transactions requested")

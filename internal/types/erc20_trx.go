@@ -20,15 +20,15 @@ const (
 	FiErc20TransactionType      = "type"
 	FiErc20TransactionStamp     = "stamp"
 
-	// ERC20TrxTypeTransfer represents transaction for transfers.
-	ERC20TrxTypeTransfer     = 1
+	// TokenTrxTypeTransfer represents transaction for transfers.
+	TokenTrxTypeTransfer = 1
 
-	// ERC20TrxTypeApproval represents transaction for granting transfer approvals.
-	ERC20TrxTypeApproval     = 2
+	// TokenTrxTypeApproval represents transaction for granting transfer approvals.
+	TokenTrxTypeApproval = 2
 )
 
-// Erc20Transaction represents an operation with ERC20 token.
-type Erc20Transaction struct {
+// TokenTransaction represents an operation with ERC20 token.
+type TokenTransaction struct {
 	ID           string         `json:"_id"`
 	Transaction  common.Hash    `json:"trx"`
 	TrxIndex     hexutil.Uint64 `json:"tix"`
@@ -64,7 +64,7 @@ type BsonErc20Transaction struct {
 // We use 10 bytes of the sender address, 10 bytes of the recipient address,
 // and 10 bytes of the token address. The last 8 bytes are ten XOR-ed
 // with the transaction time stamp.
-func (etx *Erc20Transaction) Pk() string {
+func (etx *TokenTransaction) Pk() string {
 	// make the base PK from the trx hash and log index
 	bytes := make([]byte, 32)
 	copy(bytes, etx.Sender.Bytes()[:10])
@@ -83,7 +83,7 @@ func (etx *Erc20Transaction) Pk() string {
 // OrdinalIndex returns an ordinal index for the given ERC20 transaction.
 // We construct the UID from the time the transaction was processed (40 bits = 1099511627775s = 34000 years),
 // and the small fraction of the token address to distinguish between different transfers on the same block.
-func (etx *Erc20Transaction) OrdinalIndex() uint64 {
+func (etx *TokenTransaction) OrdinalIndex() uint64 {
 	ts := make([]byte, 8)
 	binary.BigEndian.PutUint64(ts, (uint64(etx.TimeStamp)&0x7FFFFFFFFF)<<24)
 	copy(ts[5:], etx.TokenAddress.Bytes()[:3])
@@ -91,7 +91,7 @@ func (etx *Erc20Transaction) OrdinalIndex() uint64 {
 }
 
 // MarshalBSON creates a BSON representation of the ERC20 transaction record.
-func (etx *Erc20Transaction) MarshalBSON() ([]byte, error) {
+func (etx *TokenTransaction) MarshalBSON() ([]byte, error) {
 	// calculate transfer value for ERC20 tokens
 	val := new(big.Int)
 	if etx.TokenType == AccountTypeERC20Token {
@@ -118,7 +118,7 @@ func (etx *Erc20Transaction) MarshalBSON() ([]byte, error) {
 }
 
 // UnmarshalBSON updates the value from BSON source.
-func (etx *Erc20Transaction) UnmarshalBSON(data []byte) (err error) {
+func (etx *TokenTransaction) UnmarshalBSON(data []byte) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("can not decode ERC20 transfer; %s", err.Error())
