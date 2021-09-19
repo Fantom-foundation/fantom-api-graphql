@@ -1,5 +1,5 @@
-# ERC721Token represents a generic ERC721 non-fungible token (NFT).
-type ERC721Token {
+# ERC721Contract represents a generic ERC721 non-fungible tokens (NFT) contract.
+type ERC721Contract {
     # address of the token is used as the token's unique identifier.
     address: Address!
 

@@ -139,7 +139,7 @@ func (acc *Account) Erc721TxList(args struct {
 
 	// get the transaction hash list from repository
 	txType := ercTrxTypeFromName(args.TxType)
-	tl, err := repository.R().TokenTransactions(types.AccountTypeERC721Token, args.Token, (*big.Int)(args.TokenId), &acc.Address, &txType, (*string)(args.Cursor), args.Count)
+	tl, err := repository.R().TokenTransactions(types.AccountTypeERC721Contract, args.Token, (*big.Int)(args.TokenId), &acc.Address, &txType, (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}

@@ -20,8 +20,8 @@ const (
 	// AccountTypeERC20Token identifies a contract of type ERC20 token
 	AccountTypeERC20Token = "ERC20"
 
-	// AccountTypeERC721Token identifies a contract of type ERC721 non-fungible token
-	AccountTypeERC721Token = "ERC721"
+	// AccountTypeERC721Contract identifies a contract of type ERC721 non-fungible token
+	AccountTypeERC721Contract = "ERC721"
 
 	// AccountTypeERC1155Contract identifies a multi-token contract of type ERC1155
 	AccountTypeERC1155Contract = "ERC1155"

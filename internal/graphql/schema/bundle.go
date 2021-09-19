@@ -223,11 +223,11 @@ type Query {
     # by the token owner for the spender to be manipulated with.
     ercTokenAllowance(token: Address!, owner: Address!, spender: Address!):BigInt!
 
-    # erc721Token provides the information about ERC721 non-fungible token (NFT) by it's address.
-    erc721Token(token: Address!):ERC721Token
+    # erc721Contract provides the information about ERC721 non-fungible token (NFT) by it's address.
+    erc721Contract(token: Address!):ERC721Contract
 
-    # erc721TokenList provides list of the most active ERC721 non-fungible tokens (NFT) on the block chain.
-    erc721TokenList(count: Int = 50):[ERC721Token!]!
+    # erc721ContractList provides list of the most active ERC721 non-fungible tokens (NFT) on the block chain.
+    erc721ContractList(count: Int = 50):[ERC721Contract!]!
 
     # erc1155Token provides the information about ERC1155 multi-token contract by it's address.
     erc1155Contract(address: Address!):ERC1155Contract
@@ -1123,7 +1123,7 @@ type ERC721Transaction {
     tokenAddress: Address!
 
     # token represents the ERC721 contract detail involved.
-    token: ERC721Token!
+    token: ERC721Contract!
 
     # tokenId represents the NFT token - one ERC721 contract can handle multiple NFTs.
     tokenId: BigInt!
@@ -2138,8 +2138,8 @@ type DefiTimeReserve {
     # with the token position.
     reserveClose: [BigInt!]!
 }
-# ERC721Token represents a generic ERC721 non-fungible token (NFT).
-type ERC721Token {
+# ERC721Contract represents a generic ERC721 non-fungible tokens (NFT) contract.
+type ERC721Contract {
     # address of the token is used as the token's unique identifier.
     address: Address!
 

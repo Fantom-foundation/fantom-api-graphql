@@ -5,9 +5,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// Erc721Token represents an ERC721 token contract
+// Erc721Contract represents an ERC721 token contract
 // on the blockchain.
-type Erc721Token struct {
+type Erc721Contract struct {
 	// Address represents the address of the ERC20 contract on chain.
 	Address common.Address `json:"address"`
 

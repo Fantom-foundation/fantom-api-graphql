@@ -466,11 +466,11 @@ type Repository interface {
 	// Erc165SupportsInterface provides information about support of the interface by the contract.
 	Erc165SupportsInterface(contract *common.Address, interfaceID [4]byte) (bool, error)
 
-	// Erc721Token returns an ERC721 token for the given address, if available.
-	Erc721Token(*common.Address) (*types.Erc721Token, error)
+	// Erc721Contract returns an ERC721 token for the given address, if available.
+	Erc721Contract(*common.Address) (*types.Erc721Contract, error)
 
-	// Erc721TokensList returns a list of known ERC721 tokens ordered by their activity.
-	Erc721TokensList(int32) ([]common.Address, error)
+	// Erc721ContractsList returns a list of known ERC721 tokens ordered by their activity.
+	Erc721ContractsList(int32) ([]common.Address, error)
 
 	// Erc721Name provides information about the name of the ERC721 token.
 	Erc721Name(*common.Address) (string, error)

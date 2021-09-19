@@ -241,38 +241,11 @@ func (db *MongoDbBridge) Erc20TokensList(count int32) ([]common.Address, error) 
 		return nil, err
 	}
 
-	return db.loadErc20TokensList(cursor)
+	return db.loadErcContractsList(cursor)
 }
 
-// Erc20TokensList returns a list of known ERC20 tokens ordered by their activity.
-func (db *MongoDbBridge) loadErc20TokensList(cursor *mongo.Cursor) ([]common.Address, error) {
-	// close the cursor as we leave
-	defer func() {
-		err := cursor.Close(context.Background())
-		if err != nil {
-			db.log.Errorf("error closing ERC20 list cursor; %s", err.Error())
-		}
-	}()
-
-	// loop and load
-	list := make([]common.Address, 0)
-	var row AccountRow
-	for cursor.Next(context.Background()) {
-		// try to decode the next row
-		if err := cursor.Decode(&row); err != nil {
-			db.log.Errorf("can not decodeERC20 list row; %s", err.Error())
-			return nil, err
-		}
-
-		// decode the value
-		list = append(list, common.HexToAddress(row.Address))
-	}
-
-	return list, nil
-}
-
-// Erc721TokensList returns a list of known ERC20 tokens ordered by their activity.
-func (db *MongoDbBridge) Erc721TokensList(count int32) ([]common.Address, error) {
+// Erc721ContractsList returns a list of known ERC20 tokens ordered by their activity.
+func (db *MongoDbBridge) Erc721ContractsList(count int32) ([]common.Address, error) {
 	// make sure the count is positive; use default size if not
 	if count <= 0 {
 		count = defaultTokenListLength
@@ -285,7 +258,7 @@ func (db *MongoDbBridge) Erc721TokensList(count int32) ([]common.Address, error)
 	col := db.client.Database(db.dbName).Collection(coAccounts)
 
 	// make the filter for ERC20 tokens only and pull them ordered by activity
-	filter := bson.D{{Key: "type", Value: types.AccountTypeERC721Token}}
+	filter := bson.D{{Key: "type", Value: types.AccountTypeERC721Contract}}
 	opt := options.Find().SetSort(bson.D{
 		{Key: fiAccountTransactionCounter, Value: -1},
 		{Key: fiAccountLastActivity, Value: -1},
@@ -298,34 +271,7 @@ func (db *MongoDbBridge) Erc721TokensList(count int32) ([]common.Address, error)
 		return nil, err
 	}
 
-	return db.loadErc721TokensList(cursor)
-}
-
-// Erc20TokensList returns a list of known ERC20 tokens ordered by their activity.
-func (db *MongoDbBridge) loadErc721TokensList(cursor *mongo.Cursor) ([]common.Address, error) {
-	// close the cursor as we leave
-	defer func() {
-		err := cursor.Close(context.Background())
-		if err != nil {
-			db.log.Errorf("error closing ERC721 list cursor; %s", err.Error())
-		}
-	}()
-
-	// loop and load
-	list := make([]common.Address, 0)
-	var row AccountRow
-	for cursor.Next(context.Background()) {
-		// try to decode the next row
-		if err := cursor.Decode(&row); err != nil {
-			db.log.Errorf("can not decodeERC721 list row; %s", err.Error())
-			return nil, err
-		}
-
-		// decode the value
-		list = append(list, common.HexToAddress(row.Address))
-	}
-
-	return list, nil
+	return db.loadErcContractsList(cursor)
 }
 
 // Erc1155ContractsList returns a list of known ERC1155 contracts ordered by their activity.
@@ -355,16 +301,15 @@ func (db *MongoDbBridge) Erc1155ContractsList(count int32) ([]common.Address, er
 		return nil, err
 	}
 
-	return db.loadErc1155ContractsList(cursor)
+	return db.loadErcContractsList(cursor)
 }
 
-// Erc20TokensList returns a list of known ERC20 tokens ordered by their activity.
-func (db *MongoDbBridge) loadErc1155ContractsList(cursor *mongo.Cursor) ([]common.Address, error) {
+func (db *MongoDbBridge) loadErcContractsList(cursor *mongo.Cursor) ([]common.Address, error) {
 	// close the cursor as we leave
 	defer func() {
 		err := cursor.Close(context.Background())
 		if err != nil {
-			db.log.Errorf("error closing ERC1155 list cursor; %s", err.Error())
+			db.log.Errorf("error closing ERC contracts list cursor; %s", err.Error())
 		}
 	}()
 
@@ -374,7 +319,7 @@ func (db *MongoDbBridge) loadErc1155ContractsList(cursor *mongo.Cursor) ([]commo
 	for cursor.Next(context.Background()) {
 		// try to decode the next row
 		if err := cursor.Decode(&row); err != nil {
-			db.log.Errorf("can not decodeERC1155 list row; %s", err.Error())
+			db.log.Errorf("can not decode ERC contracts list row; %s", err.Error())
 			return nil, err
 		}
 

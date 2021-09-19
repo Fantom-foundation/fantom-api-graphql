@@ -27,7 +27,7 @@ type ERC721Transaction {
     tokenAddress: Address!
 
     # token represents the ERC721 contract detail involved.
-    token: ERC721Token!
+    token: ERC721Contract!
 
     # tokenId represents the NFT token - one ERC721 contract can handle multiple NFTs.
     tokenId: BigInt!

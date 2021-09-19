@@ -7,10 +7,10 @@ import (
 	"math/big"
 )
 
-// Erc721Token returns an ERC721 token for the given address, if available.
-func (p *proxy) Erc721Token(addr *common.Address) (*types.Erc721Token, error) {
+// Erc721Contract returns an ERC721 token for the given address, if available.
+func (p *proxy) Erc721Contract(addr *common.Address) (*types.Erc721Contract, error) {
 	var err error
-	token, err := p.loadErc721TokenDetails(&types.Erc721Token{Address: *addr})
+	token, err := p.loadErc721ContractDetails(&types.Erc721Contract{Address: *addr})
 	if err != nil {
 		p.log.Errorf("can not load ERC721 token at %s; %s", addr.String(), err.Error())
 		return nil, err
@@ -18,7 +18,7 @@ func (p *proxy) Erc721Token(addr *common.Address) (*types.Erc721Token, error) {
 	return token, nil
 }
 
-func (p *proxy) loadErc721TokenDetails(token *types.Erc721Token) (*types.Erc721Token, error) {
+func (p *proxy) loadErc721ContractDetails(token *types.Erc721Contract) (*types.Erc721Contract, error) {
 	var err error
 
 	// get the name (ignore fail - name is optional in ERC721)
@@ -78,7 +78,7 @@ func (p *proxy) Erc721IsApprovedForAll(token *common.Address, owner *common.Addr
 	return p.rpc.Erc721IsApprovedForAll(token, owner, operator)
 }
 
-// Erc721TokensList returns a list of known ERC721 tokens ordered by their activity.
-func (p *proxy) Erc721TokensList(count int32) ([]common.Address, error) {
-	return p.db.Erc721TokensList(count)
+// Erc721ContractsList returns a list of known ERC721 tokens ordered by their activity.
+func (p *proxy) Erc721ContractsList(count int32) ([]common.Address, error) {
+	return p.db.Erc721ContractsList(count)
 }

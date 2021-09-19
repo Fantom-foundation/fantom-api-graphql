@@ -45,7 +45,7 @@ func handleErcTransaction(lr *types.LogRecord, trxType int32) {
 		to := common.BytesToAddress(lr.Topics[2].Bytes())
 		amount := big.NewInt(1)
 		tokenId := new(big.Int).SetBytes(lr.Topics[3].Bytes())
-		storeTokenTransaction(lr, types.AccountTypeERC721Token, tokenTrxType(trxType, from, to), from, to, *amount, *tokenId)
+		storeTokenTransaction(lr, types.AccountTypeERC721Contract, tokenTrxType(trxType, from, to), from, to, *amount, *tokenId)
 		return
 	}
 

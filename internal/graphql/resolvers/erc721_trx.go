@@ -32,8 +32,8 @@ func (trx *ERC721Transaction) Transaction() (*Transaction, error) {
 }
 
 // Token resolves instance of the ERC721 token involved.
-func (trx *ERC721Transaction) Token() *ERC721Token {
-	return NewErc721Token(&trx.TokenAddress)
+func (trx *ERC721Transaction) Token() *ERC721Contract {
+	return NewErc721Contract(&trx.TokenAddress)
 }
 
 // TrxType resolves the type of the ERC721 transaction.

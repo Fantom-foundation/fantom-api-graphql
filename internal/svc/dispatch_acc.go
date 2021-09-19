@@ -181,8 +181,8 @@ func (acd *accDispatcher) detectContract(addr *common.Address, block *types.Bloc
 	isErc721, name := acd.detectErc721Token(addr)
 	if err == nil && isErc721 {
 		log.Noticef("ERC721 NFT token detected at %s", addr.String())
-		contract := types.NewErcTokenContract(addr, name, block, trx, types.AccountTypeERC721Token, contracts.ERC721MetaData.ABI)
-		return contract, types.AccountTypeERC721Token, nil
+		contract := types.NewErcTokenContract(addr, name, block, trx, types.AccountTypeERC721Contract, contracts.ERC721MetaData.ABI)
+		return contract, types.AccountTypeERC721Contract, nil
 	}
 
 	isErc20, name := acd.detectErc20Token(addr)
