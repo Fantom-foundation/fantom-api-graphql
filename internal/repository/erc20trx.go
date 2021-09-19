@@ -11,6 +11,7 @@ package repository
 import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
 )
@@ -43,7 +44,7 @@ func (p *proxy) TokenTransactions(tokenType string, token *common.Address, token
 	if tokenId != nil {
 		fi = append(fi, bson.E{
 			Key:   types.FiTokenTransactionTokenId,
-			Value: tokenId.String(),
+			Value: (*hexutil.Big)(tokenId).String(),
 		})
 	}
 
