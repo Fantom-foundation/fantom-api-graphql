@@ -3,6 +3,7 @@ package svc
 
 import (
 	"fantom-api-graphql/internal/config"
+	"fantom-api-graphql/internal/repository/rpc"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -62,22 +63,26 @@ func handleErc1155TransferSingle(lr *types.LogRecord) {
 		storeTokenTransaction(lr, types.AccountTypeERC1155Contract, tokenTrxType(types.TokenTrxTypeTransfer, from, to), from, to, *amount, *tokenId)
 		return
 	}
-	log.Debugf("Unrecognized ERC-1155 TransferSingle from tx %s (%d data bytes, %d topics)", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
+	log.Debugf("Unrecognized ERC1155 TransferSingle from tx %s (%d data bytes, %d topics)", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
 }
 
 // event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)
 func handleErc1155TransferBatch(lr *types.LogRecord) {
 	// 3 indexed params
 	if len(lr.Topics) == 4 {
-		// TODO
-		log.Noticef("Parsing ERC-1155 TransferBatch not implemented yet tx %s", lr.TxHash.String())
-
-		/*
 		from := common.BytesToAddress(lr.Topics[2].Bytes())
 		to := common.BytesToAddress(lr.Topics[3].Bytes())
-
-		storeTokenTransaction(lr, types.AccountTypeERC1155Contract, types.TokenTrxTypeTransfer, from, to, *amount, *tokenId)
-		 */
+		ids, values, err := rpc.Erc1155ParseTransferBatchData(lr.Data)
+		if err != nil {
+			log.Errorf("failed to parse ERC1155 TransferBatch data - trx %s; %s", lr.TxHash.String(), err.Error())
+		}
+		if len(ids) != len(values) {
+			log.Errorf("ERC1155 TransferBatch ids and values length differs - trx %s", lr.TxHash.String())
+		}
+		for i := range ids {
+			log.Infof("ERC1155 storing TransferBatch - trx %s - len %d", lr.TxHash.String(), len(ids))
+			storeTokenTransaction(lr, types.AccountTypeERC1155Contract, types.TokenTrxTypeTransfer, from, to, *values[i], *ids[i])
+		}
 		return
 	}
 	log.Debugf("Unrecognized ERC-1155 TransferBatch from tx %s (%d data bytes, %d topics)", lr.TxHash.String(), len(lr.Data), len(lr.Topics))

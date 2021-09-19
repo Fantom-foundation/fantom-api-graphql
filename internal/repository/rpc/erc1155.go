@@ -15,8 +15,10 @@ package rpc
 
 import (
 	"fantom-api-graphql/internal/repository/rpc/contracts"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
+	"strings"
 )
 
 //go:generate tools/abigen.sh --abi ./contracts/abi/erc1155.abi --pkg contracts --type ERC1155 --out ./contracts/erc1155_token.go
@@ -92,4 +94,24 @@ func (ftm *FtmBridge) Erc1155IsApprovedForAll(token *common.Address, owner *comm
 	}
 
 	return isApproved, nil
+}
+
+var erc1155contractAbi *abi.ABI // parsed ABI singleton
+
+func Erc1155ParseTransferBatchData(data []byte) (ids []*big.Int, values []*big.Int, err error) {
+	if erc1155contractAbi == nil {
+		contractAbi, err := abi.JSON(strings.NewReader(contracts.ERC1155MetaData.ABI))
+		if err != nil {
+			return nil, nil, err
+		}
+		erc1155contractAbi = &contractAbi
+	}
+
+	outs, err := erc1155contractAbi.Unpack("TransferBatch", data)
+	if err != nil {
+		return nil, nil, err
+	}
+	ids = (outs[0]).([]*big.Int)
+	values = (outs[1]).([]*big.Int)
+	return ids, values, err
 }
