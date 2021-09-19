@@ -111,6 +111,7 @@ func storeTokenTransaction(lr *types.LogRecord, tokenType string, eventType int3
 		Amount:       hexutil.Big(amount),
 		TokenId:      hexutil.Big(tokenId),
 		TimeStamp:    lr.Block.TimeStamp,
+		LogIndex:     lr.Index,
 		Seq:          seq, // sequence of erc transactions emitted by one log event - non-zero only for batch transfer events
 	}); err != nil {
 		log.Errorf("can not store token %s trx for call %s; %s", tokenType, lr.TxHash.String(), err.Error())

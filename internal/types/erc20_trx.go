@@ -52,7 +52,8 @@ type TokenTransaction struct {
 	Amount       hexutil.Big    `json:"amo"`
 	TokenId      hexutil.Big    `json:"tid"` // for ERC-721/ERC-1155
 	TimeStamp    hexutil.Uint64 `json:"ts"`
-	Seq          uint32                      // only for different Pk when multiple transfers per contract event
+	LogIndex     uint                        // only for OrdinalIndex generating
+	Seq          uint32                      // only for Pk generating, for multiple txs per log event
 }
 
 // BsonErc20Transaction represents the BSON i/o struct for an ERC20 operation.
@@ -99,14 +100,21 @@ func (etx *TokenTransaction) Pk() string {
 	return hexutil.Encode(hash.Sum(nil))
 }
 
-// OrdinalIndex returns an ordinal index for the given ERC20 transaction.
+// OrdinalIndex returns an ordinal index (field for deterministic sorting) for the given ERC20 transaction.
 // We construct the UID from the time the transaction was processed (40 bits = 1099511627775s = 34000 years),
-// and the small fraction of the token address to distinguish between different transfers on the same block.
+// salted by the transaction hash and the event log index (index of the log in the block).
 func (etx *TokenTransaction) OrdinalIndex() uint64 {
-	ts := make([]byte, 8)
-	binary.BigEndian.PutUint64(ts, (uint64(etx.TimeStamp)&0x7FFFFFFFFF)<<24)
-	copy(ts[5:], etx.TokenAddress.Bytes()[:3])
-	return binary.BigEndian.Uint64(ts)
+	ordinal := make([]byte, 8)
+	binary.BigEndian.PutUint64(ordinal, (uint64(etx.TimeStamp)&0x7FFFFFFFFF)<<24)
+
+	saltTrxHash := etx.Transaction.Bytes()
+	saltLogIndex := make([]byte, 4)
+	binary.BigEndian.PutUint32(saltLogIndex, uint32(etx.LogIndex))
+
+	for i := 0; i < 3; i++ {
+		ordinal[5 + i] = saltLogIndex[i] ^ saltTrxHash[i]
+	}
+	return binary.BigEndian.Uint64(ordinal)
 }
 
 // MarshalBSON creates a BSON representation of the ERC20 transaction record.
