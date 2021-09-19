@@ -52,6 +52,7 @@ type TokenTransaction struct {
 	Amount       hexutil.Big    `json:"amo"`
 	TokenId      hexutil.Big    `json:"tid"` // for ERC-721/ERC-1155
 	TimeStamp    hexutil.Uint64 `json:"ts"`
+	Seq          uint32                      // only for different Pk when multiple transfers per contract event
 }
 
 // BsonErc20Transaction represents the BSON i/o struct for an ERC20 operation.
@@ -73,9 +74,6 @@ type BsonErc20Transaction struct {
 	Stamp     time.Time `bson:"stamp"`
 }
 
-// pkSaltSeqNumber is counter used as salt for Pk() generator
-var pkSaltSeqNumber uint32
-
 // Pk generates unique identifier of the ERC20 transaction.
 // We use hash of transaction, sender, recipient and recipient address,
 // the transaction timestamp and sequence salt.
@@ -95,9 +93,8 @@ func (etx *TokenTransaction) Pk() string {
 	hash.Write(trxIndex)
 
 	salt := make([]byte, 4)
-	binary.BigEndian.PutUint32(salt, pkSaltSeqNumber)
+	binary.BigEndian.PutUint32(salt, etx.Seq)
 	hash.Write(salt)
-	pkSaltSeqNumber++
 
 	return hexutil.Encode(hash.Sum(nil))
 }

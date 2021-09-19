@@ -41,6 +41,11 @@ func (db *MongoDbBridge) AddERC20Transaction(trx *types.TokenTransaction) error 
 	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colErcTransactions)
 
+	// is it a new one?
+	if db.isErcTransactionKnown(col, trx) {
+		return nil
+	}
+
 	// try to do the insert
 	if _, err := col.InsertOne(context.Background(), trx); err != nil {
 		db.log.Critical(err)
@@ -52,6 +57,28 @@ func (db *MongoDbBridge) AddERC20Transaction(trx *types.TokenTransaction) error 
 		db.initErc20Trx.Do(func() { db.initErc20TrxCollection(col); db.initErc20Trx = nil })
 	}
 	return nil
+}
+
+// isErcTransactionKnown checks if the given delegation exists in the database.
+func (db *MongoDbBridge) isErcTransactionKnown(col *mongo.Collection, trx *types.TokenTransaction) bool {
+	// try to find the delegation in the database
+	sr := col.FindOne(context.Background(), bson.D{
+		{Key: types.FiTokenTransactionPk, Value: trx.Pk()},
+	}, options.FindOne().SetProjection(bson.D{
+		{Key: types.FiTokenTransactionPk, Value: true},
+	}))
+
+	// error on lookup?
+	if sr.Err() != nil {
+		// may be ErrNoDocuments, which we seek
+		if sr.Err() == mongo.ErrNoDocuments {
+			return false
+		}
+		// inform that we can not get the PK; should not happen
+		db.log.Errorf("can not get existing ERC transaction pk; %s", sr.Err().Error())
+		return false
+	}
+	return true
 }
 
 // ErcTransactionCountFiltered calculates total number of ERC20 transactions
