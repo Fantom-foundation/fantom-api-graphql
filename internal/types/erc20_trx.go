@@ -2,6 +2,7 @@
 package types
 
 import (
+	"crypto/sha256"
 	"encoding/binary"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -54,6 +55,7 @@ type TokenTransaction struct {
 }
 
 // BsonErc20Transaction represents the BSON i/o struct for an ERC20 operation.
+// Used for saving transactions into MongoDB storage.
 type BsonErc20Transaction struct {
 	ID        string    `bson:"_id"`
 	Trx       string    `bson:"trx"`
@@ -66,29 +68,38 @@ type BsonErc20Transaction struct {
 	To        string    `bson:"to"`
 	Amo       string    `bson:"amo"`
 	TokenId   string    `bson:"tid"`
-	Created   uint64    `bson:"ts"`
+	TimeStamp uint64    `bson:"ts"`
 	Value     int64     `bson:"val"`
 	Stamp     time.Time `bson:"stamp"`
 }
 
-// Pk generates unique identifier of the ERC20 transaction.
-// We use 10 bytes of the sender address, 10 bytes of the recipient address,
-// and 10 bytes of the token address. The last 8 bytes are ten XOR-ed
-// with the transaction time stamp.
-func (etx *TokenTransaction) Pk() string {
-	// make the base PK from the trx hash and log index
-	bytes := make([]byte, 32)
-	copy(bytes, etx.Sender.Bytes()[:10])
-	copy(bytes[10:], etx.Recipient.Bytes()[:10])
-	copy(bytes[20:], etx.TokenAddress.Bytes()[:10])
+// pkSaltSeqNumber is counter used as salt for Pk() generator
+var pkSaltSeqNumber uint32
 
-	// xor in the timestamp and the root trx index
-	ts := make([]byte, 8)
-	binary.BigEndian.PutUint64(ts, ((uint64(etx.TimeStamp)&0x7FFFFFFFFF)<<24)|(uint64(etx.TrxIndex)&0xFFFFFF))
-	for i := 0; i < 8; i++ {
-		bytes[24+i] = bytes[24+i] ^ ts[i]
-	}
-	return hexutil.Encode(bytes)
+// Pk generates unique identifier of the ERC20 transaction.
+// We use hash of transaction, sender, recipient and recipient address,
+// the transaction timestamp and sequence salt.
+func (etx *TokenTransaction) Pk() string {
+	hash := sha256.New()
+	hash.Write(etx.Transaction.Bytes())
+	hash.Write(etx.Sender.Bytes())
+	hash.Write(etx.Recipient.Bytes())
+	hash.Write(etx.TokenAddress.Bytes())
+
+	timestamp := make([]byte, 8)
+	binary.BigEndian.PutUint64(timestamp, uint64(etx.TimeStamp))
+	hash.Write(timestamp)
+
+	trxIndex := make([]byte, 8)
+	binary.BigEndian.PutUint64(trxIndex, uint64(etx.TrxIndex))
+	hash.Write(trxIndex)
+
+	salt := make([]byte, 4)
+	binary.BigEndian.PutUint32(salt, pkSaltSeqNumber)
+	hash.Write(salt)
+	pkSaltSeqNumber++
+
+	return hexutil.Encode(hash.Sum(nil))
 }
 
 // OrdinalIndex returns an ordinal index for the given ERC20 transaction.
@@ -104,9 +115,11 @@ func (etx *TokenTransaction) OrdinalIndex() uint64 {
 // MarshalBSON creates a BSON representation of the ERC20 transaction record.
 func (etx *TokenTransaction) MarshalBSON() ([]byte, error) {
 	// calculate transfer value for ERC20 tokens
-	val := new(big.Int)
+	var val *big.Int
 	if etx.TokenType == AccountTypeERC20Token {
-		val = val.Div(etx.Amount.ToInt(), TransactionDecimalsCorrection)
+		val = new(big.Int).Div(etx.Amount.ToInt(), TransactionDecimalsCorrection)
+	} else {
+		val = etx.Amount.ToInt()
 	}
 
 	// make the record and encode it
@@ -122,7 +135,7 @@ func (etx *TokenTransaction) MarshalBSON() ([]byte, error) {
 		To:        etx.Recipient.String(),
 		Amo:       etx.Amount.String(),
 		TokenId:   etx.TokenId.String(),
-		Created:   uint64(etx.TimeStamp),
+		TimeStamp: uint64(etx.TimeStamp),
 		Value:     val.Int64(),
 		Stamp:     time.Unix(int64(etx.TimeStamp), 0),
 	})
@@ -146,7 +159,7 @@ func (etx *TokenTransaction) UnmarshalBSON(data []byte) (err error) {
 	etx.ID = row.ID
 	etx.Transaction = common.HexToHash(row.Trx)
 	etx.TrxIndex = hexutil.Uint64(row.Tix)
-	etx.TimeStamp = hexutil.Uint64(row.Created)
+	etx.TimeStamp = hexutil.Uint64(row.TimeStamp)
 	etx.TokenAddress = common.HexToAddress(row.Token)
 	etx.TokenType = row.TokenType
 	etx.Type = row.Type
