@@ -42,18 +42,18 @@ const (
 // TokenTransaction represents an operation with ERC20 token.
 type TokenTransaction struct {
 	ID           string         `json:"_id"`
-	Transaction  common.Hash    `json:"trx"`
-	TrxIndex     hexutil.Uint64 `json:"tix"`
+	Transaction  common.Hash    `json:"trx"` // hash of the transaction
+	TrxIndex     hexutil.Uint64 `json:"tix"` // index of the transaction in the block
 	TokenAddress common.Address `json:"erc"` // contract address
-	TokenType    string         `json:"tty"`
-	Type         int32          `json:"type"`
+	TokenType    string         `json:"tty"` // ERC20/ERC721/ERC1155...
+	Type         int32          `json:"type"` // Transfer/Mint/Approval...
 	Sender       common.Address `json:"from"`
 	Recipient    common.Address `json:"to"`
 	Amount       hexutil.Big    `json:"amo"`
-	TokenId      hexutil.Big    `json:"tid"` // for ERC-721/ERC-1155
-	TimeStamp    hexutil.Uint64 `json:"ts"`
-	LogIndex     uint                        // only for OrdinalIndex generating
-	Seq          uint32                      // only for Pk generating, for multiple txs per log event
+	TokenId      hexutil.Big    `json:"tid"` // for multi-token contracts (ERC-721/ERC-1155)
+	TimeStamp    hexutil.Uint64 `json:"ts"`  // when the block(!) was collated
+	LogIndex     uint                        // index of the log in the block - only for OrdinalIndex / Pk generating
+	Seq          uint32                      // index of transfer in one log event - only for Pk generating
 }
 
 // BsonErc20Transaction represents the BSON i/o struct for an ERC20 operation.
@@ -80,40 +80,43 @@ type BsonErc20Transaction struct {
 // the transaction timestamp and sequence salt.
 func (etx *TokenTransaction) Pk() string {
 	hash := sha256.New()
-	hash.Write(etx.Transaction.Bytes())
-	hash.Write(etx.Sender.Bytes())
-	hash.Write(etx.Recipient.Bytes())
-	hash.Write(etx.TokenAddress.Bytes())
+	hash.Write(etx.Transaction.Bytes()) // unique hash of transaction
 
-	timestamp := make([]byte, 8)
-	binary.BigEndian.PutUint64(timestamp, uint64(etx.TimeStamp))
-	hash.Write(timestamp)
+	// one transaction can emits multiple events - append index of log event
+	logIndex := make([]byte, 4)
+	binary.BigEndian.PutUint32(logIndex, etx.Seq)
+	hash.Write(logIndex)
 
-	trxIndex := make([]byte, 8)
-	binary.BigEndian.PutUint64(trxIndex, uint64(etx.TrxIndex))
-	hash.Write(trxIndex)
-
-	salt := make([]byte, 4)
-	binary.BigEndian.PutUint32(salt, etx.Seq)
-	hash.Write(salt)
+	// one log event can be batch of multiple transfers
+	seq := make([]byte, 4)
+	binary.BigEndian.PutUint32(seq, etx.Seq)
+	hash.Write(seq)
 
 	return hexutil.Encode(hash.Sum(nil))
 }
 
 // OrdinalIndex returns an ordinal index (field for deterministic sorting) for the given ERC20 transaction.
 // We construct the UID from the time the transaction was processed (40 bits = 1099511627775s = 34000 years),
-// salted by the transaction hash and the event log index (index of the log in the block).
+// salted by the transaction hash, the event log index (index of the log in the block)
+// and sequence number of transaction in batch transfer event.
 func (etx *TokenTransaction) OrdinalIndex() uint64 {
 	ordinal := make([]byte, 8)
 	binary.BigEndian.PutUint64(ordinal, (uint64(etx.TimeStamp)&0x7FFFFFFFFF)<<24)
 
-	saltTrxHash := etx.Transaction.Bytes()
-	saltLogIndex := make([]byte, 4)
-	binary.BigEndian.PutUint32(saltLogIndex, uint32(etx.LogIndex))
+	trxHash := etx.Transaction.Bytes()
 
-	for i := 0; i < 3; i++ {
-		ordinal[5 + i] = saltLogIndex[i] ^ saltTrxHash[i]
-	}
+	logIndex := make([]byte, 4)
+	binary.BigEndian.PutUint32(logIndex, uint32(etx.LogIndex))
+
+	seq := make([]byte, 4)
+	binary.BigEndian.PutUint32(seq, etx.Seq)
+
+	// use transaction hash as base of salt
+	// XOR with logIndex to distinguish individual contract emitted events
+	// XOR with seq to distinguish multiple transfers in one batch transfer event
+	ordinal[5] = trxHash[0] ^ logIndex[1] ^ seq[3]
+	ordinal[6] = trxHash[1] ^ logIndex[2] ^ seq[2]
+	ordinal[7] = trxHash[2] ^ logIndex[3] ^ seq[1]
 	return binary.BigEndian.Uint64(ordinal)
 }
 
