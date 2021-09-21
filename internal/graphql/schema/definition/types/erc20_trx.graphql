@@ -4,6 +4,7 @@ enum Erc20TransactionType {
     MINT
     BURN
     APPROVAL
+    OTHER
 }
 
 # ERC20Transaction represents a transaction on an ERC20 token.
@@ -43,6 +44,6 @@ type ERC20Transaction {
     amount: BigInt!
 
     # timeStamp represents the Unix epoch time stamp
-    # of the ERC20 transaction procvessing.
+    # of the ERC20 transaction processing.
     timeStamp: Long!
 }

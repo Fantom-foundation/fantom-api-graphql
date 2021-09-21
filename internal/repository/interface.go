@@ -425,10 +425,10 @@ type Repository interface {
 	// NativeTokenAddress returns address of the native token wrapper, if available.
 	NativeTokenAddress() (*common.Address, error)
 
-	// Erc20Transactions provides list of ERC20 transactions based on given filters.
-	Erc20Transactions(token *common.Address, acc *common.Address, tt *int32, cursor *string, count int32) (*types.Erc20TransactionList, error)
+	// TokenTransactions provides list of ERC20/ERC721/ERC1155 transactions based on given filters.
+	TokenTransactions(tokenType string, token *common.Address, tokenId *big.Int, acc *common.Address, txType *int32, cursor *string, count int32) (*types.TokenTransactionList, error)
 
-	// Erc20Token returns an ERC20 token rfor the given address, if available.
+	// Erc20Token returns an ERC20 token for the given address, if available.
 	Erc20Token(*common.Address) (*types.Erc20Token, error)
 
 	// Erc20TokensList returns a list of known ERC20 tokens ordered by their activity.
@@ -460,8 +460,56 @@ type Repository interface {
 	// Erc20LogoURL provides URL address of a logo of the ERC20 token.
 	Erc20LogoURL(*common.Address) string
 
-	// StoreErc20Transaction stores ERC20 transaction into the repository.
-	StoreErc20Transaction(*types.Erc20Transaction) error
+	// StoreTokenTransaction stores ERC20/ERC721/ERC1155 transaction into the repository.
+	StoreTokenTransaction(*types.TokenTransaction) error
+
+	// Erc165SupportsInterface provides information about support of the interface by the contract.
+	Erc165SupportsInterface(contract *common.Address, interfaceID [4]byte) (bool, error)
+
+	// Erc721Contract returns an ERC721 token for the given address, if available.
+	Erc721Contract(*common.Address) (*types.Erc721Contract, error)
+
+	// Erc721ContractsList returns a list of known ERC721 tokens ordered by their activity.
+	Erc721ContractsList(int32) ([]common.Address, error)
+
+	// Erc721Name provides information about the name of the ERC721 token.
+	Erc721Name(*common.Address) (string, error)
+
+	// Erc721Symbol provides information about the symbol of the ERC721 token.
+	Erc721Symbol(*common.Address) (string, error)
+
+	// Erc721TotalSupply provides information about all available tokens.
+	Erc721TotalSupply(token *common.Address) (hexutil.Big, error)
+
+	// Erc721BalanceOf provides amount of NFT tokens owned by given owner in given ERC721 contract.
+	Erc721BalanceOf(token *common.Address, owner *common.Address) (hexutil.Big, error)
+
+	// Erc721TokenURI provides URI of Metadata JSON Schema of the ERC721 token.
+	Erc721TokenURI(token *common.Address, tokenId *big.Int) (string, error)
+
+	// Erc721OwnerOf provides information about NFT token ownership.
+	Erc721OwnerOf(token *common.Address, tokenId *big.Int) (common.Address, error)
+
+	// Erc721GetApproved provides information about operator approved to manipulate with the NFT token.
+	Erc721GetApproved(token *common.Address, tokenId *big.Int) (common.Address, error)
+
+	// Erc721IsApprovedForAll provides information about operator approved to manipulate with NFT tokens of given owner.
+	Erc721IsApprovedForAll(token *common.Address, owner *common.Address, operator *common.Address) (bool, error)
+
+	// Erc1155ContractsList returns a list of known ERC1155 contracts ordered by their activity.
+	Erc1155ContractsList(int32) ([]common.Address, error)
+
+	// Erc1155Uri provides URI of Metadata JSON Schema of the token.
+	Erc1155Uri(token *common.Address, tokenId *big.Int) (string, error)
+
+	// Erc1155BalanceOf provides amount of NFT tokens owned by given owner.
+	Erc1155BalanceOf(token *common.Address, owner *common.Address, tokenId *big.Int) (*big.Int, error)
+
+	// Erc1155BalanceOfBatch provides amount of NFT tokens owned by given owner.
+	Erc1155BalanceOfBatch(token *common.Address, owners *[]common.Address, tokenIds []*big.Int) ([]*big.Int, error)
+
+	// Erc1155IsApprovedForAll provides information about operator approved to manipulate with NFT tokens of given owner.
+	Erc1155IsApprovedForAll(token *common.Address, owner *common.Address, operator *common.Address) (bool, error)
 
 	// GovernanceContractBy provides governance contract details by its address.
 	GovernanceContractBy(*common.Address) (*config.GovernanceContract, error)

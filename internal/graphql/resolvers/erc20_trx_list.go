@@ -8,7 +8,7 @@ import (
 
 // ERC20TransactionList represents resolvable list of ERC20 transaction edges structure.
 type ERC20TransactionList struct {
-	types.Erc20TransactionList
+	types.TokenTransactionList
 }
 
 // ERC20TransactionListEdge represents a single edge of an ERC20 transaction list structure.
@@ -17,8 +17,8 @@ type ERC20TransactionListEdge struct {
 }
 
 // NewERC20TransactionList builds new resolvable list of ERC20 transactions.
-func NewERC20TransactionList(tl *types.Erc20TransactionList) *ERC20TransactionList {
-	return &ERC20TransactionList{Erc20TransactionList: *tl}
+func NewERC20TransactionList(tl *types.TokenTransactionList) *ERC20TransactionList {
+	return &ERC20TransactionList{TokenTransactionList: *tl}
 }
 
 // TotalCount resolves the total number of ERC20 transactions in the list.

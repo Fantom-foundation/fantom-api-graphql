@@ -12,40 +12,52 @@ import (
 )
 
 const (
-	FiErc20TransactionPk        = "_id"
-	FiErc20TransactionOrdinal   = "orx"
-	FiErc20TransactionToken     = "tok"
-	FiErc20TransactionSender    = "from"
-	FiErc20TransactionRecipient = "to"
-	FiErc20TransactionType      = "type"
-	FiErc20TransactionStamp     = "stamp"
+	FiTokenTransactionPk        = "_id"
+	FiTokenTransactionOrdinal   = "orx"
+	FiTokenTransactionTokenType = "tty"
+	FiTokenTransactionToken     = "tok"
+	FiTokenTransactionTokenId   = "tid"
+	FiTokenTransactionType      = "type"
+	FiTokenTransactionSender    = "from"
+	FiTokenTransactionRecipient = "to"
+	FiTokenTransactionTime      = "stamp"
 
-	// ERC20TrxTypeTransfer represents transaction for transfers.
-	ERC20TrxTypeTransfer     = 1
-	ERC20TrxTypeNameTransfer = "TRANSFER"
-	ERC20TrxTypeNameMint     = "MINT"
-	ERC20TrxTypeNameBurn     = "BURN"
+	// TokenTrxTypeTransfer represents token transfer transaction.
+	TokenTrxTypeTransfer = 1
 
-	// ERC20TrxTypeApproval represents transaction for granting approvals.
-	ERC20TrxTypeApproval     = 2
-	ERC20TrxTypeNameApproval = "APPROVAL"
+	// TokenTrxTypeApproval represents token transfer approval.
+	TokenTrxTypeApproval = 2
+
+	// TokenTrxTypeMint represents token minting (transfer from 0x0).
+	TokenTrxTypeMint = 3
+
+	// TokenTrxTypeBurn represents token burning (transfer into 0x0).
+	TokenTrxTypeBurn = 4
+
+	// TokenTrxTypeApprovalForAll represents universal token transfer approval.
+	TokenTrxTypeApprovalForAll = 5
 )
 
-// Erc20Transaction represents an operation with ERC20 token.
-type Erc20Transaction struct {
+// TokenTransaction represents an operation with ERC20 token.
+type TokenTransaction struct {
 	ID           string         `json:"_id"`
-	Transaction  common.Hash    `json:"trx"`
-	TrxIndex     hexutil.Uint64 `json:"tix"`
-	TokenAddress common.Address `json:"erc"`
-	TokenType    string         `json:"tty"`
-	Type         int32          `json:"type"`
+	Transaction  common.Hash    `json:"trx"` // hash of the transaction
+	TrxIndex     hexutil.Uint64 `json:"tix"` // index of the transaction in the block
+	TokenAddress common.Address `json:"erc"` // contract address
+	TokenType    string         `json:"tty"` // ERC20/ERC721/ERC1155...
+	Type         int32          `json:"type"` // Transfer/Mint/Approval...
 	Sender       common.Address `json:"from"`
 	Recipient    common.Address `json:"to"`
 	Amount       hexutil.Big    `json:"amo"`
-	TimeStamp    hexutil.Uint64 `json:"ts"`
+	TokenId      hexutil.Big    `json:"tid"` // for multi-token contracts (ERC-721/ERC-1155)
+	TimeStamp    hexutil.Uint64 `json:"ts"`  // when the block(!) was collated
+	BlockNumber  uint64                      // number of the block
+	LogIndex     uint                        // index of the log in the block - only for OrdinalIndex / Pk generating
+	Seq          uint16                      // index of transfer in one log event - only for Pk generating
 }
 
 // BsonErc20Transaction represents the BSON i/o struct for an ERC20 operation.
+// Used for saving transactions into MongoDB storage.
 type BsonErc20Transaction struct {
 	ID        string    `bson:"_id"`
 	Trx       string    `bson:"trx"`
@@ -57,69 +69,54 @@ type BsonErc20Transaction struct {
 	From      string    `bson:"from"`
 	To        string    `bson:"to"`
 	Amo       string    `bson:"amo"`
-	Created   uint64    `bson:"ts"`
+	TokenId   string    `bson:"tid"`
+	TimeStamp uint64    `bson:"ts"`
 	Value     int64     `bson:"val"`
 	Stamp     time.Time `bson:"stamp"`
 }
 
-// Erc20TrxTypeByName returns numeric type of the ERC20 transaction by its name.
-// Returns nil if the name is not recognized.
-func Erc20TrxTypeByName(name string) *int32 {
-	// decode the transaction type filter
-	var txType *int32
-	switch name {
-	case ERC20TrxTypeNameMint:
-		i := int32(ERC20TrxTypeTransfer)
-		txType = &i
-	case ERC20TrxTypeNameBurn:
-		i := int32(ERC20TrxTypeTransfer)
-		txType = &i
-	case ERC20TrxTypeNameTransfer:
-		i := int32(ERC20TrxTypeTransfer)
-		txType = &i
-	case ERC20TrxTypeNameApproval:
-		i := int32(ERC20TrxTypeApproval)
-		txType = &i
-	}
-	return txType
-}
-
-// Pk generates unique identifier of the ERC20 transaction.
-// We use 10 bytes of the sender address, 10 bytes of the recipient address,
-// and 10 bytes of the token address. The last 8 bytes are ten XOR-ed
-// with the transaction time stamp.
-func (etx *Erc20Transaction) Pk() string {
-	// make the base PK from the trx hash and log index
-	bytes := make([]byte, 32)
-	copy(bytes, etx.Sender.Bytes()[:10])
-	copy(bytes[10:], etx.Recipient.Bytes()[:10])
-	copy(bytes[20:], etx.TokenAddress.Bytes()[:10])
-
-	// xor in the timestamp and the root trx index
-	ts := make([]byte, 8)
-	binary.BigEndian.PutUint64(ts, ((uint64(etx.TimeStamp)&0x7FFFFFFFFF)<<24)|(uint64(etx.TrxIndex)&0xFFFFFF))
-	for i := 0; i < 8; i++ {
-		bytes[24+i] = bytes[24+i] ^ ts[i]
-	}
+// Pk generates unique identifier of the ERC20 transaction from the transaction data.
+func (etx *TokenTransaction) Pk() string {
+	bytes := make([]byte, 14)
+	binary.BigEndian.PutUint64(bytes[0:8], etx.BlockNumber) // unique number of the block
+	binary.BigEndian.PutUint32(bytes[8:12], uint32(etx.LogIndex)) // index of log event in the block
+	binary.BigEndian.PutUint16(bytes[12:14], etx.Seq) // one log event can be batch of multiple transfers
 	return hexutil.Encode(bytes)
 }
 
-// OrdinalIndex returns an ordinal index for the given ERC20 transaction.
+// OrdinalIndex returns an ordinal index (field for deterministic sorting) for the given ERC20 transaction.
 // We construct the UID from the time the transaction was processed (40 bits = 1099511627775s = 34000 years),
-// and the small fraction of the token address to distinguish between different transfers on the same block.
-func (etx *Erc20Transaction) OrdinalIndex() uint64 {
-	ts := make([]byte, 8)
-	binary.BigEndian.PutUint64(ts, (uint64(etx.TimeStamp)&0x7FFFFFFFFF)<<24)
-	copy(ts[5:], etx.TokenAddress.Bytes()[:3])
-	return binary.BigEndian.Uint64(ts)
+// salted by the transaction hash, the event log index (index of the log in the block)
+// and sequence number of transaction in batch transfer event.
+func (etx *TokenTransaction) OrdinalIndex() uint64 {
+	ordinal := make([]byte, 8)
+	binary.BigEndian.PutUint64(ordinal, (uint64(etx.TimeStamp)&0x7FFFFFFFFF)<<24)
+
+	trxHash := etx.Transaction.Bytes()
+
+	logIndex := make([]byte, 4)
+	binary.BigEndian.PutUint32(logIndex, uint32(etx.LogIndex))
+
+	seq := make([]byte, 2)
+	binary.BigEndian.PutUint16(seq, etx.Seq)
+
+	// use transaction hash as base of salt
+	// XOR with logIndex to distinguish individual contract emitted events
+	// XOR with seq to distinguish multiple transfers in one batch transfer event
+	ordinal[5] = trxHash[0] ^ logIndex[1] ^ seq[1]
+	ordinal[6] = trxHash[1] ^ logIndex[2] ^ seq[0]
+	ordinal[7] = trxHash[2] ^ logIndex[3]
+	return binary.BigEndian.Uint64(ordinal)
 }
 
 // MarshalBSON creates a BSON representation of the ERC20 transaction record.
-func (etx *Erc20Transaction) MarshalBSON() ([]byte, error) {
+func (etx *TokenTransaction) MarshalBSON() ([]byte, error) {
 	// calculate transfer value for ERC20 tokens
-	val := new(big.Int)
+	var val *big.Int
 	if etx.TokenType == AccountTypeERC20Token {
-		val = val.Div(etx.Amount.ToInt(), TransactionDecimalsCorrection)
+		val = new(big.Int).Div(etx.Amount.ToInt(), TransactionDecimalsCorrection)
+	} else {
+		val = etx.Amount.ToInt()
 	}
 
 	// make the record and encode it
@@ -134,14 +131,15 @@ func (etx *Erc20Transaction) MarshalBSON() ([]byte, error) {
 		From:      etx.Sender.String(),
 		To:        etx.Recipient.String(),
 		Amo:       etx.Amount.String(),
-		Created:   uint64(etx.TimeStamp),
+		TokenId:   etx.TokenId.String(),
+		TimeStamp: uint64(etx.TimeStamp),
 		Value:     val.Int64(),
 		Stamp:     time.Unix(int64(etx.TimeStamp), 0),
 	})
 }
 
 // UnmarshalBSON updates the value from BSON source.
-func (etx *Erc20Transaction) UnmarshalBSON(data []byte) (err error) {
+func (etx *TokenTransaction) UnmarshalBSON(data []byte) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("can not decode ERC20 transfer; %s", err.Error())
@@ -158,12 +156,13 @@ func (etx *Erc20Transaction) UnmarshalBSON(data []byte) (err error) {
 	etx.ID = row.ID
 	etx.Transaction = common.HexToHash(row.Trx)
 	etx.TrxIndex = hexutil.Uint64(row.Tix)
-	etx.TimeStamp = hexutil.Uint64(row.Created)
+	etx.TimeStamp = hexutil.Uint64(row.TimeStamp)
 	etx.TokenAddress = common.HexToAddress(row.Token)
 	etx.TokenType = row.TokenType
 	etx.Type = row.Type
 	etx.Sender = common.HexToAddress(row.From)
 	etx.Recipient = common.HexToAddress(row.To)
 	etx.Amount = (hexutil.Big)(*hexutil.MustDecodeBig(row.Amo))
+	etx.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
 	return nil
 }

@@ -1,0 +1,29 @@
+# ERC721Contract represents a generic ERC721 non-fungible tokens (NFT) contract.
+type ERC721Contract {
+    # address of the token is used as the token's unique identifier.
+    address: Address!
+
+    # name of the token.
+    name: String!
+
+    # symbol used as an abbreviation for the token.
+    symbol: String!
+
+    # totalSupply represents total amount of tokens across all accounts
+    totalSupply: BigInt
+
+    # balanceOf represents amount of tokens on the account.
+    balanceOf(owner: Address!): BigInt!
+
+    # tokenURI provides URI of Metadata JSON Schema of the token.
+    tokenURI(tokenId: BigInt!): String
+
+    # ownerOf provides the owner of NFT identified by tokenId
+    ownerOf(tokenId: BigInt!): Address
+
+    # getApproved provides the operator approved by owner
+    getApproved(tokenId: BigInt!): Address
+
+    # isApprovedForAll queries the approval status of an operator for a given owner.
+    isApprovedForAll(owner: Address!, operator: Address!): Boolean
+}

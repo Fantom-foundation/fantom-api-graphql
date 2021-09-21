@@ -1,0 +1,17 @@
+# ERC1155Contract represents a generic ERC1155 multi-token contract.
+type ERC1155Contract {
+    # address of the token is used as the token's unique identifier.
+    address: Address!
+
+    # uri provides URI of Metadata JSON Schema for given token.
+    uri(tokenId: BigInt!): String
+
+    # balanceOf represents amount of tokens on the account.
+    balanceOf(owner: Address!, tokenId: BigInt!): BigInt!
+
+    # balanceOf represents amount of tokens on the account.
+    balanceOfBatch(owners: [Address!]!, tokenIds: [BigInt!]!): [BigInt!]!
+
+    # isApprovedForAll queries the approval status of an operator for a given owner.
+    isApprovedForAll(owner: Address!, operator: Address!): Boolean
+}
