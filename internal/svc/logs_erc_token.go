@@ -81,7 +81,7 @@ func handleErc1155TransferBatch(lr *types.LogRecord) {
 		}
 		for i := range ids {
 			log.Infof("ERC1155 storing TransferBatch - trx %s - len %d", lr.TxHash.String(), len(ids))
-			storeTokenTransaction(lr, types.AccountTypeERC1155Contract, types.TokenTrxTypeTransfer, from, to, *values[i], *ids[i], uint32(i))
+			storeTokenTransaction(lr, types.AccountTypeERC1155Contract, types.TokenTrxTypeTransfer, from, to, *values[i], *ids[i], uint16(i))
 		}
 		return
 	}
@@ -99,7 +99,7 @@ func tokenTrxType(trxType int32, from common.Address, to common.Address) int32 {
 }
 
 // storeTokenTransaction handles general token (ERC20/ERC721/ERC1155) transaction.
-func storeTokenTransaction(lr *types.LogRecord, tokenType string, eventType int32, from common.Address, to common.Address, amount big.Int, tokenId big.Int, seq uint32) {
+func storeTokenTransaction(lr *types.LogRecord, tokenType string, eventType int32, from common.Address, to common.Address, amount big.Int, tokenId big.Int, seq uint16) {
 	if err := repo.StoreTokenTransaction(&types.TokenTransaction{
 		Transaction:  lr.TxHash,
 		TrxIndex:     hexutil.Uint64(uint64(lr.TxIndex)),
@@ -112,6 +112,7 @@ func storeTokenTransaction(lr *types.LogRecord, tokenType string, eventType int3
 		TokenId:      hexutil.Big(tokenId),
 		TimeStamp:    lr.Block.TimeStamp,
 		LogIndex:     lr.Index,
+		BlockNumber:  lr.BlockNumber,
 		Seq:          seq, // sequence of erc transactions emitted by one log event - non-zero only for batch transfer events
 	}); err != nil {
 		log.Errorf("can not store token %s trx for call %s; %s", tokenType, lr.TxHash.String(), err.Error())

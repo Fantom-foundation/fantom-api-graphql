@@ -2,7 +2,6 @@
 package types
 
 import (
-	"crypto/sha256"
 	"encoding/binary"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -52,8 +51,9 @@ type TokenTransaction struct {
 	Amount       hexutil.Big    `json:"amo"`
 	TokenId      hexutil.Big    `json:"tid"` // for multi-token contracts (ERC-721/ERC-1155)
 	TimeStamp    hexutil.Uint64 `json:"ts"`  // when the block(!) was collated
+	BlockNumber  uint64                      // number of the block
 	LogIndex     uint                        // index of the log in the block - only for OrdinalIndex / Pk generating
-	Seq          uint32                      // index of transfer in one log event - only for Pk generating
+	Seq          uint16                      // index of transfer in one log event - only for Pk generating
 }
 
 // BsonErc20Transaction represents the BSON i/o struct for an ERC20 operation.
@@ -75,24 +75,13 @@ type BsonErc20Transaction struct {
 	Stamp     time.Time `bson:"stamp"`
 }
 
-// Pk generates unique identifier of the ERC20 transaction.
-// We use hash of transaction, sender, recipient and recipient address,
-// the transaction timestamp and sequence salt.
+// Pk generates unique identifier of the ERC20 transaction from the transaction data.
 func (etx *TokenTransaction) Pk() string {
-	hash := sha256.New()
-	hash.Write(etx.Transaction.Bytes()) // unique hash of transaction
-
-	// one transaction can emits multiple events - append index of log event
-	logIndex := make([]byte, 4)
-	binary.BigEndian.PutUint32(logIndex, etx.Seq)
-	hash.Write(logIndex)
-
-	// one log event can be batch of multiple transfers
-	seq := make([]byte, 4)
-	binary.BigEndian.PutUint32(seq, etx.Seq)
-	hash.Write(seq)
-
-	return hexutil.Encode(hash.Sum(nil))
+	bytes := make([]byte, 14)
+	binary.BigEndian.PutUint64(bytes[0:8], etx.BlockNumber) // unique number of the block
+	binary.BigEndian.PutUint32(bytes[8:12], uint32(etx.LogIndex)) // index of log event in the block
+	binary.BigEndian.PutUint16(bytes[12:14], etx.Seq) // one log event can be batch of multiple transfers
+	return hexutil.Encode(bytes)
 }
 
 // OrdinalIndex returns an ordinal index (field for deterministic sorting) for the given ERC20 transaction.
@@ -108,15 +97,15 @@ func (etx *TokenTransaction) OrdinalIndex() uint64 {
 	logIndex := make([]byte, 4)
 	binary.BigEndian.PutUint32(logIndex, uint32(etx.LogIndex))
 
-	seq := make([]byte, 4)
-	binary.BigEndian.PutUint32(seq, etx.Seq)
+	seq := make([]byte, 2)
+	binary.BigEndian.PutUint16(seq, etx.Seq)
 
 	// use transaction hash as base of salt
 	// XOR with logIndex to distinguish individual contract emitted events
 	// XOR with seq to distinguish multiple transfers in one batch transfer event
-	ordinal[5] = trxHash[0] ^ logIndex[1] ^ seq[3]
-	ordinal[6] = trxHash[1] ^ logIndex[2] ^ seq[2]
-	ordinal[7] = trxHash[2] ^ logIndex[3] ^ seq[1]
+	ordinal[5] = trxHash[0] ^ logIndex[1] ^ seq[1]
+	ordinal[6] = trxHash[1] ^ logIndex[2] ^ seq[0]
+	ordinal[7] = trxHash[2] ^ logIndex[3]
 	return binary.BigEndian.Uint64(ordinal)
 }
 
