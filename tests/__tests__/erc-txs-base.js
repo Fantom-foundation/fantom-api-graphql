@@ -15,7 +15,7 @@ exports.graphqlrq = async function(query) {
 }
 
 exports.testTrxPagination = async function(count, queryFunc) {
-    let hasNext = true;
+    let hasNext, hasPrev;
     let listedCount = 0;
     let listedPages = 0;
     let totalCount = null;
@@ -26,10 +26,17 @@ exports.testTrxPagination = async function(count, queryFunc) {
     do {
         let data = await queryFunc(count, cursor);
         if (totalCount == null) totalCount = data.totalCount;
-        listedCount += data.edges.length;
-        listedPages++;
         cursor = count > 0 ? data.pageInfo.last : data.pageInfo.first;
         hasNext = count > 0 ? data.pageInfo.hasNext : data.pageInfo.hasPrevious;
+        hasPrev = count > 0 ? data.pageInfo.hasPrevious : data.pageInfo.hasNext;
+
+        listedCount += data.edges.length;
+        listedPages++;
+
+        assert.strictEqual(hasPrev, listedPages !== 1, 'hasPrevious should be true for all except the first page');
+        if (hasNext) {
+            assert.strictEqual(data.edges.length, Math.abs(count), 'different amount of edges then requested count');
+        }
 
         // check edges form an ordered list across pages - by timeStamp
         if (count > 0) {
