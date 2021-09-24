@@ -273,7 +273,7 @@ func (db *MongoDbBridge) ercTrxListLoad(col *mongo.Collection, cursor *string, c
 	list.IsStart = (cursor == nil && count > 0) || (count < 0 && int32(len(list.Collection)) < -count)
 
 	// add the last item as well if we hit the boundary
-	if (list.IsStart || list.IsEnd) && trx != nil {
+	if ((count < 0 && list.IsStart) || (count > 0 && list.IsEnd)) && trx != nil {
 		list.Collection = append(list.Collection, trx)
 	}
 	return nil
