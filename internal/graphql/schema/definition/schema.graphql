@@ -53,6 +53,15 @@ type Query {
     # negative <count> starts the list from bottom.
     transactions(cursor:Cursor, count:Int!):TransactionList!
 
+    # Get filtered list of ERC20 Transactions.
+    erc20Transactions(cursor:Cursor, count:Int = 25, token: Address, account: Address, txType: String = TRANSFER): ERC20TransactionList!
+
+    # Get filtered list of ERC721 Transactions.
+    erc721Transactions(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, account: Address, txType: String = TRANSFER): ERC721TransactionList!
+
+    # Get filtered list of ERC1155 Transactions.
+    erc1155Transactions(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, account: Address, txType: String = TRANSFER): ERC1155TransactionList!
+
     # Get the id of the current epoch of the Opera blockchain.
     currentEpoch:Long!
 
