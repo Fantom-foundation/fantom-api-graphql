@@ -1,6 +1,7 @@
 package resolvers
 
 import (
+	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -31,7 +32,28 @@ func (ttx *TokenTransaction) Type() string {
 	return ercTrxTypeToName(ttx.TokenTransaction.Type)
 }
 
-// LogIndex resolves the index of the token transaction inside the block.
-func (ttx *TokenTransaction) LogIndex() hexutil.Uint64 {
-	return hexutil.Uint64(ttx.TokenTransaction.LogIndex)
+// TokenName resolves the name of the ERC token contract, if available.
+func (ttx *TokenTransaction) TokenName() (name string, err error) {
+	switch ttx.TokenTransaction.TokenType {
+	case types.AccountTypeERC20Token:
+		name, err = repository.R().Erc20Name(&ttx.TokenTransaction.TokenAddress)
+	case types.AccountTypeERC721Contract:
+		name, err = repository.R().Erc721Name(&ttx.TokenTransaction.TokenAddress)
+	default:
+		name, err = "", nil
+	}
+	return
+}
+
+// TokenSymbol resolves the symbol of the ERC token contract, if available.
+func (ttx *TokenTransaction) TokenSymbol() (sym string, err error) {
+	switch ttx.TokenTransaction.TokenType {
+	case types.AccountTypeERC20Token:
+		sym, err = repository.R().Erc20Symbol(&ttx.TokenTransaction.TokenAddress)
+	case types.AccountTypeERC721Contract:
+		sym, err = repository.R().Erc721Symbol(&ttx.TokenTransaction.TokenAddress)
+	default:
+		sym, err = "", nil
+	}
+	return
 }
