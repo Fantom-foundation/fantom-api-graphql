@@ -97,6 +97,12 @@ func (lgd *logDispatcher) init() {
 		/* ERC20::Transfer(address indexed from, address indexed to, uint256 value) */
 		common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"): handleErcTokenTransfer,
 
+		/* ERC1155::TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value) */
+		common.HexToHash("0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62"): handleErc1155TransferSingle,
+
+		/* ERC1155::TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values) */
+		common.HexToHash("0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb"): handleErc1155TransferBatch,
+
 		/* --------------------- Uniswap contract related event hooks below this line --------------------- */
 
 		/* UniswapPair::Swap(address indexed sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out, address indexed to) */

@@ -34,8 +34,8 @@ const (
 	// which created the contract, if the account is a contract.
 	fiScCreationTx = "sc"
 
-	// defaultERC20ListLength is the number of ERC20 tokens pulled by default on negative count
-	defaultERC20ListLength = 25
+	// defaultTokenListLength is the number of ERC20 tokens pulled by default on negative count
+	defaultTokenListLength = 25
 )
 
 // AccountRow is the account base row
@@ -218,7 +218,7 @@ func (db *MongoDbBridge) AccountMarkActivity(addr *common.Address, ts uint64) er
 func (db *MongoDbBridge) Erc20TokensList(count int32) ([]common.Address, error) {
 	// make sure the count is positive; use default size if not
 	if count <= 0 {
-		count = defaultERC20ListLength
+		count = defaultTokenListLength
 	}
 
 	// log what we do
@@ -241,16 +241,75 @@ func (db *MongoDbBridge) Erc20TokensList(count int32) ([]common.Address, error) 
 		return nil, err
 	}
 
-	return db.loadErc20TokensList(cursor)
+	return db.loadErcContractsList(cursor)
 }
 
-// Erc20TokensList returns a list of known ERC20 tokens ordered by their activity.
-func (db *MongoDbBridge) loadErc20TokensList(cursor *mongo.Cursor) ([]common.Address, error) {
+// Erc721ContractsList returns a list of known ERC20 tokens ordered by their activity.
+func (db *MongoDbBridge) Erc721ContractsList(count int32) ([]common.Address, error) {
+	// make sure the count is positive; use default size if not
+	if count <= 0 {
+		count = defaultTokenListLength
+	}
+
+	// log what we do
+	db.log.Debugf("loading %d most active ERC721 token accounts", count)
+
+	// get the collection for contracts
+	col := db.client.Database(db.dbName).Collection(coAccounts)
+
+	// make the filter for ERC20 tokens only and pull them ordered by activity
+	filter := bson.D{{Key: "type", Value: types.AccountTypeERC721Contract}}
+	opt := options.Find().SetSort(bson.D{
+		{Key: fiAccountTransactionCounter, Value: -1},
+		{Key: fiAccountLastActivity, Value: -1},
+	}).SetLimit(int64(count))
+
+	// load the data
+	cursor, err := col.Find(context.Background(), filter, opt)
+	if err != nil {
+		db.log.Errorf("error loading ERC721 tokens list; %s", err.Error())
+		return nil, err
+	}
+
+	return db.loadErcContractsList(cursor)
+}
+
+// Erc1155ContractsList returns a list of known ERC1155 contracts ordered by their activity.
+func (db *MongoDbBridge) Erc1155ContractsList(count int32) ([]common.Address, error) {
+	// make sure the count is positive; use default size if not
+	if count <= 0 {
+		count = defaultTokenListLength
+	}
+
+	// log what we do
+	db.log.Debugf("loading %d most active ERC1155 token accounts", count)
+
+	// get the collection for contracts
+	col := db.client.Database(db.dbName).Collection(coAccounts)
+
+	// make the filter for ERC20 tokens only and pull them ordered by activity
+	filter := bson.D{{Key: "type", Value: types.AccountTypeERC1155Contract}}
+	opt := options.Find().SetSort(bson.D{
+		{Key: fiAccountTransactionCounter, Value: -1},
+		{Key: fiAccountLastActivity, Value: -1},
+	}).SetLimit(int64(count))
+
+	// load the data
+	cursor, err := col.Find(context.Background(), filter, opt)
+	if err != nil {
+		db.log.Errorf("error loading ERC1155 tokens list; %s", err.Error())
+		return nil, err
+	}
+
+	return db.loadErcContractsList(cursor)
+}
+
+func (db *MongoDbBridge) loadErcContractsList(cursor *mongo.Cursor) ([]common.Address, error) {
 	// close the cursor as we leave
 	defer func() {
 		err := cursor.Close(context.Background())
 		if err != nil {
-			db.log.Errorf("error closing ERC20 list cursor; %s", err.Error())
+			db.log.Errorf("error closing ERC contracts list cursor; %s", err.Error())
 		}
 	}()
 
@@ -260,7 +319,7 @@ func (db *MongoDbBridge) loadErc20TokensList(cursor *mongo.Cursor) ([]common.Add
 	for cursor.Next(context.Background()) {
 		// try to decode the next row
 		if err := cursor.Decode(&row); err != nil {
-			db.log.Errorf("can not decodeERC20 list row; %s", err.Error())
+			db.log.Errorf("can not decode ERC contracts list row; %s", err.Error())
 			return nil, err
 		}
 

@@ -3,10 +3,10 @@ package types
 
 import "go.mongodb.org/mongo-driver/bson"
 
-// Erc20TransactionList represents a list of ERC20 transactions.
-type Erc20TransactionList struct {
+// TokenTransactionList represents a list of ERC20/ERC721/ERC1155 transactions.
+type TokenTransactionList struct {
 	// List keeps the actual Collection.
-	Collection []*Erc20Transaction
+	Collection []*TokenTransaction
 
 	// Total indicates total number of ERC transactions in the whole collection.
 	Total uint64
@@ -28,7 +28,7 @@ type Erc20TransactionList struct {
 }
 
 // Reverse reverses the order of ERC transactions in the list.
-func (c *Erc20TransactionList) Reverse() {
+func (c *TokenTransactionList) Reverse() {
 	// anything to swap at all?
 	if c.Collection == nil || len(c.Collection) < 2 {
 		return

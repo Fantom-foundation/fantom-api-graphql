@@ -1,0 +1,45 @@
+# TokenTransaction represents a generic token transaction
+# of a supported type of token.
+type TokenTransaction {
+    # Hash is the hash of the executed transaction call.
+    hash: Bytes32!
+
+    # trxIndex is the index of the transaction call in a block.
+    trxIndex: Long!
+
+    # blockNumber represents the number of the block
+    # the transaction was executed in.
+    blockNumber: Long!
+
+    # tokenAddress represents the address of the token involved.
+    tokenAddress: Address!
+
+    # tokenName represents the name of the token contract.
+    # Is empty, if not provided for the given token.
+    tokenName: String!
+
+    # tokenSymbol represents the symbol of the token contract.
+    # Is empty, if not provided for the given token.
+    tokenSymbol: String!
+
+    # tokenType represents the type of the token (i.e. ERC20/ERC721/ERC1155).
+    tokenType: String!
+
+    # type represents the type of the transaction executed (i.e. Transfer/Mint/Approval).
+    type: String!
+
+    # sender of the transaction.
+    sender: Address!
+
+    # recipient of the transaction.
+    recipient: Address!
+
+    # amount of tokens involved in the transaction.
+    amount: BigInt!
+
+    # multi-token contracts (ERC-721/ERC-1155) token ID involved in the transaction.
+    tokenId: BigInt!
+
+    # time stamp of the block processing.
+    timeStamp: Long!
+}

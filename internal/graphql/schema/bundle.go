@@ -134,6 +134,7 @@ enum Erc20TransactionType {
     MINT
     BURN
     APPROVAL
+    OTHER
 }
 
 # ERC20Transaction represents a transaction on an ERC20 token.
@@ -173,7 +174,7 @@ type ERC20Transaction {
     amount: BigInt!
 
     # timeStamp represents the Unix epoch time stamp
-    # of the ERC20 transaction procvessing.
+    # of the ERC20 transaction processing.
     timeStamp: Long!
 }
 # RewardClaimList is a list of reward claims linked to delegations.
@@ -222,40 +223,22 @@ type EpochListEdge {
     epoch: Epoch!
 }
 
-# Price represents price information of core Opera token
-type Price {
-    "Source unit symbol."
-    fromSymbol: String!
+# ERC1155Contract represents a generic ERC1155 multi-token contract.
+type ERC1155Contract {
+    # address of the token is used as the token's unique identifier.
+    address: Address!
 
-    "Target unit symbol."
-    toSymbol: String!
+    # uri provides URI of Metadata JSON Schema for given token.
+    uri(tokenId: BigInt!): String
 
-    "Price of the source symbol unit in target symbol unit."
-    price: Float!
+    # balanceOf represents amount of tokens on the account.
+    balanceOf(owner: Address!, tokenId: BigInt!): BigInt!
 
-    "Price change in last 24h."
-    change24: Float!
+    # balanceOf represents amount of tokens on the account.
+    balanceOfBatch(owners: [Address!]!, tokenIds: [BigInt!]!): [BigInt!]!
 
-    "Price change in percent in last 24h."
-    changePct24: Float!
-
-    "Open 24h price."
-    open24: Float!
-
-    "Highest 24h price."
-    high24: Float!
-
-    "Lowest 24h price."
-    low24: Float!
-
-    "Volume exchanged in last 24h price."
-    volume24: Float!
-
-    "Market cap of the source unit."
-    marketCap: Float!
-
-    "Timestamp of the last update of this price value."
-    lastUpdate: Long!
+    # isApprovedForAll queries the approval status of an operator for a given owner.
+    isApprovedForAll(owner: Address!, operator: Address!): Boolean
 }
 
 # TransactionList is a list of transaction edges provided by sequential access request.
@@ -390,6 +373,22 @@ type Transaction {
     # running out of gas). If the transaction has not yet been processed, this
     # field will be null.
     status: Long
+
+    # tokenTransactions represents a list of generic token transactions executed in the scope
+    # of the transaction call; token type and transaction type is provided.
+    tokenTransactions: [TokenTransaction!]!
+
+    # erc20Transactions provides list of ERC-20 token transactions executed in the scope
+    # of this blockchain transaction call.
+    erc20Transactions: [ERC20Transaction!]!
+
+    # erc721Transactions provides list of ERC-721 NFT transactions executed in the scope
+    # of this blockchain transaction call.
+    erc721Transactions: [ERC721Transaction!]!
+
+    # erc1155Transactions provides list of ERC-1155 NFT transactions executed in the scope
+    # of this blockchain transaction call.
+    erc1155Transactions: [ERC1155Transaction!]!
 }
 
 # Block is an Opera block chain block.
@@ -421,6 +420,36 @@ type Block {
 
     # txList is a list of transactions assigned to the block.
     txList: [Transaction!]!
+}
+
+# ERC721Contract represents a generic ERC721 non-fungible tokens (NFT) contract.
+type ERC721Contract {
+    # address of the token is used as the token's unique identifier.
+    address: Address!
+
+    # name of the token.
+    name: String!
+
+    # symbol used as an abbreviation for the token.
+    symbol: String!
+
+    # totalSupply represents total amount of tokens across all accounts
+    totalSupply: BigInt
+
+    # balanceOf represents amount of tokens on the account.
+    balanceOf(owner: Address!): BigInt!
+
+    # tokenURI provides URI of Metadata JSON Schema of the token.
+    tokenURI(tokenId: BigInt!): String
+
+    # ownerOf provides the owner of NFT identified by tokenId
+    ownerOf(tokenId: BigInt!): Address
+
+    # getApproved provides the operator approved by owner
+    getApproved(tokenId: BigInt!): Address
+
+    # isApprovedForAll queries the approval status of an operator for a given owner.
+    isApprovedForAll(owner: Address!, operator: Address!): Boolean
 }
 
 # SfcConfig represents the configuration of the SFC contract
@@ -647,6 +676,24 @@ type Epoch {
 
     # Total supply amount.
     totalSupply: BigInt!
+}
+
+# ERC721TransactionList is a list of ERC721 transaction edges provided by sequential access request.
+type ERC721TransactionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ERC721TransactionListEdge!]!
+
+    # TotalCount is the maximum number of ERC721 transactions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of ERC721 transaction edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of ERC721 transactions.
+type ERC721TransactionListEdge {
+    cursor: Cursor!
+    trx: ERC721Transaction!
 }
 
 # Contract defines block-chain smart contract information container
@@ -954,6 +1001,24 @@ type Staker {
 
     # StakerInfo represents extended staker information from smart contract.
     stakerInfo: StakerInfo
+}
+
+# ERC1155TransactionList is a list of ERC1155 transaction edges provided by sequential access request.
+type ERC1155TransactionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ERC1155TransactionListEdge!]!
+
+    # TotalCount is the maximum number of ERC1155 transactions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of ERC1155 transaction edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of ERC1155 transactions.
+type ERC1155TransactionListEdge {
+    cursor: Cursor!
+    trx: ERC1155Transaction!
 }
 
 # FMintAccount represents an informastion about account details
@@ -1451,6 +1516,194 @@ type RewardClaim {
     # to be processed and granted.
     trxHash: Bytes32!
 }
+# Price represents price information of core Opera token
+type Price {
+    "Source unit symbol."
+    fromSymbol: String!
+
+    "Target unit symbol."
+    toSymbol: String!
+
+    "Price of the source symbol unit in target symbol unit."
+    price: Float!
+
+    "Price change in last 24h."
+    change24: Float!
+
+    "Price change in percent in last 24h."
+    changePct24: Float!
+
+    "Open 24h price."
+    open24: Float!
+
+    "Highest 24h price."
+    high24: Float!
+
+    "Lowest 24h price."
+    low24: Float!
+
+    "Volume exchanged in last 24h price."
+    volume24: Float!
+
+    "Market cap of the source unit."
+    marketCap: Float!
+
+    "Timestamp of the last update of this price value."
+    lastUpdate: Long!
+}
+
+# Erc1155TransactionType represents a type of transaction.
+enum Erc1155TransactionType {
+    TRANSFER
+    MINT
+    BURN
+    APPROVAL
+    APPROVAL_FOR_ALL
+    OTHER
+}
+
+# ERC1155Transaction represents a transaction on an ERC1155 NFT token.
+type ERC1155Transaction {
+    # trxHash represents a hash of the transaction
+    # executing the ERC1155 call.
+    trxHash: Bytes32!
+
+    # transaction represents the transaction
+    # executing the ERC1155 call.
+    transaction: Transaction!
+
+    # trxIndex represents the index
+    # of the ERC1155 call in the transaction logs.
+    trxIndex: Long!
+
+    # tokenAddress represents the address
+    # of the ERC1155 token contract.
+    tokenAddress: Address!
+
+    # token represents the ERC1155 contract detail involved.
+    token: ERC1155Contract!
+
+    # tokenId represents the NFT token - one ERC1155 contract can handle multiple NFTs.
+    tokenId: BigInt!
+
+    # trxType is the type of the transaction.
+    trxType: Erc1155TransactionType!
+
+    # sender represents the address of the token owner
+    # sending the tokens, e.g. the sender.
+    sender: Address!
+
+    # recipient represents the address of the token recipient.
+    recipient: Address!
+
+    # amount represents the amount of tokens involved in the transaction;
+    # please make sure to interpret the amount with the correct number of decimals
+    # from the token Metadata JSON Schema.
+    amount: BigInt!
+
+    # timeStamp represents the Unix epoch time stamp
+    # of the ERC1155 transaction processing.
+    timeStamp: Long!
+}
+# Erc721TransactionType represents a type of transaction.
+enum Erc721TransactionType {
+    TRANSFER
+    MINT
+    BURN
+    APPROVAL
+    APPROVAL_FOR_ALL
+    OTHER
+}
+
+# ERC721Transaction represents a transaction on an ERC721 NFT token.
+type ERC721Transaction {
+    # trxHash represents a hash of the transaction
+    # executing the ERC721 call.
+    trxHash: Bytes32!
+
+    # transaction represents the transaction
+    # executing the ERC721 call.
+    transaction: Transaction!
+
+    # trxIndex represents the index
+    # of the ERC721 call in the transaction logs.
+    trxIndex: Long!
+
+    # tokenAddress represents the address
+    # of the ERC721 token contract.
+    tokenAddress: Address!
+
+    # token represents the ERC721 contract detail involved.
+    token: ERC721Contract!
+
+    # tokenId represents the NFT token - one ERC721 contract can handle multiple NFTs.
+    tokenId: BigInt!
+
+    # trxType is the type of the transaction.
+    trxType: Erc721TransactionType!
+
+    # sender represents the address of the token owner
+    # sending the tokens, e.g. the sender.
+    sender: Address!
+
+    # recipient represents the address of the token recipient.
+    recipient: Address!
+
+    # amount represents the amount of tokens involved
+    # in the transaction; please make sure to interpret the amount
+    # with the correct number of decimals from the ERC721 token detail.
+    amount: BigInt!
+
+    # timeStamp represents the Unix epoch time stamp
+    # of the ERC721 transaction processing.
+    timeStamp: Long!
+}
+# TokenTransaction represents a generic token transaction
+# of a supported type of token.
+type TokenTransaction {
+    # Hash is the hash of the executed transaction call.
+    hash: Bytes32!
+
+    # trxIndex is the index of the transaction call in a block.
+    trxIndex: Long!
+
+    # blockNumber represents the number of the block
+    # the transaction was executed in.
+    blockNumber: Long!
+
+    # tokenAddress represents the address of the token involved.
+    tokenAddress: Address!
+
+    # tokenName represents the name of the token contract.
+    # Is empty, if not provided for the given token.
+    tokenName: String!
+
+    # tokenSymbol represents the symbol of the token contract.
+    # Is empty, if not provided for the given token.
+    tokenSymbol: String!
+
+    # tokenType represents the type of the token (i.e. ERC20/ERC721/ERC1155).
+    tokenType: String!
+
+    # type represents the type of the transaction executed (i.e. Transfer/Mint/Approval).
+    type: String!
+
+    # sender of the transaction.
+    sender: Address!
+
+    # recipient of the transaction.
+    recipient: Address!
+
+    # amount of tokens involved in the transaction.
+    amount: BigInt!
+
+    # multi-token contracts (ERC-721/ERC-1155) token ID involved in the transaction.
+    tokenId: BigInt!
+
+    # time stamp of the block processing.
+    timeStamp: Long!
+}
+
 # Account defines block-chain account information container
 type Account {
     # Address is the address of the account.
@@ -1468,10 +1721,16 @@ type Account {
     txCount: Long!
 
     # txList represents list of transactions of the account in form of TransactionList.
-    txList (cursor:Cursor, count:Int!): TransactionList!
+    txList(cursor:Cursor, count:Int!): TransactionList!
 
     # erc20TxList represents list of ERC20 transactions of the account.
-    erc20TxList (cursor:Cursor, count:Int = 25, token: Address, txType: String = TRANSFER): ERC20TransactionList!
+    erc20TxList(cursor:Cursor, count:Int = 25, token: Address, txType: String = TRANSFER): ERC20TransactionList!
+
+    # erc721TxList represents list of ERC721 transactions of the account.
+    erc721TxList(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, txType: String = TRANSFER): ERC721TransactionList!
+
+    # erc1155TxList represents list of ERC1155 transactions of the account.
+    erc1155TxList(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, txType: String = TRANSFER): ERC1155TransactionList!
 
     # Details of a staker, if the account is a staker.
     staker: Staker
@@ -1936,6 +2195,18 @@ type Query {
     # ercTokenAllowance provides the current amount of ERC20 tokens unlocked
     # by the token owner for the spender to be manipulated with.
     ercTokenAllowance(token: Address!, owner: Address!, spender: Address!):BigInt!
+
+    # erc721Contract provides the information about ERC721 non-fungible token (NFT) by it's address.
+    erc721Contract(token: Address!):ERC721Contract
+
+    # erc721ContractList provides list of the most active ERC721 non-fungible tokens (NFT) on the block chain.
+    erc721ContractList(count: Int = 50):[ERC721Contract!]!
+
+    # erc1155Token provides the information about ERC1155 multi-token contract by it's address.
+    erc1155Contract(address: Address!):ERC1155Contract
+
+    # erc1155ContractList provides list of the most active ERC1155 multi-token contract on the block chain.
+    erc1155ContractList(count: Int = 50):[ERC1155Contract!]!
 
     # govContracts provides list of governance contracts.
     govContracts:[GovernanceContract!]!

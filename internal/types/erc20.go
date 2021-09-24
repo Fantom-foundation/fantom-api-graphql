@@ -7,7 +7,7 @@ import (
 )
 
 // Erc20Token represents an ERC20 token contract
-// on the block chain.
+// on the blockchain.
 type Erc20Token struct {
 	// Address represents the address of the ERC20 contract on chain.
 	Address common.Address `json:"address"`

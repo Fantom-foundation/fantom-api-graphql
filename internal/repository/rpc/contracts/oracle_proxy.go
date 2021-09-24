@@ -4,6 +4,7 @@
 package contracts
 
 import (
+	"errors"
 	"math/big"
 	"strings"
 
@@ -17,6 +18,7 @@ import (
 
 // Reference imports to suppress errors if they are not otherwise used.
 var (
+	_ = errors.New
 	_ = big.NewInt
 	_ = strings.NewReader
 	_ = ethereum.NotFound
@@ -26,8 +28,14 @@ var (
 	_ = event.NewSubscription
 )
 
+// PriceOracleProxyInterfaceMetaData contains all meta data concerning the PriceOracleProxyInterface contract.
+var PriceOracleProxyInterfaceMetaData = &bind.MetaData{
+	ABI: "[{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]",
+}
+
 // PriceOracleProxyInterfaceABI is the input ABI used to generate the binding from.
-const PriceOracleProxyInterfaceABI = "[{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
+// Deprecated: Use PriceOracleProxyInterfaceMetaData.ABI instead.
+var PriceOracleProxyInterfaceABI = PriceOracleProxyInterfaceMetaData.ABI
 
 // PriceOracleProxyInterface is an auto generated Go binding around an Ethereum contract.
 type PriceOracleProxyInterface struct {
