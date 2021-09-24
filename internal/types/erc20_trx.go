@@ -13,6 +13,7 @@ import (
 
 const (
 	FiTokenTransactionPk        = "_id"
+	FiTokenTransactionCallHash  = "trx"
 	FiTokenTransactionOrdinal   = "orx"
 	FiTokenTransactionTokenType = "tty"
 	FiTokenTransactionToken     = "tok"
@@ -20,7 +21,6 @@ const (
 	FiTokenTransactionType      = "type"
 	FiTokenTransactionSender    = "from"
 	FiTokenTransactionRecipient = "to"
-	FiTokenTransactionTime      = "stamp"
 
 	// TokenTrxTypeTransfer represents token transfer transaction.
 	TokenTrxTypeTransfer = 1
@@ -41,19 +41,19 @@ const (
 // TokenTransaction represents an operation with ERC20 token.
 type TokenTransaction struct {
 	ID           string         `json:"_id"`
-	Transaction  common.Hash    `json:"trx"` // hash of the transaction
-	TrxIndex     hexutil.Uint64 `json:"tix"` // index of the transaction in the block
-	TokenAddress common.Address `json:"erc"` // contract address
-	TokenType    string         `json:"tty"` // ERC20/ERC721/ERC1155...
+	Transaction  common.Hash    `json:"trx"`  // hash of the transaction
+	TrxIndex     hexutil.Uint64 `json:"tix"`  // index of the transaction in the block
+	TokenAddress common.Address `json:"erc"`  // contract address
+	TokenType    string         `json:"tty"`  // ERC20/ERC721/ERC1155...
 	Type         int32          `json:"type"` // Transfer/Mint/Approval...
 	Sender       common.Address `json:"from"`
 	Recipient    common.Address `json:"to"`
 	Amount       hexutil.Big    `json:"amo"`
 	TokenId      hexutil.Big    `json:"tid"` // for multi-token contracts (ERC-721/ERC-1155)
 	TimeStamp    hexutil.Uint64 `json:"ts"`  // when the block(!) was collated
-	BlockNumber  uint64                      // number of the block
-	LogIndex     uint                        // index of the log in the block - only for OrdinalIndex / Pk generating
-	Seq          uint16                      // index of transfer in one log event - only for Pk generating
+	BlockNumber  uint64         // number of the block
+	LogIndex     uint           // index of the log in the block - only for OrdinalIndex / Pk generating
+	Seq          uint16         // index of transfer in one log event - only for Pk generating
 }
 
 // BsonErc20Transaction represents the BSON i/o struct for an ERC20 operation.
@@ -78,9 +78,9 @@ type BsonErc20Transaction struct {
 // Pk generates unique identifier of the ERC20 transaction from the transaction data.
 func (etx *TokenTransaction) Pk() string {
 	bytes := make([]byte, 14)
-	binary.BigEndian.PutUint64(bytes[0:8], etx.BlockNumber) // unique number of the block
+	binary.BigEndian.PutUint64(bytes[0:8], etx.BlockNumber)       // unique number of the block
 	binary.BigEndian.PutUint32(bytes[8:12], uint32(etx.LogIndex)) // index of log event in the block
-	binary.BigEndian.PutUint16(bytes[12:14], etx.Seq) // one log event can be batch of multiple transfers
+	binary.BigEndian.PutUint16(bytes[12:14], etx.Seq)             // one log event can be batch of multiple transfers
 	return hexutil.Encode(bytes)
 }
 

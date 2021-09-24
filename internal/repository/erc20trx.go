@@ -21,6 +21,12 @@ func (p *proxy) StoreTokenTransaction(trx *types.TokenTransaction) error {
 	return p.db.AddERC20Transaction(trx)
 }
 
+// TokenTransactionsByCall provides a list of token transaction made inside a specific
+// transaction call (blockchain transaction).
+func (p *proxy) TokenTransactionsByCall(trxHash *common.Hash) ([]*types.TokenTransaction, error) {
+	return p.db.TokenTransactionsByCall(trxHash)
+}
+
 // TokenTransactions provides list of ERC20/ERC721/ERC1155 transactions based on given filters.
 func (p *proxy) TokenTransactions(tokenType string, token *common.Address, tokenId *big.Int, acc *common.Address, txType *int32, cursor *string, count int32) (*types.TokenTransactionList, error) {
 	// prep the filter

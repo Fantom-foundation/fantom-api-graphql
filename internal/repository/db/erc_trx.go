@@ -25,7 +25,7 @@ func (db *MongoDbBridge) initErc20TrxCollection(col *mongo.Collection) {
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenTransactionSender, Value: 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenTransactionRecipient, Value: 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenTransactionOrdinal, Value: -1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenTransactionTime, Value: -1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenTransactionCallHash, Value: 1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
@@ -338,4 +338,38 @@ func (db *MongoDbBridge) Erc20Assets(owner common.Address, count int32) ([]commo
 		res[i] = common.HexToAddress(a.(string))
 	}
 	return res, nil
+}
+
+// TokenTransactionsByCall provides list of token transactions for the given blockchain transaction call.
+func (db *MongoDbBridge) TokenTransactionsByCall(trxHash *common.Hash) ([]*types.TokenTransaction, error) {
+	col := db.client.Database(db.dbName).Collection(colErcTransactions)
+
+	// search for values
+	ld, err := col.Find(
+		context.Background(),
+		bson.D{{Key: types.FiTokenTransactionCallHash, Value: trxHash.String()}},
+		options.Find().SetSort(bson.D{{Key: types.FiTokenTransactionOrdinal, Value: -1}}),
+	)
+
+	// close the cursor as we leave
+	defer func() {
+		err = ld.Close(context.Background())
+		if err != nil {
+			db.log.Errorf("error closing token transactions list cursor; %s", err.Error())
+		}
+	}()
+
+	// loop and load the list; we may not store the last value
+	list := make([]*types.TokenTransaction, 0)
+	for ld.Next(context.Background()) {
+		var row types.TokenTransaction
+		if err = ld.Decode(&row); err != nil {
+			db.log.Errorf("can not decode the token transaction; %s", err.Error())
+			return nil, err
+		}
+
+		// use this row as the next item
+		list = append(list, &row)
+	}
+	return list, nil
 }
