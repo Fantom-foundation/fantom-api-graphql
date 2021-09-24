@@ -1674,6 +1674,14 @@ type TokenTransaction {
     # tokenAddress represents the address of the token involved.
     tokenAddress: Address!
 
+    # tokenName represents the name of the token contract.
+    # Is empty, if not provided for the given token.
+    tokenName: String!
+
+    # tokenSymbol represents the symbol of the token contract.
+    # Is empty, if not provided for the given token.
+    tokenSymbol: String!
+
     # tokenType represents the type of the token (i.e. ERC20/ERC721/ERC1155).
     tokenType: String!
 
@@ -1694,9 +1702,6 @@ type TokenTransaction {
 
     # time stamp of the block processing.
     timeStamp: Long!
-
-    # logIndex represents the index of the token transaction in the block.
-    logIndex: Long!
 }
 
 # Account defines block-chain account information container
