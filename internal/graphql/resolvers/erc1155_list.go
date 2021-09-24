@@ -5,7 +5,7 @@ import (
 	"fantom-api-graphql/internal/repository"
 )
 
-// Erc1155ContractList resolves an list of ERC1155 multi-token contracts.
+// Erc1155ContractList resolves a list of ERC1155 multi-token contracts.
 func (rs *rootResolver) Erc1155ContractList(args struct{ Count int32 }) ([]*ERC1155Contract, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction

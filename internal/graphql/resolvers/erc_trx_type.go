@@ -29,19 +29,23 @@ func ercTrxTypeToName(trxType int32) string {
 	}
 }
 
-func ercTrxTypeFromName(name string) int32 {
-	switch name {
-	case ErcTrxTypeNameTransfer:
-		return types.TokenTrxTypeTransfer
-	case ErcTrxTypeNameApproval:
-		return types.TokenTrxTypeApproval
-	case ErcTrxTypeNameMint:
-		return types.TokenTrxTypeMint
-	case ErcTrxTypeNameBurn:
-		return types.TokenTrxTypeBurn
-	case ErcTrxTypeNameApprovalForAll:
-		return types.TokenTrxTypeApprovalForAll
-	default:
-		return 0
+func ercTrxTypeFromName(name *string) *int32 {
+	if name == nil {
+		return nil
 	}
+
+	var val int32
+	switch *name {
+	case ErcTrxTypeNameTransfer:
+		val = types.TokenTrxTypeTransfer
+	case ErcTrxTypeNameApproval:
+		val = types.TokenTrxTypeApproval
+	case ErcTrxTypeNameMint:
+		val = types.TokenTrxTypeMint
+	case ErcTrxTypeNameBurn:
+		val = types.TokenTrxTypeBurn
+	case ErcTrxTypeNameApprovalForAll:
+		val = types.TokenTrxTypeApprovalForAll
+	}
+	return &val
 }

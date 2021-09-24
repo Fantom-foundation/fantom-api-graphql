@@ -17,7 +17,7 @@ func (rs *rootResolver) Erc721ContractList(args struct{ Count int32 }) ([]*ERC72
 		return nil, err
 	}
 
-	// make the container and create resolvables
+	// make the container and create resolvable
 	list := make([]*ERC721Contract, len(al))
 	for i, adr := range al {
 		list[i] = NewErc721Contract(&adr)
