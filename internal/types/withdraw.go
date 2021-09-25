@@ -73,12 +73,12 @@ type BsonWithdrawRequest struct {
 // so it can be stored in database as UINT64 without loosing too much data
 var WithdrawDecimalsCorrection = new(big.Int).SetUint64(1000000000)
 
-// OrdinalIndex returns an ordinal index of the withdraw request.
+// OrdinalIndex returns an ordinal index of the withdrawal request.
 func (wr *WithdrawRequest) OrdinalIndex() uint64 {
 	return (uint64(wr.CreatedTime)&0xFFFFFFFFFF)<<24 | (wr.StakerID.ToInt().Uint64()&0xFFF)<<12 | (binary.BigEndian.Uint64(wr.RequestTrx[:8]) & 0xFFF)
 }
 
-// MarshalBSON returns a BSON document for the withdraw request.
+// MarshalBSON returns a BSON document for the withdrawal request.
 func (wr *WithdrawRequest) MarshalBSON() ([]byte, error) {
 	// calculate the value to 9 digits (and 18 billions remain available)
 	val := new(big.Int).Div(wr.Amount.ToInt(), WithdrawDecimalsCorrection)

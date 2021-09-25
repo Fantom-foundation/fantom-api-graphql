@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	// colEpochs represents the name of the epochs' collection in database.
+	// colEpochs represents the name of the gas price collection in database.
 	colGasPrice = "gas_price"
 )
 
