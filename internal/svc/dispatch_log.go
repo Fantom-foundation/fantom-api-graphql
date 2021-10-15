@@ -170,10 +170,12 @@ func (lgd *logDispatcher) execute() {
 			}
 
 			// try to find the topic handler
-			handler, ok := lgd.knownTopics[lr.Topics[0]]
-			if ok && lr.Block != nil && lr.Trx != nil {
-				log.Debugf("known topic %s found, processing", lr.Topics[0].String())
-				handler(lr)
+			if nil != lr && nil != lr.Topics && 0 < len(lr.Topics) {
+				handler, ok := lgd.knownTopics[lr.Topics[0]]
+				if ok && lr.Block != nil && lr.Trx != nil {
+					log.Debugf("known topic %s found, processing", lr.Topics[0].String())
+					handler(lr)
+				}
 			}
 
 			// mark the processing of this log record as finished
