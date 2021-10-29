@@ -15,6 +15,9 @@ type Block struct {
 
 // NewBlock builds new resolvable block structure.
 func NewBlock(blk *types.Block) *Block {
+	if blk == nil {
+		return nil
+	}
 	return &Block{Block: *blk}
 }
 
