@@ -65,13 +65,13 @@ func (acc *Account) TotalValue() (hexutil.Big, error) {
 	}
 
 	// try to pull the delegations details
-	delegated, rewards, err := acc.delegationsTotal()
+	delegated, pendingOut, rewards, err := acc.delegationsTotal()
 	if err != nil {
 		return hexutil.Big{}, err
 	}
 
 	// calc the sum
-	val := new(big.Int).Add(new(big.Int).Add(balance.ToInt(), delegated), rewards)
+	val := new(big.Int).Add(new(big.Int).Add(new(big.Int).Add(balance.ToInt(), delegated), rewards), pendingOut)
 	return hexutil.Big(*val), nil
 }
 
@@ -242,16 +242,17 @@ func (acc *Account) Contract() (*Contract, error) {
 
 // delegationsTotal calculates total sum of delegations of the given account including
 // pending rewards for those delegations.
-func (acc *Account) delegationsTotal() (amount *big.Int, rewards *big.Int, err error) {
+func (acc *Account) delegationsTotal() (amount *big.Int, inWithdraw *big.Int, rewards *big.Int, err error) {
 	// pull all the delegations of the account
 	list, err := repository.R().DelegationsByAddressAll(&acc.Address)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	// prep containers for calculation and loop all delegations found
 	amount = new(big.Int)
 	rewards = new(big.Int)
+	inWithdraw = new(big.Int)
 	for _, dlg := range list {
 		// any active delegated amount?
 		if 0 < dlg.AmountDelegated.ToInt().Uint64() {
@@ -261,15 +262,25 @@ func (acc *Account) delegationsTotal() (amount *big.Int, rewards *big.Int, err e
 		// get pending rewards for this delegation (can be stashed)
 		rw, err := repository.R().PendingRewards(&acc.Address, dlg.ToStakerId)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 
 		// any rewards?
 		if 0 < rw.Amount.ToInt().Uint64() {
 			rewards = new(big.Int).Add(rewards, rw.Amount.ToInt())
 		}
+
+		// get pending withdrawals
+		wd, err := repository.R().WithdrawRequestsPendingTotal(&acc.Address, dlg.ToStakerId)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+
+		// add pending withdrawals value
+		if 0 < wd.Uint64() {
+			inWithdraw = new(big.Int).Add(inWithdraw, wd)
+		}
 	}
 
-	// loop all delegations and calculate
-	return amount, rewards, nil
+	return amount, rewards, inWithdraw, nil
 }
