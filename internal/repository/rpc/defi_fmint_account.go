@@ -39,14 +39,15 @@ func (ftm *FtmBridge) FMintAccount(owner *common.Address) (*types.FMintAccount, 
 	da := types.FMintAccount{Address: *owner}
 
 	// load list of collateral tokens
-	da.CollateralList, err = ftm.DefiTokenList()
+	tokenList, err := ftm.DefiTokenList()
 	if err != nil {
 		ftm.log.Errorf("collateral tokens list loader failed; %s", err.Error())
 		return nil, err
 	}
 
 	// debt tokens are the same
-	da.DebtList = da.CollateralList
+	da.CollateralList = ftm.FMintFilterTokens(owner, tokenList, types.DefiTokenTypeCollateral)
+	da.DebtList = ftm.FMintFilterTokens(owner, tokenList, types.DefiTokenTypeDebt)
 
 	// get the current values of the account tokens on both collateral and debt
 	da.CollateralValue, da.DebtValue, err = ftm.fMintAccountValue(*owner)
@@ -57,6 +58,24 @@ func (ftm *FtmBridge) FMintAccount(owner *common.Address) (*types.FMintAccount, 
 
 	// return the account detail
 	return &da, nil
+}
+
+// FMintFilterTokens filter list of tokens to include only tokens with a balance of given type.
+func (ftm *FtmBridge) FMintFilterTokens(owner *common.Address, list []common.Address, tp types.DefiTokenType) []common.Address {
+	zero := new(big.Int)
+	result := make([]common.Address, 0)
+	for _, adr := range list {
+		val, err := ftm.FMintTokenBalance(owner, &adr, tp)
+		if err != nil {
+			ftm.log.Errorf("failed to get the token balance; %s", err.Error())
+			continue
+		}
+
+		if 0 != val.ToInt().Cmp(zero) {
+			result = append(result, adr)
+		}
+	}
+	return result
 }
 
 // FMintPoolBalance loads balance of an fMint token from the given pool contract.
@@ -77,7 +96,7 @@ func (ftm *FtmBridge) FMintPoolBalance(pool *contracts.DeFiTokenStorage, owner *
 	return hexutil.Big(*val), nil
 }
 
-// FMintTokenBalance loads balance of a single DeFi token in fMint contract by it's address.
+// FMintTokenBalance loads balance of a single DeFi token in fMint contract by its address.
 func (ftm *FtmBridge) FMintTokenBalance(owner *common.Address, token *common.Address, tp types.DefiTokenType) (hexutil.Big, error) {
 	var err error
 	var pool *contracts.DeFiTokenStorage
