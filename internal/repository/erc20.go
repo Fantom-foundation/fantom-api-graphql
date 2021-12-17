@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-// Erc20Token returns an ERC20 token rfor the given address, if available.
+// Erc20Token returns an ERC20 token for the given address, if available.
 func (p *proxy) Erc20Token(addr *common.Address) (*types.Erc20Token, error) {
 	// get the token
 	val, err, _ := p.apiRequestGroup.Do(cache.ErcTokenId(addr, cache.Erc20CacheIdPrefix), func() (interface{}, error) {
@@ -51,22 +51,22 @@ func (p *proxy) loadErc20TokenDetails(token *types.Erc20Token) (*types.Erc20Toke
 	// get the name
 	token.Name, err = p.rpc.Erc20Name(&token.Address)
 	if err != nil {
-		p.log.Errorf("ERC20 token not recognized at %s; %s", token.Address.String(), err.Error())
-		return nil, err
+		p.log.Errorf("ERC20 token name not recognized at %s; %s", token.Address.String(), err.Error())
+		token.Name = token.Address.String()
 	}
 
 	// get symbol
 	token.Symbol, err = p.rpc.Erc20Symbol(&token.Address)
 	if err != nil {
-		p.log.Errorf("ERC20 token not recognized at %s; %s", token.Address.String(), err.Error())
-		return nil, err
+		p.log.Errorf("ERC20 token symbol not recognized at %s; %s", token.Address.String(), err.Error())
+		token.Symbol = "-"
 	}
 
 	// get decimals
 	token.Decimals, err = p.rpc.Erc20Decimals(&token.Address)
 	if err != nil {
-		p.log.Errorf("ERC20 token not recognized at %s; %s", token.Address.String(), err.Error())
-		return nil, err
+		p.log.Errorf("ERC20 token decimals not recognized at %s; %s", token.Address.String(), err.Error())
+		token.Decimals = 0
 	}
 
 	return token, nil
