@@ -179,7 +179,7 @@ type ApiResolver interface {
 	FMintTokenAllowance(args *struct {
 		Owner common.Address
 		Token common.Address
-	}) (hexutil.Big, error)
+	}) hexutil.Big
 
 	// Erc20Token resolves an instance of ERC20 token if available.
 	Erc20Token(*struct{ Token common.Address }) *ERC20Token
@@ -198,10 +198,10 @@ type ApiResolver interface {
 	ErcTokenBalance(args *struct {
 		Owner common.Address
 		Token common.Address
-	}) (hexutil.Big, error)
+	}) hexutil.Big
 
 	// ErcTotalSupply resolves the current total supply of the specified token.
-	ErcTotalSupply(args *struct{ Token common.Address }) (hexutil.Big, error)
+	ErcTotalSupply(args *struct{ Token common.Address }) hexutil.Big
 
 	// ErcTokenAllowance resolves the current amount of ERC20 tokens unlocked
 	// by the token owner for the spender to be manipulated with.
@@ -209,7 +209,7 @@ type ApiResolver interface {
 		Token   common.Address
 		Owner   common.Address
 		Spender common.Address
-	}) (hexutil.Big, error)
+	}) hexutil.Big
 
 	// GovContracts resolves list of governance contracts details recognized by the API.
 	GovContracts() ([]*GovernanceContract, error)
