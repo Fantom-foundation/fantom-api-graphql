@@ -88,15 +88,16 @@ func (acc *Account) TxCount() (hexutil.Uint64, error) {
 
 // TxList resolves list of transaction associated with the account.
 func (acc *Account) TxList(args struct {
-	Cursor *Cursor
-	Count  int32
+	Recipient *common.Address
+	Cursor    *Cursor
+	Count     int32
 }) (*TransactionList, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction
 	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
 
 	// get the transaction hash list from repository
-	bl, err := repository.R().AccountTransactions(&acc.Address, (*string)(args.Cursor), args.Count)
+	bl, err := repository.R().AccountTransactions(&acc.Address, args.Recipient, (*string)(args.Cursor), args.Count)
 	if err != nil {
 		return nil, err
 	}

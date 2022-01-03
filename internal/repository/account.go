@@ -84,14 +84,14 @@ func (p *proxy) AccountNonce(addr *common.Address) (*hexutil.Uint64, error) {
 }
 
 // AccountTransactions returns slice of AccountTransaction structure for a given account at Opera blockchain.
-func (p *proxy) AccountTransactions(addr *common.Address, cursor *string, count int32) (*types.TransactionList, error) {
+func (p *proxy) AccountTransactions(addr *common.Address, rec *common.Address, cursor *string, count int32) (*types.TransactionList, error) {
 	// do we have an account?
 	if addr == nil {
 		return nil, fmt.Errorf("can not get transaction list for empty account")
 	}
 
 	// go to the database for the list of hashes of transaction searched
-	return p.db.AccountTransactions(addr, cursor, count)
+	return p.db.AccountTransactions(addr, rec, cursor, count)
 }
 
 // AccountsActive returns total number of accounts known to repository.

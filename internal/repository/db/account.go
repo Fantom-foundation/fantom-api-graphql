@@ -170,7 +170,7 @@ func (db *MongoDbBridge) AccountCount() (uint64, error) {
 }
 
 // AccountTransactions loads list of transaction hashes of an account.
-func (db *MongoDbBridge) AccountTransactions(addr *common.Address, cursor *string, count int32) (*types.TransactionList, error) {
+func (db *MongoDbBridge) AccountTransactions(addr *common.Address, rec *common.Address, cursor *string, count int32) (*types.TransactionList, error) {
 	// nothing to load?
 	if count == 0 {
 		return nil, fmt.Errorf("nothing to do, zero blocks requested")
@@ -185,9 +185,13 @@ func (db *MongoDbBridge) AccountTransactions(addr *common.Address, cursor *strin
 	db.log.Debugf("loading transactions of %s", addr.String())
 
 	// make the filter for [(from = Account) OR (to = Account)]
-	filter := bson.D{{Key: "$or", Value: bson.A{bson.D{{Key: "from", Value: addr.String()}}, bson.D{{Key: "to", Value: addr.String()}}}}}
+	if rec == nil {
+		filter := bson.D{{Key: "$or", Value: bson.A{bson.D{{Key: "from", Value: addr.String()}}, bson.D{{Key: "to", Value: addr.String()}}}}}
+		return db.Transactions(cursor, count, &filter)
+	}
 
-	// return list of transactions filtered by the account
+	// return list of transactions filtered by the account and recipient
+	filter := bson.D{{Key: "from", Value: addr.String()}, {Key: "to", Value: rec.String()}}
 	return db.Transactions(cursor, count, &filter)
 }
 

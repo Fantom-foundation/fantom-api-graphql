@@ -1721,7 +1721,7 @@ type Account {
     txCount: Long!
 
     # txList represents list of transactions of the account in form of TransactionList.
-    txList(cursor:Cursor, count:Int!): TransactionList!
+    txList(recipient: Address, cursor:Cursor, count:Int!): TransactionList!
 
     # erc20TxList represents list of ERC20 transactions of the account.
     erc20TxList(cursor:Cursor, count:Int = 25, token: Address, txType: String): ERC20TransactionList!

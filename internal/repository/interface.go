@@ -45,7 +45,7 @@ type Repository interface {
 	// of transactions newer than that.
 	//
 	// Transactions are always sorted from newer to older.
-	AccountTransactions(*common.Address, *string, int32) (*types.TransactionList, error)
+	AccountTransactions(*common.Address, *common.Address, *string, int32) (*types.TransactionList, error)
 
 	// AccountsActive total number of accounts known to repository.
 	AccountsActive() (hexutil.Uint64, error)
