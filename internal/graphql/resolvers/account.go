@@ -11,7 +11,7 @@ import (
 )
 
 // accMaxTransactionsPerRequest maximal number of transaction end-client can request in one query.
-const accMaxTransactionsPerRequest = 50
+const accMaxTransactionsPerRequest = 250
 
 // Account represents resolvable blockchain account structure.
 type Account struct {

@@ -18,6 +18,6 @@ type RewardClaimListEdge {
     # Cursor defines a scroll key to this edge.
     cursor: Cursor!
 
-    # ckaim represents the reward claim detail provided by this list edge.
+    # claim represents the reward claim detail provided by this list edge.
     claim: RewardClaim!
 }

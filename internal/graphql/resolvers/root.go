@@ -20,7 +20,7 @@ const (
 	subscriptionInitialCapacity = 100
 
 	// listMaxEdgesPerRequest maximal number of edges end-client can request in one query.
-	listMaxEdgesPerRequest uint32 = 100
+	listMaxEdgesPerRequest uint32 = 250
 )
 
 // rootResolver represents the ApiResolver implementation.
@@ -158,7 +158,7 @@ func (rs *rootResolver) run() {
 // on return.
 func listLimitCount(count int32, limit uint32) int32 {
 	// requested count is zero?
-	// this should not happen but lets return the max range than
+	// this should not happen but let's return the max range than
 	if count == 0 {
 		return int32(limit)
 	}
