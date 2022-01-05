@@ -12,7 +12,7 @@ import (
 
 const (
 	// call group keys used to prevent parallel pull of the same value
-	// in multi-threaded processing environment
+	// in multithreading processing environment
 	stakerCallGroupLock          = "lock"
 	stakerCallGroupStake         = "stake"
 	stakerCallGroupMaxDelegation = "max_delegation"
@@ -220,7 +220,7 @@ func (st Staker) IsCheater() bool {
 	return st.Status&sfcStatusDoubleSign > 0
 }
 
-// IsOffline signals if the validator is off line.
+// IsOffline signals if the validator is off-line.
 func (st Staker) IsOffline() bool {
 	return st.Status&sfcStatusOffline > 0
 }

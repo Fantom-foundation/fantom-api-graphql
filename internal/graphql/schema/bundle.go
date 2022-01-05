@@ -197,7 +197,7 @@ type RewardClaimListEdge {
     # Cursor defines a scroll key to this edge.
     cursor: Cursor!
 
-    # ckaim represents the reward claim detail provided by this list edge.
+    # claim represents the reward claim detail provided by this list edge.
     claim: RewardClaim!
 }
 
@@ -955,7 +955,7 @@ type Staker {
     isActive: Boolean!
 
     # Is TRUE for validators withdrawing their validation stake.
-	isWithdrawn: Boolean!
+    isWithdrawn: Boolean!
 
     # Is the staker considered to be cheater.
     isCheater: Boolean!
@@ -991,7 +991,7 @@ type Staker {
     downtime: Long!
 
     # List of delegations of this staker. Cursor is used to obtain specific slice
-    # of the staker's delegations. The most recent delegations
+    # of the staker delegations. The most recent delegations
     # are provided if cursor is omitted.
     delegations(cursor: Cursor, count: Int = 25):DelegationList!
 
@@ -1001,6 +1001,14 @@ type Staker {
 
     # StakerInfo represents extended staker information from smart contract.
     stakerInfo: StakerInfo
+}
+
+# StakerFlagFilter represents a filter type for stakers with the given flag.
+enum StakerFlagFilter {
+    IS_ACTIVE
+    IS_WITHDRAWN
+    IS_OFFLINE
+    IS_CHEATER
 }
 
 # ERC1155TransactionList is a list of ERC1155 transaction edges provided by sequential access request.
@@ -2062,8 +2070,13 @@ type Query {
     # List of staker information from SFC smart contract.
     stakers: [Staker!]!
 
+    # stakersWithFlag provides list of staker information from SFC smart contract
+    # for staker with the given flag set to TRUE. This can be used to obtain a subset
+    # of stakers in a given state of staking process.
+    stakersWithFlag(flag: StakerFlagFilter!): [Staker!]!
+
     # The list of delegations for the given staker ID.
-    # Cursor is used to obtain specific slice of the staker's delegations.
+    # Cursor is used to obtain specific slice of the staker delegations.
     # The most recent delegations are provided if cursor is omitted.
     delegationsOf(staker:BigInt!, cursor: Cursor, count: Int = 25): DelegationList!
 
@@ -2102,7 +2115,7 @@ type Query {
     defiTokens:[DefiToken!]!
 
     # defiNativeToken represents the information about the native token
-    # wrapper ERC20 contract. Returns NULL if the native token wraper
+    # wrapper ERC20 contract. Returns NULL if the native token wrapper
     # is not available.
     defiNativeToken: ERC20Token
 

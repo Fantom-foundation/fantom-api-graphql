@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"fantom-api-graphql/internal/repository"
+	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"sort"
@@ -9,6 +10,35 @@ import (
 
 // Stakers resolves a list of staker information from SFC smart contract.
 func (rs *rootResolver) Stakers() ([]*Staker, error) {
+	return loadStakersFiltered(func(v *types.Validator) bool { return v != nil })
+}
+
+// StakersWithFlag resolves a list of stakers for the given type of flag.
+func (rs *rootResolver) StakersWithFlag(args struct{ Flag string }) ([]*Staker, error) {
+	return loadStakersFiltered(func(v *types.Validator) bool {
+		if v == nil {
+			return false
+		}
+
+		switch args.Flag {
+		case "IS_ACTIVE":
+			return v.Status == 0
+		case "IS_WITHDRAWN":
+			return v.Status&sfcStatusWithdrawn > 0
+		case "IS_OFFLINE":
+			return v.Status&sfcStatusOffline > 0
+		case "IS_CHEATER":
+			return v.Status&sfcStatusDoubleSign > 0
+		default:
+			log.Errorf("unknown flag filter %s", args.Flag)
+		}
+		return false
+	})
+}
+
+// loadStakersFiltered loads list of validators check each one if it can be added to the output list
+// using a provided callback check.
+func loadStakersFiltered(check func(*types.Validator) bool) ([]*Staker, error) {
 	// get the number
 	num, err := repository.R().LastValidatorId()
 	if err != nil {
@@ -32,8 +62,10 @@ func (rs *rootResolver) Stakers() ([]*Staker, error) {
 			continue
 		}
 
-		// store the staker into the list
-		list = append(list, NewStaker(st))
+		// check if it can be added
+		if check(st) {
+			list = append(list, NewStaker(st))
+		}
 	}
 
 	// inform

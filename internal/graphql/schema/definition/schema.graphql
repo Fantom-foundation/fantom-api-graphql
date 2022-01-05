@@ -85,8 +85,13 @@ type Query {
     # List of staker information from SFC smart contract.
     stakers: [Staker!]!
 
+    # stakersWithFlag provides list of staker information from SFC smart contract
+    # for staker with the given flag set to TRUE. This can be used to obtain a subset
+    # of stakers in a given state of staking process.
+    stakersWithFlag(flag: StakerFlagFilter!): [Staker!]!
+
     # The list of delegations for the given staker ID.
-    # Cursor is used to obtain specific slice of the staker's delegations.
+    # Cursor is used to obtain specific slice of the staker delegations.
     # The most recent delegations are provided if cursor is omitted.
     delegationsOf(staker:BigInt!, cursor: Cursor, count: Int = 25): DelegationList!
 
@@ -125,7 +130,7 @@ type Query {
     defiTokens:[DefiToken!]!
 
     # defiNativeToken represents the information about the native token
-    # wrapper ERC20 contract. Returns NULL if the native token wraper
+    # wrapper ERC20 contract. Returns NULL if the native token wrapper
     # is not available.
     defiNativeToken: ERC20Token
 
