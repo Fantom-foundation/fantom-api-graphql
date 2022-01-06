@@ -9,9 +9,11 @@ results. BigCache for in-memory object storage to speed up loading of frequently
 package repository
 
 import (
+	"bytes"
 	"errors"
 	"fantom-api-graphql/internal/repository/cache"
 	"fantom-api-graphql/internal/types"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/rpc"
@@ -70,8 +72,7 @@ func (p *proxy) LoadTransaction(hash *common.Hash) (*types.Transaction, error) {
 
 // SendTransaction sends raw signed and RLP encoded transaction to the block chain.
 func (p *proxy) SendTransaction(tx hexutil.Bytes) (*types.Transaction, error) {
-	// log
-	p.log.Debugf("requested transaction submit for %s", tx.String())
+	p.log.Debugf("announcing trx %s", tx.String())
 
 	// try to send it and get the tx hash
 	hash, err := p.rpc.SendTransaction(tx)
@@ -80,8 +81,14 @@ func (p *proxy) SendTransaction(tx hexutil.Bytes) (*types.Transaction, error) {
 		return nil, err
 	}
 
-	// we do have the hash so we can use it to get the transaction details
-	// we always need to go to RPC and we will not try to store the transaction in cache yet
+	// check the hash makes sense by comparing it to empty hash
+	if bytes.Compare(hash.Bytes(), common.Hash{}.Bytes()) == 0 {
+		p.log.Criticalf("transaction not send; %s", tx.String())
+		return nil, fmt.Errorf("transaction could not be send")
+	}
+
+	// we do have the hash, so we can use it to get the transaction details
+	// we always need to go to RPC, and we will not try to store the transaction in cache yet
 	trx, err := p.rpc.Transaction(hash)
 	if err != nil {
 		// transaction simply not found?
@@ -94,10 +101,14 @@ func (p *proxy) SendTransaction(tx hexutil.Bytes) (*types.Transaction, error) {
 		return nil, err
 	}
 
-	// log and return
-	p.log.Debugf("transaction %s created and found", hash.String())
+	// do we have the transaction we expected?
+	if bytes.Compare(hash.Bytes(), trx.Hash.Bytes()) != 0 {
+		p.log.Criticalf("transaction %s not confirmed, got %s", hash.String(), trx.Hash.String())
+		return nil, fmt.Errorf("transaction %s could not be confirmed", hash.String())
+	}
 
-	// return the value
+	// log transaction hash
+	p.log.Noticef("trx %s from %s submitted", hash.String(), trx.From.String())
 	return trx, nil
 }
 

@@ -35,12 +35,12 @@ func (rs *rootResolver) Transaction(args *struct{ Hash common.Hash }) (*Transact
 	return NewTransaction(trx), nil
 }
 
-// SendTransaction sends raw signed and RLP encoded transaction to the block chain.
+// SendTransaction sends raw signed and RLP encoded transaction to the blockchain.
 func (rs *rootResolver) SendTransaction(args *struct{ Tx hexutil.Bytes }) (*Transaction, error) {
 	// get the transaction from repository
 	trx, err := repository.R().SendTransaction(args.Tx)
 	if err != nil {
-		log.Warningf("can not send transaction %s", err.Error())
+		log.Warningf("can not send transaction; %s", err.Error())
 		return nil, err
 	}
 
