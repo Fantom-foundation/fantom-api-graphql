@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 const (
@@ -236,6 +237,8 @@ func (db *MongoDbBridge) trxListWithRangeMarks(
 ) (*types.TransactionList, error) {
 	var err error
 
+	rangeStart := time.Now()
+
 	// find out the cursor ordinal index
 	if cursor == nil && count > 0 {
 		// get the highest available ordinal index (top transaction)
@@ -256,6 +259,11 @@ func (db *MongoDbBridge) trxListWithRangeMarks(
 		list.First, err = db.findBorderOrdinalIndex(col,
 			bson.D{{Key: fiTransactionPk, Value: *cursor}},
 			options.FindOne())
+	}
+
+	rangeDur := time.Now().Sub(rangeStart)
+	if rangeDur > time.Second {
+		db.log.Infof("TxPerfRange range=%s filter=%s cursor=%s count=%d", rangeDur, filter, cursor, count)
 	}
 
 	// check the error
@@ -406,18 +414,26 @@ func (db *MongoDbBridge) Transactions(cursor *string, count int32, filter *bson.
 	col := db.client.Database(db.dbName).Collection(coTransactions)
 
 	// init the list
+	initStart := time.Now()
 	list, err := db.initTrxList(col, cursor, count, filter)
 	if err != nil {
 		db.log.Errorf("can not build transactions list; %s", err.Error())
 		return nil, err
 	}
+	initDur := time.Now().Sub(initStart)
 
 	// load data if there are any
 	if list.Total > 0 {
+		loadStart := time.Now()
 		err = db.txListLoad(col, cursor, count, list)
 		if err != nil {
 			db.log.Errorf("can not load transactions list from database; %s", err.Error())
 			return nil, err
+		}
+		loadDur := time.Now().Sub(loadStart)
+
+		if initDur+loadDur > time.Second {
+			db.log.Infof("TxPerf init=%s load=%s filter=%s cursor=%s count=%d", initDur, loadDur, filter, cursor, count)
 		}
 
 		// reverse on negative so new-er transaction will be on top

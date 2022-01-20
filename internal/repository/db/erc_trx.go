@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 // colErcTransactions represents the name of the ERC20 transaction collection in database.
@@ -109,10 +110,15 @@ func (db *MongoDbBridge) ercTrxListInit(col *mongo.Collection, cursor *string, c
 	}
 
 	// find how many transactions do we have in the database
+	countStart := time.Now()
 	total, err := col.CountDocuments(context.Background(), *filter)
 	if err != nil {
 		db.log.Errorf("can not count ERC20 transactions")
 		return nil, err
+	}
+	countDur := time.Now().Sub(countStart)
+	if countDur > time.Second {
+		db.log.Infof("ErcPerfCount count=%s filter=%s cursor=%s count=%d", countDur, filter, cursor, count)
 	}
 
 	// make the list and notify the size of it
@@ -140,6 +146,8 @@ func (db *MongoDbBridge) ercTrxListInit(col *mongo.Collection, cursor *string, c
 func (db *MongoDbBridge) ercTrxListCollectRangeMarks(col *mongo.Collection, list *types.TokenTransactionList, cursor *string, count int32) (*types.TokenTransactionList, error) {
 	var err error
 
+	rangeStart := time.Now()
+
 	// find out the cursor ordinal index
 	if cursor == nil && count > 0 {
 		// get the highest available pk
@@ -166,6 +174,11 @@ func (db *MongoDbBridge) ercTrxListCollectRangeMarks(col *mongo.Collection, list
 	if err != nil {
 		db.log.Errorf("can not find the initial ERC20 trx")
 		return nil, err
+	}
+
+	rangeDur := time.Now().Sub(rangeStart)
+	if rangeDur > time.Second {
+		db.log.Infof("ErcPerfRange range=%s filter=%s cursor=%s count=%d", rangeDur, list.Filter, cursor, count)
 	}
 
 	// inform what we are about to do
@@ -299,18 +312,26 @@ func (db *MongoDbBridge) Erc20Transactions(cursor *string, count int32, filter *
 	col := db.client.Database(db.dbName).Collection(colErcTransactions)
 
 	// init the list
+	initStart := time.Now()
 	list, err := db.ercTrxListInit(col, cursor, count, filter)
 	if err != nil {
 		db.log.Errorf("can not build erc transaction list; %s", err.Error())
 		return nil, err
 	}
+	initDur := time.Now().Sub(initStart)
 
 	// load data if there are any
 	if list.Total > 0 {
+		loadStart := time.Now()
 		err = db.ercTrxListLoad(col, cursor, count, list)
 		if err != nil {
 			db.log.Errorf("can not load erc transaction list from database; %s", err.Error())
 			return nil, err
+		}
+		loadDur := time.Now().Sub(loadStart)
+
+		if initDur+loadDur > time.Second {
+			db.log.Infof("ErcPerf init=%s load=%s filter=%s cursor=%s count=%d", initDur, loadDur, filter, cursor, count)
 		}
 
 		// reverse on negative so new-er trx will be on top
