@@ -27,6 +27,15 @@ func (db *MongoDbBridge) initErc20TrxCollection(col *mongo.Collection) {
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenTransactionOrdinal, Value: -1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenTransactionCallHash, Value: 1}}})
 
+	// sender + ordinal index
+	tox := "to_tok"
+	ix = append(ix, mongo.IndexModel{
+		Keys: bson.D{{Key: types.FiTokenTransactionRecipient, Value: 1}, {Key: types.FiTokenTransactionToken, Value: 1}},
+		Options: &options.IndexOptions{
+			Name: &tox,
+		},
+	})
+
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
 		db.log.Panicf("can not create indexes for ERC20 trx collection; %s", err.Error())
@@ -321,12 +330,9 @@ func (db *MongoDbBridge) Erc20Assets(owner common.Address, count int32) ([]commo
 
 	// get the collection and context
 	col := db.client.Database(db.dbName).Collection(colErcTransactions)
-	refs, err := col.Distinct(context.Background(), types.FiTokenTransactionToken, bson.D{
-		{Key: "$or", Value: bson.A{
-			bson.D{{Key: "from", Value: owner.String()}},
-			bson.D{{Key: "to", Value: owner.String()}},
-		}},
-	})
+	refs, err := col.Distinct(context.Background(), types.FiTokenTransactionToken,
+		bson.D{{Key: "to", Value: owner.String()}},
+	)
 	if err != nil {
 		db.log.Errorf("can not pull assets for %s; %s", owner.String(), err.Error())
 		return nil, err
