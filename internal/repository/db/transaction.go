@@ -61,6 +61,26 @@ func (db *MongoDbBridge) initTransactionsCollection(col *mongo.Collection) {
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiTransactionRecipient, Value: 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiTransactionTimeStamp, Value: 1}}})
 
+	// sender + ordinal index
+	fox := "from_orx"
+	ix = append(ix, mongo.IndexModel{
+		Keys: bson.D{{Key: fiTransactionSender, Value: 1}, {Key: fiTransactionOrdinalIndex, Value: -1}},
+		Options: &options.IndexOptions{
+			Name:   &fox,
+			Unique: &unique,
+		},
+	})
+
+	// recipient + ordinal index
+	rox := "to_orx"
+	ix = append(ix, mongo.IndexModel{
+		Keys: bson.D{{Key: fiTransactionRecipient, Value: 1}, {Key: fiTransactionOrdinalIndex, Value: -1}},
+		Options: &options.IndexOptions{
+			Name:   &rox,
+			Unique: &unique,
+		},
+	})
+
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
 		db.log.Panicf("can not create indexes for transaction collection; %s", err.Error())
