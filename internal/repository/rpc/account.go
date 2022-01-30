@@ -39,21 +39,12 @@ func (ftm *FtmBridge) AccountBalance(addr *common.Address) (*hexutil.Big, error)
 }
 
 // AccountNonce returns the total number of transaction of account from Lachesis node.
-func (ftm *FtmBridge) AccountNonce(addr *common.Address) (uint64, error) {
-	// use RPC to make the call
-	var nonce string
+func (ftm *FtmBridge) AccountNonce(addr *common.Address) (*hexutil.Uint64, error) {
+	var nonce hexutil.Uint64
 	err := ftm.rpc.Call(&nonce, "ftm_getTransactionCount", addr.Hex(), "latest")
 	if err != nil {
 		ftm.log.Errorf("can not get number of transaction of account [%s]", addr.Hex())
-		return 0, err
+		return nil, err
 	}
-
-	// decode the response from remote server
-	val, err := hexutil.DecodeUint64(nonce)
-	if err != nil {
-		ftm.log.Errorf("can not decode number of transaction of account [%s]", addr.Hex())
-		return 0, err
-	}
-
-	return val, nil
+	return &nonce, nil
 }

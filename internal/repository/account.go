@@ -73,14 +73,7 @@ func (p *proxy) AccountBalance(addr *common.Address) (*hexutil.Big, error) {
 
 // AccountNonce returns the current number of sent transactions of an account at Opera blockchain.
 func (p *proxy) AccountNonce(addr *common.Address) (*hexutil.Uint64, error) {
-	val, err := p.rpc.AccountNonce(addr)
-	if err != nil {
-		return nil, err
-	}
-
-	// make the value and return
-	nonce := hexutil.Uint64(val)
-	return &nonce, nil
+	return p.rpc.AccountNonce(addr)
 }
 
 // AccountTransactions returns slice of AccountTransaction structure for a given account at Opera blockchain.
