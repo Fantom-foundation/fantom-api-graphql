@@ -14,10 +14,16 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 import (
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 	"strings"
+	"time"
 )
+
+// maxAcceptedGasPrice defines max accepted gas price, everything above invokes additional check.
+var maxAcceptedGasPrice = big.NewInt(1_000_000_000_000_000_000)
 
 // GasPrice pulls the current amount of WEI for single Gas.
 func (ftm *FtmBridge) GasPrice() (hexutil.Big, error) {
@@ -26,10 +32,27 @@ func (ftm *FtmBridge) GasPrice() (hexutil.Big, error) {
 
 	// call for data
 	var price hexutil.Big
-	err := ftm.rpc.Call(&price, "ftm_gasPrice")
-	if err != nil {
-		ftm.log.Error("current gas price could not be obtained")
-		return price, err
+	var try uint8
+	for {
+		err := ftm.rpc.Call(&price, "ftm_gasPrice")
+		if err != nil {
+			ftm.log.Error("current gas price could not be obtained")
+			return price, err
+		}
+
+		// did we get an acceptable price
+		if price.ToInt().Cmp(maxAcceptedGasPrice) <= 0 {
+			break
+		}
+
+		// all attempts failed
+		if try > 2 {
+			ftm.log.Errorf("can not get reasonable gas price from the backend server")
+			return price, fmt.Errorf("gas price not available, please try again later")
+		}
+
+		try++
+		time.Sleep(100 * time.Millisecond)
 	}
 
 	return price, nil
