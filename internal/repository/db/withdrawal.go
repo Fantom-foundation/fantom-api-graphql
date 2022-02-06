@@ -407,12 +407,7 @@ func (db *MongoDbBridge) wrListLoad(col *mongo.Collection, cursor *string, count
 	}
 
 	// close the cursor as we leave
-	defer func() {
-		err = ld.Close(ctx)
-		if err != nil {
-			db.log.Errorf("error closing withdraw requests list cursor; %s", err.Error())
-		}
-	}()
+	defer db.closeCursor(ld)
 
 	// loop and load the list; we may not store the last value
 	var wr *types.WithdrawRequest
@@ -523,11 +518,7 @@ func (db *MongoDbBridge) sumFieldValue(col *mongo.Collection, field string, filt
 // readAggregatedSumFieldValue extract the aggregated value from the given result set.
 func (db *MongoDbBridge) readAggregatedSumFieldValue(cr *mongo.Cursor, decCorrection *big.Int) (*big.Int, error) {
 	// make sure to close the cursor after we got the data
-	defer func() {
-		if err := cr.Close(context.Background()); err != nil {
-			db.log.Errorf("can not close aggregate cursor; %s", err.Error())
-		}
-	}()
+	defer db.closeCursor(cr)
 
 	// do we have any data to read?
 	if !cr.Next(context.Background()) {

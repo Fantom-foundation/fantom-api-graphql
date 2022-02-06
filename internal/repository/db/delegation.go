@@ -458,11 +458,7 @@ func (db *MongoDbBridge) DelegationsAll(filter *bson.D) ([]*types.Delegation, er
 	}
 
 	// close the cursor as we leave
-	defer func() {
-		if err = ld.Close(ctx); err != nil {
-			db.log.Errorf("error closing full delegations list cursor; %s", err.Error())
-		}
-	}()
+	defer db.closeCursor(ld)
 
 	for ld.Next(ctx) {
 		// try to decode the next row

@@ -357,13 +357,7 @@ func (db *MongoDbBridge) TokenTransactionsByCall(trxHash *common.Hash) ([]*types
 		options.Find().SetSort(bson.D{{Key: types.FiTokenTransactionOrdinal, Value: -1}}),
 	)
 
-	// close the cursor as we leave
-	defer func() {
-		err = ld.Close(context.Background())
-		if err != nil {
-			db.log.Errorf("error closing token transactions list cursor; %s", err.Error())
-		}
-	}()
+	defer db.closeCursor(ld)
 
 	// loop and load the list; we may not store the last value
 	list := make([]*types.TokenTransaction, 0)

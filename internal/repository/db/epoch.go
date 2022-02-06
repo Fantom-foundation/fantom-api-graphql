@@ -235,12 +235,7 @@ func (db *MongoDbBridge) epochListLoad(col *mongo.Collection, cursor *string, co
 		return err
 	}
 
-	// close the cursor as we leave
-	defer func() {
-		if err = ld.Close(ctx); err != nil {
-			db.log.Errorf("error closing epoch list cursor; %s", err.Error())
-		}
-	}()
+	defer db.closeCursor(ld)
 
 	// loop and load the list; we may not store the last value
 	var e *types.Epoch

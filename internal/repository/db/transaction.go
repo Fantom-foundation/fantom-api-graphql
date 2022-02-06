@@ -352,13 +352,7 @@ func (db *MongoDbBridge) txListLoad(col *mongo.Collection, cursor *string, count
 		return err
 	}
 
-	// close the cursor as we leave
-	defer func() {
-		err := ld.Close(ctx)
-		if err != nil {
-			db.log.Errorf("error closing transactions list cursor; %s", err.Error())
-		}
-	}()
+	defer db.closeCursor(ld)
 
 	// loop and load
 	var trx *types.Transaction

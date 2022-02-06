@@ -40,12 +40,7 @@ func (db *MongoDbBridge) TrxDailyFlowList(from *time.Time, to *time.Time) ([]*ty
 	}
 
 	// close the cursor as we leave
-	defer func() {
-		err := ld.Close(ctx)
-		if err != nil {
-			db.log.Errorf("error closing daily flow list cursor; %s", err.Error())
-		}
-	}()
+	defer db.closeCursor(ld)
 
 	// load the list
 	return loadTrxDailyFlowList(ld)
@@ -77,11 +72,7 @@ func (db *MongoDbBridge) TrxGasSpeed(from *time.Time, to *time.Time) (float64, e
 	}
 
 	// close the cursor as we leave
-	defer func() {
-		if err := cr.Close(ctx); err != nil {
-			db.log.Errorf("error closing gas speed cursor; %s", err.Error())
-		}
-	}()
+	defer db.closeCursor(cr)
 	return db.trxGasSpeed(cr, from, to)
 }
 

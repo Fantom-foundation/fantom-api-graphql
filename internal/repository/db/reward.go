@@ -242,12 +242,7 @@ func (db *MongoDbBridge) rewListLoad(col *mongo.Collection, cursor *string, coun
 	}
 
 	// close the cursor as we leave
-	defer func() {
-		err = ld.Close(ctx)
-		if err != nil {
-			db.log.Errorf("error closing reward claims list cursor; %s", err.Error())
-		}
-	}()
+	defer db.closeCursor(ld)
 
 	// loop and load the list; we may not store the last value
 	var rwc *types.RewardClaim

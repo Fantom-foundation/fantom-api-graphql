@@ -246,3 +246,10 @@ func (db *MongoDbBridge) listDocumentsCount(col *mongo.Collection, filter *bson.
 	}
 	return total, nil
 }
+
+// closeCursor closes the given query cursor and reports possible issue if it fails.
+func (db *MongoDbBridge) closeCursor(c *mongo.Cursor) {
+	if err := c.Close(context.Background()); err != nil {
+		db.log.Errorf("failed to close query cursor; %s", err.Error())
+	}
+}

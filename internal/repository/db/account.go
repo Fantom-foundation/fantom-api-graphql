@@ -310,12 +310,7 @@ func (db *MongoDbBridge) Erc1155ContractsList(count int32) ([]common.Address, er
 
 func (db *MongoDbBridge) loadErcContractsList(cursor *mongo.Cursor) ([]common.Address, error) {
 	// close the cursor as we leave
-	defer func() {
-		err := cursor.Close(context.Background())
-		if err != nil {
-			db.log.Errorf("error closing ERC contracts list cursor; %s", err.Error())
-		}
-	}()
+	defer db.closeCursor(cursor)
 
 	// loop and load
 	list := make([]common.Address, 0)

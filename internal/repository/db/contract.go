@@ -404,12 +404,7 @@ func (db *MongoDbBridge) contractListLoad(col *mongo.Collection, validatedOnly b
 		return err
 	}
 
-	// close the cursor as we leave
-	defer func() {
-		if err := ld.Close(ctx); err != nil {
-			db.log.Errorf("error closing contract list cursor; %s", err.Error())
-		}
-	}()
+	defer db.closeCursor(ld)
 
 	// loop and load
 	var contract *types.Contract
