@@ -54,6 +54,11 @@ func (p *proxy) GasPriceExtended() (*types.GasPrice, error) {
 	}, nil
 }
 
+// GasPriceTicks provides a list of gas price ticks for the given time period.
+func (p *proxy) GasPriceTicks(from *time.Time, to *time.Time) ([]types.GasPricePeriod, error) {
+	return p.db.GasPriceTicks(from, to)
+}
+
 // GasEstimate calculates the estimated amount of Gas required to perform
 // transaction described by the input params.
 func (p *proxy) GasEstimate(trx *struct {

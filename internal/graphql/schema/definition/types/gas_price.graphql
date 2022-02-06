@@ -1,0 +1,23 @@
+# GasPriceTick represents a collected gas price tick.
+type GasPriceTick {
+    # fromTime is the time of the tick measurement start
+    fromTime: Time!
+
+    # toTime is the time of the tick measurement end
+    toTime: Time!
+
+    # openPrice is the opening gas price in the tick
+    openPrice: Long!
+
+    # closePrice is the closing gas price in the tick
+    closePrice: Long!
+
+    # minPrice is the lowest reached price in the tick
+    minPrice: Long!
+
+    # maxPrice is the highest reached price in the tick
+    maxPrice: Long!
+
+    # avgPrice is the average reached price in the tick
+    avgPrice: Long!
+}

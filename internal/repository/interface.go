@@ -575,6 +575,9 @@ type Repository interface {
 	// TrxGasSpeed provides speed of gas consumption per second by transactions.
 	TrxGasSpeed(from *time.Time, to *time.Time) (float64, error)
 
+	// GasPriceTicks provides a list of gas price ticks for the given time period.
+	GasPriceTicks(from *time.Time, to *time.Time) ([]types.GasPricePeriod, error)
+
 	// TrxFlowUpdate executes the trx flow update in the database.
 	TrxFlowUpdate()
 

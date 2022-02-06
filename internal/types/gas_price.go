@@ -47,7 +47,7 @@ type GasPrice struct {
 	Average float64 `json:"average"`
 }
 
-// GasPricePeriod represents an data set of interval of gas price
+// GasPricePeriod represents a data set of interval of gas price
 // estimation provided by the Opera node.
 type GasPricePeriod struct {
 	Type  int8      `json:"type" bson:"type"`

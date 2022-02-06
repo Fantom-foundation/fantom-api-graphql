@@ -17,3 +17,6 @@ scalar Bytes
 
 # Cursor is a string representing position in a sequential list of edges.
 scalar Cursor
+
+# Time represents date and time including time zone information in RFC3339 format.
+scalar Time

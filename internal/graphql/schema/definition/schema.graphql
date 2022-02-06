@@ -274,6 +274,11 @@ type Query {
     # The range represents the number of seconds prior the end time stamp
     # we use to calculate the average gas consumption.
     trxGasSpeed(range: Int = 1200, to: String): Float!
+
+    # gasPriceList provides a list of gas price ticks for the given date/time span.
+    # If the end time is not specified, the list is provided up to the current date/time.
+    # The maximal date/time span of the list is 30 days.
+    gasPriceList(from: Time! to: Time): [GasPriceTick!]!
 }
 
 # Mutation endpoints for modifying the data

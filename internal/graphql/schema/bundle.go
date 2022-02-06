@@ -292,6 +292,30 @@ type StakerInfo {
     "Contact represents a link to contact to the staker."
     contact: String
 }
+# GasPriceTick represents a collected gas price tick.
+type GasPriceTick {
+    # fromTime is the time of the tick measurement start
+    fromTime: Time!
+
+    # toTime is the time of the tick measurement end
+    toTime: Time!
+
+    # openPrice is the opening gas price in the tick
+    openPrice: Long!
+
+    # closePrice is the closing gas price in the tick
+    closePrice: Long!
+
+    # minPrice is the lowest reached price in the tick
+    minPrice: Long!
+
+    # maxPrice is the highest reached price in the tick
+    maxPrice: Long!
+
+    # avgPrice is the average reached price in the tick
+    avgPrice: Long!
+}
+
 # ListPageInfo contains information about a sequential access list page.
 type ListPageInfo {
     # First is the cursor of the first edge of the edges list. null for empty list.
@@ -578,7 +602,7 @@ type Delegation {
 
     # List of withdraw requests of the delegation,
     # sorted fro the newest to the oldest requests.
-    withdrawRequests(cursor: Cursor, count: Int = 25): [WithdrawRequest!]!
+    withdrawRequests(cursor: Cursor, count: Int = 50): [WithdrawRequest!]!
 
     # rewardClaims provides a list of reward claims
     # of the delegation as a scrollable list of edges with details of claims.
@@ -830,6 +854,9 @@ scalar Bytes
 
 # Cursor is a string representing position in a sequential list of edges.
 scalar Cursor
+
+# Time represents date and time including time zone information in RFC3339 format.
+scalar Time
 
 # CurrentState represents the current active state
 # of the chain information condensed on one place.
@@ -2259,6 +2286,11 @@ type Query {
     # The range represents the number of seconds prior the end time stamp
     # we use to calculate the average gas consumption.
     trxGasSpeed(range: Int = 1200, to: String): Float!
+
+    # gasPriceList provides a list of gas price ticks for the given date/time span.
+    # If the end time is not specified, the list is provided up to the current date/time.
+    # The maximal date/time span of the list is 30 days.
+    gasPriceList(from: Time! to: Time): [GasPriceTick!]!
 }
 
 # Mutation endpoints for modifying the data
