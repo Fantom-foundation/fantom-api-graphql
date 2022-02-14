@@ -42,7 +42,7 @@ func (rs *rootResolver) Transaction(args *struct{ Hash common.Hash }) (tx *Trans
 	}
 
 	// transaction not found, yet no error?
-	if trx != nil {
+	if trx == nil {
 		log.Errorf("transaction %s not found", args.Hash.String())
 		return nil, fmt.Errorf("transaction %s not found", args.Hash.String())
 	}
