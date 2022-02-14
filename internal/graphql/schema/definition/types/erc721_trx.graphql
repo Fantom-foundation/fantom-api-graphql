@@ -1,13 +1,3 @@
-# Erc721TransactionType represents a type of transaction.
-enum Erc721TransactionType {
-    TRANSFER
-    MINT
-    BURN
-    APPROVAL
-    APPROVAL_FOR_ALL
-    OTHER
-}
-
 # ERC721Transaction represents a transaction on an ERC721 NFT token.
 type ERC721Transaction {
     # trxHash represents a hash of the transaction
@@ -33,7 +23,7 @@ type ERC721Transaction {
     tokenId: BigInt!
 
     # trxType is the type of the transaction.
-    trxType: Erc721TransactionType!
+    trxType: TokenTransactionType!
 
     # sender represents the address of the token owner
     # sending the tokens, e.g. the sender.

@@ -426,7 +426,7 @@ type Repository interface {
 	NativeTokenAddress() (*common.Address, error)
 
 	// TokenTransactions provides list of ERC20/ERC721/ERC1155 transactions based on given filters.
-	TokenTransactions(tokenType string, token *common.Address, tokenId *big.Int, acc *common.Address, txType *int32, cursor *string, count int32) (*types.TokenTransactionList, error)
+	TokenTransactions(tokenType string, token *common.Address, tokenId *big.Int, acc *common.Address, txType []int32, cursor *string, count int32) (*types.TokenTransactionList, error)
 
 	// TokenTransactionsByCall provides a list of token transaction made inside a specific
 	// transaction call (blockchain transaction).

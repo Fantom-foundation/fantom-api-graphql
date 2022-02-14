@@ -14,7 +14,7 @@ func (rs *rootResolver) Erc20Transactions(args struct {
 	Count   int32
 	Token   *common.Address
 	Account *common.Address
-	TxType  *string
+	TxType  *[]string
 }) (*ERC20TransactionList, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction
@@ -26,7 +26,7 @@ func (rs *rootResolver) Erc20Transactions(args struct {
 		args.Token,
 		nil,
 		args.Account,
-		ercTrxTypeFromName(args.TxType),
+		ercTrxTypesFromNames(args.TxType),
 		(*string)(args.Cursor),
 		args.Count,
 	)
@@ -44,7 +44,7 @@ func (rs *rootResolver) Erc721Transactions(args struct {
 	Token   *common.Address
 	TokenId *hexutil.Big
 	Account *common.Address
-	TxType  *string
+	TxType  *[]string
 }) (*ERC721TransactionList, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction
@@ -56,7 +56,7 @@ func (rs *rootResolver) Erc721Transactions(args struct {
 		args.Token,
 		(*big.Int)(args.TokenId),
 		args.Account,
-		ercTrxTypeFromName(args.TxType),
+		ercTrxTypesFromNames(args.TxType),
 		(*string)(args.Cursor),
 		args.Count,
 	)
@@ -74,7 +74,7 @@ func (rs *rootResolver) Erc1155Transactions(args struct {
 	Token   *common.Address
 	TokenId *hexutil.Big
 	Account *common.Address
-	TxType  *string
+	TxType  *[]string
 }) (*ERC1155TransactionList, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction
@@ -86,7 +86,7 @@ func (rs *rootResolver) Erc1155Transactions(args struct {
 		args.Token,
 		(*big.Int)(args.TokenId),
 		args.Account,
-		ercTrxTypeFromName(args.TxType),
+		ercTrxTypesFromNames(args.TxType),
 		(*string)(args.Cursor),
 		args.Count,
 	)

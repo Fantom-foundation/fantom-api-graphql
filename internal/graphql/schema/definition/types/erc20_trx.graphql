@@ -1,9 +1,10 @@
-# Erc20TransactionType represents a type of transaction.
-enum Erc20TransactionType {
+# TokenTransactionType represents a type of ERC-20/ERC-721/ERC-1155 transaction.
+enum TokenTransactionType {
     TRANSFER
     MINT
     BURN
     APPROVAL
+    APPROVAL_FOR_ALL
     OTHER
 }
 
@@ -29,7 +30,7 @@ type ERC20Transaction {
     token: ERC20Token!
 
     # trxType is the type of the transaction.
-    trxType: Erc20TransactionType!
+    trxType: TokenTransactionType!
 
     # sender represents the address of the token owner
     # sending the tokens, e.g. the sender.

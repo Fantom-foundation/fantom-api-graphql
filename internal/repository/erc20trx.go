@@ -28,7 +28,7 @@ func (p *proxy) TokenTransactionsByCall(trxHash *common.Hash) ([]*types.TokenTra
 }
 
 // TokenTransactions provides list of ERC20/ERC721/ERC1155 transactions based on given filters.
-func (p *proxy) TokenTransactions(tokenType string, token *common.Address, tokenId *big.Int, acc *common.Address, txType *int32, cursor *string, count int32) (*types.TokenTransactionList, error) {
+func (p *proxy) TokenTransactions(tokenType string, token *common.Address, tokenId *big.Int, acc *common.Address, txType []int32, cursor *string, count int32) (*types.TokenTransactionList, error) {
 	// prep the filter
 	fi := bson.D{}
 
@@ -72,7 +72,10 @@ func (p *proxy) TokenTransactions(tokenType string, token *common.Address, token
 	if txType != nil {
 		fi = append(fi, bson.E{
 			Key:   types.FiTokenTransactionType,
-			Value: *txType,
+			Value: bson.D{{
+				Key:   "$in",
+				Value: txType,
+			}},
 		})
 	}
 

@@ -110,7 +110,7 @@ func (acc *Account) Erc20TxList(args struct {
 	Cursor *Cursor
 	Count  int32
 	Token  *common.Address
-	TxType *string
+	TxType *[]string
 }) (*ERC20TransactionList, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction
@@ -122,7 +122,7 @@ func (acc *Account) Erc20TxList(args struct {
 		args.Token,
 		nil,
 		&acc.Address,
-		ercTrxTypeFromName(args.TxType),
+		ercTrxTypesFromNames(args.TxType),
 		(*string)(args.Cursor),
 		args.Count,
 	)
@@ -139,7 +139,7 @@ func (acc *Account) Erc721TxList(args struct {
 	Count   int32
 	Token   *common.Address
 	TokenId *hexutil.Big
-	TxType  *string
+	TxType  *[]string
 }) (*ERC721TransactionList, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction
@@ -151,7 +151,7 @@ func (acc *Account) Erc721TxList(args struct {
 		args.Token,
 		(*big.Int)(args.TokenId),
 		&acc.Address,
-		ercTrxTypeFromName(args.TxType),
+		ercTrxTypesFromNames(args.TxType),
 		(*string)(args.Cursor),
 		args.Count,
 	)
@@ -168,7 +168,7 @@ func (acc *Account) Erc1155TxList(args struct {
 	Count   int32
 	Token   *common.Address
 	TokenId *hexutil.Big
-	TxType  *string
+	TxType  *[]string
 }) (*ERC1155TransactionList, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction
@@ -180,7 +180,7 @@ func (acc *Account) Erc1155TxList(args struct {
 		args.Token,
 		(*big.Int)(args.TokenId),
 		&acc.Address,
-		ercTrxTypeFromName(args.TxType),
+		ercTrxTypesFromNames(args.TxType),
 		(*string)(args.Cursor),
 		args.Count,
 	)
