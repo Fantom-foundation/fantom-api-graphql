@@ -229,9 +229,9 @@ func handleSfc1PartialWithdrawByRequest(lr *types.LogRecord) {
 // handleSfc1UpdatedDelegation handles delegation update event.
 // UpdatedDelegation(address indexed delegator, uint256 indexed oldStakerID, uint256 indexed newStakerID, uint256 amount)
 func handleSfc1UpdatedDelegation(lr *types.LogRecord) {
-	// sanity check for data (1x uint256 (value) = 32 bytes)
-	if len(lr.Data) != 32 {
-		log.Criticalf("%s lr invalid data length; expected 32 bytes, %d bytes given", lr.TxHash.String(), len(lr.Data))
+	// sanity check for data (4x topic + 1x uint256 (value) = 32 bytes)
+	if len(lr.Topics) != 4 || len(lr.Data) != 32 {
+		log.Criticalf("%s not UpdatedDelegation; expected 32 bytes, %d bytes given; expected 4 topics, %d topics given", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
 		return
 	}
 
@@ -256,6 +256,12 @@ func handleSfc1UpdatedDelegation(lr *types.LogRecord) {
 // handleSfcWithdrawn handles a withdrawal request finalization event.
 // event Withdrawn(address indexed delegator, uint256 indexed toValidatorID, uint256 indexed wrID, uint256 amount)
 func handleSfcWithdrawn(lr *types.LogRecord) {
+	// sanity check for data (4x topic + 1x + 1 x uint256 = 32 bytes)
+	if len(lr.Topics) != 4 || len(lr.Data) != 32 {
+		log.Criticalf("%s is not event Withdrawn; expected 32 bytes, %d bytes given; expected 4 topics, %d given", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
+		return
+	}
+
 	// finish the request
 	handleFinishedWithdrawRequest(
 		common.BytesToAddress(lr.Topics[1].Bytes()),
@@ -269,6 +275,12 @@ func handleSfcWithdrawn(lr *types.LogRecord) {
 // handleSfc1WithdrawnDelegation handles a withdrawal request finalization event from SFC1.
 // event WithdrawnDelegation(address indexed delegator, uint256 indexed stakerID, uint256 penalty)
 func handleSfc1WithdrawnDelegation(lr *types.LogRecord) {
+	// sanity check for data (3x topic + 1x + 1 x uint256 = 32 bytes)
+	if len(lr.Topics) != 3 || len(lr.Data) != 32 {
+		log.Criticalf("%s is not event Withdrawn; expected 32 bytes, %d bytes given; expected 3 topics, %d given", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
+		return
+	}
+
 	// extract the basic info about the request
 	addr := common.BytesToAddress(lr.Topics[1].Bytes())
 	valID := new(big.Int).SetBytes(lr.Topics[2].Bytes())
