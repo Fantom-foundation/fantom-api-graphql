@@ -178,7 +178,7 @@ func (db *MongoDbBridge) CheckDatabaseInitState() {
 	db.collectionNeedInit("gas price periods", db.GasPricePeriodCount, &db.initGasPrice)
 }
 
-// checkAccountCollectionState checks the Accounts collection state.
+// checkAccountCollectionState checks the Accounts' collection state.
 func (db *MongoDbBridge) collectionNeedInit(name string, counter func() (uint64, error), init **sync.Once) {
 	// use the counter to get the collection size
 	count, err := counter()

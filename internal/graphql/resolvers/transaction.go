@@ -4,6 +4,7 @@ package resolvers
 import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"golang.org/x/sync/singleflight"
@@ -24,7 +25,15 @@ func NewTransaction(trx *types.Transaction) *Transaction {
 }
 
 // Transaction resolves blockchain transaction by transaction hash.
-func (rs *rootResolver) Transaction(args *struct{ Hash common.Hash }) (*Transaction, error) {
+func (rs *rootResolver) Transaction(args *struct{ Hash common.Hash }) (tx *Transaction, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Criticalf("transaction loader crashed on %s", args.Hash.String())
+			err = fmt.Errorf("failed to load transaction %s", args.Hash.String())
+			tx = nil
+		}
+	}()
+
 	// get the transaction from repository
 	trx, err := repository.R().Transaction(&args.Hash)
 	if err != nil {
@@ -32,6 +41,11 @@ func (rs *rootResolver) Transaction(args *struct{ Hash common.Hash }) (*Transact
 		return nil, err
 	}
 
+	// transaction not found, yet no error?
+	if trx != nil {
+		log.Errorf("transaction %s not found", args.Hash.String())
+		return nil, fmt.Errorf("transaction %s not found", args.Hash.String())
+	}
 	return NewTransaction(trx), nil
 }
 
