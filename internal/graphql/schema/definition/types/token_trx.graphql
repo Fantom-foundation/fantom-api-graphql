@@ -25,6 +25,10 @@ type TokenTransaction {
     # tokenType represents the type of the token (i.e. ERC20/ERC721/ERC1155).
     tokenType: String!
 
+    # tokenDecimals is the number of decimals the token supports.
+    # The most common value is 18 to mimic the ETH to WEI relationship.
+    tokenDecimals: Int!
+
     # type represents the type of the transaction executed (i.e. Transfer/Mint/Approval).
     type: String!
 

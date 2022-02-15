@@ -57,3 +57,16 @@ func (ttx *TokenTransaction) TokenSymbol() (sym string, err error) {
 	}
 	return
 }
+
+// TokenDecimals resolves the amount of decimals of the ERC token contract, if available.
+func (ttx *TokenTransaction) TokenDecimals() (decimals int32, err error) {
+	switch ttx.TokenTransaction.TokenType {
+	case types.AccountTypeERC20Token:
+		decimals, err = repository.R().Erc20Decimals(&ttx.TokenTransaction.TokenAddress)
+	case types.AccountTypeERC721Contract:
+		decimals = 0
+	default:
+		decimals = 0
+	}
+	return
+}
