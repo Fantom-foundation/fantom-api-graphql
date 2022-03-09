@@ -4,11 +4,8 @@ package main
 import (
 	"fantom-api-graphql/cmd/apiserver/build"
 	"fantom-api-graphql/internal/config"
-	"fantom-api-graphql/internal/graphql/resolvers"
-	"fantom-api-graphql/internal/handlers"
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository"
-	"fantom-api-graphql/internal/svc"
 	"flag"
 	"log"
 	"net/http"
@@ -22,7 +19,6 @@ import (
 type apiServer struct {
 	cfg          *config.Config
 	log          logger.Logger
-	api          resolvers.ApiResolver
 	srv          *http.Server
 	isVersionReq bool
 }
@@ -46,10 +42,6 @@ func (app *apiServer) init() {
 	// make sure to pass logger and config to internals
 	repository.SetConfig(app.cfg)
 	repository.SetLogger(app.log)
-	resolvers.SetConfig(app.cfg)
-	resolvers.SetLogger(app.log)
-	svc.SetConfig(app.cfg)
-	svc.SetLogger(app.log)
 
 	// make the HTTP server
 	app.makeHttpServer()
@@ -66,18 +58,8 @@ func (app *apiServer) run() {
 	// make sure to capture terminate signals
 	app.observeSignals()
 
-	// run services
-	svc.Manager().Run()
-
 	// start responding to requests
-	app.log.Infof("welcome to Fantom GraphQL API server")
-	app.log.Infof("listening for requests on %s", app.cfg.Server.BindAddress)
-
-	// listen the interface
-	err := app.srv.ListenAndServe()
-	if err != nil {
-		app.log.Errorf(err.Error())
-	}
+	app.log.Infof("welcome to Fantom comparator")
 
 	// terminate the app
 	app.terminate()
@@ -97,30 +79,6 @@ func (app *apiServer) makeHttpServer() {
 		ReadHeaderTimeout: time.Second * time.Duration(app.cfg.Server.HeaderTimeout),
 		Handler:           srvMux,
 	}
-
-	// setup handlers
-	app.setupHandlers(srvMux)
-}
-
-// setupHandlers initializes an array of handlers for our HTTP API end-points.
-func (app *apiServer) setupHandlers(mux *http.ServeMux) {
-	// create root resolver
-	app.api = resolvers.New()
-
-	// setup GraphQL API handler
-	h := http.TimeoutHandler(
-		handlers.Api(app.cfg, app.log, app.api),
-		time.Second*time.Duration(app.cfg.Server.ResolverTimeout),
-		"Service timeout.",
-	)
-	mux.Handle("/api", h)
-	mux.Handle("/graphql", h)
-
-	// setup gas price estimator REST API resolver
-	mux.Handle("/json/gas", handlers.GasPrice(app.log))
-
-	// handle GraphiQL interface
-	mux.Handle("/graphi", handlers.GraphiHandler(app.cfg.Server.DomainAddress, app.log))
 }
 
 // observeSignals setups terminate signals observation.
@@ -148,16 +106,6 @@ func (app *apiServer) observeSignals() {
 
 // terminate modules of the API server.
 func (app *apiServer) terminate() {
-	// close resolvers
-	app.log.Notice("closing resolver")
-	app.api.Close()
-
-	// terminate observers, scanners and dispatchers, etc.
-	app.log.Notice("closing services")
-	if mgr := svc.Manager(); mgr != nil {
-		mgr.Close()
-	}
-
 	// terminate connections to DB, blockchain, etc.
 	app.log.Notice("closing repository")
 	if repo := repository.R(); repo != nil {
