@@ -30,7 +30,7 @@ import (
 )
 
 // stiRequestTimeout is number of seconds we wait for the staker information request to finish.
-const stiRequestTimeout = 2 * time.Second
+const stiRequestTimeout = 1 * time.Second
 
 // stiNameCheckRegex is the expression used to check for staker name validity
 var stiNameCheckRegex = regexp.MustCompile(`^[\w\d\s.\-_'$()]+$`)
@@ -38,7 +38,7 @@ var stiNameCheckRegex = regexp.MustCompile(`^[\w\d\s.\-_'$()]+$`)
 // StakerInfo extracts an extended staker information from smart contact by their id.
 func (ftm *FtmBridge) StakerInfo(id *hexutil.Big) (*types.StakerInfo, error) {
 	if id == nil {
-		return nil, fmt.Errorf("validator ID not given")
+		return nil, fmt.Errorf("staker ID not given")
 	}
 
 	// keep track of the operation
@@ -54,7 +54,7 @@ func (ftm *FtmBridge) StakerInfo(id *hexutil.Big) (*types.StakerInfo, error) {
 	// call for data
 	stUrl, err := contract.GetInfo(nil, (*big.Int)(id))
 	if err != nil {
-		ftm.log.Errorf("failed to get the staker information: %v", err)
+		ftm.log.Errorf("failed to get the staker #%d information: %v", id.ToInt().Uint64(), err)
 		return nil, err
 	}
 
@@ -79,7 +79,7 @@ func (ftm *FtmBridge) downloadStakerInfo(stUrl string) (*types.StakerInfo, error
 	// prep request
 	req, err := http.NewRequest(http.MethodGet, stUrl, nil)
 	if err != nil {
-		ftm.log.Errorf("can not request given staker info; %s", err.Error())
+		ftm.log.Errorf("can not request given staker info at [%s]; %s", stUrl, err.Error())
 		return nil, err
 	}
 
@@ -89,14 +89,14 @@ func (ftm *FtmBridge) downloadStakerInfo(stUrl string) (*types.StakerInfo, error
 	// process the request
 	res, err := cl.Do(req)
 	if err != nil {
-		ftm.log.Errorf("can not download staker info; %s", err.Error())
+		ftm.log.Errorf("can not download staker info from [%s]; %s", stUrl, err.Error())
 		return nil, err
 	}
 
 	// read the response
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		ftm.log.Errorf("can not read staker info response; %s", err.Error())
+		ftm.log.Errorf("can not read staker info response from [%s]; %s", stUrl, err.Error())
 		return nil, err
 	}
 
@@ -104,13 +104,14 @@ func (ftm *FtmBridge) downloadStakerInfo(stUrl string) (*types.StakerInfo, error
 	var info types.StakerInfo
 	err = json.Unmarshal(body, &info)
 	if err != nil {
-		ftm.log.Errorf("invalid response for staker info; %s", err.Error())
+		ftm.log.Errorf("can not decode staker info [%s]; %s", stUrl, err.Error())
+		ftm.log.Debugf("Received: %s", body)
 		return nil, err
 	}
 
 	// do we have anything?
 	if !ftm.isValidStakerInfo(&info) {
-		ftm.log.Errorf("invalid response for staker info [%s]", stUrl)
+		ftm.log.Errorf("invalid staker info content [%s]", stUrl)
 		return nil, err
 	}
 
@@ -148,7 +149,7 @@ func (ftm *FtmBridge) isValidStakerInfo(info *types.StakerInfo) bool {
 
 // isValidStakerInfoUrl validates the given URL address from the staker info.
 func isValidStakerInfoUrl(addr *string, reqHttps bool) bool {
-	// do we even have an URL; it's ok if not
+	// do we even have a URL; it's ok if not
 	if nil == addr || 0 == len(*addr) {
 		return true
 	}

@@ -24,11 +24,11 @@ func (rs *rootResolver) StakersWithFlag(args struct{ Flag string }) ([]*Staker, 
 		case "IS_ACTIVE":
 			return v.Status == 0
 		case "IS_WITHDRAWN":
-			return v.Status&sfcStatusWithdrawn > 0
+			return uint64(v.Status)&sfcStatusWithdrawn > 0
 		case "IS_OFFLINE":
-			return v.Status&sfcStatusOffline > 0
+			return uint64(v.Status)&sfcStatusOffline > 0
 		case "IS_CHEATER":
-			return v.Status&sfcStatusDoubleSign > 0
+			return uint64(v.Status)&sfcStatusDoubleSign > 0
 		default:
 			log.Errorf("unknown flag filter %s", args.Flag)
 		}

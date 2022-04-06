@@ -8,15 +8,17 @@ import (
 	"time"
 )
 
-// stiScannerTickDuration represents the delay between STI info pull attempts.
-const stiScannerTickDuration = 5 * time.Second
+// stiScannerTickDurationSlow represents the long delay between STI info pull attempts.
+const stiScannerTickDurationSlow = 5 * time.Second
+
+// stiScannerTickDurationFast represents the short startup delay between STI info pull attempts.
+const stiScannerTickDurationFast = 200 * time.Millisecond
 
 // stiScanner implements staker information scanner service.
 type stiScanner struct {
 	service
-	scanTick *time.Ticker
-	current  uint64
-	top      uint64
+	current uint64
+	top     uint64
 }
 
 // name returns the name of the service used by orchestrator.
@@ -38,10 +40,6 @@ func (sti *stiScanner) run() {
 
 // close terminates the staker information scanner.
 func (sti *stiScanner) close() {
-	if sti.scanTick != nil {
-		sti.scanTick.Stop()
-	}
-
 	if sti.sigStop != nil {
 		sti.sigStop <- true
 	}
@@ -49,14 +47,15 @@ func (sti *stiScanner) close() {
 
 // execute runs the staker information monitoring task.
 func (sti *stiScanner) execute() {
+	// start the ticker
+	scanTick := time.NewTicker(stiScannerTickDurationFast)
+
 	// make sure to clean up on exit
 	defer func() {
+		scanTick.Stop()
 		close(sti.sigStop)
 		sti.mgr.finished(sti)
 	}()
-
-	// start the ticker
-	sti.scanTick = time.NewTicker(stiScannerTickDuration)
 
 	// loop before terminated
 	for {
@@ -64,8 +63,10 @@ func (sti *stiScanner) execute() {
 		select {
 		case <-sti.sigStop:
 			return
-		case <-sti.scanTick.C:
-			sti.next()
+		case <-scanTick.C:
+			if sti.next() {
+				scanTick.Reset(stiScannerTickDurationSlow)
+			}
 		}
 	}
 }
@@ -93,10 +94,10 @@ func (sti *stiScanner) syncTop() error {
 }
 
 // next tries to download and store staker information for the next val on the list.
-func (sti *stiScanner) next() {
+func (sti *stiScanner) next() bool {
 	// make sure we have the right ceiling, do not continue if the sync failed
 	if err := sti.syncTop(); err != nil {
-		return
+		return true
 	}
 
 	// request the staker information
@@ -105,16 +106,20 @@ func (sti *stiScanner) next() {
 	info, err := repo.PullStakerInfo((*hexutil.Big)(stakerID))
 	if err == nil && info != nil {
 		err = repo.StoreStakerInfo((*hexutil.Big)(stakerID), info)
+		log.Infof("staker #%d is %s", sti.current, *info.Name)
 	}
 
 	// anything failed?
 	if err != nil || info == nil {
-		log.Debugf("staker #%d information not available", sti.current)
+		log.Infof("staker #%d is not available in STI", sti.current)
 	}
 
 	// advance to the next staker closing the loop at the top
 	sti.current++
 	if sti.top < sti.current {
 		sti.current = 0
+		return true
 	}
+
+	return false
 }
