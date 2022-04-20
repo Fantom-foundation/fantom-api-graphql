@@ -37,6 +37,7 @@ func (or *orchestrator) init() {
 	or.mgr.lgd.inLog = or.mgr.trd.outLog
 	or.mgr.bld.inBlock = or.mgr.bls.outBlock
 	or.mgr.bls.inDispatched = or.mgr.bld.outDispatched
+	or.mgr.bud.inTransaction = or.mgr.trd.outTransaction
 	or.inScanStateSwitch = or.mgr.bls.outStateSwitch
 
 	// read initial block scanner state

@@ -584,6 +584,9 @@ type Repository interface {
 	// TrxFlowSpeed provides speed of transaction per second for the last <sec> seconds.
 	TrxFlowSpeed(sec int32) (float64, error)
 
+	// StoreFtmBurn stores the given native FTM burn per block record into the persistent storage.
+	StoreFtmBurn(burn *types.FtmBurn) error
+
 	// Close and cleanup the repository.
 	Close()
 }

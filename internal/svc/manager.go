@@ -20,6 +20,7 @@ type ServiceManager struct {
 	acd *accDispatcher
 	lgd *logDispatcher
 	bls *blkScanner
+	bud *burnDispatcher
 
 	// collection of all the managed services
 	svc []Svc
@@ -107,6 +108,10 @@ func (mgr *ServiceManager) init() {
 	// make log dispatcher
 	mgr.lgd = &logDispatcher{service: service{mgr: mgr}}
 	mgr.svc = append(mgr.svc, mgr.lgd)
+
+	// make burn dispatcher
+	mgr.bud = &burnDispatcher{service: service{mgr: mgr}}
+	mgr.svc = append(mgr.svc, mgr.bud)
 
 	// make block scanner
 	mgr.bls = &blkScanner{service: service{mgr: mgr}, cfg: cfg.RepoCommand}

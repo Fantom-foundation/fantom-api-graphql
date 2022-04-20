@@ -17,7 +17,7 @@ import (
 // Larger inputs (like contract deployments) need to be loaded from the blockchain directly if needed.
 const trxLargeInputWall = 32 * 8
 
-// TransactionDecimalsCorrection is used to manipulate precision of a transaction amount value
+// TransactionDecimalsCorrection is used to manipulate precision of a transaction amount value,
 // so it can be stored in database as INT64 without loosing too much data
 var TransactionDecimalsCorrection = new(big.Int).SetUint64(1000000000)
 

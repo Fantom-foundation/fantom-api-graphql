@@ -34,12 +34,13 @@ type eventAcc struct {
 // trxDispatcher implements dispatcher of new transactions in the blockchain.
 type trxDispatcher struct {
 	service
-	onTransaction chan *types.Transaction
-	bot           *time.Ticker
-	blkObserver   *atomic.Uint64
-	inTransaction chan *eventTrx
-	outAccount    chan *eventAcc
-	outLog        chan *types.LogRecord
+	onTransaction  chan *types.Transaction
+	bot            *time.Ticker
+	blkObserver    *atomic.Uint64
+	inTransaction  chan *eventTrx
+	outTransaction chan *eventTrx
+	outAccount     chan *eventAcc
+	outLog         chan *types.LogRecord
 }
 
 // name returns the name of the service used by orchestrator.
@@ -53,6 +54,7 @@ func (trd *trxDispatcher) init() {
 	trd.blkObserver = atomic.NewUint64(1)
 	trd.outAccount = make(chan *eventAcc, trxAddressQueueCapacity)
 	trd.outLog = make(chan *types.LogRecord, trxLogQueueCapacity)
+	trd.outTransaction = make(chan *eventTrx, trxLogQueueCapacity)
 }
 
 // run starts the transaction dispatcher job
@@ -87,6 +89,7 @@ func (trd *trxDispatcher) execute() {
 		close(trd.sigStop)
 		close(trd.outAccount)
 		close(trd.outLog)
+		close(trd.outTransaction)
 
 		trd.mgr.finished(trd)
 	}()
@@ -131,6 +134,9 @@ func (trd *trxDispatcher) updateLastSeenBlock() {
 
 // process the given transaction event into the required targets.
 func (trd *trxDispatcher) process(evt *eventTrx) {
+	// send the transaction out for burns processing
+	trd.outTransaction <- evt
+
 	// process transaction accounts; exit if terminated
 	var wg sync.WaitGroup
 	if !trd.pushAccounts(evt, &wg) {
