@@ -10,7 +10,7 @@ import (
 )
 
 // BurnDecimalsCorrection is used to manipulate precision of an amount of burned FTM
-var BurnDecimalsCorrection = new(big.Int).SetUint64(10_000_000_000_000)
+var BurnDecimalsCorrection = new(big.Int).SetUint64(10_000_000_000)
 
 // FtmBurn represents deflation of native tokens by burning.
 type FtmBurn struct {
@@ -75,5 +75,5 @@ func (burn FtmBurn) Timestamp() hexutil.Uint64 {
 
 // Value returns FTM amount of burned tokens.
 func (burn FtmBurn) Value() float64 {
-	return float64(new(big.Int).Div(burn.Amount.ToInt(), BurnDecimalsCorrection).Int64()) / 100_000
+	return float64(new(big.Int).Div(burn.Amount.ToInt(), BurnDecimalsCorrection).Int64()) / 100_000_000
 }
