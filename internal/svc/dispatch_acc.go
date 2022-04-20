@@ -18,8 +18,8 @@ const (
 // testAddress represents an address used to test an account reference
 var testAddress = common.HexToAddress("0xabc00FA001230012300aBc0012300Fa00FACE000")
 
-var erc721InterfaceId  = [4]byte { 0x80, 0xac, 0x58, 0xcd } // ERC-721: 0x80ac58cd
-var erc1155InterfaceId = [4]byte { 0xd9, 0xb6, 0x7a, 0x26 } // ERC-1155: 0xd9b67a26
+var erc721InterfaceId = [4]byte{0x80, 0xac, 0x58, 0xcd}  // ERC-721: 0x80ac58cd
+var erc1155InterfaceId = [4]byte{0xd9, 0xb6, 0x7a, 0x26} // ERC-1155: 0xd9b67a26
 
 // accDispatcher implements account dispatcher queue
 type accDispatcher struct {
@@ -174,29 +174,29 @@ func (acd *accDispatcher) detectContract(addr *common.Address, block *types.Bloc
 	isErc1155, err := repo.Erc165SupportsInterface(addr, erc1155InterfaceId)
 	if err == nil && isErc1155 {
 		log.Noticef("ERC1155 multi-token detected at %s", addr.String())
-		contract := types.NewErcTokenContract(addr, "", block, trx, types.AccountTypeERC1155Contract, contracts.ERC1155MetaData.ABI)
-		return contract, types.AccountTypeERC1155Contract, nil
+		contract := types.NewTokenContract(addr, "", block, trx, types.AccountTypeERC1155, contracts.ERC1155MetaData.ABI)
+		return contract, types.AccountTypeERC1155, nil
 	}
 
 	isErc721, name := acd.detectErc721Token(addr)
 	if err == nil && isErc721 {
 		log.Noticef("ERC721 NFT token detected at %s", addr.String())
-		contract := types.NewErcTokenContract(addr, name, block, trx, types.AccountTypeERC721Contract, contracts.ERC721MetaData.ABI)
-		return contract, types.AccountTypeERC721Contract, nil
+		contract := types.NewTokenContract(addr, name, block, trx, types.AccountTypeERC721, contracts.ERC721MetaData.ABI)
+		return contract, types.AccountTypeERC721, nil
 	}
 
 	isErc20, name := acd.detectErc20Token(addr)
 	if isErc20 {
 		log.Noticef("ERC20 token %s detected at %s", name, addr.String())
-		contract := types.NewErcTokenContract(addr, name, block, trx, types.AccountTypeERC20Token, contracts.ERCTwentyMetaData.ABI)
-		return contract, types.AccountTypeERC20Token, nil
+		contract := types.NewTokenContract(addr, name, block, trx, types.AccountTypeERC20, contracts.ERCTwentyMetaData.ABI)
+		return contract, types.AccountTypeERC20, nil
 	}
 
 	// log that the detection failed
 	log.Noticef("unknown contract at %s", addr.String())
 
 	// set as generic contract type if no other has been detected
-	return types.NewGenericContract(addr, block, trx), types.AccountTypeContract, nil
+	return types.NewContract(addr, block, trx), types.AccountTypeContract, nil
 }
 
 // detectErc20Token identifies ERC20 token contracts by trying to call specific contract methods.

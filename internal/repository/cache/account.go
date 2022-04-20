@@ -2,20 +2,22 @@
 package cache
 
 import (
+	"encoding/json"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"strings"
 )
 
-const accountExistenceCacheIdPrefix = "acc_"
+// accountCacheIdPrefix is the prefix used by cache to store account details.
+const accountCacheIdPrefix = "acc_"
 
 // accountId generates cache id for storing account details.
 func accountId(addr *common.Address) string {
 	var sb strings.Builder
 
 	// add the prefix and actual address
-	sb.WriteString(accountExistenceCacheIdPrefix)
+	sb.WriteString(accountCacheIdPrefix)
 	sb.WriteString(addr.String())
 
 	return sb.String()
@@ -23,21 +25,17 @@ func accountId(addr *common.Address) string {
 
 // PullAccount extracts account information from the in-memory cache if available.
 func (b *MemBridge) PullAccount(addr *common.Address) *types.Account {
-	// try to get the account data from the cache
 	data, err := b.cache.Get(accountId(addr))
 	if err != nil {
-		// cache returns ErrEntryNotFound if the key does not exist
 		return nil
 	}
 
-	// do we have the data?
-	acc, err := types.UnmarshalAccount(data)
-	if err != nil {
-		b.log.Criticalf("can not decode account data from in-memory cache; %s", err.Error())
+	var acc types.Account
+	if err = json.Unmarshal(data, &acc); err != nil {
+		b.log.Criticalf("can not decode account; %s", err.Error())
 		return nil
 	}
-
-	return acc
+	return &acc
 }
 
 // PushAccount stores provided account in the in-memory cache.
@@ -48,9 +46,9 @@ func (b *MemBridge) PushAccount(acc *types.Account) error {
 	}
 
 	// encode account
-	data, err := acc.Marshal()
+	data, err := json.Marshal(acc)
 	if err != nil {
-		b.log.Criticalf("can not marshal account to JSON; %s", err.Error())
+		b.log.Criticalf("can not marshal account; %s", err.Error())
 		return err
 	}
 

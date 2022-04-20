@@ -2,48 +2,40 @@
 package types
 
 import (
-	"encoding/json"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"time"
 )
 
 const (
-	// AccountTypeWallet identifies accounts of the type regular wallet
-	AccountTypeWallet = "wallet"
+	// AccountTypeUnknown identifies a generic account, probably a wallet.
+	AccountTypeUnknown = "WALLET"
 
-	// AccountTypeContract identifies a generic contract type
-	AccountTypeContract = "contract"
+	// AccountTypeContract identifies a contract of unknown detailed type.
+	AccountTypeContract = "CONTRACT"
 
-	// AccountTypeSFC identifies the Special Function Contract
-	AccountTypeSFC = "SFC"
+	// AccountTypeSFCContract identifies the Special Function Contract account type.
+	AccountTypeSFCContract = "SFC"
 
-	// AccountTypeERC20Token identifies a contract of type ERC20 token
-	AccountTypeERC20Token = "ERC20"
+	// AccountTypeERC20Contract identifies a contract of type ERC20 token.
+	AccountTypeERC20Contract = "ERC20"
 
-	// AccountTypeERC721Contract identifies a contract of type ERC721 non-fungible token
+	// AccountTypeERC721Contract identifies a contract of type ERC721 non-fungible token.
 	AccountTypeERC721Contract = "ERC721"
 
-	// AccountTypeERC1155Contract identifies a multi-token contract of type ERC1155
+	// AccountTypeERC1155Contract identifies a non-fungible token contract of type ERC1155.
 	AccountTypeERC1155Contract = "ERC1155"
 )
 
 // Account represents an Opera account at the blockchain.
 type Account struct {
-	Address      common.Address `json:"address"`
-	ContractTx   *common.Hash   `json:"contract"`
-	Type         string         `json:"type"`
-	LastActivity hexutil.Uint64 `json:"ats"`
-	TrxCounter   hexutil.Uint64 `json:"trc"`
-}
-
-// UnmarshalAccount parses the JSON-encoded account data.
-func UnmarshalAccount(data []byte) (*Account, error) {
-	var acc Account
-	err := json.Unmarshal(data, &acc)
-	return &acc, err
-}
-
-// Marshal returns the JSON encoding of account.
-func (acc *Account) Marshal() ([]byte, error) {
-	return json.Marshal(acc)
+	Name            string          `bson:"name"`
+	Address         common.Address  `bson:"addr"`
+	AccountType     string          `bson:"act"`
+	IsContract      bool            `bson:"is_contract"`
+	FirstAppearance time.Time       `bson:"ts"`
+	DeployedBy      *common.Address `bson:"deployer"`
+	DeploymentTrx   *common.Hash    `bson:"dep_trx"`
+	LastActivity    time.Time       `bson:"last_tx"`
+	TrxCounter      hexutil.Uint64  `bson:"nonce"`
 }

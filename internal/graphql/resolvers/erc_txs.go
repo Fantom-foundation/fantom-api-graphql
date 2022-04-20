@@ -22,7 +22,7 @@ func (rs *rootResolver) Erc20Transactions(args struct {
 
 	// get the transaction hash list from repository
 	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC20Token,
+		types.AccountTypeERC20,
 		args.Token,
 		nil,
 		args.Account,
@@ -52,7 +52,7 @@ func (rs *rootResolver) Erc721Transactions(args struct {
 
 	// get the transaction hash list from repository
 	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC721Contract,
+		types.AccountTypeERC721,
 		args.Token,
 		(*big.Int)(args.TokenId),
 		args.Account,
@@ -82,7 +82,7 @@ func (rs *rootResolver) Erc1155Transactions(args struct {
 
 	// get the transaction hash list from repository
 	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC1155Contract,
+		types.AccountTypeERC1155,
 		args.Token,
 		(*big.Int)(args.TokenId),
 		args.Account,

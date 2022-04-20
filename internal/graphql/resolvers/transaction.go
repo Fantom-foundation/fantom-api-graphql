@@ -145,7 +145,7 @@ func (trx *Transaction) Erc20Transactions() ([]*ERC20Transaction, error) {
 
 	list := make([]*ERC20Transaction, 0)
 	for _, tx := range tl {
-		if tx.TokenType == types.AccountTypeERC20Token {
+		if tx.TokenType == types.AccountTypeERC20 {
 			list = append(list, NewErc20Transaction(tx))
 		}
 	}
@@ -163,7 +163,7 @@ func (trx *Transaction) Erc721Transactions() ([]*ERC721Transaction, error) {
 
 	list := make([]*ERC721Transaction, 0)
 	for _, tx := range tl {
-		if tx.TokenType == types.AccountTypeERC721Contract {
+		if tx.TokenType == types.AccountTypeERC721 {
 			list = append(list, NewErc721Transaction(tx))
 		}
 	}
@@ -181,7 +181,7 @@ func (trx *Transaction) Erc1155Transactions() ([]*ERC1155Transaction, error) {
 
 	list := make([]*ERC1155Transaction, 0)
 	for _, tx := range tl {
-		if tx.TokenType == types.AccountTypeERC1155Contract {
+		if tx.TokenType == types.AccountTypeERC1155 {
 			list = append(list, NewErc1155Transaction(tx))
 		}
 	}

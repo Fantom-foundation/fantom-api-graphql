@@ -5,6 +5,7 @@ import (
 	"context"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
+	"fantom-api-graphql/internal/repository/db/registry"
 	"fmt"
 	"math/big"
 	"sync"
@@ -15,30 +16,24 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// docListCountAggregationTimeout represents a max duration of DB query executed to calculate
+// exact document count in filtered collection. If this duration is exceeded, the query fails
+// ad we fall back to full collection documents count estimation.
+const docListCountAggregationTimeout = 500 * time.Millisecond
+
+// defaultPk represents the default MongoDB primary key attribute name.
+const defaultPK = "_id"
+
 // MongoDbBridge represents Mongo DB abstraction layer.
 type MongoDbBridge struct {
 	client *mongo.Client
 	log    logger.Logger
 	dbName string
 
-	// init state marks
-	initAccounts     *sync.Once
-	initTransactions *sync.Once
-	initContracts    *sync.Once
-	initSwaps        *sync.Once
-	initDelegations  *sync.Once
-	initWithdrawals  *sync.Once
-	initRewards      *sync.Once
-	initErc20Trx     *sync.Once
-	initFMintTrx     *sync.Once
-	initEpochs       *sync.Once
-	initGasPrice     *sync.Once
+	// sync DB related processes
+	wg  sync.WaitGroup
+	sig []chan bool
 }
-
-// docListCountAggregationTimeout represents a max duration of DB query executed to calculate
-// exact document count in filtered collection. If this duration is exceeded, the query fails
-// ad we fall back to full collection documents count estimation.
-const docListCountAggregationTimeout = 500 * time.Millisecond
 
 // intZero represents an empty big value.
 var intZero = new(big.Int)
@@ -63,10 +58,11 @@ func New(cfg *config.Config, log logger.Logger) (*MongoDbBridge, error) {
 		client: con,
 		log:    log,
 		dbName: cfg.Db.DbName,
+		sig:    make([]chan bool, 0),
 	}
 
 	// check the state
-	db.CheckDatabaseInitState()
+	db.updateDatabaseIndexes()
 	return db, nil
 }
 
@@ -76,7 +72,7 @@ func connectDb(cfg *config.Database) (*mongo.Client, error) {
 	ctx := context.Background()
 
 	// create new Mongo client
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Url))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Url).SetRegistry(registry.New()))
 	if err != nil {
 		return nil, err
 	}
@@ -92,6 +88,12 @@ func connectDb(cfg *config.Database) (*mongo.Client, error) {
 
 // Close will terminate or finish all operations and close the connection to Mongo database.
 func (db *MongoDbBridge) Close() {
+	// signal terminate and wait for processes to finish
+	for _, sig := range db.sig {
+		sig <- true
+	}
+	db.wg.Wait()
+
 	// do we have a client?
 	if db.client != nil {
 		// prep context

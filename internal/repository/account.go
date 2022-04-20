@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"time"
 )
 
 // Account returns account at Opera blockchain for an address, nil if not found.
@@ -49,19 +50,13 @@ func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 
 	// found the account in database?
 	if acc == nil {
-		// log an unknown address
 		p.log.Debugf("unknown address %s detected", addr.String())
-
-		// at least we know the account existed
-		acc = &types.Account{Address: *addr, Type: types.AccountTypeWallet}
-
-		// check if this is a smart contract account; we log the error on the call
-		acc.ContractTx, _ = p.db.ContractTransaction(addr)
+		acc = &types.Account{Address: *addr, AccountType: types.AccountTypeUnknown}
 	}
 
 	// also keep a copy at the in-memory cache
 	if err = p.cache.PushAccount(acc); err != nil {
-		p.log.Warningf("can not keep account [%s] information in memory; %s", addr.Hex(), err.Error())
+		p.log.Warningf("can not keep account [%s] information in memory; %s", addr.String(), err.Error())
 	}
 	return acc, nil
 }
@@ -118,7 +113,7 @@ func (p *proxy) AccountIsKnown(addr *common.Address) bool {
 // StoreAccount adds specified account detail into the repository.
 func (p *proxy) StoreAccount(acc *types.Account) error {
 	// add this account to the database and remember it's been added
-	err := p.db.AddAccount(acc)
+	err := p.db.StoreAccount(acc)
 	if err == nil {
 		p.cache.PushAccountKnown(&acc.Address)
 	}
@@ -127,5 +122,5 @@ func (p *proxy) StoreAccount(acc *types.Account) error {
 
 // AccountMarkActivity marks the latest account activity in the repository.
 func (p *proxy) AccountMarkActivity(addr *common.Address, ts uint64) error {
-	return p.db.AccountMarkActivity(addr, ts)
+	return p.db.AccountMarkActivity(addr, time.Unix(int64(ts), 0))
 }

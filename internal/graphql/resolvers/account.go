@@ -118,7 +118,7 @@ func (acc *Account) Erc20TxList(args struct {
 
 	// get the transaction hash list from repository
 	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC20Token,
+		types.AccountTypeERC20,
 		args.Token,
 		nil,
 		&acc.Address,
@@ -147,7 +147,7 @@ func (acc *Account) Erc721TxList(args struct {
 
 	// get the transaction hash list from repository
 	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC721Contract,
+		types.AccountTypeERC721,
 		args.Token,
 		(*big.Int)(args.TokenId),
 		&acc.Address,
@@ -176,7 +176,7 @@ func (acc *Account) Erc1155TxList(args struct {
 
 	// get the transaction hash list from repository
 	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC1155Contract,
+		types.AccountTypeERC1155,
 		args.Token,
 		(*big.Int)(args.TokenId),
 		&acc.Address,

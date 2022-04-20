@@ -35,9 +35,9 @@ func (ttx *TokenTransaction) Type() string {
 // TokenName resolves the name of the ERC token contract, if available.
 func (ttx *TokenTransaction) TokenName() (name string, err error) {
 	switch ttx.TokenTransaction.TokenType {
-	case types.AccountTypeERC20Token:
+	case types.AccountTypeERC20:
 		name, err = repository.R().Erc20Name(&ttx.TokenTransaction.TokenAddress)
-	case types.AccountTypeERC721Contract:
+	case types.AccountTypeERC721:
 		name, err = repository.R().Erc721Name(&ttx.TokenTransaction.TokenAddress)
 	default:
 		name, err = "", nil
@@ -48,9 +48,9 @@ func (ttx *TokenTransaction) TokenName() (name string, err error) {
 // TokenSymbol resolves the symbol of the ERC token contract, if available.
 func (ttx *TokenTransaction) TokenSymbol() (sym string, err error) {
 	switch ttx.TokenTransaction.TokenType {
-	case types.AccountTypeERC20Token:
+	case types.AccountTypeERC20:
 		sym, err = repository.R().Erc20Symbol(&ttx.TokenTransaction.TokenAddress)
-	case types.AccountTypeERC721Contract:
+	case types.AccountTypeERC721:
 		sym, err = repository.R().Erc721Symbol(&ttx.TokenTransaction.TokenAddress)
 	default:
 		sym, err = "", nil
@@ -61,9 +61,9 @@ func (ttx *TokenTransaction) TokenSymbol() (sym string, err error) {
 // TokenDecimals resolves the amount of decimals of the ERC token contract, if available.
 func (ttx *TokenTransaction) TokenDecimals() (decimals int32, err error) {
 	switch ttx.TokenTransaction.TokenType {
-	case types.AccountTypeERC20Token:
+	case types.AccountTypeERC20:
 		decimals, err = repository.R().Erc20Decimals(&ttx.TokenTransaction.TokenAddress)
-	case types.AccountTypeERC721Contract:
+	case types.AccountTypeERC721:
 		decimals = 0
 	default:
 		decimals = 0

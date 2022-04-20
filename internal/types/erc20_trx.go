@@ -113,7 +113,7 @@ func (etx *TokenTransaction) OrdinalIndex() uint64 {
 func (etx *TokenTransaction) MarshalBSON() ([]byte, error) {
 	// calculate transfer value for ERC20 tokens
 	var val *big.Int
-	if etx.TokenType == AccountTypeERC20Token {
+	if etx.TokenType == AccountTypeERC20 {
 		val = new(big.Int).Div(etx.Amount.ToInt(), TransactionDecimalsCorrection)
 	} else {
 		val = etx.Amount.ToInt()
