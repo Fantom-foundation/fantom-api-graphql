@@ -33,6 +33,7 @@ type MongoDbBridge struct {
 	initFMintTrx     *sync.Once
 	initEpochs       *sync.Once
 	initGasPrice     *sync.Once
+	initBurns        *sync.Once
 }
 
 // docListCountAggregationTimeout represents a max duration of DB query executed to calculate
@@ -176,6 +177,7 @@ func (db *MongoDbBridge) CheckDatabaseInitState() {
 	db.collectionNeedInit("fmint transactions", db.FMintTransactionCount, &db.initFMintTrx)
 	db.collectionNeedInit("epochs", db.EpochsCount, &db.initEpochs)
 	db.collectionNeedInit("gas price periods", db.GasPricePeriodCount, &db.initGasPrice)
+	db.collectionNeedInit("burned fees", db.BurnCount, &db.initBurns)
 }
 
 // checkAccountCollectionState checks the Accounts' collection state.

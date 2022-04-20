@@ -587,6 +587,12 @@ type Repository interface {
 	// StoreFtmBurn stores the given native FTM burn per block record into the persistent storage.
 	StoreFtmBurn(burn *types.FtmBurn) error
 
+	// FtmBurnTotal provides the total amount of burned native FTM.
+	FtmBurnTotal() (int64, error)
+
+	// FtmBurnList provides list of per-block burned native FTM tokens.
+	FtmBurnList(count int64) ([]types.FtmBurn, error)
+
 	// Close and cleanup the repository.
 	Close()
 }

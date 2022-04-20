@@ -79,27 +79,27 @@ func (bud *burnDispatcher) process(tx *eventTrx, burn *types.FtmBurn) *types.Ftm
 	// no previous burn to check against? make a new record
 	if burn == nil {
 		return &types.FtmBurn{
-			Block:     uint64(tx.blk.Number),
-			TimeStamp: time.Unix(int64(tx.blk.TimeStamp), 0),
-			Amount:    hexutil.Big(*bud.burnedFee(tx.trx)),
-			TxList:    append(make([]common.Hash, 0), tx.trx.Hash),
+			BlockNumber:  tx.blk.Number,
+			BlkTimeStamp: time.Unix(int64(tx.blk.TimeStamp), 0),
+			Amount:       hexutil.Big(*bud.burnedFee(tx.trx)),
+			TxList:       append(make([]common.Hash, 0), tx.trx.Hash),
 		}
 	}
 
 	// a new block may have been received
-	if uint64(tx.blk.Number) != burn.Block {
+	if tx.blk.Number != burn.BlockNumber {
 		val := float64(new(big.Int).Div((*big.Int)(&burn.Amount), types.BurnDecimalsCorrection).Int64()) / 1_000_000
-		log.Noticef("collected block burn of %.4f FTM at #%d", val, burn.Block)
+		log.Debugf("collected block burn of %.4f FTM at #%d", val, burn.BlockNumber)
 
 		if err := repo.StoreFtmBurn(burn); err != nil {
 			log.Warningf("could not store previous burn; %s", err.Error())
 		}
 
 		return &types.FtmBurn{
-			Block:     uint64(tx.blk.Number),
-			TimeStamp: time.Unix(int64(tx.blk.TimeStamp), 0),
-			Amount:    hexutil.Big(*bud.burnedFee(tx.trx)),
-			TxList:    append(make([]common.Hash, 0), tx.trx.Hash),
+			BlockNumber:  tx.blk.Number,
+			BlkTimeStamp: time.Unix(int64(tx.blk.TimeStamp), 0),
+			Amount:       hexutil.Big(*bud.burnedFee(tx.trx)),
+			TxList:       append(make([]common.Hash, 0), tx.trx.Hash),
 		}
 	}
 
@@ -115,12 +115,5 @@ func (bud *burnDispatcher) burnedFee(trx *types.Transaction) *big.Int {
 	fee := new(big.Int).Mul((*big.Int)(&trx.GasPrice), big.NewInt(int64(*trx.GasUsed)))
 
 	// now get 30% by multiplying by 300 and dividing by 1000
-	burn := new(big.Int).Div(new(big.Int).Mul(fee, feePartToBurn), feeBurnDigitCorrection)
-
-	/*
-		val := float64(new(big.Int).Div(fee, types.BurnDecimalsCorrection).Int64()) / 1000000
-		bf := float64(new(big.Int).Div(burn, types.BurnDecimalsCorrection).Int64()) / 1000000
-		log.Infof("tx %s fee = %0.6f FTM, burn = %0.6f FTM", trx.Hash.String(), val, bf)
-	*/
-	return burn
+	return new(big.Int).Div(new(big.Int).Mul(fee, feePartToBurn), feeBurnDigitCorrection)
 }

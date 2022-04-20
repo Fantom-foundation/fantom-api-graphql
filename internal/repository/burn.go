@@ -16,3 +16,13 @@ import (
 func (p *proxy) StoreFtmBurn(burn *types.FtmBurn) error {
 	return p.db.StoreBurn(burn)
 }
+
+// FtmBurnTotal provides the total amount of burned native FTM.
+func (p *proxy) FtmBurnTotal() (int64, error) {
+	return p.db.BurnTotal()
+}
+
+// FtmBurnList provides list of per-block burned native FTM tokens.
+func (p *proxy) FtmBurnList(count int64) ([]types.FtmBurn, error) {
+	return p.db.BurnList(count)
+}
