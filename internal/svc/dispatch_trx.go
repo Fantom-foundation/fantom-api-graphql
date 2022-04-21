@@ -13,7 +13,7 @@ import (
 )
 
 // trxAddressQueueCapacity is the number of addresses kept in the dispatch buffer.
-const trxAddressQueueCapacity = 1000
+const trxAddressQueueCapacity = 5000
 
 // trxLogQueueCapacity is the number of transaction logs kept in the dispatch buffer.
 const trxLogQueueCapacity = 5000
@@ -25,10 +25,8 @@ const trxDispatchBlockUpdateTicker = 15 * time.Second
 type eventAcc struct {
 	watchDog *sync.WaitGroup
 	addr     *common.Address
-	act      string
 	blk      *types.Block
 	trx      *types.Transaction
-	deploy   *common.Hash
 }
 
 // trxDispatcher implements dispatcher of new transactions in the blockchain.
@@ -49,7 +47,7 @@ func (trd *trxDispatcher) name() string {
 
 // init prepares the transaction dispatcher to perform its function.
 func (trd *trxDispatcher) init() {
-	trd.sigStop = make(chan bool, 1)
+	trd.sigStop = make(chan bool, 5)
 	trd.blkObserver = atomic.NewUint64(1)
 	trd.outAccount = make(chan *eventAcc, trxAddressQueueCapacity)
 	trd.outLog = make(chan *types.LogRecord, trxLogQueueCapacity)
@@ -171,36 +169,33 @@ func (trd *trxDispatcher) waitAndStore(evt *eventTrx, wg *sync.WaitGroup) {
 // pushAccounts pushes given transaction accounts on both sides observing terminate signal on process.
 func (trd *trxDispatcher) pushAccounts(evt *eventTrx, wg *sync.WaitGroup) bool {
 	// the sender is always present
-	if !trd.pushAccount(types.AccountTypeWallet, &evt.trx.From, evt.blk, evt.trx, wg) {
+	if !trd.pushAccount(&evt.trx.From, evt.blk, evt.trx, wg) {
 		return false
 	}
 
 	// do we have a recipient?
-	if evt.trx.To != nil && !trd.pushAccount(types.AccountTypeWallet, evt.trx.To, evt.blk, evt.trx, wg) {
+	if evt.trx.To != nil && !trd.pushAccount(evt.trx.To, evt.blk, evt.trx, wg) {
 		return false
 	}
 
 	// if there is no contract created, we are done here
-	if evt.trx.ContractAddress == nil {
-		return true
+	if evt.trx.ContractAddress != nil {
+		log.Debugf("contract %s deployed by %s", evt.trx.ContractAddress.String(), evt.trx.Hash.String())
+		return trd.pushAccount(evt.trx.ContractAddress, evt.blk, evt.trx, wg)
 	}
 
-	// queue the new contract to be processed as well
-	log.Debugf("contract %s found at trx %s", evt.trx.ContractAddress.String(), evt.trx.Hash.String())
-	return trd.pushAccount(types.AccountTypeContract, evt.trx.ContractAddress, evt.blk, evt.trx, wg)
+	return true
 }
 
 // pushAccount pushes given account event to output queue observing terminate signal.
-func (trd *trxDispatcher) pushAccount(at string, adr *common.Address, blk *types.Block, trx *types.Transaction, wg *sync.WaitGroup) bool {
+func (trd *trxDispatcher) pushAccount(adr *common.Address, blk *types.Block, trx *types.Transaction, wg *sync.WaitGroup) bool {
 	wg.Add(1)
 	select {
 	case trd.outAccount <- &eventAcc{
 		watchDog: wg,
 		addr:     adr,
-		act:      at,
 		blk:      blk,
 		trx:      trx,
-		deploy:   nil,
 	}:
 	case <-trd.sigStop:
 		trd.sigStop <- true

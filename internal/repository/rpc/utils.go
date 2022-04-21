@@ -14,7 +14,10 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 import (
+	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -24,6 +27,9 @@ import (
 
 // maxAcceptedGasPrice defines max accepted gas price, everything above invokes additional check.
 var maxAcceptedGasPrice = big.NewInt(1_000_000_000_000_000_000)
+
+// solidityCallFunctionName is the identifier for a call to Solidity function name() view returns(string)
+var solidityCallFunctionName = common.Hex2Bytes("06fdde03")
 
 // GasPrice pulls the current amount of WEI for single Gas.
 func (ftm *FtmBridge) GasPrice() (hexutil.Big, error) {
@@ -107,4 +113,24 @@ func (ftm *FtmBridge) GasEstimateWithBlock(trx *struct {
 	}
 
 	return &val, nil
+}
+
+// TokenNameAttempt tries to extract token name from the contract on the given address.
+// We assume to be able to call Solidity: function name() view returns(string)
+func (ftm *FtmBridge) TokenNameAttempt(adr *common.Address) (string, error) {
+	data, err := ftm.eth.CallContract(context.Background(), ethereum.CallMsg{
+		From: common.Address{},
+		To:   adr,
+		Data: solidityCallFunctionName,
+	}, nil)
+
+	if err != nil {
+		return "", err
+	}
+
+	if nil == data || len(data) == 0 {
+		return "", nil
+	}
+
+	return *abi.ConvertType(data, new(string)).(*string), nil
 }

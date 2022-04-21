@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"time"
 )
 
 // Account returns account at Opera blockchain for an address, nil if not found.
@@ -51,7 +50,7 @@ func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 	// found the account in database?
 	if acc == nil {
 		p.log.Debugf("unknown address %s detected", addr.String())
-		acc = &types.Account{Address: *addr, AccountType: types.AccountTypeUnknown}
+		acc = &types.Account{Address: *addr, AccountType: types.AccountTypeWallet}
 	}
 
 	// also keep a copy at the in-memory cache
@@ -71,6 +70,16 @@ func (p *proxy) AccountNonce(addr *common.Address) (*hexutil.Uint64, error) {
 	return p.rpc.AccountNonce(addr)
 }
 
+// AccountHasCode checks if the given account has an associated code.
+func (p *proxy) AccountHasCode(addr *common.Address) bool {
+	c, err := p.rpc.AccountCode(addr)
+	if err != nil {
+		p.log.Errorf("account %s code check failed; %s", addr.String(), err.Error())
+		return false
+	}
+	return c != nil && len(c) > 0
+}
+
 // AccountTransactions returns slice of AccountTransaction structure for a given account at Opera blockchain.
 func (p *proxy) AccountTransactions(addr *common.Address, rec *common.Address, cursor *string, count int32) (*types.TransactionList, error) {
 	// do we have an account?
@@ -82,8 +91,8 @@ func (p *proxy) AccountTransactions(addr *common.Address, rec *common.Address, c
 	return p.db.AccountTransactions(addr, rec, cursor, count)
 }
 
-// AccountsActive returns total number of accounts known to repository.
-func (p *proxy) AccountsActive() (hexutil.Uint64, error) {
+// AccountCount returns total number of accounts known to repository.
+func (p *proxy) AccountCount() (hexutil.Uint64, error) {
 	val, err := p.db.AccountCount()
 	return hexutil.Uint64(val), err
 }
@@ -120,7 +129,7 @@ func (p *proxy) StoreAccount(acc *types.Account) error {
 	return err
 }
 
-// AccountMarkActivity marks the latest account activity in the repository.
-func (p *proxy) AccountMarkActivity(addr *common.Address, ts uint64) error {
-	return p.db.AccountMarkActivity(addr, time.Unix(int64(ts), 0))
+// TokenNameAttempt tries to extract token name from the contract on the given address.
+func (p *proxy) TokenNameAttempt(adr *common.Address) (string, error) {
+	return p.rpc.TokenNameAttempt(adr)
 }

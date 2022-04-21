@@ -14,6 +14,7 @@ We strongly discourage opening Lachesis RPC interface for unrestricted Internet 
 package rpc
 
 import (
+	"context"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -47,4 +48,14 @@ func (ftm *FtmBridge) AccountNonce(addr *common.Address) (*hexutil.Uint64, error
 		return nil, err
 	}
 	return &nonce, nil
+}
+
+// AccountCode returns the contract code deployed at the given address, if any.
+func (ftm *FtmBridge) AccountCode(addr *common.Address) ([]byte, error) {
+	c, err := ftm.eth.CodeAt(context.Background(), *addr, nil)
+	if err != nil {
+		ftm.log.Errorf("failed code check at %s; %s", addr.String(), err.Error())
+		return nil, err
+	}
+	return c, nil
 }

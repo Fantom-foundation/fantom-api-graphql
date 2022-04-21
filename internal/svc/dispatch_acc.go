@@ -2,17 +2,10 @@
 package svc
 
 import (
-	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-)
-
-const (
-	// sfcCheckBelowBlock represents the highest block number we try to detect
-	// SFC contract, above this block the contract should already be known, and we can
-	// skip the check
-	sfcCheckBelowBlock = 100000
+	"time"
 )
 
 // testAddress represents an address used to test an account reference
@@ -47,156 +40,101 @@ func (acd *accDispatcher) run() {
 // execute runs the main account requests monitor and dispatcher
 // loop in a separate thread.
 func (acd *accDispatcher) execute() {
-	// don't forget to sign off after we are done
 	defer func() {
 		close(acd.sigStop)
 		acd.mgr.finished(acd)
 	}()
 
-	// wait for either stop signal, or an account request
 	for {
 		select {
 		case <-acd.sigStop:
 			return
+
 		case acc, ok := <-acd.inAccount:
-			// is the channel even available for reading
 			if !ok {
 				log.Noticef("account channel closed, terminating %s", acd.name())
 				return
 			}
 
-			// do the stuff
-			err := acd.process(acc)
-			if err != nil {
-				log.Errorf("failed account %s processing; %s", acc.addr.String(), err.Error())
+			if !repo.AccountIsKnown(acc.addr) {
+				err := acd.add(acc)
+				if err != nil {
+					log.Errorf("account %s processing failed; %s", acc.addr.String(), err.Error())
+				}
 			}
 
-			// signal this account has been processed
+			// the transaction queue waits for this to finish
 			acc.watchDog.Done()
 		}
 	}
 }
 
-// processAccount processes account into the database
-// based on the account details
-func (acd *accDispatcher) process(acc *eventAcc) error {
-	// log what we do
-	log.Debugf("account %s received for processing", acc.addr.String())
+// add a newly noticed unique account to the API server.
+func (acd *accDispatcher) add(acc *eventAcc) error {
+	log.Debugf("found a new account %s", acc.addr.String())
 
-	// check if the account is new; if we already know it, we are done
-	if repo.AccountIsKnown(acc.addr) {
-		return repo.AccountMarkActivity(acc.addr, uint64(acc.blk.TimeStamp))
+	at, name, isContract := acd.accountType(acc.addr)
+	act := types.Account{
+		Name:            name,
+		Address:         *acc.addr,
+		AccountType:     at,
+		IsContract:      isContract,
+		FirstAppearance: time.Unix(int64(acc.blk.TimeStamp), 0),
 	}
 
-	// is this a simple wallet/account?
-	if acc.trx.ContractAddress != nil {
-		err := acd.processContract(acc)
-		if err != nil {
-			return err
-		}
+	if isContract {
+		act.DeployedBy = &acc.trx.From
+		act.DeploymentTrx = &acc.trx.Hash
 	}
-	return acd.wallet(acc)
+
+	return repo.StoreAccount(&act)
 }
 
-// wallet processes a simple non-contract wallet account into the database
-// based on the account details (it still could be the SFC, be cautious about it)
-func (acd *accDispatcher) wallet(acc *eventAcc) error {
-	// notify new account detected
-	log.Debugf("found new account %s", acc.addr.String())
-
-	// check if the target address is not an SFC contract
-	acd.checkSfc(acc)
-
-	// add the account into the database
-	err := repo.StoreAccount(&types.Account{
-		Address:      *acc.addr,
-		ContractTx:   acc.deploy,
-		Type:         acc.act,
-		LastActivity: acc.blk.TimeStamp,
-		TrxCounter:   1,
-	})
-	if err != nil {
-		log.Errorf("can not add account %s; %s", acc.addr.String(), err.Error())
+// accountType tries to detect the type of the given account.
+func (acd *accDispatcher) accountType(adr *common.Address) (int, string, bool) {
+	// if there is no code behind the address we assume this is just a wallet
+	if !repo.AccountHasCode(adr) {
+		return types.AccountTypeWallet, "", false
 	}
-	return err
+
+	log.Debugf("contract found at %s", adr.String())
+
+	// is it a token contract?
+	ct, name, err := acd.contractTokenType(adr)
+	if err == nil {
+		return ct, name, true
+	}
+
+	// is it the Opera's special purpose contract?
+	if repo.IsSfcContract(adr) {
+		return types.AccountTypeSFCContract, "SFC", true
+	}
+
+	log.Debugf("unknown contract at %s", adr.String())
+	return types.AccountTypeContract, "", true
 }
 
-// checkSfc verifies if the target account is the SFC contract
-// and if so, it adds the SFC target with a different type.
-func (acd *accDispatcher) checkSfc(acc *eventAcc) {
-	// act on SFC detection
-	if uint64(acc.blk.Number) < sfcCheckBelowBlock && repo.IsSfcContract(acc.addr) {
-		// change the type to SFC contract
-		acc.act = types.AccountTypeSFC
-
-		// get the SFC version
-		ver, err := repo.SfcVersion()
-		if err == nil {
-			// log what we found
-			log.Debugf("detected SFC contract %d.%d.%d", byte((ver>>16)&255), byte((ver>>8)&255), byte(ver&255))
-
-			// add the contract
-			err = repo.StoreContract(types.NewSfcContract(acc.addr, uint64(ver), acc.blk, acc.trx))
-			if err != nil {
-				log.Errorf("can not add the SFC contract at %s; %s", acc.addr.String(), err.Error())
-			}
-		}
-	}
-}
-
-// processContract processes contract account with detection.
-func (acd *accDispatcher) processContract(acc *eventAcc) error {
-	// log what we do
-	log.Debugf("account %s is a smart contract, analyzing", acc.addr.String())
-
-	// detect and identify contract
-	contract, accountType, err := acd.detectContract(acc.addr, acc.blk, acc.trx)
-	if err != nil {
-		log.Errorf("can not identify contract at %s; %s", acc.addr.String(), err.Error())
-		return err
-	}
-	acc.act = accountType
-
-	// insert the contract record if possible
-	if contract != nil {
-		err = repo.StoreContract(contract)
-		if err != nil {
-			log.Errorf("can not add contract at %s; %s", acc.addr.String(), err.Error())
-			return err
-		}
-	}
-	return nil
-}
-
-// detectContract tries to identify the contract type.
-func (acd *accDispatcher) detectContract(addr *common.Address, block *types.Block, trx *types.Transaction) (*types.Contract, string, error) {
-
+// contractTokenType tries to check if the contract is some type of tokens contract (ERC20 and/or an NFT).
+func (acd *accDispatcher) contractTokenType(addr *common.Address) (int, string, error) {
 	isErc1155, err := repo.Erc165SupportsInterface(addr, erc1155InterfaceId)
 	if err == nil && isErc1155 {
 		log.Noticef("ERC1155 multi-token detected at %s", addr.String())
-		contract := types.NewTokenContract(addr, "", block, trx, types.AccountTypeERC1155, contracts.ERC1155MetaData.ABI)
-		return contract, types.AccountTypeERC1155, nil
+		return types.AccountTypeERC1155Contract, "ERC-1155", nil
 	}
 
 	isErc721, name := acd.detectErc721Token(addr)
 	if err == nil && isErc721 {
 		log.Noticef("ERC721 NFT token detected at %s", addr.String())
-		contract := types.NewTokenContract(addr, name, block, trx, types.AccountTypeERC721, contracts.ERC721MetaData.ABI)
-		return contract, types.AccountTypeERC721, nil
+		return types.AccountTypeERC721Contract, name, nil
 	}
 
 	isErc20, name := acd.detectErc20Token(addr)
 	if isErc20 {
 		log.Noticef("ERC20 token %s detected at %s", name, addr.String())
-		contract := types.NewTokenContract(addr, name, block, trx, types.AccountTypeERC20, contracts.ERCTwentyMetaData.ABI)
-		return contract, types.AccountTypeERC20, nil
+		return types.AccountTypeERC20Contract, name, nil
 	}
 
-	// log that the detection failed
-	log.Noticef("unknown contract at %s", addr.String())
-
-	// set as generic contract type if no other has been detected
-	return types.NewContract(addr, block, trx), types.AccountTypeContract, nil
+	return types.AccountTypeContract, "", fmt.Errorf("not a detectable token contract")
 }
 
 // detectErc20Token identifies ERC20 token contracts by trying to call specific contract methods.
@@ -225,6 +163,7 @@ func (acd *accDispatcher) detectErc20Token(addr *common.Address) (isErc20 bool, 
 	return true, name
 }
 
+// detectErc721Token checks for ERC-721 interface and extracts collection name, if available.
 func (acd *accDispatcher) detectErc721Token(addr *common.Address) (isErc721 bool, name string) {
 	isErc721, err := repo.Erc165SupportsInterface(addr, erc721InterfaceId)
 	if err != nil || !isErc721 {
@@ -232,9 +171,9 @@ func (acd *accDispatcher) detectErc721Token(addr *common.Address) (isErc721 bool
 	}
 
 	// try to detect name - but it is optional for ERC721
-	name, err = repo.Erc20Name(addr)
+	name, err = repo.TokenNameAttempt(addr)
 	if err != nil {
-		return true, ""
+		return true, "ERC-721"
 	}
 
 	return true, name
