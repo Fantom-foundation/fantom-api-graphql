@@ -14,12 +14,13 @@ import (
 
 // StoreFtmBurn stores the given native FTM burn per block record into the persistent storage.
 func (p *proxy) StoreFtmBurn(burn *types.FtmBurn) error {
+	p.cache.FtmBurnUpdate(burn, p.db.BurnTotal)
 	return p.db.StoreBurn(burn)
 }
 
 // FtmBurnTotal provides the total amount of burned native FTM.
 func (p *proxy) FtmBurnTotal() (int64, error) {
-	return p.db.BurnTotal()
+	return p.cache.FtmBurnTotal(p.db.BurnTotal)
 }
 
 // FtmBurnList provides list of per-block burned native FTM tokens.

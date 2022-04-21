@@ -281,8 +281,12 @@ type Query {
     gasPriceList(from: Time! to: Time): [GasPriceTick!]!
 
     # ftmBurnedTotal provides the total amount of native FTM tokens burned
-    # by the chain from paid transaction fees.
+    # by the chain from paid transaction fees in WEI units.
     ftmBurnedTotal: BigInt!
+
+    # ftmBurnedTotalAmount provides the total amount of native FTM tokens burned
+    # by the chain from paid transaction fees in FTM units.
+    ftmBurnedTotalAmount: Float!
 
     # ftmLatestBlockBurnList provides a list of latest burned native FTM tokens per-block.
     ftmLatestBlockBurnList(count: Int = 25): [FtmBlockBurn!]!

@@ -1205,8 +1205,8 @@ type FtmBlockBurn {
     # amount represents the amount of FTM tokens burned in WEI units (18 digits fixed INT encoded as HEX number).
     amount: BigInt!
 
-    # value represents FTM value of the burned FTM tokens.
-    value: Float!
+    # ftmValue represents FTM value of the burned FTM tokens.
+    ftmValue: Float!
 }
 # EstimatedRewards represents a calculated rewards estimation for an account or amount staked
 type EstimatedRewards {
@@ -2292,8 +2292,12 @@ type Query {
     gasPriceList(from: Time! to: Time): [GasPriceTick!]!
 
     # ftmBurnedTotal provides the total amount of native FTM tokens burned
-    # by the chain from paid transaction fees.
+    # by the chain from paid transaction fees in WEI units.
     ftmBurnedTotal: BigInt!
+
+    # ftmBurnedTotalAmount provides the total amount of native FTM tokens burned
+    # by the chain from paid transaction fees in FTM units.
+    ftmBurnedTotalAmount: Float!
 
     # ftmLatestBlockBurnList provides a list of latest burned native FTM tokens per-block.
     ftmLatestBlockBurnList(count: Int = 25): [FtmBlockBurn!]!

@@ -9,6 +9,6 @@ type FtmBlockBurn {
     # amount represents the amount of FTM tokens burned in WEI units (18 digits fixed INT encoded as HEX number).
     amount: BigInt!
 
-    # value represents FTM value of the burned FTM tokens.
-    value: Float!
+    # ftmValue represents FTM value of the burned FTM tokens.
+    ftmValue: Float!
 }

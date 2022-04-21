@@ -8,7 +8,7 @@ import (
 	"math/big"
 )
 
-// FtmBurnedTotal resolves total amount of burned FTM tokens.
+// FtmBurnedTotal resolves total amount of burned FTM tokens in WEI units.
 func (rs *rootResolver) FtmBurnedTotal() hexutil.Big {
 	val, err := repository.R().FtmBurnTotal()
 	if err != nil {
@@ -16,6 +16,16 @@ func (rs *rootResolver) FtmBurnedTotal() hexutil.Big {
 		return hexutil.Big{}
 	}
 	return hexutil.Big(*new(big.Int).Mul(big.NewInt(val), types.BurnDecimalsCorrection))
+}
+
+// FtmBurnedTotalAmount resolves total amount of burned FTM tokens in FTM units.
+func (rs *rootResolver) FtmBurnedTotalAmount() float64 {
+	val, err := repository.R().FtmBurnTotal()
+	if err != nil {
+		log.Criticalf("failed to load burned total; %s", err.Error())
+		return 0
+	}
+	return float64(val) / types.BurnFTMDecimalsCorrection
 }
 
 // FtmLatestBlockBurnList resolves a list of the latest block burns.
