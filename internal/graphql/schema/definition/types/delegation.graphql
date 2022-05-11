@@ -53,7 +53,7 @@ type Delegation {
     lockedUntil: Long!
 
     # lockedAmount represents the amount of delegation stake locked.
-    # The undelegate process must call unlock prior to creating withdraw
+    # The un-delegate process must call unlock prior to creating withdraw
     # request if outstanding unlocked amount
     # is lower than demanded amount to undelegate.
     lockedAmount: BigInt!

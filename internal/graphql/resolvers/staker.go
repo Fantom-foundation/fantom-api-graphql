@@ -205,6 +205,11 @@ func (st Staker) DelegatedLimit() (hexutil.Big, error) {
 	return hexutil.Big(*new(big.Int).Sub(lim.ToInt(), st.TotalStake.ToInt())), nil
 }
 
+// IsValidator signals if the staker is actually a validator.
+func (st Staker) IsValidator() (bool, error) {
+	return repository.R().IsValidator(&st.StakerAddress)
+}
+
 // IsActive signals if the validator is active.
 func (st Staker) IsActive() bool {
 	return st.Status == 0
