@@ -63,7 +63,7 @@ type Transaction struct {
 	ContractAddress *common.Address `json:"contract,omitempty"`
 
 	// TrxIndex represents integer of the transaction's index position in the block. nil when its pending.
-	TrxIndex *hexutil.Uint `json:"transactionIndex,omitempty"`
+	TrxIndex *hexutil.Uint `json:"trxIndex,omitempty"`
 
 	// Value represents value transferred in Wei.
 	Value hexutil.Big `json:"value"`

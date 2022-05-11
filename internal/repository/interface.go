@@ -53,11 +53,11 @@ type Repository interface {
 	// AccountIsKnown checks if the account of the given address is known to the API server.
 	AccountIsKnown(*common.Address) bool
 
+	// AccountHasCode checks if the given account has an associated code.
+	AccountHasCode(addr *common.Address) bool
+
 	// StoreAccount adds specified account detail into the repository.
 	StoreAccount(*types.Account) error
-
-	// AccountMarkActivity marks the latest account activity in the repository.
-	AccountMarkActivity(*common.Address, uint64) error
 
 	// BlockHeight returns the current height of the Opera blockchain in blocks.
 	BlockHeight() (*hexutil.Big, error)
@@ -431,6 +431,9 @@ type Repository interface {
 	// TokenTransactionsByCall provides a list of token transaction made inside a specific
 	// transaction call (blockchain transaction).
 	TokenTransactionsByCall(*common.Hash) ([]*types.TokenTransaction, error)
+
+	// TokenNameAttempt tries to extract token name from the contract on the given address.
+	TokenNameAttempt(adr *common.Address) (string, error)
 
 	// Erc20Token returns an ERC20 token for the given address, if available.
 	Erc20Token(*common.Address) (*types.Erc20Token, error)

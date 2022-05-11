@@ -43,7 +43,7 @@ const (
 
 // initTransactionsCollection initializes the transaction collection with
 // indexes and additional parameters needed by the app.
-func (db *MongoDbBridge) initTransactionsCollection(col *mongo.Collection) {
+func (db *MongoDbBridge) transactionsIndexes() []mongo.IndexModel {
 	// prepare index models
 	ix := make([]mongo.IndexModel, 0)
 

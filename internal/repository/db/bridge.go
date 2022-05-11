@@ -160,47 +160,6 @@ func (db *MongoDbBridge) getAggregateValue(col *mongo.Collection, pipeline *bson
 	return uint64(row.Value), nil
 }
 
-// CheckDatabaseInitState verifies if database collections have been
-// already initialized and marks the empty collections so they can be properly
-// configured when created.
-func (db *MongoDbBridge) CheckDatabaseInitState() {
-	// log what we do
-	db.log.Debugf("checking database init state")
-
-	db.collectionNeedInit("accounts", db.AccountCount, &db.initAccounts)
-	db.collectionNeedInit("transactions", db.TransactionsCount, &db.initTransactions)
-	db.collectionNeedInit("contracts", db.ContractCount, &db.initContracts)
-	db.collectionNeedInit("swaps", db.SwapCount, &db.initSwaps)
-	db.collectionNeedInit("delegations", db.DelegationsCount, &db.initDelegations)
-	db.collectionNeedInit("withdrawals", db.WithdrawalsCount, &db.initWithdrawals)
-	db.collectionNeedInit("rewards", db.RewardsCount, &db.initRewards)
-	db.collectionNeedInit("erc20 transactions", db.ErcTransactionCount, &db.initErc20Trx)
-	db.collectionNeedInit("fmint transactions", db.FMintTransactionCount, &db.initFMintTrx)
-	db.collectionNeedInit("epochs", db.EpochsCount, &db.initEpochs)
-	db.collectionNeedInit("gas price periods", db.GasPricePeriodCount, &db.initGasPrice)
-}
-
-// checkAccountCollectionState checks the Accounts' collection state.
-func (db *MongoDbBridge) collectionNeedInit(name string, counter func() (uint64, error), init **sync.Once) {
-	// use the counter to get the collection size
-	count, err := counter()
-	if err != nil {
-		db.log.Errorf("can not check %s count; %s", name, err.Error())
-		return
-	}
-
-	// collection not empty,
-	if 0 != count {
-		db.log.Debugf("found %d %s", count, name)
-		return
-	}
-
-	// collection init needed, create the init control
-	db.log.Noticef("%s collection empty", name)
-	var once sync.Once
-	*init = &once
-}
-
 // CountFiltered calculates total number of documents in the given collection for the given filter.
 func (db *MongoDbBridge) CountFiltered(col *mongo.Collection, filter *bson.D) (uint64, error) {
 	// make sure some filter is used

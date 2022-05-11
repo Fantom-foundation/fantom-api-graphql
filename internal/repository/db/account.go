@@ -9,18 +9,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 const (
 	// coAccount is the name of the off-chain database collection storing account details.
 	coAccounts = "account"
-
-	// fiAccountLastActivity represents account last activity attribute.
-	fiAccountLastActivity = "last_tx"
-
-	// fiAccountNonce represents account transaction count.
-	fiAccountNonce = "nonce"
 
 	// fiAccountType represents account type column inside the collection.
 	fiAccountType = "act"
@@ -69,8 +62,7 @@ func (db *MongoDbBridge) StoreAccount(acc *types.Account) error {
 		bson.D{{Key: defaultPK, Value: acc.Address}},
 		bson.D{
 			{Key: "$set", Value: bson.D{
-				{Key: fiAccountLastActivity, Value: acc.LastActivity},
-				{Key: fiAccountNonce, Value: acc.TrxCounter},
+				{Key: fiAccountType, Value: acc.AccountType},
 			}},
 			{Key: "$setOnInsert", Value: acc},
 		},
@@ -127,26 +119,8 @@ func (db *MongoDbBridge) AccountTransactions(addr *common.Address, rec *common.A
 	return db.Transactions(cursor, count, &filter)
 }
 
-// AccountMarkActivity marks the latest account activity in the repository.
-func (db *MongoDbBridge) AccountMarkActivity(addr *common.Address, ts time.Time) error {
-	db.log.Debugf("account %s activity at %s", addr.String(), ts.String())
-
-	col := db.client.Database(db.dbName).Collection(coAccounts)
-	if _, err := col.UpdateOne(context.Background(),
-		bson.D{{Key: defaultPK, Value: addr}},
-		bson.D{
-			{Key: "$set", Value: bson.D{{Key: fiAccountLastActivity, Value: ts}}},
-			{Key: "$inc", Value: bson.D{{Key: fiAccountNonce, Value: 1}}},
-		}); err != nil {
-		db.log.Errorf("can not update account %s details; %s", addr.String(), err.Error())
-		return err
-	}
-
-	return nil
-}
-
 // ErcTokensList returns a list of known ERC tokens ordered by their activity.
-func (db *MongoDbBridge) ErcTokensList(count int32, tt string) ([]common.Address, error) {
+func (db *MongoDbBridge) ErcTokensList(count int32, tt int) ([]common.Address, error) {
 	// make sure the count is positive; use default size if not
 	if count <= 0 {
 		count = defaultTokenListLength
@@ -160,10 +134,7 @@ func (db *MongoDbBridge) ErcTokensList(count int32, tt string) ([]common.Address
 
 	// make the filter for ERC20 tokens only and pull them ordered by activity
 	filter := bson.D{{Key: fiAccountType, Value: tt}}
-	opt := options.Find().SetSort(bson.D{
-		{Key: fiAccountNonce, Value: -1},
-		{Key: fiAccountLastActivity, Value: -1},
-	}).SetLimit(int64(count))
+	opt := options.Find().SetLimit(int64(count))
 
 	// load the data
 	cursor, err := col.Find(context.Background(), filter, opt)

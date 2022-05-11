@@ -21,34 +21,33 @@ const colDelegations = "delegations"
 // ErrUnknownDelegation represents an error given on an unknown delegation update attempt.
 var ErrUnknownDelegation = fmt.Errorf("unknown delegation")
 
-// initDelegationCollection initializes the delegation collection with
-// indexes and additional parameters needed by the app.
-func (db *MongoDbBridge) initDelegationCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
+// delegationCollectionIndexes provides a list of indexes expected to exist on the delegations' collection.
+func delegationCollectionIndexes() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 5)
 
-	// index delegation address and the validator; this is how we find a specific unique delegation
+	ixDlgAddress := "ix_dlg_address"
+	ix[0] = mongo.IndexModel{Keys: bson.D{{Key: "addr", Value: 1}}, Options: &options.IndexOptions{Name: &ixDlgAddress}}
+
+	ixDlgValId := "ix_dlg_validator"
+	ix[1] = mongo.IndexModel{Keys: bson.D{{Key: "to_id", Value: 1}}, Options: &options.IndexOptions{Name: &ixDlgValId}}
+
+	ixDlgOrdinal := "ix_dlg_ordinal"
+	ix[2] = mongo.IndexModel{Keys: bson.D{{Key: "orx", Value: -1}}, Options: &options.IndexOptions{Name: &ixDlgOrdinal}}
+
+	ixDlgTimestamp := "ix_dlg_timestamp"
+	ix[3] = mongo.IndexModel{Keys: bson.D{{Key: "created", Value: -1}}, Options: &options.IndexOptions{Name: &ixDlgTimestamp}}
+
+	ixDlgOrdinalStaker := "ix_dlg_addr_orx"
 	unique := true
-	ix = append(ix, mongo.IndexModel{
-		Keys: bson.D{{Key: types.FiDelegationAddress, Value: 1}, {Key: types.FiDelegationToValidator, Value: 1}},
+	ix[4] = mongo.IndexModel{
+		Keys: bson.D{{Key: "addr", Value: 1}, {Key: "orx", Value: 1}},
 		Options: &options.IndexOptions{
+			Name:   &ixDlgOrdinalStaker,
 			Unique: &unique,
 		},
-	})
-
-	// index delegator, receiving validator, and creation time stamp
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiDelegationAddress, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiDelegationToValidator, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiDelegationOrdinal, Value: -1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiDelegationStamp, Value: -1}}})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for delegation collection; %s", err.Error())
 	}
 
-	// log we're done that
-	db.log.Debugf("delegation collection initialized")
+	return ix
 }
 
 // Delegation returns details of a delegation from an address to a validator ID.

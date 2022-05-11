@@ -11,60 +11,64 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// colErcTransactions represents the name of the ERC20 transaction collection in database.
-const colErcTransactions = "erc20trx"
+const (
+	// colTokenTransactions represents the name of the token (ERC20, ERC721, ERC1155) transaction collection in database.
+	colTokenTransactions = "token_trx"
 
-// initErc20TrxCollection initializes the ERC20 transaction list collection with
-// indexes and additional parameters needed by the app.
-func (db *MongoDbBridge) initErc20TrxCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
+	// colTokenTrxOrdinalIndex is the name of the ordinal index column in token transactions collection
+	colTokenTrxOrdinalIndex = "ordinal"
+)
 
-	// index specific elements
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenTransactionToken, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenTransactionSender, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenTransactionRecipient, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenTransactionOrdinal, Value: -1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenTransactionCallHash, Value: 1}}})
+// tokenTrxCollectionIndexes provides a list of indexes expected to exist on the tokens' transactions collection.
+func tokenTrxCollectionIndexes() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 5)
 
-	// sender + ordinal index
-	tox := "to_tok"
-	ix = append(ix, mongo.IndexModel{
-		Keys: bson.D{{Key: types.FiTokenTransactionRecipient, Value: 1}, {Key: types.FiTokenTransactionToken, Value: 1}},
+	ixTrxSender := "ix_trx_sender"
+	ix[0] = mongo.IndexModel{Keys: bson.D{{Key: "from", Value: 1}}, Options: &options.IndexOptions{Name: &ixTrxSender}}
+
+	ixTrxRecipient := "ix_trx_recipient"
+	ix[1] = mongo.IndexModel{Keys: bson.D{{Key: "to", Value: 1}}, Options: &options.IndexOptions{Name: &ixTrxRecipient}}
+
+	ixTrxOrdinal := "ix_trx_ordinal"
+	ix[2] = mongo.IndexModel{Keys: bson.D{{Key: "ordinal", Value: -1}}, Options: &options.IndexOptions{Name: &ixTrxOrdinal}}
+
+	ixTrxHash := "ix_trx_hash"
+	ix[3] = mongo.IndexModel{Keys: bson.D{{Key: "trx", Value: 1}}, Options: &options.IndexOptions{Name: &ixTrxHash}}
+
+	ixOrdinalRecipient := "ix_ord_to"
+	ix[4] = mongo.IndexModel{
+		Keys: bson.D{{Key: "to", Value: 1}, {Key: "ordinal", Value: 1}},
 		Options: &options.IndexOptions{
-			Name: &tox,
+			Name: &ixOrdinalRecipient,
 		},
-	})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for ERC20 trx collection; %s", err.Error())
 	}
 
-	// log we are done that
-	db.log.Debugf("ERC20 trx collection initialized")
+	return ix
 }
 
-// AddERC20Transaction stores an ERC20 transaction in the database if it doesn't exist.
-func (db *MongoDbBridge) AddERC20Transaction(trx *types.TokenTransaction) error {
-	// get the collection for delegations
-	col := db.client.Database(db.dbName).Collection(colErcTransactions)
-
-	// is it a new one?
-	if db.isErcTransactionKnown(col, trx) {
-		return nil
+// StoreTokenTransaction stores a token transaction in the database.
+func (db *MongoDbBridge) StoreTokenTransaction(trx *types.TokenTransaction) error {
+	if trx == nil {
+		return fmt.Errorf("can not add empty transaction")
 	}
 
-	// try to do the insert
-	if _, err := col.InsertOne(context.Background(), trx); err != nil {
-		db.log.Critical(err)
+	col := db.client.Database(db.dbName).Collection(colTokenTransactions)
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: defaultPK, Value: trx.Pk()}},
+		bson.D{
+			{Key: "$set", Value: bson.D{
+				{Key: colTokenTrxOrdinalIndex, Value: trx.Index()},
+			}},
+			{Key: "$setOnInsert", Value: trx},
+		},
+		options.Update().SetUpsert(true),
+	); err != nil {
+		db.log.Errorf("can not add token transaction; %s", err)
 		return err
 	}
 
-	// make sure delegation collection is initialized
-	if db.initErc20Trx != nil {
-		db.initErc20Trx.Do(func() { db.initErc20TrxCollection(col); db.initErc20Trx = nil })
-	}
+	db.log.Debugf("added token trx at %s, log #%d", trx.Transaction.String(), trx.LogIndex)
 	return nil
 }
 
@@ -93,12 +97,12 @@ func (db *MongoDbBridge) isErcTransactionKnown(col *mongo.Collection, trx *types
 // ErcTransactionCountFiltered calculates total number of ERC20 transactions
 // in the database for the given filter.
 func (db *MongoDbBridge) ErcTransactionCountFiltered(filter *bson.D) (uint64, error) {
-	return db.CountFiltered(db.client.Database(db.dbName).Collection(colErcTransactions), filter)
+	return db.CountFiltered(db.client.Database(db.dbName).Collection(colTokenTransactions), filter)
 }
 
 // ErcTransactionCount calculates total number of ERC20 transactions in the database.
 func (db *MongoDbBridge) ErcTransactionCount() (uint64, error) {
-	return db.EstimateCount(db.client.Database(db.dbName).Collection(colErcTransactions))
+	return db.EstimateCount(db.client.Database(db.dbName).Collection(colTokenTransactions))
 }
 
 // ercTrxListInit initializes list of ERC20 transactions based on provided cursor, count, and filter.
@@ -296,7 +300,7 @@ func (db *MongoDbBridge) Erc20Transactions(cursor *string, count int32, filter *
 	}
 
 	// get the collection and context
-	col := db.client.Database(db.dbName).Collection(colErcTransactions)
+	col := db.client.Database(db.dbName).Collection(colTokenTransactions)
 
 	// init the list
 	list, err := db.ercTrxListInit(col, cursor, count, filter)
@@ -329,7 +333,7 @@ func (db *MongoDbBridge) Erc20Assets(owner common.Address, count int32) ([]commo
 	}
 
 	// get the collection and context
-	col := db.client.Database(db.dbName).Collection(colErcTransactions)
+	col := db.client.Database(db.dbName).Collection(colTokenTransactions)
 	refs, err := col.Distinct(context.Background(), types.FiTokenTransactionToken,
 		bson.D{{Key: "to", Value: owner.String()}},
 	)
@@ -348,7 +352,7 @@ func (db *MongoDbBridge) Erc20Assets(owner common.Address, count int32) ([]commo
 
 // TokenTransactionsByCall provides list of token transactions for the given blockchain transaction call.
 func (db *MongoDbBridge) TokenTransactionsByCall(trxHash *common.Hash) ([]*types.TokenTransaction, error) {
-	col := db.client.Database(db.dbName).Collection(colErcTransactions)
+	col := db.client.Database(db.dbName).Collection(colTokenTransactions)
 
 	// search for values
 	ld, err := col.Find(

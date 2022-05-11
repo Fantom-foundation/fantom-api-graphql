@@ -4,7 +4,7 @@ package types
 // ContractList represents a list of smart contracts.
 type ContractList struct {
 	// List keeps the actual Collection.
-	Collection []*Contract
+	Collection []*Account
 
 	// Total indicates total number of contracts in the whole collection.
 	Total uint64

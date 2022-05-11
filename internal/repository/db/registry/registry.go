@@ -34,4 +34,10 @@ func custom(rb *bsoncodec.RegistryBuilder) {
 	// add hexutil.Big (value) support to the BSON registry
 	rb.RegisterTypeEncoder(tHexBigInt, bsoncodec.ValueEncoderFunc(HexBigIntEncodeValue))
 	rb.RegisterTypeDecoder(tHexBigInt, bsoncodec.ValueDecoderFunc(HexBigIntDecodeValue))
+
+	// add hexutil.Uint variants (value) support to the BSON registry
+	rb.RegisterTypeEncoder(tHexUint, bsoncodec.ValueEncoderFunc(HexUintEncodeValue))
+	rb.RegisterTypeDecoder(tHexUint, bsoncodec.ValueDecoderFunc(HexUintDecodeValue))
+	rb.RegisterTypeEncoder(tHexUint64, bsoncodec.ValueEncoderFunc(HexUintEncodeValue))
+	rb.RegisterTypeDecoder(tHexUint64, bsoncodec.ValueDecoderFunc(HexUintDecodeValue))
 }

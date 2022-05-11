@@ -40,6 +40,7 @@ func (p *proxy) Erc721Contract(addr *common.Address) (*types.Erc721Contract, err
 	return val.(*types.Erc721Contract), nil
 }
 
+// loadErc721ContractDetails loads details of an ERC721 token.
 func (p *proxy) loadErc721ContractDetails(token *types.Erc721Contract) (*types.Erc721Contract, error) {
 	var err error
 
