@@ -27,6 +27,10 @@ func custom(rb *bsoncodec.RegistryBuilder) {
 	rb.RegisterTypeEncoder(tAddress, bsoncodec.ValueEncoderFunc(AddressEncodeValue))
 	rb.RegisterTypeDecoder(tAddress, bsoncodec.ValueDecoderFunc(AddressDecodeValue))
 
+	// add Opera node discovery address support
+	rb.RegisterTypeEncoder(tNodeAddress, bsoncodec.ValueEncoderFunc(NodeAddressEncodeValue))
+	rb.RegisterTypeDecoder(tNodeAddress, bsoncodec.ValueDecoderFunc(NodeAddressDecodeValue))
+
 	// add common.Hash (value) support to the BSON registry
 	rb.RegisterTypeEncoder(tHash, bsoncodec.ValueEncoderFunc(HashEncodeValue))
 	rb.RegisterTypeDecoder(tHash, bsoncodec.ValueDecoderFunc(HashDecodeValue))
