@@ -3,6 +3,7 @@ package config
 
 import (
 	"crypto/ecdsa"
+	"github.com/ethereum/go-ethereum/p2p/enode"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -22,8 +23,8 @@ type Config struct {
 	// Logger configuration
 	Log Log `mapstructure:"log"`
 
-	// Lachesis represents the node structure
-	Lachesis Lachesis `mapstructure:"node"`
+	// Opera represents the node structure
+	Opera OperaNetwork `mapstructure:"node"`
 
 	// Database configuration
 	Db Database `mapstructure:"db"`
@@ -92,9 +93,10 @@ type Log struct {
 	Format string `mapstructure:"format"`
 }
 
-// Lachesis represents the Lachesis node access configuration
-type Lachesis struct {
-	Url string `mapstructure:"url"`
+// OperaNetwork represents the Opera network node access configuration
+type OperaNetwork struct {
+	ApiNodeUrl     string        `mapstructure:"url"`
+	BootstrapNodes []*enode.Node `mapstructure:"bootstrap"`
 }
 
 // Database represents the database access configuration.
