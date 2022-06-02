@@ -41,7 +41,7 @@ const (
 	// defLoggingFormat holds default format of the Logger output
 	defLoggingFormat = "%{color}%{level:-8s} %{shortpkg}/%{shortfunc}%{color:reset}: %{message}"
 
-	// defLachesisUrl holds default Lachesis connection string
+	// defLachesisUrl holds default Opera network connection string
 	defLachesisUrl = "~/.lachesis/data/lachesis.ipc"
 
 	// defMongoUrl holds default MongoDB connection string
