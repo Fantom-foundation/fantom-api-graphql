@@ -3,9 +3,9 @@ package types
 
 import (
 	"encoding/json"
+	"fantom-api-graphql/internal/repository/db/registry"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"go.mongodb.org/mongo-driver/bson"
 	"time"
 )
 
@@ -49,7 +49,7 @@ func (e *Epoch) Marshal() ([]byte, error) {
 // MarshalBSON creates a BSON representation of the Epoch record.
 func (e *Epoch) MarshalBSON() ([]byte, error) {
 	// prep the structure for saving
-	return bson.Marshal(BsonEpoch{
+	return registry.Marshal(BsonEpoch{
 		ID:                  int64(e.Id),
 		EndTime:             int64(e.EndTime),
 		End:                 time.Unix(int64(e.EndTime), 0),
@@ -72,7 +72,7 @@ func (e *Epoch) UnmarshalBSON(data []byte) (err error) {
 
 	// try to decode BSON data
 	var row BsonEpoch
-	if err = bson.Unmarshal(data, &row); err != nil {
+	if err = registry.Unmarshal(data, &row); err != nil {
 		return err
 	}
 

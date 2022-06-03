@@ -2,7 +2,7 @@
 package types
 
 import (
-	"go.mongodb.org/mongo-driver/bson"
+	"fantom-api-graphql/internal/repository/db/registry"
 	"time"
 )
 
@@ -63,10 +63,10 @@ type GasPricePeriod struct {
 
 // MarshalBSON creates a BSON representation of the gas price estimation record.
 func (gpp *GasPricePeriod) MarshalBSON() ([]byte, error) {
-	return bson.Marshal(*gpp)
+	return registry.Marshal(*gpp)
 }
 
 // UnmarshalBSON updates the value from BSON source.
 func (gpp *GasPricePeriod) UnmarshalBSON(data []byte) (err error) {
-	return bson.Unmarshal(data, gpp)
+	return registry.Unmarshal(data, gpp)
 }

@@ -3,10 +3,10 @@ package types
 
 import (
 	"encoding/binary"
+	"fantom-api-graphql/internal/repository/db/registry"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
 	"time"
 )
@@ -76,7 +76,7 @@ func (rwc *RewardClaim) MarshalBSON() ([]byte, error) {
 		Value:     val.Uint64(),
 		IsDlg:     rwc.IsDelegated,
 	}
-	return bson.Marshal(pom)
+	return registry.Marshal(pom)
 }
 
 // UnmarshalBSON updates the value from BSON source.
@@ -90,7 +90,7 @@ func (rwc *RewardClaim) UnmarshalBSON(data []byte) (err error) {
 
 	// try to decode the BSON data
 	var row BsonRewardClaim
-	if err = bson.Unmarshal(data, &row); err != nil {
+	if err = registry.Unmarshal(data, &row); err != nil {
 		return err
 	}
 

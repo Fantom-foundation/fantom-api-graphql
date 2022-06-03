@@ -3,10 +3,10 @@ package types
 
 import (
 	"encoding/binary"
+	"fantom-api-graphql/internal/repository/db/registry"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
 	"time"
 )
@@ -106,7 +106,7 @@ func (ftx *FMintTransaction) MarshalBSON() ([]byte, error) {
 		Value:     val,
 		FeeValue:  fee,
 	}
-	return bson.Marshal(pom)
+	return registry.Marshal(pom)
 }
 
 // UnmarshalBSON updates the value from BSON source.
@@ -129,7 +129,7 @@ func (ftx *FMintTransaction) UnmarshalBSON(data []byte) (err error) {
 		TrxIndex  int64     `bson:"tix"`
 		TimeStamp time.Time `bson:"stamp"`
 	}
-	if err = bson.Unmarshal(data, &row); err != nil {
+	if err = registry.Unmarshal(data, &row); err != nil {
 		return err
 	}
 

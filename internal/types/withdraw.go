@@ -3,10 +3,10 @@ package types
 
 import (
 	"encoding/binary"
+	"fantom-api-graphql/internal/repository/db/registry"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
 	"time"
 )
@@ -108,7 +108,7 @@ func (wr *WithdrawRequest) MarshalBSON() ([]byte, error) {
 		val := wr.WithdrawTrx.String()
 		pom.Penalty = &val
 	}
-	return bson.Marshal(pom)
+	return registry.Marshal(pom)
 }
 
 // UnmarshalBSON updates the value from BSON source.
@@ -121,7 +121,7 @@ func (wr *WithdrawRequest) UnmarshalBSON(data []byte) (err error) {
 
 	// try to decode the BSON data
 	var row BsonWithdrawRequest
-	if err = bson.Unmarshal(data, &row); err != nil {
+	if err = registry.Unmarshal(data, &row); err != nil {
 		return err
 	}
 
