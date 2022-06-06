@@ -11,7 +11,7 @@ import (
 // Delegation represents a delegator in Opera blockchain.
 type Delegation struct {
 	Address         common.Address `json:"addr"`
-	ToStakerId      hexutil.Big    `json:"to_id"`
+	ToStakerId      *hexutil.Big   `json:"to_id"`
 	Transaction     common.Hash    `json:"trx"`
 	ToStakerAddress common.Address `json:"to_addr"`
 	CreatedTime     hexutil.Uint64 `json:"created"`
