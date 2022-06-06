@@ -13,25 +13,35 @@ import (
 // colFMintTransactions represents the name of the fMint transaction collection in database.
 const colFMintTransactions = "fmint_trx"
 
-// initFMintTrxCollection initializes the fMint transaction list collection with
-// indexes and additional parameters needed by the app.
-func (db *MongoDbBridge) initFMintTrxCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
+// fMintTrxCollectionIndexes provides a list of indexes expected to exist on the fmint transactions' collection.
+func fMintTrxCollectionIndexes() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 4)
 
-	// index specific elements
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiFMintTransactionToken, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiFMintTransactionUser, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiFMintTransactionTimestamp, Value: -1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiFMintTransactionOrdinal, Value: -1}}})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for fMint trx collection; %s", err.Error())
+	ixFMintTxToken := "ix_fmint_tx_tok"
+	ix[0] = mongo.IndexModel{
+		Keys:    bson.D{{Key: types.FiFMintTransactionToken, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixFMintTxToken},
 	}
 
-	// log we are done that
-	db.log.Debugf("fMint trx collection initialized")
+	ixFMintTxUser := "ix_fmint_tx_usr"
+	ix[1] = mongo.IndexModel{
+		Keys:    bson.D{{Key: types.FiFMintTransactionUser, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixFMintTxUser},
+	}
+
+	ixFMintTxStamp := "ix_fmint_tx_stamp"
+	ix[2] = mongo.IndexModel{
+		Keys:    bson.D{{Key: types.FiFMintTransactionTimestamp, Value: -1}},
+		Options: &options.IndexOptions{Name: &ixFMintTxStamp},
+	}
+
+	ixFMintTxOrdinal := "ix_fmin_tx_orx"
+	ix[3] = mongo.IndexModel{
+		Keys:    bson.D{{Key: types.FiFMintTransactionOrdinal, Value: -1}},
+		Options: &options.IndexOptions{Name: &ixFMintTxOrdinal},
+	}
+
+	return ix
 }
 
 // AddFMintTransaction stores an fMint transaction in the database if it doesn't exist.
@@ -50,10 +60,6 @@ func (db *MongoDbBridge) AddFMintTransaction(trx *types.FMintTransaction) error 
 		return err
 	}
 
-	// make sure delegation collection is initialized
-	if db.initFMintTrx != nil {
-		db.initFMintTrx.Do(func() { db.initFMintTrxCollection(col); db.initErc20Trx = nil })
-	}
 	return nil
 }
 
