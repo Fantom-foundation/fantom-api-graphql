@@ -6,9 +6,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 )
 
-// Registry is the default bsoncodec.Registry. It contains the custom codecs, the default codecs and the
+// defaultRegistry is the default bsoncodec.Registry. It contains the custom codecs, the default codecs and the
 // primitive codecs.
-var Registry = New()
+var defaultRegistry = New()
+
+// DefaultRegistry returns default bsoncodec.Registry
+func DefaultRegistry() *bsoncodec.Registry {
+	return defaultRegistry
+}
 
 // New creates a new BSON registry to be used for BSON marshalling/unmarshalling operations
 func New() *bsoncodec.Registry {

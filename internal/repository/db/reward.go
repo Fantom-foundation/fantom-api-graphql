@@ -69,9 +69,9 @@ func (db *MongoDbBridge) AddRewardClaim(rc *types.RewardClaim) error {
 func (db *MongoDbBridge) isRewardClaimKnown(col *mongo.Collection, rc *types.RewardClaim) bool {
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{Key: types.FiRewardClaimPk, Value: rc.Pk()},
+		{Key: defaultPK, Value: rc.Pk()},
 	}, options.FindOne().SetProjection(bson.D{
-		{Key: types.FiRewardClaimPk, Value: true},
+		{Key: defaultPK, Value: true},
 	}))
 
 	// error on lookup?
@@ -156,7 +156,7 @@ func (db *MongoDbBridge) rewListCollectRangeMarks(col *mongo.Collection, list *t
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.rewListBorderPk(col,
-			bson.D{{Key: types.FiRewardClaimPk, Value: *cursor}},
+			bson.D{{Key: defaultPK, Value: *cursor}},
 			options.FindOne())
 	}
 

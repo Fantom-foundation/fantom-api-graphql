@@ -227,7 +227,7 @@ func (db *MongoDbBridge) isWithdrawalKnown(col *mongo.Collection, wr *types.With
 		{Key: types.FiWithdrawalToValidator, Value: wr.StakerID.String()},
 		{Key: types.FiWithdrawalRequestID, Value: wr.WithdrawRequestID.String()},
 	}, options.FindOne().SetProjection(bson.D{
-		{Key: types.FiWithdrawalPk, Value: true},
+		{Key: defaultPK, Value: true},
 	}))
 
 	// error on lookup?
@@ -312,7 +312,7 @@ func (db *MongoDbBridge) wrListCollectRangeMarks(col *mongo.Collection, list *ty
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.wrListBorderPk(col,
-			bson.D{{Key: types.FiWithdrawalPk, Value: *cursor}},
+			bson.D{{Key: defaultPK, Value: *cursor}},
 			options.FindOne())
 	}
 
