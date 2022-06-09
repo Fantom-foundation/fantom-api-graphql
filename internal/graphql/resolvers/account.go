@@ -37,9 +37,9 @@ func (rs *rootResolver) Account(args struct{ Address common.Address }) (*Account
 	return NewAccount(acc), nil
 }
 
-// AccountsActive resolves total number of active accounts on the blockchain.
-func (rs *rootResolver) AccountsActive() (hexutil.Uint64, error) {
-	return repository.R().AccountsActive()
+// AccountCount resolves total number of accounts on the blockchain.
+func (rs *rootResolver) AccountCount() (hexutil.Uint64, error) {
+	return repository.R().AccountCount()
 }
 
 // Balance resolves total balance of the account.
@@ -118,9 +118,7 @@ func (acc *Account) Erc20TxList(args struct {
 
 	// get the transaction hash list from repository
 	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC20,
 		args.Token,
-		nil,
 		&acc.Address,
 		ercTrxTypesFromNames(args.TxType),
 		(*string)(args.Cursor),
@@ -131,64 +129,6 @@ func (acc *Account) Erc20TxList(args struct {
 	}
 
 	return NewERC20TransactionList(tl), nil
-}
-
-// Erc721TxList resolves list of ERC721 transactions associated with the account.
-func (acc *Account) Erc721TxList(args struct {
-	Cursor  *Cursor
-	Count   int32
-	Token   *common.Address
-	TokenId *hexutil.Big
-	TxType  *[]string
-}) (*ERC721TransactionList, error) {
-	// limit query size; the count can be either positive or negative
-	// this controls the loading direction
-	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
-
-	// get the transaction hash list from repository
-	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC721,
-		args.Token,
-		(*big.Int)(args.TokenId),
-		&acc.Address,
-		ercTrxTypesFromNames(args.TxType),
-		(*string)(args.Cursor),
-		args.Count,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewERC721TransactionList(tl), nil
-}
-
-// Erc1155TxList resolves list of ERC1155 transactions associated with the account.
-func (acc *Account) Erc1155TxList(args struct {
-	Cursor  *Cursor
-	Count   int32
-	Token   *common.Address
-	TokenId *hexutil.Big
-	TxType  *[]string
-}) (*ERC1155TransactionList, error) {
-	// limit query size; the count can be either positive or negative
-	// this controls the loading direction
-	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
-
-	// get the transaction hash list from repository
-	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC1155,
-		args.Token,
-		(*big.Int)(args.TokenId),
-		&acc.Address,
-		ercTrxTypesFromNames(args.TxType),
-		(*string)(args.Cursor),
-		args.Count,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewERC1155TransactionList(tl), nil
 }
 
 // Staker resolves the account staker detail, if the account is a staker.
@@ -223,22 +163,6 @@ func (acc *Account) Delegations(args *struct {
 
 	// convert to resolvable list
 	return NewDelegationList(dl), nil
-}
-
-// Contract resolves the account smart contract detail,
-// if the account is a smart contract address.
-func (acc *Account) Contract() (*Contract, error) {
-	// is this actually a contract account?
-	if acc.ContractTx == nil {
-		return nil, nil
-	}
-
-	// get new contract
-	con, err := repository.R().Contract(&acc.Address)
-	if err != nil {
-		return nil, err
-	}
-	return NewContract(con), nil
 }
 
 // delegationsTotal calculates total sum of delegations of the given account including

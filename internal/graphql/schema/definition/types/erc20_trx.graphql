@@ -4,7 +4,6 @@ enum TokenTransactionType {
     MINT
     BURN
     APPROVAL
-    APPROVAL_FOR_ALL
     OTHER
 }
 

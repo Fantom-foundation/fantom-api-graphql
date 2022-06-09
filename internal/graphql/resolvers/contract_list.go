@@ -16,7 +16,7 @@ type ContractList struct {
 
 // ContractListEdge represents a single edge of a smart contract list structure.
 type ContractListEdge struct {
-	Contract *Contract
+	Contract *Account
 	Cursor   Cursor
 }
 

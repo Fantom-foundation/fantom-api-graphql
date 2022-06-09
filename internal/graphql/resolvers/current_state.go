@@ -36,7 +36,7 @@ func (cst CurrentState) Validators() (hexutil.Uint64, error) {
 
 // Accounts resolves the number of accounts participating on chain transactions.
 func (cst CurrentState) Accounts() (hexutil.Uint64, error) {
-	return repository.R().AccountsActive()
+	return repository.R().AccountCount()
 }
 
 // Blocks resolves the total number of blocks in the chain.

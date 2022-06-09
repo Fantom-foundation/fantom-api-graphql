@@ -23,9 +23,6 @@ const (
 	// TokenTrxTypeBurn represents token burning (transfer into 0x0).
 	TokenTrxTypeBurn = 4
 
-	// TokenTrxTypeApprovalForAll represents universal token transfer approval.
-	TokenTrxTypeApprovalForAll = 5
-
 	// TokenTransactionTargetDecimals represents the number of decimals we want
 	// for normalized transaction value, calculated from the amount of tokens transferred.
 	TokenTransactionTargetDecimals = 4
@@ -33,10 +30,9 @@ const (
 
 // TokenTransaction represents an operation with ERC20 token.
 type TokenTransaction struct {
-	TokenAddress common.Address `bson:"addr"`     // contract address
-	TokenId      hexutil.Big    `bson:"token_id"` // for multi-token contracts (ERC-721/ERC-1155)
-	TokenType    int32          `bson:"tok_type"` // uses AccountType constants
-	TrxType      int32          `bson:"tx_type"`  // Transfer/Mint/Approval...
+	ID           string         `bson:"_id"`
+	TokenAddress common.Address `bson:"addr"`    // contract address
+	TrxType      int32          `bson:"tx_type"` // Transfer/Mint/Approval...
 	Sender       common.Address `bson:"from"`
 	Recipient    common.Address `bson:"to"`
 	Amount       hexutil.Big    `bson:"amo"`
@@ -47,17 +43,15 @@ type TokenTransaction struct {
 	TimeStamp    time.Time   `bson:"ts"`        // when the block(!) was collated
 	BlockNumber  int64       `bson:"block"`     // number of the block
 	TrxIndex     int64       `bson:"trx_index"` // index of the transaction in the block
-	LogIndex     int32       `bson:"log_index"` // index of the log in the block
-	LogSequence  int16       `bson:"log_seq"`   // index of transfer in one log event
+	LogIndex     uint32      `bson:"log_index"` // index of the log in the block
 	OrdinalIndex int64       `bson:"ordinal"`   // pre-generated ordinal index of the transaction
 }
 
 // Pk generates unique identifier of the token transaction from the transaction data.
 func (etx *TokenTransaction) Pk() string {
-	bytes := make([]byte, 14)
-	binary.BigEndian.PutUint64(bytes[0:8], uint64(etx.BlockNumber))   // unique number of the block
-	binary.BigEndian.PutUint32(bytes[8:12], uint32(etx.LogIndex))     // index of log event in the block
-	binary.BigEndian.PutUint16(bytes[12:14], uint16(etx.LogSequence)) // a log event can contain multiple transfers
+	bytes := make([]byte, 12)
+	binary.BigEndian.PutUint64(bytes[0:8], uint64(etx.BlockNumber)) // unique number of the block
+	binary.BigEndian.PutUint32(bytes[8:12], etx.LogIndex)           // index of log event in the block
 	return hexutil.Encode(bytes)
 }
 
@@ -67,17 +61,13 @@ func (etx *TokenTransaction) Index() int64 {
 	binary.BigEndian.PutUint64(ordinal, uint64((etx.TimeStamp.Unix()&0x7FFFFFFFFF)<<24))
 
 	logIndex := make([]byte, 4)
-	binary.BigEndian.PutUint32(logIndex, uint32(etx.LogIndex))
-
-	seq := make([]byte, 2)
-	binary.BigEndian.PutUint16(seq, uint16(etx.LogSequence))
+	binary.BigEndian.PutUint32(logIndex, etx.LogIndex)
 
 	// use transaction hash as base of salt
 	// XOR with logIndex to distinguish individual contract emitted events
-	// XOR with seq to distinguish multiple transfers in one batch transfer event
 	trxHash := etx.Transaction.Bytes()
-	ordinal[5] = trxHash[0] ^ logIndex[1] ^ seq[1]
-	ordinal[6] = trxHash[1] ^ logIndex[2] ^ seq[0]
+	ordinal[5] = trxHash[0] ^ logIndex[1]
+	ordinal[6] = trxHash[1] ^ logIndex[2]
 	ordinal[7] = trxHash[2] ^ logIndex[3]
 
 	return int64(binary.BigEndian.Uint64(ordinal))

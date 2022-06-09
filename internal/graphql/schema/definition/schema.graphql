@@ -17,8 +17,8 @@ type Query {
     # of the SFC contract managing the block chain staking economy.
     sfcConfig: SfcConfig!
 
-    # Total number of accounts active on the Opera blockchain.
-    accountsActive:Long!
+    # Total number of accounts on the Opera blockchain.
+    AccountCount:Long!
 
     # Get an Account information by hash address.
     account(address:Address!):Account!
