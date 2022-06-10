@@ -14,8 +14,8 @@ import (
 )
 
 // StoreTokenTransaction stores ERC20/ERC721/ERC1155 transaction into the repository.
-func (p *proxy) StoreTokenTransaction(trx *types.TokenTransaction) error {
-	return p.db.StoreTokenTransaction(trx)
+func (p *proxy) StoreTokenTransaction(trx *types.TokenTransaction, decimals uint8) error {
+	return p.db.StoreTokenTransaction(trx, decimals)
 }
 
 // TokenTransactionsByCall provides a list of token transaction made inside a specific

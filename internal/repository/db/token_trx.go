@@ -3,12 +3,16 @@ package db
 
 import (
 	"context"
+	"encoding/binary"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/common/math"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"math/big"
 )
 
 const (
@@ -26,6 +30,12 @@ const (
 
 	// filTokenTrxTransaction is the name of the transaction type column in token transactions collection
 	filTokenTrxType = "tx_type"
+
+	// filTokenTrxTransaction is the name of the value column in token transactions collection
+	filTokenTrxValue = "value"
+
+	// filTokenTrxTransaction is the name of the decimals column in token transactions collection
+	filTokenTrxDecimals = "decimals"
 
 	// filTokenTrxTransaction is the name of the transaction hash column in token transactions collection
 	filTokenTrxTransaction = "trx"
@@ -62,7 +72,7 @@ func tokenTrxCollectionIndexes() []mongo.IndexModel {
 }
 
 // StoreTokenTransaction stores a token transaction in the database.
-func (db *MongoDbBridge) StoreTokenTransaction(trx *types.TokenTransaction) error {
+func (db *MongoDbBridge) StoreTokenTransaction(trx *types.TokenTransaction, decimals uint8) error {
 	if trx == nil {
 		return fmt.Errorf("can not add empty transaction")
 	}
@@ -70,12 +80,14 @@ func (db *MongoDbBridge) StoreTokenTransaction(trx *types.TokenTransaction) erro
 	col := db.client.Database(db.dbName).Collection(colTokenTransactions)
 	if _, err := col.UpdateOne(
 		context.Background(),
-		bson.D{{Key: defaultPK, Value: trx.Pk()}},
+		bson.D{{Key: defaultPK, Value: tokenTrxPk(trx)}},
 		bson.D{
 			{Key: "$set", Value: bson.D{
-				{Key: filTokenTrxOrdinalIndex, Value: trx.Index()},
+				{Key: filTokenTrxOrdinalIndex, Value: tokenTrxOrdinalIndex(trx)},
+				{Key: filTokenTrxDecimals, Value: decimals},
+				{Key: filTokenTrxValue, Value: tokenTrxValue(trx, decimals)},
 			}},
-			{Key: "$setOnInsert", Value: trx.WithValue(8)}, // TODO: precision?
+			{Key: "$setOnInsert", Value: trx},
 		},
 		options.Update().SetUpsert(true),
 	); err != nil {
@@ -218,28 +230,6 @@ func (db *MongoDbBridge) TokenTransactionsByCall(trxHash *common.Hash) ([]*types
 		list = append(list, &row)
 	}
 	return list, nil
-}
-
-// isErcTransactionKnown checks if the given delegation exists in the database.
-func (db *MongoDbBridge) isErcTransactionKnown(col *mongo.Collection, trx *types.TokenTransaction) bool {
-	// try to find the delegation in the database
-	sr := col.FindOne(context.Background(), bson.D{
-		{Key: defaultPK, Value: trx.Pk()},
-	}, options.FindOne().SetProjection(bson.D{
-		{Key: defaultPK, Value: true},
-	}))
-
-	// error on lookup?
-	if sr.Err() != nil {
-		// may be ErrNoDocuments, which we seek
-		if sr.Err() == mongo.ErrNoDocuments {
-			return false
-		}
-		// inform that we can not get the PK; should not happen
-		db.log.Errorf("can not get existing ERC transaction pk; %s", sr.Err().Error())
-		return false
-	}
-	return true
 }
 
 // ercTrxListInit initializes list of ERC20 transactions based on provided cursor, count, and filter.
@@ -427,4 +417,45 @@ func (db *MongoDbBridge) ercTrxListLoad(col *mongo.Collection, cursor *string, c
 		list.Collection = append(list.Collection, trx)
 	}
 	return nil
+}
+
+// tokenTrxPk generates unique identifier of the token transaction from the transaction data.
+func tokenTrxPk(trx *types.TokenTransaction) string {
+	bytes := make([]byte, 12)
+	binary.BigEndian.PutUint64(bytes[0:8], uint64(trx.BlockNumber)) // unique number of the block
+	binary.BigEndian.PutUint32(bytes[8:12], trx.LogIndex)           // index of log event in the block
+	return hexutil.Encode(bytes)
+}
+
+// WithValue calculates the normalized value
+func tokenTrxValue(trx *types.TokenTransaction, decimals uint8) int64 {
+	// if actual number of decimals on the token is lower than the target
+	// all we need to do is to get the int64 value from the amount directly
+	if decimals <= types.TokenTransactionTargetDecimals {
+		return trx.Amount.ToInt().Int64()
+	}
+
+	// we need to reduce decimals to get the desired precision; so we divide the amount by 10^(decimals diff)
+	return new(big.Int).Div(
+		trx.Amount.ToInt(),
+		math.Exp(big.NewInt(10), big.NewInt(int64(decimals-types.TokenTransactionTargetDecimals))),
+	).Int64()
+}
+
+// tokenTrxOrdinalIndex generates ordinal index used for transactions list segmentation.
+func tokenTrxOrdinalIndex(trx *types.TokenTransaction) int64 {
+	ordinal := make([]byte, 8)
+	binary.BigEndian.PutUint64(ordinal, uint64((trx.TimeStamp.Unix()&0x7FFFFFFFFF)<<24))
+
+	logIndex := make([]byte, 4)
+	binary.BigEndian.PutUint32(logIndex, trx.LogIndex)
+
+	// use transaction hash as base of salt
+	// XOR with logIndex to distinguish individual contract emitted events
+	trxHash := trx.Transaction.Bytes()
+	ordinal[5] = trxHash[0] ^ logIndex[1]
+	ordinal[6] = trxHash[1] ^ logIndex[2]
+	ordinal[7] = trxHash[2] ^ logIndex[3]
+
+	return int64(binary.BigEndian.Uint64(ordinal))
 }

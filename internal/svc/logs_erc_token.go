@@ -68,6 +68,12 @@ func processErc20Transaction(lr *types.LogRecord, trxType int32) {
 	to := common.BytesToAddress(lr.Topics[2].Bytes())
 	amount := new(big.Int).SetBytes(lr.Data[:])
 
+	decimals, err := repo.Erc20Decimals(&lr.Address)
+	if err != nil {
+		log.Errorf("can not get token decimals for token address %s, call %s; %s", lr.Address.String(), lr.TxHash.String(), err.Error())
+		return
+	}
+
 	if err := repo.StoreTokenTransaction(&types.TokenTransaction{
 		Transaction:  lr.TxHash,
 		TrxIndex:     int64(lr.TxIndex),
@@ -79,8 +85,8 @@ func processErc20Transaction(lr *types.LogRecord, trxType int32) {
 		TimeStamp:    time.Unix(int64(lr.Block.TimeStamp), 0),
 		LogIndex:     uint32(lr.Index),
 		BlockNumber:  int64(lr.BlockNumber),
-	}); err != nil {
-		log.Errorf("can not store token %s trx for call %s; %s", lr.TxHash.String(), err.Error())
+	}, uint8(decimals)); err != nil {
+		log.Errorf("can not store token transaction for call %s; %s", lr.TxHash.String(), err.Error())
 	}
 }
 

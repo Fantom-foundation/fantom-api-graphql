@@ -457,7 +457,7 @@ type Repository interface {
 	Erc20LogoURL(*common.Address) string
 
 	// StoreTokenTransaction stores ERC20/ERC721/ERC1155 transaction into the repository.
-	StoreTokenTransaction(*types.TokenTransaction) error
+	StoreTokenTransaction(*types.TokenTransaction, uint8) error
 
 	// Erc165SupportsInterface provides information about support of the interface by the contract.
 	Erc165SupportsInterface(contract *common.Address, interfaceID [4]byte) (bool, error)
