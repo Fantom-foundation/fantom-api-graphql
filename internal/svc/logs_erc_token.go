@@ -10,42 +10,37 @@ import (
 	"time"
 )
 
-// handleErcTokenApproval handles Approval event on ERC20 or ERC721 token.
+// handleErcApproval handles Approval event on ERC20/721.
 // event Approval(address indexed owner, address indexed spender, uint256 value)
-func handleErcTokenApproval(lr *types.LogRecord) {
-	handleErcTransaction(lr, types.TokenTrxTypeApproval)
+// event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)
+func handleErcApproval(lr *types.LogRecord) {
+	if isErc20Transaction(lr) {
+		processErc20Transaction(lr, types.TokenTrxTypeApproval)
+		return
+	}
+	if isErc721Transaction(lr) {
+		// do nothing on erc721 approval
+		return
+	}
+	log.Debugf("Unrecognized ERC-20/721 Approval from tx %s (%d data bytes, %d topics)", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
 }
 
-// handleErcTokenTransfer handles Transfer event on ERC20 or ERC721 token.
+// handleErcTransfer handles Transfer event on ERC20.
 // event Transfer(address indexed from, address indexed to, uint256 value)
-func handleErcTokenTransfer(lr *types.LogRecord) {
-	handleErcTransaction(lr, types.TokenTrxTypeTransfer)
-}
-
-// handleErcTransaction handles Approval and/or Transfer event on an ERC20/ERC721 token.
-// event Transfer(address indexed from,  address indexed to, uint256 value); // ERC20
-// event Transfer(address indexed from,  address indexed to, uint256 indexed _tokenId); // ERC721
-// event Approval(address indexed owner, address indexed operator, uint256 value); // ERC20
-// event Approval(address indexed owner, address indexed operator, uint256 indexed _tokenId); // ERC721
-func handleErcTransaction(lr *types.LogRecord, trxType int32) {
-	// ERC20 has 2 indexed params (=> 3 topics) and 1 non-indexed uint256 param (=> 32 bytes)
-	if len(lr.Topics) == 3 && len(lr.Data) == 32 {
-		from := common.BytesToAddress(lr.Topics[1].Bytes())
-		to := common.BytesToAddress(lr.Topics[2].Bytes())
-		amount := new(big.Int).SetBytes(lr.Data[:])
-		storeTokenTransaction(lr, tokenTrxType(trxType, from, to), from, to, *amount)
+// event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+func handleErcTransfer(lr *types.LogRecord) {
+	if isErc20Transaction(lr) {
+		processErc20Transaction(lr, types.TokenTrxTypeApproval)
 		return
 	}
-
-	// ERC721 has 3 indexed params (=> 4 topics) and no non-indexed param (=> 0 bytes)
-	if len(lr.Topics) == 4 && len(lr.Data) == 0 {
-		// TODO: Handle transfer ownership
+	if isErc721Transaction(lr) {
+		processErc721Transfer(lr)
 		return
 	}
-
-	log.Debugf("Unrecognized ERC-20/ERC-721 Transfer/Approval from tx %s (%d data bytes, %d topics)", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
+	log.Debugf("Unrecognized ERC-20/721 Transfer from tx %s (%d data bytes, %d topics)", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
 }
 
+// handleErc1155TransferSingle handles Transfer event on ERC1155
 // event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 tokenId, uint256 value)
 func handleErc1155TransferSingle(lr *types.LogRecord) {
 	// 3 indexed params, 2 uint256 params
@@ -56,6 +51,7 @@ func handleErc1155TransferSingle(lr *types.LogRecord) {
 	log.Debugf("Unrecognized ERC1155 TransferSingle from tx %s (%d data bytes, %d topics)", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
 }
 
+// handleErc1155TransferBatch handles TransferBatch event on ERC1155
 // event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)
 func handleErc1155TransferBatch(lr *types.LogRecord) {
 	// 3 indexed params
@@ -64,6 +60,33 @@ func handleErc1155TransferBatch(lr *types.LogRecord) {
 		return
 	}
 	log.Debugf("Unrecognized ERC-1155 TransferBatch from tx %s (%d data bytes, %d topics)", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
+}
+
+// processErc20Transaction handles Approval and/or Transfer event on an ERC20 token.
+func processErc20Transaction(lr *types.LogRecord, trxType int32) {
+	from := common.BytesToAddress(lr.Topics[1].Bytes())
+	to := common.BytesToAddress(lr.Topics[2].Bytes())
+	amount := new(big.Int).SetBytes(lr.Data[:])
+
+	if err := repo.StoreTokenTransaction(&types.TokenTransaction{
+		Transaction:  lr.TxHash,
+		TrxIndex:     int64(lr.TxIndex),
+		TokenAddress: lr.Address,
+		TrxType:      tokenTrxType(trxType, from, to),
+		Sender:       from,
+		Recipient:    to,
+		Amount:       hexutil.Big(*amount),
+		TimeStamp:    time.Unix(int64(lr.Block.TimeStamp), 0),
+		LogIndex:     uint32(lr.Index),
+		BlockNumber:  int64(lr.BlockNumber),
+	}); err != nil {
+		log.Errorf("can not store token %s trx for call %s; %s", lr.TxHash.String(), err.Error())
+	}
+}
+
+// handleErcTransfer handles Transfer event on ERC721.
+func processErc721Transfer(lr *types.LogRecord) {
+	// TODO: Handle transfer ownership
 }
 
 // tokenTrxType detects detailed type of ERC transfer based on common type and addresses involved.
@@ -79,20 +102,14 @@ func tokenTrxType(trxType int32, from common.Address, to common.Address) int32 {
 	return trxType
 }
 
-// storeTokenTransaction handles token transaction.
-func storeTokenTransaction(lr *types.LogRecord, trxType int32, from common.Address, to common.Address, amount big.Int) {
-	if err := repo.StoreTokenTransaction(&types.TokenTransaction{
-		Transaction:  lr.TxHash,
-		TrxIndex:     int64(lr.TxIndex),
-		TokenAddress: lr.Address,
-		TrxType:      trxType,
-		Sender:       from,
-		Recipient:    to,
-		Amount:       hexutil.Big(amount),
-		TimeStamp:    time.Unix(int64(lr.Block.TimeStamp), 0),
-		LogIndex:     uint32(lr.Index),
-		BlockNumber:  int64(lr.BlockNumber),
-	}); err != nil {
-		log.Errorf("can not store token %s trx for call %s; %s", lr.TxHash.String(), err.Error())
-	}
+// isErc20Transaction checks is valid ERC20 transaction
+func isErc20Transaction(lr *types.LogRecord) bool {
+	// ERC20 has 2 indexed params (=> 3 topics) and 1 non-indexed uint256 param (=> 32 bytes)
+	return len(lr.Topics) == 3 && len(lr.Data) == 32
+}
+
+// isErc721Transaction checks is valid ERC721 transaction
+func isErc721Transaction(lr *types.LogRecord) bool {
+	// ERC721 has 3 indexed params (=> 4 topics) and no non-indexed param (=> 0 bytes)
+	return len(lr.Topics) == 4 && len(lr.Data) == 0
 }
