@@ -89,9 +89,6 @@ type Repository interface {
 	// CacheBlock puts a block to the internal block ring cache.
 	CacheBlock(blk *types.Block)
 
-	// Contracts returns list of smart contracts at Opera blockchain.
-	Contracts(bool, *string, int32) (*types.ContractList, error)
-
 	// SfcVersion returns current version of the SFC contract.
 	SfcVersion() (hexutil.Uint64, error)
 

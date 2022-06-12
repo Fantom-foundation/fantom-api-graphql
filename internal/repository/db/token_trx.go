@@ -422,8 +422,8 @@ func (db *MongoDbBridge) ercTrxListLoad(col *mongo.Collection, cursor *string, c
 // tokenTrxPk generates unique identifier of the token transaction from the transaction data.
 func tokenTrxPk(trx *types.TokenTransaction) string {
 	bytes := make([]byte, 12)
-	binary.BigEndian.PutUint64(bytes[0:8], uint64(trx.BlockNumber)) // unique number of the block
-	binary.BigEndian.PutUint32(bytes[8:12], trx.LogIndex)           // index of log event in the block
+	binary.BigEndian.PutUint64(bytes[0:8], trx.BlockNumber)       // unique number of the block
+	binary.BigEndian.PutUint32(bytes[8:12], uint32(trx.LogIndex)) // index of log event in the block
 	return hexutil.Encode(bytes)
 }
 
@@ -448,7 +448,7 @@ func tokenTrxOrdinalIndex(trx *types.TokenTransaction) int64 {
 	binary.BigEndian.PutUint64(ordinal, uint64((trx.TimeStamp.Unix()&0x7FFFFFFFFF)<<24))
 
 	logIndex := make([]byte, 4)
-	binary.BigEndian.PutUint32(logIndex, trx.LogIndex)
+	binary.BigEndian.PutUint32(logIndex, uint32(trx.LogIndex))
 
 	// use transaction hash as base of salt
 	// XOR with logIndex to distinguish individual contract emitted events

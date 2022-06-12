@@ -6,6 +6,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/graph-gophers/graphql-go"
 	"golang.org/x/sync/singleflight"
 	"math/big"
 	"strings"
@@ -268,4 +269,9 @@ func (del Delegation) TokenizerAllowedToWithdraw() (bool, error) {
 		return false, err
 	}
 	return lock, nil
+}
+
+// CreatedTime returns creation date
+func (del Delegation) CreatedTime() graphql.Time {
+	return graphql.Time{Time: del.Created}
 }

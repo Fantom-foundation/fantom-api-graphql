@@ -12,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
-	"time"
 )
 
 const (
@@ -40,8 +39,8 @@ const (
 	// FiDelegationValue defines value of the delegation column of the delegation table.
 	FiDelegationValue = "value"
 
-	// FiDelegationCreatedTime defines time stamp column of the delegation table.
-	FiDelegationCreatedTime = "created"
+	// FiDelegationCreated defines time stamp column of the delegation table.
+	FiDelegationCreated = "created"
 )
 
 // ErrUnknownDelegation represents an error given on an unknown delegation update attempt.
@@ -71,7 +70,7 @@ func delegationCollectionIndexes() []mongo.IndexModel {
 
 	ixDlgTimestamp := "ix_dlg_timestamp"
 	ix[3] = mongo.IndexModel{
-		Keys:    bson.D{{Key: FiDelegationCreatedTime, Value: -1}},
+		Keys:    bson.D{{Key: FiDelegationCreated, Value: -1}},
 		Options: &options.IndexOptions{Name: &ixDlgTimestamp},
 	}
 
@@ -154,7 +153,7 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 		{Key: FiDelegationToStakerId, Value: dl.ToStakerId.String()},
 	}, bson.D{{Key: "$set", Value: bson.D{
 		{Key: FiDelegationOrdinal, Value: dl.OrdinalIndex()},
-		{Key: FiDelegationCreatedTime, Value: time.Unix(int64(dl.CreatedTime), 0)},
+		{Key: FiDelegationCreated, Value: dl.Created},
 		{Key: FiDelegationTransaction, Value: dl.Transaction.String()},
 		{Key: FiDelegationToStakerAddress, Value: dl.ToStakerAddress.String()},
 		{Key: FiDelegationAmountStaked, Value: dl.AmountDelegated.String()},
@@ -480,7 +479,7 @@ func (db *MongoDbBridge) DelegationsAll(filter *bson.D) ([]*types.Delegation, er
 	ctx := context.Background()
 
 	// load the data
-	ld, err := col.Find(ctx, filter, options.Find().SetSort(bson.D{{Key: FiDelegationCreatedTime, Value: -1}}))
+	ld, err := col.Find(ctx, filter, options.Find().SetSort(bson.D{{Key: FiDelegationCreated, Value: -1}}))
 	if err != nil {
 		db.log.Errorf("error loading full delegations list; %s", err.Error())
 		return nil, err

@@ -2,6 +2,7 @@
 package cache
 
 import (
+	"fantom-api-graphql/internal/repository/db/registry"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -29,7 +30,7 @@ func (b *MemBridge) PullDelegation(adr common.Address, valID *hexutil.Big) *type
 
 	// do we have the data?
 	dlg := new(types.Delegation)
-	if err := dlg.UnmarshalBSON(data); err != nil {
+	if err := registry.Unmarshal(data, &dlg); err != nil {
 		b.log.Criticalf("can not decode delegation data from in-memory cache; %s", err.Error())
 		return nil
 	}
@@ -44,7 +45,7 @@ func (b *MemBridge) PushDelegation(dlg *types.Delegation) {
 	}
 
 	// encode account
-	data, err := dlg.MarshalBSON()
+	data, err := registry.Marshal(dlg)
 	if err != nil {
 		b.log.Criticalf("can not marshal delegation of %s to #%d; %s", dlg.Address.String(), dlg.ToStakerId.ToInt().Uint64(), err.Error())
 		return

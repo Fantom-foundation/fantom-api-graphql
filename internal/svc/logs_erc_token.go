@@ -76,15 +76,15 @@ func processErc20Transaction(lr *types.LogRecord, trxType int32) {
 
 	if err := repo.StoreTokenTransaction(&types.TokenTransaction{
 		Transaction:  lr.TxHash,
-		TrxIndex:     int64(lr.TxIndex),
+		TrxIndex:     uint64(lr.TxIndex),
 		TokenAddress: lr.Address,
 		TrxType:      tokenTrxType(trxType, from, to),
 		Sender:       from,
 		Recipient:    to,
 		Amount:       hexutil.Big(*amount),
 		TimeStamp:    time.Unix(int64(lr.Block.TimeStamp), 0),
-		LogIndex:     uint32(lr.Index),
-		BlockNumber:  int64(lr.BlockNumber),
+		LogIndex:     uint64(lr.Index),
+		BlockNumber:  lr.BlockNumber,
 	}, uint8(decimals)); err != nil {
 		log.Errorf("can not store token transaction for call %s; %s", lr.TxHash.String(), err.Error())
 	}

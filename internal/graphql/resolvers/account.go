@@ -111,7 +111,7 @@ func (acc *Account) Erc20TxList(args struct {
 	Count  int32
 	Token  *common.Address
 	TxType *[]string
-}) (*ERC20TransactionList, error) {
+}) (*TokenTransactionList, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction
 	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)

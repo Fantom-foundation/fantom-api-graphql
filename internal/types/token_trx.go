@@ -38,8 +38,8 @@ type TokenTransaction struct {
 
 	Transaction  common.Hash `bson:"trx"`       // hash of a chain transaction bearing the token transaction
 	TimeStamp    time.Time   `bson:"ts"`        // when the block(!) was collated
-	BlockNumber  int64       `bson:"block"`     // number of the block
-	TrxIndex     int64       `bson:"trx_index"` // index of the transaction in the block
-	LogIndex     uint32      `bson:"log_index"` // index of the log in the block
+	BlockNumber  uint64      `bson:"block"`     // number of the block
+	TrxIndex     uint64      `bson:"trx_index"` // index of the transaction in the block
+	LogIndex     uint64      `bson:"log_index"` // index of the log in the block
 	OrdinalIndex int64       `bson:"ordinal"`   // pre-generated ordinal index of the transaction
 }

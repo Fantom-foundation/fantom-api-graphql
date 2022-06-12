@@ -1,3 +1,12 @@
+# TokenTransactionType represents a type of ERC20.
+enum TokenTransactionType {
+    TRANSFER
+    MINT
+    BURN
+    APPROVAL
+    OTHER
+}
+
 # TokenTransaction represents a generic token transaction
 # of a supported type of token.
 type TokenTransaction {
@@ -22,9 +31,6 @@ type TokenTransaction {
     # Is empty, if not provided for the given token.
     tokenSymbol: String!
 
-    # tokenType represents the type of the token (i.e. ERC20/ERC721/ERC1155).
-    tokenType: String!
-
     # tokenDecimals is the number of decimals the token supports.
     # The most common value is 18 to mimic the ETH to WEI relationship.
     tokenDecimals: Int!
@@ -38,12 +44,6 @@ type TokenTransaction {
     # recipient of the transaction.
     recipient: Address!
 
-    # amount of tokens involved in the transaction.
-    amount: BigInt!
-
-    # multi-token contracts (ERC-721/ERC-1155) token ID involved in the transaction.
-    tokenId: BigInt!
-
     # time stamp of the block processing.
-    timeStamp: Long!
+    timeStamp: Time!
 }

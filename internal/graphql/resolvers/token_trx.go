@@ -5,6 +5,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/graph-gophers/graphql-go"
 )
 
 // TokenTransaction represents a resolvable generic token transaction.
@@ -27,6 +28,11 @@ func (ttx *TokenTransaction) BlockNumber() hexutil.Uint64 {
 	return hexutil.Uint64(ttx.TokenTransaction.BlockNumber)
 }
 
+// TrxIndex resolves index of the transaction in the block.
+func (ttx *TokenTransaction) TrxIndex() hexutil.Uint64 {
+	return hexutil.Uint64(ttx.TokenTransaction.TrxIndex)
+}
+
 // Type resolves human-readable type of the transaction.
 func (ttx *TokenTransaction) Type() string {
 	return ercTrxTypeToName(ttx.TokenTransaction.TrxType)
@@ -45,4 +51,9 @@ func (ttx *TokenTransaction) TokenSymbol() (sym string, err error) {
 // TokenDecimals resolves the amount of decimals of the ERC20 token contract, if available.
 func (ttx *TokenTransaction) TokenDecimals() (decimals int32, err error) {
 	return repository.R().Erc20Decimals(&ttx.TokenTransaction.TokenAddress)
+}
+
+// Timestamp returns timestamp.
+func (ttx *TokenTransaction) Timestamp() graphql.Time {
+	return graphql.Time{Time: ttx.TimeStamp}
 }
