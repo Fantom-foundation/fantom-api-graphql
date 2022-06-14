@@ -5,10 +5,11 @@ import (
 )
 
 const (
-	ErcTrxTypeNameTransfer = "TRANSFER"
-	ErcTrxTypeNameMint     = "MINT"
-	ErcTrxTypeNameBurn     = "BURN"
-	ErcTrxTypeNameApproval = "APPROVAL"
+	ErcTrxTypeNameTransfer       = "TRANSFER"
+	ErcTrxTypeNameMint           = "MINT"
+	ErcTrxTypeNameBurn           = "BURN"
+	ErcTrxTypeNameApproval       = "APPROVAL"
+	ErcTrxTypeNameApprovalForAll = "APPROVAL_FOR_ALL"
 )
 
 func ercTrxTypeToName(trxType int32) string {
@@ -21,6 +22,8 @@ func ercTrxTypeToName(trxType int32) string {
 		return ErcTrxTypeNameMint
 	case types.TokenTrxTypeBurn:
 		return ErcTrxTypeNameBurn
+	case types.TokenTrxTypeApprovalForAll:
+		return ErcTrxTypeNameApprovalForAll
 	default:
 		return "OTHER"
 	}
@@ -41,6 +44,8 @@ func ercTrxTypesFromNames(names *[]string) []int32 {
 			vals = append(vals, types.TokenTrxTypeMint)
 		case ErcTrxTypeNameBurn:
 			vals = append(vals, types.TokenTrxTypeBurn)
+		case ErcTrxTypeNameApprovalForAll:
+			vals = append(vals, types.TokenTrxTypeApprovalForAll)
 		}
 	}
 	return vals

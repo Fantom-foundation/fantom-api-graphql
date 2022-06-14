@@ -37,8 +37,8 @@ func (rs *rootResolver) Account(args struct{ Address common.Address }) (*Account
 	return NewAccount(acc), nil
 }
 
-// AccountCount resolves total number of accounts on the blockchain.
-func (rs *rootResolver) AccountCount() (hexutil.Uint64, error) {
+// AccountsActive resolves total number of accounts on the blockchain.
+func (rs *rootResolver) AccountsActive() (hexutil.Uint64, error) {
 	return repository.R().AccountCount()
 }
 

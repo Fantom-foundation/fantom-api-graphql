@@ -1,0 +1,50 @@
+# TokenTransactionType represents a type of ERC-20/ERC-721/ERC-1155 transaction.
+enum TokenTransactionType {
+    TRANSFER
+    MINT
+    BURN
+    APPROVAL
+    APPROVAL_FOR_ALL
+    OTHER
+}
+
+# ERC20Transaction represents a transaction on an ERC20 token.
+type ERC20Transaction {
+    # trxHash represents a hash of the transaction
+    # executing the ERC20 call.
+    trxHash: Bytes32!
+
+    # transaction represents the transaction
+    # executing the ERC20 call.
+    transaction: Transaction!
+
+    # trxIndex represents the index
+    # of the ERC20 call in the transaction logs.
+    trxIndex: Long!
+
+    # tokenAddress represents the address
+    # of the ERC20 token contract.
+    tokenAddress: Address!
+
+    # token represents the token detail involved.
+    token: ERC20Token!
+
+    # trxType is the type of the transaction.
+    trxType: TokenTransactionType!
+
+    # sender represents the address of the token owner
+    # sending the tokens, e.g. the sender.
+    sender: Address!
+
+    # recipient represents the address of the token recipient.
+    recipient: Address!
+
+    # amount represents the amount of tokens involved
+    # in the transaction; please make sure to interpret the amount
+    # with the correct number of decimals from the ERC20 token detail.
+    amount: BigInt!
+
+    # timeStamp represents the Unix epoch time stamp
+    # of the ERC20 transaction processing.
+    timeStamp: Long!
+}

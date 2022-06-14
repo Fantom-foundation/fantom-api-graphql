@@ -176,7 +176,7 @@ func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
 func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *hexutil.Big, amo *hexutil.Big) error {
 	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colDelegations)
-	val := new(big.Int).Div(amo.ToInt(), types.DelegationDecimalsCorrection).Uint64()
+	val := new(big.Int).Div(amo.ToInt(), types.DelegationDecimalsCorrection).Int64()
 
 	// notify
 	db.log.Debugf("%s delegation to #%d value changed to %d", addr.String(), valID.ToInt().Uint64(), val)

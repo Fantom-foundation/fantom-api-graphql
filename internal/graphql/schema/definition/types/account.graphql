@@ -18,7 +18,7 @@ type Account {
     txList(recipient: Address, cursor:Cursor, count:Int!): TransactionList!
 
     # erc20TxList represents list of ERC20 transactions of the account.
-    erc20TxList(cursor:Cursor, count:Int = 25, token: Address, txType: [TokenTransactionType!]): TokenTransactionList!
+    erc20TxList(cursor:Cursor, count:Int = 25, token: Address, txType: [TokenTransactionType!]): ERC20TransactionList!
 
     # Details of a staker, if the account is a staker.
     staker: Staker

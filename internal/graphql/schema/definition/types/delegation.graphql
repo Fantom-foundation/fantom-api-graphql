@@ -11,7 +11,7 @@ type Delegation {
     isSelfStake: Boolean!
 
     # Time stamp of the delegation creation.
-    createdTime: Time!
+    createdTime: Long!
 
     # Amount delegated in WEI. The value includes all the pending un-delegations.
     amount: BigInt!

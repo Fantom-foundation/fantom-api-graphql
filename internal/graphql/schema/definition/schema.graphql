@@ -17,8 +17,8 @@ type Query {
     # of the SFC contract managing the block chain staking economy.
     sfcConfig: SfcConfig!
 
-    # Total number of accounts on the Opera blockchain.
-    AccountCount:Long!
+    # Total number of accounts active on the Opera blockchain.
+    accountsActive:Long!
 
     # Get an Account information by hash address.
     account(address:Address!):Account!
@@ -45,7 +45,7 @@ type Query {
     transactions(cursor:Cursor, count:Int!):TransactionList!
 
     # Get filtered list of ERC20 Transactions.
-    erc20Transactions(cursor:Cursor, count:Int = 25, token: Address, account: Address, txType: [TokenTransactionType!]): TokenTransactionList!
+    erc20Transactions(cursor:Cursor, count:Int = 25, token: Address, account: Address, txType: [TokenTransactionType!]): ERC20TransactionList!
 
     # Get the id of the current epoch of the Opera blockchain.
     currentEpoch:Long!
@@ -221,8 +221,14 @@ type Query {
     # erc721Contract provides the information about ERC721 non-fungible token (NFT) by it's address.
     erc721Contract(token: Address!):ERC721Contract
 
+    # erc721ContractList provides list of the most active ERC721 non-fungible tokens (NFT) on the block chain.
+    erc721ContractList(count: Int = 50):[ERC721Contract!]!
+
     # erc1155Token provides the information about ERC1155 multi-token contract by it's address.
     erc1155Contract(address: Address!):ERC1155Contract
+
+    # erc1155ContractList provides list of the most active ERC1155 multi-token contract on the block chain.
+    erc1155ContractList(count: Int = 50):[ERC1155Contract!]!
 
     # govContracts provides list of governance contracts.
     govContracts:[GovernanceContract!]!

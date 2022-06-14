@@ -20,6 +20,9 @@ const (
 	// TokenTrxTypeBurn represents token burning (transfer into 0x0).
 	TokenTrxTypeBurn = 4
 
+	// TokenTrxTypeApprovalForAll represents universal token transfer approval.
+	TokenTrxTypeApprovalForAll = 5
+
 	// TokenTransactionTargetDecimals represents the number of decimals we want
 	// for normalized transaction value, calculated from the amount of tokens transferred.
 	TokenTransactionTargetDecimals = 4
