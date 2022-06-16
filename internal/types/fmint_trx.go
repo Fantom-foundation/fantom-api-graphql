@@ -3,18 +3,23 @@ package types
 
 import (
 	"encoding/binary"
-	"fantom-api-graphql/internal/repository/db/registry"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 )
 
 const (
-	FiFMintTransactionId        = "_id"
-	FiFMintTransactionToken     = "tok"
-	FiFMintTransactionUser      = "usr"
-	FiFMintTransactionTimestamp = "stamp"
-	FiFMintTransactionOrdinal   = "orx"
+	FiFMintTransactionTokenAddress = "tok"
+	FiFMintTransactionUser         = "usr"
+	FiFmintTransactionType         = "typ"
+	FiFmintTransactionAmount       = "amo"
+	FiFmintTransactionFee          = "fee"
+	FiFmintTransactionFeeValue     = "fee_val"
+	FiFmintTransactionTrxHash      = "trx"
+	FiFmintTransactionTrxIndex     = "tix"
+	FiFMintTransactionTimestamp    = "stamp"
+	FiFMintTransactionValue        = "val"
+	FiFMintTransactionOrdinal      = "orx"
 )
 
 // define types of fMint operations used on the protocol
@@ -52,8 +57,8 @@ type FMintTransaction struct {
 	Ordinal      int64          `bson:"orx"`
 }
 
-// Pk generates a unique primary key for the given fMint transaction.
-func (ftx *FMintTransaction) Pk() string {
+// ComputedPk generates a unique primary key for the given fMint transaction.
+func (ftx *FMintTransaction) ComputedPk() string {
 	// make the base PK from the trx hash and log index
 	bytes := make([]byte, 32)
 	copy(bytes, ftx.UserAddress.Bytes()[:10])
@@ -69,18 +74,17 @@ func (ftx *FMintTransaction) Pk() string {
 	return hexutil.Encode(bytes)
 }
 
-// OrdinalIndex returns an ordinal index for the given fMint transaction.
-func (ftx *FMintTransaction) OrdinalIndex() int64 {
+// ComputedOrdinalIndex returns an ordinal index for the given fMint transaction.
+func (ftx *FMintTransaction) ComputedOrdinalIndex() int64 {
 	return ((int64(ftx.TimeStamp)<<14)&0x7FFFFFFFFFFFFFFF | (int64(ftx.TrxIndex) & 0x3fff)) ^ (int64(ftx.TrxHash[0]) << 8)
 }
 
-// MarshalBSON creates a BSON representation of an fMint transaction.
-func (ftx *FMintTransaction) MarshalBSON() ([]byte, error) {
-	// calculate the value to 9 digits (and 18 billions remain available)
-	ftx.Value = new(big.Int).Div(ftx.Amount.ToInt(), FMintAmountDecimalsCorrection).Int64()
-	ftx.FeeValue = new(big.Int).Div(ftx.Fee.ToInt(), FMintAmountDecimalsCorrection).Int64()
-	ftx.ID = ftx.Pk()
-	ftx.Ordinal = ftx.OrdinalIndex()
+// ComputedValue returns computed value.
+func (ftx *FMintTransaction) ComputedValue() int64 {
+	return new(big.Int).Div(ftx.Amount.ToInt(), FMintAmountDecimalsCorrection).Int64()
+}
 
-	return registry.Marshal(ftx)
+// ComputedFeeValue returns computed fee value.
+func (ftx *FMintTransaction) ComputedFeeValue() int64 {
+	return new(big.Int).Div(ftx.Fee.ToInt(), FMintAmountDecimalsCorrection).Int64()
 }
