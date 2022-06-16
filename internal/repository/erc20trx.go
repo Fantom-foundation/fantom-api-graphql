@@ -2,7 +2,7 @@
 Package repository implements repository for handling fast and efficient access to data required
 by the resolvers of the API server.
 
-Internally it utilizes RPC to access Opera/Lachesis full node for blockchain interaction. Mongo database
+Internally it utilizes RPC to access Opera full node for blockchain interaction. Mongo database
 for fast, robust and scalable off-chain data storage, especially for aggregated and pre-calculated data mining
 results. BigCache for in-memory object storage to speed up loading of frequently accessed entities.
 */
@@ -71,7 +71,7 @@ func (p *proxy) TokenTransactions(tokenType string, token *common.Address, token
 	// type of the transaction
 	if txType != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiTokenTransactionType,
+			Key: types.FiTokenTransactionType,
 			Value: bson.D{{
 				Key:   "$in",
 				Value: txType,

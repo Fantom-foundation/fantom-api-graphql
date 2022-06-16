@@ -14,8 +14,8 @@ type Config struct {
 	// AppName holds the name of the application
 	AppName string `mapstructure:"app_name"`
 
-	// MySignature represents a signature of the server on blockchain.
-	MySignature ServerSignature `mapstructure:"me"`
+	// Signature represents a signature of the API server on blockchain and discovery.
+	Signature ServerSignature `mapstructure:"me"`
 
 	// Server configuration
 	Server Server `mapstructure:"server"`
@@ -83,8 +83,8 @@ type Server struct {
 // ServerSignature represents the signature used by this server
 // on sending requests to the blockchain, especially signed requests.
 type ServerSignature struct {
-	Address    common.Address   `mapstructure:"address"`
-	PrivateKey ecdsa.PrivateKey `mapstructure:"pkey"`
+	Address    common.Address    `mapstructure:"address"`
+	PrivateKey *ecdsa.PrivateKey `mapstructure:"pkey"`
 }
 
 // Log represents the logger configuration

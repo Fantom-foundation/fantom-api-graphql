@@ -2,7 +2,7 @@
 Package repository implements repository for handling fast and efficient access to data required
 by the resolvers of the API server.
 
-Internally it utilizes RPC to access Opera/Lachesis full node for blockchain interaction. Mongo database
+Internally it utilizes RPC to access Opera full node for blockchain interaction. Mongo database
 for fast, robust and scalable off-chain data storage, especially for aggregated and pre-calculated data mining
 results. BigCache for in-memory object storage to speed up loading of frequently accessed entities.
 */
@@ -12,6 +12,7 @@ import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/p2p/enode"
 	"math/big"
 	"time"
 
@@ -592,6 +593,28 @@ type Repository interface {
 
 	// FtmBurnList provides list of per-block burned native FTM tokens.
 	FtmBurnList(count int64) ([]types.FtmBurn, error)
+
+	// NetworkNode returns instance of Opera network node record by its ID.
+	NetworkNode(nid enode.ID) (*types.OperaNode, error)
+
+	// StoreNetworkNode stores the given Opera node record in the persistent database.
+	StoreNetworkNode(node *types.OperaNode) error
+
+	// IsNetworkNodeKnown checks if the given network node is already registered in the persistent database.
+	IsNetworkNodeKnown(id enode.ID) bool
+
+	// NetworkNodeConfirmCheck confirms successful check of the given Opera network node.
+	NetworkNodeConfirmCheck(node *enode.Node) (bool, error)
+
+	// NetworkNodeFailCheck registers failed check of the given Opera network node.
+	NetworkNodeFailCheck(node *enode.Node) error
+
+	// NetworkNodeUpdateBatch provides a list of Opera network node addresses most suitable for status update
+	// based on the registered time of the latest check.
+	NetworkNodeUpdateBatch() ([]*enode.Node, error)
+
+	// NetworkNodeBootstrapSet provides a set of known nodes to be co-used to bootstrap new search.
+	NetworkNodeBootstrapSet() []*enode.Node
 
 	// Close and cleanup the repository.
 	Close()
