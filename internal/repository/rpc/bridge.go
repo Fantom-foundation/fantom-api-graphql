@@ -1,15 +1,15 @@
 /*
-Package rpc implements bridge to Lachesis full node API interface.
+Package rpc implements bridge to Opera full node API interface.
 
 We recommend using local IPC for fast and the most efficient inter-process communication between the API server
-and an Opera/Lachesis node. Any remote RPC connection will work, but the performance may be significantly degraded
+and an Opera/Opera node. Any remote RPC connection will work, but the performance may be significantly degraded
 by extra networking overhead of remote RPC calls.
 
-You should also consider security implications of opening Lachesis RPC interface for remote access.
+You should also consider security implications of opening Opera RPC interface for remote access.
 If you considering it as your deployment strategy, you should establish encrypted channel between the API server
-and Lachesis RPC interface with connection limited to specified endpoints.
+and Opera RPC interface with connection limited to specified endpoints.
 
-We strongly discourage opening Lachesis RPC interface for unrestricted Internet access.
+We strongly discourage opening Opera RPC interface for unrestricted Internet access.
 */
 package rpc
 
@@ -31,7 +31,7 @@ import (
 // rpcHeadProxyChannelCapacity represents the capacity of the new received blocks proxy channel.
 const rpcHeadProxyChannelCapacity = 10000
 
-// FtmBridge represents Lachesis RPC abstraction layer.
+// FtmBridge represents Opera RPC abstraction layer.
 type FtmBridge struct {
 	rpc *ftm.Client
 	eth *eth.Client
@@ -57,7 +57,7 @@ type FtmBridge struct {
 	headers  chan *etc.Header
 }
 
-// New creates new Lachesis RPC connection bridge.
+// New creates new Opera RPC connection bridge.
 func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 	cli, con, err := connect(cfg, log)
 	if err != nil {
@@ -73,7 +73,7 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 		cg:  new(singleflight.Group),
 
 		// special configuration options below this line
-		sigConfig:     &cfg.MySignature,
+		sigConfig:     &cfg.Signature,
 		sfcConfig:     &cfg.Staking,
 		uniswapConfig: &cfg.DeFi.Uniswap,
 		fMintCfg: fMintConfig{
@@ -99,17 +99,17 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 // connect opens connections we need to communicate with the blockchain node.
 func connect(cfg *config.Config, log logger.Logger) (*ftm.Client, *eth.Client, error) {
 	// log what we do
-	log.Debugf("connecting blockchain node at %s", cfg.Lachesis.Url)
+	log.Debugf("connecting blockchain node at %s", cfg.Opera.ApiNodeUrl)
 
 	// try to establish a connection
-	client, err := ftm.Dial(cfg.Lachesis.Url)
+	client, err := ftm.Dial(cfg.Opera.ApiNodeUrl)
 	if err != nil {
 		log.Critical(err)
 		return nil, nil, err
 	}
 
 	// try to establish a for smart contract interaction
-	con, err := eth.Dial(cfg.Lachesis.Url)
+	con, err := eth.Dial(cfg.Opera.ApiNodeUrl)
 	if err != nil {
 		log.Critical(err)
 		return nil, nil, err
@@ -133,7 +133,7 @@ func (ftm *FtmBridge) terminate() {
 	ftm.log.Noticef("rpc threads terminated")
 }
 
-// Close will finish all pending operations and terminate the Lachesis RPC connection
+// Close will finish all pending operations and terminate the Opera RPC connection
 func (ftm *FtmBridge) Close() {
 	// terminate threads before we close connections
 	ftm.terminate()
@@ -146,7 +146,7 @@ func (ftm *FtmBridge) Close() {
 	}
 }
 
-// Connection returns open Opera/Lachesis connection.
+// Connection returns open Opera connection.
 func (ftm *FtmBridge) Connection() *ftm.Client {
 	return ftm.rpc
 }

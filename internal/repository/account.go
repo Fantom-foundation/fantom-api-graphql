@@ -2,7 +2,7 @@
 Package repository implements repository for handling fast and efficient access to data required
 by the resolvers of the API server.
 
-Internally it utilizes RPC to access Opera/Lachesis full node for blockchain interaction. Mongo database
+Internally it utilizes RPC to access Opera full node for blockchain interaction. Mongo database
 for fast, robust and scalable off-chain data storage, especially for aggregated and pre-calculated data mining
 results. BigCache for in-memory object storage to speed up loading of frequently accessed entities.
 */
@@ -32,7 +32,7 @@ func (p *proxy) Account(addr *common.Address) (acc *types.Account, err error) {
 	return acc, nil
 }
 
-// getAccount builds the account representation after validating it against Lachesis node.
+// getAccount builds the account representation after validating it against Opera node.
 func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 	// any address given?
 	if addr == nil {

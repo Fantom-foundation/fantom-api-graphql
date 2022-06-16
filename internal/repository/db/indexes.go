@@ -25,6 +25,7 @@ func (db *MongoDbBridge) updateDatabaseIndexes() {
 	var ixLoaders = map[string]indexListProvider{
 		colTokenTransactions: tokenTrxCollectionIndexes,
 		colDelegations:       delegationCollectionIndexes,
+		colNetworkNodes:      operaNodeCollectionIndexes,
 	}
 
 	// the DB bridge needs a way to terminate this thread
