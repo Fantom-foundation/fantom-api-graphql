@@ -12,7 +12,7 @@ func (rs *rootResolver) Erc20Transactions(args struct {
 	Token   *common.Address
 	Account *common.Address
 	TxType  *[]string
-}) (*TokenTransactionList, error) {
+}) (*ERC20TransactionList, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction
 	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)

@@ -104,7 +104,20 @@ func (trx *Transaction) Block() (*Block, error) {
 	return NewBlock(blk), nil
 }
 
-// TokenTransactions resolves list of all ERC20 token transactions involved
+// tokenTransactions loads list of all token transaction related to this transaction call.
+func (trx *Transaction) tokenTransactions() ([]*types.TokenTransaction, error) {
+	// call for it only once
+	val, err, _ := trx.cg.Do("erc", func() (interface{}, error) {
+		log.Noticef("Loading ERC list for %s", trx.Hash.String())
+		return repository.R().TokenTransactionsByCall(&trx.Hash)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return val.([]*types.TokenTransaction), nil
+}
+
+// TokenTransactions resolves list of all generic token transactions involved
 // with the base transaction call.
 func (trx *Transaction) TokenTransactions() ([]*TokenTransaction, error) {
 	// get all the transaction
@@ -121,15 +134,19 @@ func (trx *Transaction) TokenTransactions() ([]*TokenTransaction, error) {
 	return list, nil
 }
 
-// tokenTransactions loads list of all token transaction related to this transaction call.
-func (trx *Transaction) tokenTransactions() ([]*types.TokenTransaction, error) {
-	// call for it only once
-	val, err, _ := trx.cg.Do("erc", func() (interface{}, error) {
-		log.Noticef("Loading ERC list for %s", trx.Hash.String())
-		return repository.R().TokenTransactionsByCall(&trx.Hash)
-	})
+// Erc20Transactions resolves list of ERC-20 transactions executed in the scope
+// of this general transaction function call.
+func (trx *Transaction) Erc20Transactions() ([]*ERC20Transaction, error) {
+	// get all the transaction
+	tl, err := trx.tokenTransactions()
 	if err != nil {
 		return nil, err
 	}
-	return val.([]*types.TokenTransaction), nil
+
+	list := make([]*ERC20Transaction, 0)
+	for _, tx := range tl {
+		list = append(list, NewErc20Transaction(tx))
+	}
+
+	return list, nil
 }

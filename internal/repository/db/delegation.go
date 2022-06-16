@@ -25,22 +25,25 @@ const (
 	FiDelegationAddress = "addr"
 
 	// FiDelegationToStakerId defines id of the validator column of the delegation table.
-	FiDelegationToStakerId = "to_id"
+	FiDelegationToStakerId = "to"
 
 	// FiDelegationTransaction defines transaction has column of the delegation table.
 	FiDelegationTransaction = "trx"
 
 	// FiDelegationToStakerAddress defines validator address column of the delegation table.
-	FiDelegationToStakerAddress = "to_addr"
+	FiDelegationToStakerAddress = "toad"
 
-	// FiDelegationAmountStaked defines amount delegated column of the delegation table.
-	FiDelegationAmountStaked = "amount"
+	// FiDelegationAmountStaked defines amount staked column of the delegation table.
+	FiDelegationAmountStaked = "amo"
+
+	// FiDelegationAmountDelegated defines amount delegated column of the delegation table.
+	FiDelegationAmountDelegated = "act"
 
 	// FiDelegationValue defines value of the delegation column of the delegation table.
 	FiDelegationValue = "value"
 
 	// FiDelegationCreated defines time stamp column of the delegation table.
-	FiDelegationCreated = "created"
+	FiDelegationCreated = "stamp"
 )
 
 // ErrUnknownDelegation represents an error given on an unknown delegation update attempt.
@@ -120,55 +123,30 @@ func (db *MongoDbBridge) AddDelegation(dl *types.Delegation) error {
 	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colDelegations)
 
-	// if the delegation already exists, update it with the new data
-	if db.isDelegationKnown(col, dl) {
-		return db.UpdateDelegation(dl)
-	}
-
-	// try to do the insert
-	if _, err := col.InsertOne(context.Background(), dl); err != nil {
-		db.log.Criticalf("can not add delegation %s to %d; %s", dl.Address.String(), dl.ToStakerId.ToInt().Uint64(), err.Error())
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{
+			{Key: FiDelegationAddress, Value: dl.Address.String()},
+			{Key: FiDelegationToStakerId, Value: dl.ToStakerId.String()},
+		},
+		bson.D{{Key: "$set", Value: bson.D{
+			{Key: FiDelegationAddress, Value: dl.Address},
+			{Key: FiDelegationToStakerId, Value: dl.ToStakerId},
+			{Key: FiDelegationTransaction, Value: dl.Transaction},
+			{Key: FiDelegationToStakerAddress, Value: dl.ToStakerAddress},
+			{Key: FiDelegationCreated, Value: dl.Created},
+			{Key: FiDelegationOrdinal, Value: dl.ComputedOrdinalIndex()},
+			{Key: FiDelegationValue, Value: dl.ComputedValue()},
+			{Key: FiDelegationAmountStaked, Value: dl.AmountStaked},
+			{Key: FiDelegationAmountDelegated, Value: dl.AmountDelegated},
+		}}},
+		options.Update().SetUpsert(true),
+	); err != nil {
+		db.log.Errorf("can not upsert delegation %s to %d; %s", dl.Address.String(), dl.ToStakerId.ToInt().Uint64(), err.Error())
 		return err
 	}
 
-	return nil
-}
-
-// UpdateDelegation updates the given delegation in database.
-func (db *MongoDbBridge) UpdateDelegation(dl *types.Delegation) error {
-	// get the collection for delegations
-	col := db.client.Database(db.dbName).Collection(colDelegations)
-
-	// calculate the value to 9 digits (and 18 billions remain available)
-	val := new(big.Int).Div(dl.AmountDelegated.ToInt(), types.DelegationDecimalsCorrection).Uint64()
-
-	// notify
-	db.log.Debugf("updating delegation %s to #%d value to %d",
-		dl.Address.String(), dl.ToStakerId.ToInt().Uint64(), val)
-
-	// try to update a delegation by replacing it in the database
-	// we use address and validator ID to identify unique delegation
-	er, err := col.UpdateOne(context.Background(), bson.D{
-		{Key: FiDelegationAddress, Value: dl.Address.String()},
-		{Key: FiDelegationToStakerId, Value: dl.ToStakerId.String()},
-	}, bson.D{{Key: "$set", Value: bson.D{
-		{Key: FiDelegationOrdinal, Value: dl.OrdinalIndex()},
-		{Key: FiDelegationCreated, Value: dl.Created},
-		{Key: FiDelegationTransaction, Value: dl.Transaction.String()},
-		{Key: FiDelegationToStakerAddress, Value: dl.ToStakerAddress.String()},
-		{Key: FiDelegationAmountStaked, Value: dl.AmountDelegated.String()},
-		{Key: FiDelegationValue, Value: val},
-	}}}, new(options.UpdateOptions).SetUpsert(true))
-	if err != nil {
-		db.log.Critical(err)
-		return err
-	}
-
-	// do we actually have the document
-	if 0 == er.MatchedCount {
-		db.log.Errorf("delegation %s to %d not found", dl.Address.String(), dl.ToStakerId.ToInt().Uint64())
-	}
-
+	db.log.Debugf("upserted delegation %s to %d", dl.Address.String(), dl.ToStakerId.ToInt().Uint64())
 	return nil
 }
 
@@ -203,30 +181,6 @@ func (db *MongoDbBridge) UpdateDelegationBalance(addr *common.Address, valID *he
 		return ErrUnknownDelegation
 	}
 	return nil
-}
-
-// isDelegationKnown checks if the given delegation exists in the database.
-func (db *MongoDbBridge) isDelegationKnown(col *mongo.Collection, dl *types.Delegation) bool {
-	// try to find the delegation in the database
-	sr := col.FindOne(context.Background(), bson.D{
-		{Key: FiDelegationAddress, Value: dl.Address.String()},
-		{Key: FiDelegationToStakerId, Value: dl.ToStakerId.String()},
-	}, options.FindOne().SetProjection(bson.D{
-		{Key: defaultPK, Value: true},
-	}))
-
-	// error on lookup?
-	if sr.Err() != nil {
-		// may be ErrNoDocuments, which we seek
-		if sr.Err() == mongo.ErrNoDocuments {
-			return false
-		}
-
-		// inform that we can not get the PK; should not happen
-		db.log.Errorf("can not get existing delegation pk; %s", sr.Err().Error())
-		return false
-	}
-	return true
 }
 
 // DelegationsCountFiltered calculates total number of delegations in the database for the given filter.

@@ -3,16 +3,12 @@ package db
 
 import (
 	"context"
-	"encoding/binary"
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/common/math"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"math/big"
 )
 
 const (
@@ -28,6 +24,9 @@ const (
 	// filTokenTrxTokenAddress is the name of the token recipient address column in token transactions collection
 	filTokenTrxRecipient = "to"
 
+	// filTokenTrxTokenAddress is the name of the amount column in token transactions collection
+	filTokenTrxAmount = "amo"
+
 	// filTokenTrxTransaction is the name of the transaction type column in token transactions collection
 	filTokenTrxType = "tx_type"
 
@@ -42,6 +41,18 @@ const (
 
 	// filTokenTrxOrdinalIndex is the name of the ordinal index column in token transactions collection
 	filTokenTrxOrdinalIndex = "ordinal"
+
+	// filTokenTrxTimestamp is the name of the block number column in token transactions collection
+	filTokenTrxTimestamp = "ts"
+
+	// filTokenTrxBlockNumber is the name of the ordinal index column in token transactions collection
+	filTokenTrxBlockNumber = "block"
+
+	// filTokenTrxTrxIndex is the name of the transaction index column in token transactions collection
+	filTokenTrxTrxIndex = "trx_index"
+
+	// filTokenTrxLogIndex is the name of the transaction log index column in token transactions collection
+	filTokenTrxLogIndex = "log_index"
 )
 
 // tokenTrxCollectionIndexes provides a list of indexes expected to exist on the tokens' transactions collection.
@@ -80,14 +91,26 @@ func (db *MongoDbBridge) StoreTokenTransaction(trx *types.TokenTransaction, deci
 	col := db.client.Database(db.dbName).Collection(colTokenTransactions)
 	if _, err := col.UpdateOne(
 		context.Background(),
-		bson.D{{Key: defaultPK, Value: tokenTrxPk(trx)}},
+		bson.D{{Key: defaultPK, Value: trx.ComputedPk()}},
 		bson.D{
 			{Key: "$set", Value: bson.D{
-				{Key: filTokenTrxOrdinalIndex, Value: tokenTrxOrdinalIndex(trx)},
+				{Key: filTokenTrxTokenAddress, Value: trx.TokenAddress},
+				{Key: filTokenTrxType, Value: trx.TrxType},
+				{Key: filTokenTrxSender, Value: trx.Sender},
+				{Key: filTokenTrxRecipient, Value: trx.Recipient},
+				{Key: filTokenTrxAmount, Value: trx.Amount},
+				{Key: filTokenTrxValue, Value: trx.ComputedValue(decimals)},
 				{Key: filTokenTrxDecimals, Value: decimals},
-				{Key: filTokenTrxValue, Value: tokenTrxValue(trx, decimals)},
+				{Key: filTokenTrxTransaction, Value: trx.Transaction},
+				{Key: filTokenTrxTimestamp, Value: trx.TimeStamp},
+				{Key: filTokenTrxBlockNumber, Value: trx.BlockNumber},
+				{Key: filTokenTrxTrxIndex, Value: trx.TrxIndex},
+				{Key: filTokenTrxLogIndex, Value: trx.LogIndex},
+				{Key: filTokenTrxOrdinalIndex, Value: trx.ComputedOrdinalIndex()},
 			}},
-			{Key: "$setOnInsert", Value: trx},
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: defaultPK, Value: trx.ComputedPk()},
+			}},
 		},
 		options.Update().SetUpsert(true),
 	); err != nil {
@@ -417,45 +440,4 @@ func (db *MongoDbBridge) ercTrxListLoad(col *mongo.Collection, cursor *string, c
 		list.Collection = append(list.Collection, trx)
 	}
 	return nil
-}
-
-// tokenTrxPk generates unique identifier of the token transaction from the transaction data.
-func tokenTrxPk(trx *types.TokenTransaction) string {
-	bytes := make([]byte, 12)
-	binary.BigEndian.PutUint64(bytes[0:8], trx.BlockNumber)       // unique number of the block
-	binary.BigEndian.PutUint32(bytes[8:12], uint32(trx.LogIndex)) // index of log event in the block
-	return hexutil.Encode(bytes)
-}
-
-// WithValue calculates the normalized value
-func tokenTrxValue(trx *types.TokenTransaction, decimals uint8) int64 {
-	// if actual number of decimals on the token is lower than the target
-	// all we need to do is to get the int64 value from the amount directly
-	if decimals <= types.TokenTransactionTargetDecimals {
-		return trx.Amount.ToInt().Int64()
-	}
-
-	// we need to reduce decimals to get the desired precision; so we divide the amount by 10^(decimals diff)
-	return new(big.Int).Div(
-		trx.Amount.ToInt(),
-		math.Exp(big.NewInt(10), big.NewInt(int64(decimals-types.TokenTransactionTargetDecimals))),
-	).Int64()
-}
-
-// tokenTrxOrdinalIndex generates ordinal index used for transactions list segmentation.
-func tokenTrxOrdinalIndex(trx *types.TokenTransaction) int64 {
-	ordinal := make([]byte, 8)
-	binary.BigEndian.PutUint64(ordinal, uint64((trx.TimeStamp.Unix()&0x7FFFFFFFFF)<<24))
-
-	logIndex := make([]byte, 4)
-	binary.BigEndian.PutUint32(logIndex, uint32(trx.LogIndex))
-
-	// use transaction hash as base of salt
-	// XOR with logIndex to distinguish individual contract emitted events
-	trxHash := trx.Transaction.Bytes()
-	ordinal[5] = trxHash[0] ^ logIndex[1]
-	ordinal[6] = trxHash[1] ^ logIndex[2]
-	ordinal[7] = trxHash[2] ^ logIndex[3]
-
-	return int64(binary.BigEndian.Uint64(ordinal))
 }

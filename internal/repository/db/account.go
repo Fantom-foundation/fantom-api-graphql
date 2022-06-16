@@ -60,12 +60,7 @@ func (db *MongoDbBridge) StoreAccount(acc *types.Account) error {
 	if _, err := col.UpdateOne(
 		context.Background(),
 		bson.D{{Key: defaultPK, Value: acc.Address}},
-		bson.D{
-			{Key: "$set", Value: bson.D{
-				{Key: fiAccountType, Value: acc.AccountType},
-			}},
-			{Key: "$setOnInsert", Value: acc},
-		},
+		bson.D{{Key: "$set", Value: acc}},
 		options.Update().SetUpsert(true),
 	); err != nil {
 		db.log.Errorf("can not add account %s; %s", acc.Address.String(), err)
