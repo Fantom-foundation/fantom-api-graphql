@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"time"
 )
 
 // handleDelegationLog handles a new delegation event from logs.
@@ -32,7 +33,7 @@ func handleNewDelegation(lr *types.LogRecord, stakerID *big.Int, addr common.Add
 		ToStakerAddress: *val,
 		AmountDelegated: (*hexutil.Big)(staked),
 		AmountStaked:    (*hexutil.Big)(amo),
-		CreatedTime:     lr.Block.TimeStamp,
+		Created:         time.Unix(int64(lr.Block.TimeStamp), 0),
 	}
 
 	// store the delegation
@@ -308,6 +309,6 @@ func makeAdHocDelegation(lr *types.LogRecord, addr *common.Address, stakerID *he
 		ToStakerAddress: *val,
 		AmountDelegated: (*hexutil.Big)(amo),
 		AmountStaked:    (*hexutil.Big)(amo),
-		CreatedTime:     lr.Block.TimeStamp,
+		Created:         time.Unix(int64(lr.Block.TimeStamp), 0),
 	})
 }

@@ -5,6 +5,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/graph-gophers/graphql-go"
 )
 
 // TokenTransaction represents a resolvable generic token transaction.
@@ -27,46 +28,32 @@ func (ttx *TokenTransaction) BlockNumber() hexutil.Uint64 {
 	return hexutil.Uint64(ttx.TokenTransaction.BlockNumber)
 }
 
+// TrxIndex resolves index of the transaction in the block.
+func (ttx *TokenTransaction) TrxIndex() hexutil.Uint64 {
+	return hexutil.Uint64(ttx.TokenTransaction.TrxIndex)
+}
+
 // Type resolves human-readable type of the transaction.
 func (ttx *TokenTransaction) Type() string {
-	return ercTrxTypeToName(ttx.TokenTransaction.Type)
+	return ercTrxTypeToName(ttx.TokenTransaction.TrxType)
 }
 
-// TokenName resolves the name of the ERC token contract, if available.
+// TokenName resolves the name of the ERC20 token contract, if available.
 func (ttx *TokenTransaction) TokenName() (name string, err error) {
-	switch ttx.TokenTransaction.TokenType {
-	case types.AccountTypeERC20:
-		name, err = repository.R().Erc20Name(&ttx.TokenTransaction.TokenAddress)
-	case types.AccountTypeERC721:
-		name, err = repository.R().Erc721Name(&ttx.TokenTransaction.TokenAddress)
-	default:
-		name, err = "", nil
-	}
-	return
+	return repository.R().Erc20Name(&ttx.TokenTransaction.TokenAddress)
 }
 
-// TokenSymbol resolves the symbol of the ERC token contract, if available.
+// TokenSymbol resolves the symbol of the ERC20 token contract, if available.
 func (ttx *TokenTransaction) TokenSymbol() (sym string, err error) {
-	switch ttx.TokenTransaction.TokenType {
-	case types.AccountTypeERC20:
-		sym, err = repository.R().Erc20Symbol(&ttx.TokenTransaction.TokenAddress)
-	case types.AccountTypeERC721:
-		sym, err = repository.R().Erc721Symbol(&ttx.TokenTransaction.TokenAddress)
-	default:
-		sym, err = "", nil
-	}
-	return
+	return repository.R().Erc20Symbol(&ttx.TokenTransaction.TokenAddress)
 }
 
-// TokenDecimals resolves the amount of decimals of the ERC token contract, if available.
+// TokenDecimals resolves the amount of decimals of the ERC20 token contract, if available.
 func (ttx *TokenTransaction) TokenDecimals() (decimals int32, err error) {
-	switch ttx.TokenTransaction.TokenType {
-	case types.AccountTypeERC20:
-		decimals, err = repository.R().Erc20Decimals(&ttx.TokenTransaction.TokenAddress)
-	case types.AccountTypeERC721:
-		decimals = 0
-	default:
-		decimals = 0
-	}
-	return
+	return repository.R().Erc20Decimals(&ttx.TokenTransaction.TokenAddress)
+}
+
+// Timestamp returns timestamp.
+func (ttx *TokenTransaction) Timestamp() graphql.Time {
+	return graphql.Time{Time: ttx.TimeStamp}
 }

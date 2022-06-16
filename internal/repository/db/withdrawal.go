@@ -18,36 +18,38 @@ import (
 // colWithdrawals represents the name of the withdrawals' collection in database.
 const colWithdrawals = "withdraws"
 
-// initWithdrawalsCollection initializes the withdrawal requests collection with
-// indexes and additional parameters needed by the app.
-func (db *MongoDbBridge) initWithdrawalsCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
+// withdrawalCollectionIndexes provides a list of indexes expected to exist on the withdrawals' collection.
+func withdrawalCollectionIndexes() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 3)
 
 	// index delegator + validator
 	unique := true
-	ix = append(ix, mongo.IndexModel{
+	ixWdDlgVld := "ix_wd_dlg_vld"
+	ix[0] = mongo.IndexModel{
 		Keys: bson.D{
 			{Key: types.FiWithdrawalAddress, Value: 1},
 			{Key: types.FiWithdrawalToValidator, Value: 1},
 			{Key: types.FiWithdrawalRequestID, Value: 1},
 		},
 		Options: &options.IndexOptions{
+			Name:   &ixWdDlgVld,
 			Unique: &unique,
 		},
-	})
-
-	// index request ID, delegator address, and creation time stamp
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiWithdrawalAddress, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiWithdrawalOrdinal, Value: -1}}})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for withdrawals collection; %s", err.Error())
 	}
 
-	// log we are done that
-	db.log.Debugf("withdrawals collection initialized")
+	ixWdAddress := "ix_wd_addr"
+	ix[1] = mongo.IndexModel{
+		Keys:    bson.D{{Key: types.FiWithdrawalAddress, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixWdAddress},
+	}
+
+	ixWdOrdinal := "ix_wd_orx"
+	ix[2] = mongo.IndexModel{
+		Keys:    bson.D{{Key: types.FiWithdrawalOrdinal, Value: -1}},
+		Options: &options.IndexOptions{Name: &ixWdOrdinal},
+	}
+
+	return ix
 }
 
 // Withdrawal returns details of a withdrawal request specified by the request ID.
@@ -103,10 +105,6 @@ func (db *MongoDbBridge) AddWithdrawal(wr *types.WithdrawRequest) error {
 		return err
 	}
 
-	// make sure delegation collection is initialized
-	if db.initWithdrawals != nil {
-		db.initWithdrawals.Do(func() { db.initWithdrawalsCollection(col); db.initWithdrawals = nil })
-	}
 	return nil
 }
 
@@ -229,7 +227,7 @@ func (db *MongoDbBridge) isWithdrawalKnown(col *mongo.Collection, wr *types.With
 		{Key: types.FiWithdrawalToValidator, Value: wr.StakerID.String()},
 		{Key: types.FiWithdrawalRequestID, Value: wr.WithdrawRequestID.String()},
 	}, options.FindOne().SetProjection(bson.D{
-		{Key: types.FiWithdrawalPk, Value: true},
+		{Key: defaultPK, Value: true},
 	}))
 
 	// error on lookup?
@@ -314,7 +312,7 @@ func (db *MongoDbBridge) wrListCollectRangeMarks(col *mongo.Collection, list *ty
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.wrListBorderPk(col,
-			bson.D{{Key: types.FiWithdrawalPk, Value: *cursor}},
+			bson.D{{Key: defaultPK, Value: *cursor}},
 			options.FindOne())
 	}
 

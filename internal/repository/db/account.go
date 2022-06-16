@@ -13,7 +13,7 @@ import (
 
 const (
 	// coAccount is the name of the off-chain database collection storing account details.
-	coAccounts = "account"
+	colAccounts = "account"
 
 	// fiAccountType represents account type column inside the collection.
 	fiAccountType = "act"
@@ -25,7 +25,7 @@ const (
 // Account tries to load an account identified by the address given from
 // the off-chain database.
 func (db *MongoDbBridge) Account(addr *common.Address) (*types.Account, error) {
-	col := db.client.Database(db.dbName).Collection(coAccounts)
+	col := db.client.Database(db.dbName).Collection(colAccounts)
 
 	// try to find the account
 	sr := col.FindOne(context.Background(), bson.D{{Key: defaultPK, Value: addr}}, options.FindOne())
@@ -56,7 +56,7 @@ func (db *MongoDbBridge) StoreAccount(acc *types.Account) error {
 	}
 
 	// insert the account if not exists
-	col := db.client.Database(db.dbName).Collection(coAccounts)
+	col := db.client.Database(db.dbName).Collection(colAccounts)
 	if _, err := col.UpdateOne(
 		context.Background(),
 		bson.D{{Key: defaultPK, Value: acc.Address}},
@@ -78,7 +78,7 @@ func (db *MongoDbBridge) StoreAccount(acc *types.Account) error {
 
 // IsAccountKnown checks if an account document already exists in the database.
 func (db *MongoDbBridge) IsAccountKnown(addr *common.Address) (bool, error) {
-	col := db.client.Database(db.dbName).Collection(coAccounts)
+	col := db.client.Database(db.dbName).Collection(colAccounts)
 
 	sr := col.FindOne(context.Background(), bson.D{{Key: defaultPK, Value: addr}}, options.FindOne().SetProjection(bson.D{{Key: defaultPK, Value: true}}))
 	if sr.Err() != nil {
@@ -94,7 +94,7 @@ func (db *MongoDbBridge) IsAccountKnown(addr *common.Address) (bool, error) {
 
 // AccountCount calculates total number of accounts in the database.
 func (db *MongoDbBridge) AccountCount() (uint64, error) {
-	return db.EstimateCount(db.client.Database(db.dbName).Collection(coAccounts))
+	return db.EstimateCount(db.client.Database(db.dbName).Collection(colAccounts))
 }
 
 // AccountTransactions loads list of transaction hashes of an account.
@@ -119,27 +119,27 @@ func (db *MongoDbBridge) AccountTransactions(addr *common.Address, rec *common.A
 	return db.Transactions(cursor, count, &filter)
 }
 
-// ErcTokensList returns a list of known ERC tokens ordered by their activity.
-func (db *MongoDbBridge) ErcTokensList(count int32, tt int) ([]common.Address, error) {
+// ErcTokensList returns a list of known ERC tokens.
+func (db *MongoDbBridge) ErcTokensList(count int32, accountType int) ([]common.Address, error) {
 	// make sure the count is positive; use default size if not
 	if count <= 0 {
 		count = defaultTokenListLength
 	}
 
 	// log what we do
-	db.log.Debugf("loading %d most active ERC20 token accounts", count)
+	db.log.Debugf("loading %d ERC token accounts", count)
 
 	// get the collection for contracts
-	col := db.client.Database(db.dbName).Collection(coAccounts)
+	col := db.client.Database(db.dbName).Collection(colAccounts)
 
-	// make the filter for ERC20 tokens only and pull them ordered by activity
-	filter := bson.D{{Key: fiAccountType, Value: tt}}
+	// make the filter for ERC tokens only and pull them ordered by activity
+	filter := bson.D{{Key: fiAccountType, Value: accountType}}
 	opt := options.Find().SetLimit(int64(count))
 
 	// load the data
 	cursor, err := col.Find(context.Background(), filter, opt)
 	if err != nil {
-		db.log.Errorf("error loading ERC20 tokens list; %s", err.Error())
+		db.log.Errorf("error loading ERC tokens list; %s", err.Error())
 		return nil, err
 	}
 

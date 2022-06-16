@@ -3,12 +3,10 @@ package types
 
 import (
 	"encoding/binary"
-	"fmt"
+	"fantom-api-graphql/internal/repository/db/registry"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
-	"time"
 )
 
 const (
@@ -40,14 +38,18 @@ type FMintUserTokens struct {
 
 // FMintTransaction represents a core transaction on fMint contract.
 type FMintTransaction struct {
-	UserAddress  common.Address
-	TokenAddress common.Address
-	Type         int32
-	Amount       hexutil.Big
-	Fee          hexutil.Big
-	TrxHash      common.Hash
-	TrxIndex     int64
-	TimeStamp    hexutil.Uint64
+	ID           string         `bson:"_id"`
+	UserAddress  common.Address `bson:"usr"`
+	TokenAddress common.Address `bson:"tok"`
+	Type         int32          `bson:"typ"`
+	Amount       hexutil.Big    `bson:"amo"`
+	Fee          hexutil.Big    `bson:"fee"`
+	FeeValue     int64          `bson:"fee_val"`
+	TrxHash      common.Hash    `bson:"trx"`
+	TrxIndex     int64          `bson:"tix"`
+	TimeStamp    hexutil.Uint64 `bson:"stamp"`
+	Value        int64          `bson:"val"`
+	Ordinal      int64          `bson:"orx"`
 }
 
 // Pk generates a unique primary key for the given fMint transaction.
@@ -75,72 +77,10 @@ func (ftx *FMintTransaction) OrdinalIndex() int64 {
 // MarshalBSON creates a BSON representation of an fMint transaction.
 func (ftx *FMintTransaction) MarshalBSON() ([]byte, error) {
 	// calculate the value to 9 digits (and 18 billions remain available)
-	val := new(big.Int).Div(ftx.Amount.ToInt(), FMintAmountDecimalsCorrection).Int64()
-	fee := new(big.Int).Div(ftx.Fee.ToInt(), FMintAmountDecimalsCorrection).Int64()
+	ftx.Value = new(big.Int).Div(ftx.Amount.ToInt(), FMintAmountDecimalsCorrection).Int64()
+	ftx.FeeValue = new(big.Int).Div(ftx.Fee.ToInt(), FMintAmountDecimalsCorrection).Int64()
+	ftx.ID = ftx.Pk()
+	ftx.Ordinal = ftx.OrdinalIndex()
 
-	// prep the structure for saving
-	pom := struct {
-		ID        string    `bson:"_id"`
-		Ordinal   int64     `bson:"orx"`
-		Type      int32     `bson:"typ"`
-		User      string    `bson:"usr"`
-		Token     string    `bson:"tok"`
-		Amount    string    `bson:"amo"`
-		Fee       string    `bson:"fee"`
-		Trx       string    `bson:"trx"`
-		TrxIndex  int64     `bson:"tix"`
-		TimeStamp time.Time `bson:"stamp"`
-		Value     int64     `bson:"val"`
-		FeeValue  int64     `bson:"fee_val"`
-	}{
-		ID:        ftx.Pk(),
-		Ordinal:   ftx.OrdinalIndex(),
-		Type:      ftx.Type,
-		User:      ftx.UserAddress.String(),
-		Token:     ftx.TokenAddress.String(),
-		Trx:       ftx.TrxHash.String(),
-		TrxIndex:  ftx.TrxIndex,
-		Amount:    ftx.Amount.String(),
-		Fee:       ftx.Fee.String(),
-		TimeStamp: time.Unix(int64(ftx.TimeStamp), 0),
-		Value:     val,
-		FeeValue:  fee,
-	}
-	return bson.Marshal(pom)
-}
-
-// UnmarshalBSON updates the value from BSON source.
-func (ftx *FMintTransaction) UnmarshalBSON(data []byte) (err error) {
-	// capture unmarshal issue
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("can not decode and unmarshal")
-		}
-	}()
-
-	// try to decode the BSON data
-	var row struct {
-		Type      int32     `bson:"typ"`
-		User      string    `bson:"usr"`
-		Token     string    `bson:"tok"`
-		Amount    string    `bson:"amo"`
-		Fee       string    `bson:"fee"`
-		TrxHash   string    `bson:"trx"`
-		TrxIndex  int64     `bson:"tix"`
-		TimeStamp time.Time `bson:"stamp"`
-	}
-	if err = bson.Unmarshal(data, &row); err != nil {
-		return err
-	}
-
-	// transfer values
-	ftx.Type = row.Type
-	ftx.UserAddress = common.HexToAddress(row.User)
-	ftx.TokenAddress = common.HexToAddress(row.Token)
-	ftx.TrxHash = common.HexToHash(row.TrxHash)
-	ftx.TrxIndex = row.TrxIndex
-	ftx.Amount = (hexutil.Big)(*hexutil.MustDecodeBig(row.Amount))
-	ftx.Fee = (hexutil.Big)(*hexutil.MustDecodeBig(row.Fee))
-	ftx.TimeStamp = (hexutil.Uint64)(uint64(row.TimeStamp.Unix()))
-	return nil
+	return registry.Marshal(ftx)
 }

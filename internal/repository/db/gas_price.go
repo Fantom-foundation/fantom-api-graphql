@@ -16,23 +16,23 @@ const (
 	colGasPrice = "gas_price"
 )
 
-// initGasPriceCollection initializes the gas price period collection with
-// indexes and additional parameters needed by the app.
-func (db *MongoDbBridge) initGasPriceCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
+// gasPriceCollectionIndexes provides a list of indexes expected to exist on the prices' collection.
+func gasPriceCollectionIndexes() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 2)
 
-	// index sender and recipient
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiGasPriceTimeFrom, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiGasPriceTimeTo, Value: 1}}})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for gas price collection; %s", err.Error())
+	ixGasPriceFrom := "ix_gas_price_from"
+	ix[0] = mongo.IndexModel{
+		Keys:    bson.D{{Key: types.FiGasPriceTimeFrom, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixGasPriceFrom},
 	}
 
-	// log we are done that
-	db.log.Debugf("gas price collection initialized")
+	ixGasPriceTo := "ix_gas_price_to"
+	ix[1] = mongo.IndexModel{
+		Keys:    bson.D{{Key: types.FiGasPriceTimeTo, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixGasPriceTo},
+	}
+
+	return ix
 }
 
 // AddGasPricePeriod stores a new record for the gas price evaluation
@@ -52,10 +52,6 @@ func (db *MongoDbBridge) AddGasPricePeriod(gp *types.GasPricePeriod) error {
 		return err
 	}
 
-	// make sure gas price collection is initialized
-	if db.initGasPrice != nil {
-		db.initGasPrice.Do(func() { db.initGasPriceCollection(col); db.initGasPrice = nil })
-	}
 	return nil
 }
 

@@ -31,7 +31,7 @@ func (p *proxy) Erc1155IsApprovedForAll(token *common.Address, owner *common.Add
 	return p.rpc.Erc1155IsApprovedForAll(token, owner, operator)
 }
 
-// Erc1155ContractsList returns a list of known ERC1155 tokens ordered by their activity.
+// Erc1155ContractsList returns a list of known ERC1155 tokens.
 func (p *proxy) Erc1155ContractsList(count int32) ([]common.Address, error) {
-	return p.db.Erc1155ContractsList(count)
+	return p.db.ErcTokensList(count, types.AccountTypeERC1155Contract)
 }

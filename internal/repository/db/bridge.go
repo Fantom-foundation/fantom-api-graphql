@@ -72,7 +72,7 @@ func connectDb(cfg *config.Database) (*mongo.Client, error) {
 	ctx := context.Background()
 
 	// create new Mongo client
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Url).SetRegistry(registry.New()))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Url).SetRegistry(registry.DefaultRegistry()))
 	if err != nil {
 		return nil, err
 	}

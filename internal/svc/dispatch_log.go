@@ -89,13 +89,13 @@ func (lgd *logDispatcher) init() {
 		/* SFC3::RestakedRewards(address indexed delegator, uint256 indexed toValidatorID, uint256 lockupExtraReward, uint256 lockupBaseReward, uint256 unlockedReward) */
 		common.HexToHash("0x4119153d17a36f9597d40e3ab4148d03261a439dddbec4e91799ab7159608e26"): handleSfcRestakeRewards,
 
-		/* ---------------- ERC20 and ERC721 contracts related event hooks below this line ---------------- */
+		/* ---------------- ERC20, ERC721 and ERC1155 contracts related event hooks below this line ---------------- */
 
-		/* ERC20::Approval(address indexed owner, address indexed spender, uint256 value) */
-		common.HexToHash("0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"): handleErcTokenApproval,
+		/* ERC20/721::Approval(address, address, uint256) */
+		common.HexToHash("0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"): handleErcApproval,
 
-		/* ERC20::Transfer(address indexed from, address indexed to, uint256 value) */
-		common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"): handleErcTokenTransfer,
+		/* ERC20/721::Transfer(address, address, uint256) */
+		common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"): handleErcTransfer,
 
 		/* ERC1155::TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value) */
 		common.HexToHash("0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62"): handleErc1155TransferSingle,
