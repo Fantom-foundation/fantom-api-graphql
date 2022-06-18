@@ -34,18 +34,18 @@ const (
 // this record is created in the SFC contract to track the withdrawal process.
 type WithdrawRequest struct {
 	// struct members for initiated withdraw
-	RequestTrx        common.Hash     `bson:"_id"`
-	WithdrawRequestID *hexutil.Big    `bson:"req_id"`
-	Address           common.Address  `bson:"adr"`
-	StakerID          *hexutil.Big    `bson:"to"`
-	CreatedTime       time.Time       `bson:"crt"`
-	Amount            *hexutil.Big    `bson:"amo"`
-	Type              string          `bson:"type"`
-	Ordinal           uint64          `bson:"orx"`
-	Value             uint64          `bson:"val"`
-	WithdrawTrx       *common.Hash    `bson:"fin_trx"`
-	WithdrawTime      *hexutil.Uint64 `bson:"fin_time"`
-	Penalty           *hexutil.Big    `bson:"slash"`
+	RequestTrx        common.Hash    `bson:"_id"`
+	WithdrawRequestID *hexutil.Big   `bson:"req_id"`
+	Address           common.Address `bson:"adr"`
+	StakerID          *hexutil.Big   `bson:"to"`
+	CreatedTime       time.Time      `bson:"crt"`
+	Amount            *hexutil.Big   `bson:"amo"`
+	Type              string         `bson:"type"`
+	Ordinal           uint64         `bson:"orx"`
+	Value             uint64         `bson:"val"`
+	WithdrawTrx       *common.Hash   `bson:"fin_trx"`
+	WithdrawTime      *time.Time     `bson:"fin_time"`
+	Penalty           *hexutil.Big   `bson:"slash"`
 }
 
 // WithdrawDecimalsCorrection is used to manipulate precision of a withdrawal value

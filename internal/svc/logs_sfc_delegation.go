@@ -156,7 +156,8 @@ func handleFinishedWithdrawRequest(adr common.Address, valID *big.Int, reqID *bi
 	}
 
 	// update the request to have the finalization details
-	req.WithdrawTime = &lr.Block.TimeStamp
+	wt := time.Unix(int64(lr.Block.TimeStamp), 0)
+	req.WithdrawTime = &wt
 	req.WithdrawTrx = &lr.TxHash
 	req.Penalty = (*hexutil.Big)(penalty)
 

@@ -212,7 +212,7 @@ func (db *MongoDbBridge) UpdateWithdrawal(wr *types.WithdrawRequest) error {
 		{Key: types.FiWithdrawalPenalty, Value: pen},
 		{Key: types.FiWithdrawalRequestTrx, Value: wr.RequestTrx.String()},
 		{Key: types.FiWithdrawalWithdrawTrx, Value: trx},
-		{Key: types.FiWithdrawalWithdrawTime, Value: (*uint64)(wr.WithdrawTime)},
+		{Key: types.FiWithdrawalWithdrawTime, Value: wr.WithdrawTime},
 	}}}, new(options.UpdateOptions).SetUpsert(true))
 	if err != nil {
 		db.log.Critical(err)
