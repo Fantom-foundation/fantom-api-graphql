@@ -30,7 +30,7 @@ func handleErcApproval(lr *types.LogRecord) {
 // event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
 func handleErcTransfer(lr *types.LogRecord) {
 	if isErc20Transaction(lr) {
-		processErc20Transaction(lr, types.TokenTrxTypeApproval)
+		processErc20Transaction(lr, types.TokenTrxTypeTransfer)
 		return
 	}
 	if isErc721Transaction(lr) {
