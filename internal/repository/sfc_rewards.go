@@ -30,7 +30,7 @@ func (p *proxy) RewardClaims(adr *common.Address, valID *big.Int, cursor *string
 	// add delegator address to the filter
 	if adr != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiRewardClaimAddress,
+			Key:   types.FiRewardClaimDelegator,
 			Value: adr.String(),
 		})
 	}
@@ -38,7 +38,7 @@ func (p *proxy) RewardClaims(adr *common.Address, valID *big.Int, cursor *string
 	// add validator ID to the filter
 	if valID != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiRewardClaimToValidator,
+			Key:   types.FiRewardClaimToValidatorId,
 			Value: (*hexutil.Big)(valID).String(),
 		})
 	}
@@ -53,7 +53,7 @@ func (p *proxy) RewardsClaimed(adr *common.Address, valId *big.Int, since *int64
 	// filter by delegator address
 	if adr != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiRewardClaimAddress,
+			Key:   types.FiRewardClaimDelegator,
 			Value: adr.String(),
 		})
 	}
@@ -61,7 +61,7 @@ func (p *proxy) RewardsClaimed(adr *common.Address, valId *big.Int, since *int64
 	// filter by validator ID
 	if valId != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiRewardClaimToValidator,
+			Key:   types.FiRewardClaimToValidatorId,
 			Value: (*hexutil.Big)(valId).String(),
 		})
 	}
@@ -69,7 +69,7 @@ func (p *proxy) RewardsClaimed(adr *common.Address, valId *big.Int, since *int64
 	// starting time stamp provided
 	if since != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiRewardClaimedTimeStamp,
+			Key:   types.FiRewardClaimTimeStamp,
 			Value: bson.D{{Key: "$gte", Value: time.Unix(*since, 0)}},
 		})
 	}
@@ -77,7 +77,7 @@ func (p *proxy) RewardsClaimed(adr *common.Address, valId *big.Int, since *int64
 	// ending time stamp provided
 	if until != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiRewardClaimedTimeStamp,
+			Key:   types.FiRewardClaimTimeStamp,
 			Value: bson.D{{Key: "$lte", Value: time.Unix(*until, 0)}},
 		})
 	}
