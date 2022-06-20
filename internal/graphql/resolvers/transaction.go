@@ -154,13 +154,13 @@ func (trx *Transaction) Erc20Transactions() ([]*ERC20Transaction, error) {
 // Erc721Transactions resolves list of ERC-721 transactions executed in the scope
 // of this general transaction function call.
 func (trx *Transaction) Erc721Transactions() ([]*ERC721Transaction, error) {
-	// always return empty list since we don't track erc721 transactions
+	// return empty transaction list to keep existing GraphQL schema
 	return make([]*ERC721Transaction, 0), nil
 }
 
 // Erc1155Transactions resolves list of ERC-155 transactions executed in the scope
 // of this general transaction function call.
 func (trx *Transaction) Erc1155Transactions() ([]*ERC1155Transaction, error) {
-	// always return empty list since we don't track erc1155 transactions
+	// return empty transaction list to keep existing GraphQL schema
 	return make([]*ERC1155Transaction, 0), nil
 }

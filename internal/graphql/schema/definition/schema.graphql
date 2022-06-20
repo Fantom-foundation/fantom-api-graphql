@@ -47,6 +47,12 @@ type Query {
     # Get filtered list of ERC20 Transactions.
     erc20Transactions(cursor:Cursor, count:Int = 25, token: Address, account: Address, txType: [TokenTransactionType!]): ERC20TransactionList!
 
+    # Get filtered list of ERC721 Transactions.
+    erc721Transactions(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, account: Address, txType: [TokenTransactionType!]): ERC721TransactionList!
+
+    # Get filtered list of ERC1155 Transactions.
+    erc1155Transactions(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, account: Address, txType: [TokenTransactionType!]): ERC1155TransactionList!
+
     # Get the id of the current epoch of the Opera blockchain.
     currentEpoch:Long!
 

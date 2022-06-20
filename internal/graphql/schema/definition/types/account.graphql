@@ -20,6 +20,12 @@ type Account {
     # erc20TxList represents list of ERC20 transactions of the account.
     erc20TxList(cursor:Cursor, count:Int = 25, token: Address, txType: [TokenTransactionType!]): ERC20TransactionList!
 
+    # erc721TxList represents list of ERC721 transactions of the account.
+    erc721TxList(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, txType: [TokenTransactionType!]): ERC721TransactionList!
+
+    # erc1155TxList represents list of ERC1155 transactions of the account.
+    erc1155TxList(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, txType: [TokenTransactionType!]): ERC1155TransactionList!
+
     # Details of a staker, if the account is a staker.
     staker: Staker
 

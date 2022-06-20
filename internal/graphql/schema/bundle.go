@@ -1779,6 +1779,12 @@ type Account {
     # erc20TxList represents list of ERC20 transactions of the account.
     erc20TxList(cursor:Cursor, count:Int = 25, token: Address, txType: [TokenTransactionType!]): ERC20TransactionList!
 
+    # erc721TxList represents list of ERC721 transactions of the account.
+    erc721TxList(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, txType: [TokenTransactionType!]): ERC721TransactionList!
+
+    # erc1155TxList represents list of ERC1155 transactions of the account.
+    erc1155TxList(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, txType: [TokenTransactionType!]): ERC1155TransactionList!
+
     # Details of a staker, if the account is a staker.
     staker: Staker
 
@@ -1787,6 +1793,24 @@ type Account {
 
     # Details about smart contract, if the account is a smart contract.
     contract: Contract
+}
+
+# ERC1155TransactionList is a list of ERC1155 transaction edges provided by sequential access request.
+type ERC1155TransactionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ERC1155TransactionListEdge!]!
+
+    # TotalCount is the maximum number of ERC1155 transactions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of ERC1155 transaction edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of ERC1155 transactions.
+type ERC1155TransactionListEdge {
+    cursor: Cursor!
+    trx: ERC1155Transaction!
 }
 
 # Bytes32 is a 32 byte binary string, represented by 0x prefixed hexadecimal hash.
@@ -1811,6 +1835,24 @@ scalar Cursor
 
 # Time represents date and time including time zone information in RFC3339 format.
 scalar Time
+
+# ERC721TransactionList is a list of ERC721 transaction edges provided by sequential access request.
+type ERC721TransactionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ERC721TransactionListEdge!]!
+
+    # TotalCount is the maximum number of ERC721 transactions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of ERC721 transaction edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of ERC721 transactions.
+type ERC721TransactionListEdge {
+    cursor: Cursor!
+    trx: ERC721Transaction!
+}
 
 # UniswapPair represents the information about single
 # Uniswap pair managed by the Uniswap Core.
@@ -1986,6 +2028,12 @@ type Query {
 
     # Get filtered list of ERC20 Transactions.
     erc20Transactions(cursor:Cursor, count:Int = 25, token: Address, account: Address, txType: [TokenTransactionType!]): ERC20TransactionList!
+
+    # Get filtered list of ERC721 Transactions.
+    erc721Transactions(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, account: Address, txType: [TokenTransactionType!]): ERC721TransactionList!
+
+    # Get filtered list of ERC1155 Transactions.
+    erc1155Transactions(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, account: Address, txType: [TokenTransactionType!]): ERC1155TransactionList!
 
     # Get the id of the current epoch of the Opera blockchain.
     currentEpoch:Long!
