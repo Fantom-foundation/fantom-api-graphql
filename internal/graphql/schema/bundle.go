@@ -183,6 +183,14 @@ type Transaction {
     # erc20Transactions provides list of ERC-20 token transactions executed in the scope
     # of this blockchain transaction call.
     erc20Transactions: [ERC20Transaction!]!
+
+    # erc721Transactions provides list of ERC-721 NFT transactions executed in the scope
+    # of this blockchain transaction call.
+    erc721Transactions: [ERC721Transaction!]!
+
+    # erc1155Transactions provides list of ERC-1155 NFT transactions executed in the scope
+    # of this blockchain transaction call.
+    erc1155Transactions: [ERC1155Transaction!]!
 }
 
 # Represents staker information.
@@ -1047,6 +1055,49 @@ enum DefiTokenBalanceType {
     DEBT
 }
 
+# ERC721Transaction represents a transaction on an ERC721 NFT token.
+type ERC721Transaction {
+    # trxHash represents a hash of the transaction
+    # executing the ERC721 call.
+    trxHash: Bytes32!
+
+    # transaction represents the transaction
+    # executing the ERC721 call.
+    transaction: Transaction!
+
+    # trxIndex represents the index
+    # of the ERC721 call in the transaction logs.
+    trxIndex: Long!
+
+    # tokenAddress represents the address
+    # of the ERC721 token contract.
+    tokenAddress: Address!
+
+    # token represents the ERC721 contract detail involved.
+    token: ERC721Contract!
+
+    # tokenId represents the NFT token - one ERC721 contract can handle multiple NFTs.
+    tokenId: BigInt!
+
+    # trxType is the type of the transaction.
+    trxType: TokenTransactionType!
+
+    # sender represents the address of the token owner
+    # sending the tokens, e.g. the sender.
+    sender: Address!
+
+    # recipient represents the address of the token recipient.
+    recipient: Address!
+
+    # amount represents the amount of tokens involved
+    # in the transaction; please make sure to interpret the amount
+    # with the correct number of decimals from the ERC721 token detail.
+    amount: BigInt!
+
+    # timeStamp represents the Unix epoch time stamp
+    # of the ERC721 transaction processing.
+    timeStamp: Long!
+}
 # DailyTrxVolume represents a view of an aggregated flow
 # of transactions on the network on specific day.
 type DailyTrxVolume {
@@ -1209,6 +1260,49 @@ input ContractValidationInput {
     sourceCode: String!
 }
 
+# ERC1155Transaction represents a transaction on an ERC1155 NFT token.
+type ERC1155Transaction {
+    # trxHash represents a hash of the transaction
+    # executing the ERC1155 call.
+    trxHash: Bytes32!
+
+    # transaction represents the transaction
+    # executing the ERC1155 call.
+    transaction: Transaction!
+
+    # trxIndex represents the index
+    # of the ERC1155 call in the transaction logs.
+    trxIndex: Long!
+
+    # tokenAddress represents the address
+    # of the ERC1155 token contract.
+    tokenAddress: Address!
+
+    # token represents the ERC1155 contract detail involved.
+    token: ERC1155Contract!
+
+    # tokenId represents the NFT token - one ERC1155 contract can handle multiple NFTs.
+    tokenId: BigInt!
+
+    # trxType is the type of the transaction.
+    trxType: TokenTransactionType!
+
+    # sender represents the address of the token owner
+    # sending the tokens, e.g. the sender.
+    sender: Address!
+
+    # recipient represents the address of the token recipient.
+    recipient: Address!
+
+    # amount represents the amount of tokens involved in the transaction;
+    # please make sure to interpret the amount with the correct number of decimals
+    # from the token Metadata JSON Schema.
+    amount: BigInt!
+
+    # timeStamp represents the Unix epoch time stamp
+    # of the ERC1155 transaction processing.
+    timeStamp: Long!
+}
 # SfcConfig represents the configuration of the SFC contract
 # responsible for managing the staking economy of the network.
 type SfcConfig {
