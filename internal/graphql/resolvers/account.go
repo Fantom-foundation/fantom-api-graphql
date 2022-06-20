@@ -165,6 +165,15 @@ func (acc *Account) Delegations(args *struct {
 	return NewDelegationList(dl), nil
 }
 
+// Contract resolves the contract detail, if the account is a contract.
+func (acc *Account) Contract() (*Contract, error) {
+	var contract *Contract
+	if acc.IsContract {
+		contract = NewContract(&acc.Account)
+	}
+	return contract, nil
+}
+
 // delegationsTotal calculates total sum of delegations of the given account including
 // pending rewards for those delegations.
 func (acc *Account) delegationsTotal() (amount *big.Int, inWithdraw *big.Int, rewards *big.Int, err error) {

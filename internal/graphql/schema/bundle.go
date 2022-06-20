@@ -1130,6 +1130,85 @@ type UniswapAction {
     amount1out: BigInt!
 }
 
+# Contract defines block-chain smart contract information container
+type Contract {
+    "Address represents the contract address."
+    address: Address!
+
+    "DeployedBy represents the smart contract deployment transaction reference."
+    deployedBy: Transaction!
+
+    "transactionHash represents the smart contract deployment transaction hash."
+    transactionHash: Bytes32!
+
+    "Smart contract name. Empty if not available."
+    name: String!
+
+    "Smart contract version identifier. Empty if not available."
+    version: String!
+
+    """
+    License specifies an open source license the contract was published with.
+    Empty if not specified.
+    """
+    license: String!
+
+    "Smart contract author contact. Empty if not available."
+    supportContact: String!
+
+    "Smart contract compiler identifier. Empty if not available."
+    compiler: String!
+
+    "Smart contract source code. Empty if not available."
+    sourceCode: String!
+
+    "Smart contract ABI definition. Empty if not available."
+    abi: String!
+
+    """
+    Validated is the unix timestamp at which the source code was validated
+    against the deployed byte code. Null if not validated yet.
+    """
+    validated: Long
+
+    "Timestamp is the unix timestamp at which this smart contract was deployed."
+    timestamp: Long!
+}
+
+# ContractValidationInput represents a set of data sent from client
+# to validate deployed contract with the provided source code.
+input ContractValidationInput {
+    "Address of the contract being validated."
+    address: Address!
+
+    "Optional smart contract name. Maximum allowed length is 64 characters."
+    name: String
+
+    "Optional smart contract version identifier. Maximum allowed length is 14 characters."
+    version: String
+
+    "Optional smart contract author contact. Maximum allowed length is 64 characters."
+    supportContact: String
+
+    """
+    License specifies an open source license the contract was published with.
+    Empty if not specified.
+    """
+    license: String
+
+    "Optimized specifies if the compiler was set to optimize the byte code."
+    optimized: Boolean = true
+
+    """
+    OptimizeRuns specifies number of optimization runs the compiler was set
+    to execute during the byte code optimizing.
+    """
+    optimizeRuns: Int = 200
+
+    "Smart contract source code."
+    sourceCode: String!
+}
+
 # SfcConfig represents the configuration of the SFC contract
 # responsible for managing the staking economy of the network.
 type SfcConfig {
@@ -1611,6 +1690,9 @@ type Account {
 
     # List of delegations of the account, if the account is a delegator.
     delegations(cursor:Cursor, count:Int = 25): DelegationList!
+
+    # Details about smart contract, if the account is a smart contract.
+    contract: Contract
 }
 
 # Bytes32 is a 32 byte binary string, represented by 0x prefixed hexadecimal hash.
@@ -2035,6 +2117,13 @@ type Mutation {
     # SendTransaction submits a raw signed transaction into the block chain.
     # The tx parameter represents raw signed and RLP encoded transaction data.
     sendTransaction(tx: Bytes!):Transaction
+
+    # Validate a deployed contract byte code with the provided source code
+    # so potential users can check the contract source code, access contract ABI
+    # to be able to interact with the contract and get the right metadata.
+    # Returns updated contract information. If the contract can not be validated,
+    # it raises a GraphQL error.
+    validateContract(contract: ContractValidationInput!): Contract!
 }
 
 # Subscriptions to live events broadcasting
