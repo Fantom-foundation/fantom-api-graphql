@@ -83,8 +83,8 @@ func (db *MongoDbBridge) LastKnownBlock() (uint64, error) {
 func (db *MongoDbBridge) lastKnownBlock() (uint64, error) {
 	// prep search options
 	opt := options.FindOne()
-	opt.SetSort(bson.D{{Key: fiTransactionBlock, Value: -1}})
-	opt.SetProjection(bson.D{{Key: fiTransactionBlock, Value: true}})
+	opt.SetSort(bson.D{{Key: fiTransactionBlockNumber, Value: -1}})
+	opt.SetProjection(bson.D{{Key: fiTransactionBlockNumber, Value: true}})
 
 	// get the collection for account transactions
 	col := db.client.Database(db.dbName).Collection(colTransactions)

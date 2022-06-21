@@ -2,6 +2,7 @@
 package cache
 
 import (
+	"fantom-api-graphql/internal/repository/db/registry"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/klauspost/compress/s2"
@@ -24,7 +25,7 @@ func (b *MemBridge) PullTransaction(hash *common.Hash) *types.Transaction {
 
 	// do we have the data?
 	trx := new(types.Transaction)
-	if err := trx.UnmarshalBSON(data); err != nil {
+	if err := registry.Unmarshal(data, &trx); err != nil {
 		b.log.Criticalf("can not decode transaction data from in-memory cache; %s", err.Error())
 		return nil
 	}
@@ -40,7 +41,7 @@ func (b *MemBridge) PushTransaction(trx *types.Transaction) {
 	}
 
 	// encode account
-	data, err := trx.MarshalBSON()
+	data, err := registry.Marshal(trx)
 	if err != nil {
 		b.log.Criticalf("can not marshal transaction %s; %s", trx.Hash.String(), err.Error())
 		return

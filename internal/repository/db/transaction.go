@@ -6,39 +6,86 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
+	// trxLargeInputWall represents the largest transaction input block we store in the off-chain database.
+	// Larger inputs (like contract deployments) need to be loaded from the blockchain directly if needed.
+	trxLargeInputWall = 32 * 8
+
 	// colTransactions is the name of the off-chain database collection storing transaction details.
 	colTransactions = "transaction"
 
-	// fiTransactionPk is the name of the primary key field of the transaction collection.
-	fiTransactionPk = "_id"
+	// fiTransactionBlockHash is the block hash field of the transaction.
+	fiTransactionBlockHash = "blk_h"
+
+	// fiTransactionBlockNumber is the block number field of the transaction.
+	fiTransactionBlockNumber = "blk"
+
+	// fiTransactionTimeStamp is the name of the field of the transaction time stamp.
+	fiTransactionTimeStamp = "stamp"
+
+	// fiTransactionFrom is the name of the address field of the sender account.
+	// db.transaction.createIndex({from:1}).
+	fiTransactionFrom = "from"
+
+	// fiTransactionGas is the transaction gas field of the transaction.
+	fiTransactionGas = "gas_lim"
+
+	// fiTransactionGasUsed is the transaction gas used field of the transaction.
+	fiTransactionGasUsed = "gas_use"
+
+	// fiTransactionCumulativeGasUsed is the transaction cumulative gas used field of the transaction.
+	fiTransactionCumulativeGasUsed = "gas_cum"
+
+	// fiTransactionGasPrice is the transaction gas price field of the transaction.
+	fiTransactionGasPrice = "gas_pri"
+
+	// fiTransactionHash is the transaction hash field of the transaction.
+	fiTransactionHash = "_id"
+
+	// fiTransactionNonce is the transaction nonce field of the transaction.
+	fiTransactionNonce = "nonce"
+
+	// fiTransactionTo is the name of the address field of the recipient account.
+	// null for contract creation.
+	// db.transaction.createIndex({to:1}).
+	fiTransactionTo = "to"
+
+	// fiTransactionContractAddress is the transaction contract address field of the transaction.
+	fiTransactionContractAddress = "contr"
+
+	// fiTransactionValue is the name of the field of the transaction value.
+	fiTransactionValue = "value"
+
+	// fiTransactionInputData is the transaction input data field of the transaction.
+	fiTransactionInputData = "input"
+
+	// fiTransactionLargeInput is the transaction large input field of the transaction.
+	fiTransactionLargeInput = "large"
+
+	// fiTransactionIndex is the transaction index field of the transaction.
+	fiTransactionIndex = "bix"
+
+	// fiTransactionStatus is the transaction status field of the transaction.
+	fiTransactionStatus = "stat"
+
+	// fiTransactionLogs is the transaction logs field of the transaction.
+	fiTransactionLogs = "logs"
 
 	// fiTransactionOrdinalIndex is the name of the transaction ordinal index in the blockchain field.
 	// db.transaction.createIndex({_id:1,orx:-1},{unique:true})
 	fiTransactionOrdinalIndex = "orx"
 
-	// fiTransactionBlock is the name of the block number field of the transaction.
-	fiTransactionBlock = "blk"
+	// fiTransactionAmount is the transaction amount field of the transaction.
+	fiTransactionAmount = "amount"
 
-	// fiTransactionSender is the name of the address field of the sender account.
-	// db.transaction.createIndex({from:1}).
-	fiTransactionSender = "from"
-
-	// fiTransactionRecipient is the name of the address field of the recipient account.
-	// null for contract creation.
-	// db.transaction.createIndex({to:1}).
-	fiTransactionRecipient = "to"
-
-	// fiTransactionValue is the name of the field of the transaction value.
-	fiTransactionValue = "value"
-
-	// fiTransactionTimeStamp is the name of the field of the transaction time stamp.
-	fiTransactionTimeStamp = "stamp"
+	// fiTransactionGasGWei is the transaction gas gWei field of the transaction.
+	fiTransactionGasGWei = "gwx100"
 )
 
 // transactionCollectionIndexes provides a list of indexes expected to exist on the transactions' collection.
@@ -59,13 +106,13 @@ func transactionCollectionIndexes() []mongo.IndexModel {
 
 	ixTxFrom := "ix_tx_from"
 	ix[1] = mongo.IndexModel{
-		Keys:    bson.D{{Key: fiTransactionSender, Value: 1}},
+		Keys:    bson.D{{Key: fiTransactionFrom, Value: 1}},
 		Options: &options.IndexOptions{Name: &ixTxFrom},
 	}
 
 	ixTxTo := "ix_tx_to"
 	ix[2] = mongo.IndexModel{
-		Keys:    bson.D{{Key: fiTransactionRecipient, Value: 1}},
+		Keys:    bson.D{{Key: fiTransactionTo, Value: 1}},
 		Options: &options.IndexOptions{Name: &ixTxTo},
 	}
 
@@ -78,7 +125,7 @@ func transactionCollectionIndexes() []mongo.IndexModel {
 	// sender + ordinal index
 	ixTxSenderOrdinal := "ix_tx_from_orx"
 	ix[4] = mongo.IndexModel{
-		Keys: bson.D{{Key: fiTransactionSender, Value: 1}, {Key: fiTransactionOrdinalIndex, Value: -1}},
+		Keys: bson.D{{Key: fiTransactionFrom, Value: 1}, {Key: fiTransactionOrdinalIndex, Value: -1}},
 		Options: &options.IndexOptions{
 			Name:   &ixTxSenderOrdinal,
 			Unique: &unique,
@@ -88,7 +135,7 @@ func transactionCollectionIndexes() []mongo.IndexModel {
 	// recipient + ordinal index
 	ixTxRecipientOrdinal := "ix_tx_to_orx"
 	ix[5] = mongo.IndexModel{
-		Keys: bson.D{{Key: fiTransactionRecipient, Value: 1}, {Key: fiTransactionOrdinalIndex, Value: -1}},
+		Keys: bson.D{{Key: fiTransactionTo, Value: 1}, {Key: fiTransactionOrdinalIndex, Value: -1}},
 		Options: &options.IndexOptions{
 			Name:   &ixTxRecipientOrdinal,
 			Unique: &unique,
@@ -127,8 +174,43 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 		return db.UpdateTransaction(col, trx)
 	}
 
-	// try to do the insert
-	if _, err := col.InsertOne(context.Background(), trx); err != nil {
+	trx.LargeInput = len(trx.InputData) > trxLargeInputWall
+	if trx.LargeInput {
+		trx.InputData = hexutil.Bytes{}
+	}
+
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: fiTransactionHash, Value: trx.Hash}},
+		bson.D{
+			{Key: "$set", Value: bson.D{
+				{Key: fiTransactionBlockHash, Value: trx.BlockHash},
+				{Key: fiTransactionBlockNumber, Value: trx.BlockNumber},
+				{Key: fiTransactionTimeStamp, Value: trx.TimeStamp},
+				{Key: fiTransactionFrom, Value: trx.From},
+				{Key: fiTransactionGas, Value: trx.Gas},
+				{Key: fiTransactionGasUsed, Value: trx.GasUsed},
+				{Key: fiTransactionCumulativeGasUsed, Value: trx.CumulativeGasUsed},
+				{Key: fiTransactionGasPrice, Value: trx.GasPrice},
+				{Key: fiTransactionNonce, Value: trx.Nonce},
+				{Key: fiTransactionTo, Value: trx.To},
+				{Key: fiTransactionContractAddress, Value: trx.ContractAddress},
+				{Key: fiTransactionValue, Value: trx.Value},
+				{Key: fiTransactionInputData, Value: trx.InputData},
+				{Key: fiTransactionLargeInput, Value: trx.LargeInput},
+				{Key: fiTransactionIndex, Value: trx.Index},
+				{Key: fiTransactionStatus, Value: trx.Status},
+				{Key: fiTransactionLogs, Value: trx.Logs},
+				{Key: fiTransactionOrdinalIndex, Value: trx.ComputedOrdinalIndex()},
+				{Key: fiTransactionAmount, Value: trx.ComputedAmount()},
+				{Key: fiTransactionGasGWei, Value: trx.ComputedGWei()},
+			}},
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: fiTransactionHash, Value: trx.Hash},
+			}},
+		},
+		options.Update().SetUpsert(true),
+	); err != nil {
 		db.log.Critical(err)
 		return err
 	}
@@ -147,11 +229,11 @@ func (db *MongoDbBridge) UpdateTransaction(col *mongo.Collection, trx *types.Tra
 	// try to update a delegation by replacing it in the database
 	// we use address and validator ID to identify unique delegation
 	er, err := col.UpdateOne(context.Background(), bson.D{
-		{Key: fiTransactionPk, Value: trx.Hash.String()},
+		{Key: fiTransactionHash, Value: trx.Hash},
 	}, bson.D{{Key: "$set", Value: bson.D{
-		{Key: fiTransactionOrdinalIndex, Value: trx.Uid()},
-		{Key: fiTransactionSender, Value: trx.From.String()},
-		{Key: fiTransactionValue, Value: trx.Value.String()},
+		{Key: fiTransactionOrdinalIndex, Value: trx.ComputedOrdinalIndex()},
+		{Key: fiTransactionFrom, Value: trx.From},
+		{Key: fiTransactionValue, Value: trx.Value},
 		{Key: fiTransactionTimeStamp, Value: trx.TimeStamp},
 	}}}, new(options.UpdateOptions).SetUpsert(false))
 	if err != nil {
@@ -170,9 +252,9 @@ func (db *MongoDbBridge) UpdateTransaction(col *mongo.Collection, trx *types.Tra
 func (db *MongoDbBridge) IsTransactionKnown(col *mongo.Collection, hash *common.Hash) (bool, error) {
 	// try to find the transaction in the database (it may already exist)
 	sr := col.FindOne(context.Background(), bson.D{
-		{Key: fiTransactionPk, Value: hash.String()},
+		{Key: fiTransactionHash, Value: hash},
 	}, options.FindOne().SetProjection(bson.D{
-		{Key: fiTransactionPk, Value: true},
+		{Key: fiTransactionHash, Value: true},
 	}))
 
 	// error on lookup?
@@ -257,7 +339,7 @@ func (db *MongoDbBridge) trxListWithRangeMarks(
 	} else if cursor != nil {
 		// get the highest available ordinal index (top transaction)
 		list.First, err = db.findBorderOrdinalIndex(col,
-			bson.D{{Key: fiTransactionPk, Value: *cursor}},
+			bson.D{{Key: fiTransactionHash, Value: *cursor}},
 			options.FindOne())
 	}
 
