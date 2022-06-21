@@ -158,7 +158,7 @@ func (db *MongoDbBridge) epochListCollectRangeMarks(col *mongo.Collection, list 
 func (db *MongoDbBridge) epochListBorderPk(col *mongo.Collection, opt *options.FindOneOptions) (uint64, error) {
 	// prep container
 	var row struct {
-		Value uint64 `bson:"_id"`
+		Value hexutil.Uint64 `bson:"_id"`
 	}
 
 	// make sure we pull only what we need
@@ -170,7 +170,7 @@ func (db *MongoDbBridge) epochListBorderPk(col *mongo.Collection, opt *options.F
 	if err != nil {
 		return 0, err
 	}
-	return row.Value, nil
+	return uint64(row.Value), nil
 }
 
 // epochListFilter creates a filter for epoch list loading.
