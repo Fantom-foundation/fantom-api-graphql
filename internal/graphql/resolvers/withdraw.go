@@ -81,7 +81,8 @@ func (wr WithdrawRequest) CreatedTime() hexutil.Uint64 {
 func (wr WithdrawRequest) WithdrawTime() *hexutil.Uint64 {
 	var wt *hexutil.Uint64
 	if wr.WithdrawRequest.WithdrawTime != nil {
-		*wt = hexutil.Uint64(uint64(wr.WithdrawRequest.WithdrawTime.Unix()))
+		t := hexutil.Uint64(uint64(wr.WithdrawRequest.WithdrawTime.Unix()))
+		wt = &t
 	}
 	return wt
 }

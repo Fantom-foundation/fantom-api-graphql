@@ -193,6 +193,24 @@ type Transaction {
     erc1155Transactions: [ERC1155Transaction!]!
 }
 
+# ContractList is a list of smart contract edges provided by sequential access request.
+type ContractList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ContractListEdge!]!
+
+    # TotalCount is the maximum number of contracts available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of contract edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of transactions.
+type ContractListEdge {
+    cursor: Cursor!
+    contract: Contract!
+}
+
 # Represents staker information.
 type Staker {
     # ID number the staker.
@@ -2004,6 +2022,15 @@ type Query {
 
     # Get an Account information by hash address.
     account(address:Address!):Account!
+
+    # Get list of Contracts with at most <count> edges.
+    # If <count> is positive, return edges after the cursor,
+    # if negative, return edges before the cursor.
+    # For undefined cursor, positive <count> starts the list from top,
+    # negative <count> starts the list from bottom.
+    # ValidatedOnly specifies if the list should contain all the Contracts,
+    # or just contracts with validated byte code and available source/ABI.
+    contracts(validatedOnly: Boolean = false, cursor:Cursor, count:Int!):ContractList!
 
     # Get block information by number or by hash.
     # If neither is provided, the most recent block is given.
