@@ -14,25 +14,36 @@ import (
 // colRewards represents the name of the reward claim collection in database.
 const colRewards = "rewards"
 
-// initRewardsCollection initializes the reward claims collection with
-// indexes and additional parameters needed by the app.
-func (db *MongoDbBridge) initRewardsCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
+// rewardCollectionIndexes provides a list of indexes expected to exist on the rewards' collection.
+func rewardCollectionIndexes() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 4)
 
 	// index delegator, receiving validator, and creation time stamp
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiRewardClaimAddress, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiRewardClaimToValidator, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiRewardClaimOrdinal, Value: -1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiRewardClaimedTimeStamp, Value: -1}}})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for reward claims collection; %s", err.Error())
+	ixRewardAddress := "ix_reward_address"
+	ix[0] = mongo.IndexModel{
+		Keys:    bson.D{{Key: types.FiRewardClaimAddress, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixRewardAddress},
 	}
 
-	// log we done that
-	db.log.Debugf("reward claims collection initialized")
+	ixRewardTo := "ix_reward_to"
+	ix[1] = mongo.IndexModel{
+		Keys:    bson.D{{Key: types.FiRewardClaimToValidator, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixRewardTo},
+	}
+
+	ixRewardOrdinal := "ix_reward_orx"
+	ix[2] = mongo.IndexModel{
+		Keys:    bson.D{{Key: types.FiRewardClaimOrdinal, Value: -1}},
+		Options: &options.IndexOptions{Name: &ixRewardOrdinal},
+	}
+
+	ixRewardStamp := "ix_reward_stamp"
+	ix[3] = mongo.IndexModel{
+		Keys:    bson.D{{Key: types.FiRewardClaimedTimeStamp, Value: -1}},
+		Options: &options.IndexOptions{Name: &ixRewardStamp},
+	}
+
+	return ix
 }
 
 // AddRewardClaim stores a reward claim in the database if it doesn't exist.
@@ -51,20 +62,16 @@ func (db *MongoDbBridge) AddRewardClaim(rc *types.RewardClaim) error {
 		return err
 	}
 
-	// make sure delegation collection is initialized
-	if db.initRewards != nil {
-		db.initRewards.Do(func() { db.initRewardsCollection(col); db.initRewards = nil })
-	}
 	return nil
 }
 
-// isDelegationKnown checks if the given delegation exists in the database.
+// isRewardClaimKnown checks if the given reward claim exists in the database.
 func (db *MongoDbBridge) isRewardClaimKnown(col *mongo.Collection, rc *types.RewardClaim) bool {
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{Key: types.FiRewardClaimPk, Value: rc.Pk()},
+		{Key: defaultPK, Value: rc.Pk()},
 	}, options.FindOne().SetProjection(bson.D{
-		{Key: types.FiRewardClaimPk, Value: true},
+		{Key: defaultPK, Value: true},
 	}))
 
 	// error on lookup?
@@ -149,7 +156,7 @@ func (db *MongoDbBridge) rewListCollectRangeMarks(col *mongo.Collection, list *t
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.rewListBorderPk(col,
-			bson.D{{Key: types.FiRewardClaimPk, Value: *cursor}},
+			bson.D{{Key: defaultPK, Value: *cursor}},
 			options.FindOne())
 	}
 

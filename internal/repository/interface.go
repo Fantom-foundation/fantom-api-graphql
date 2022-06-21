@@ -2,7 +2,7 @@
 Package repository implements repository for handling fast and efficient access to data required
 by the resolvers of the API server.
 
-Internally it utilizes RPC to access Opera/Lachesis full node for blockchain interaction. Mongo database
+Internally it utilizes RPC to access Opera full node for blockchain interaction. Mongo database
 for fast, robust and scalable off-chain data storage, especially for aggregated and pre-calculated data mining
 results. BigCache for in-memory object storage to speed up loading of frequently accessed entities.
 */
@@ -12,6 +12,7 @@ import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/p2p/enode"
 	"math/big"
 	"time"
 
@@ -47,17 +48,17 @@ type Repository interface {
 	// Transactions are always sorted from newer to older.
 	AccountTransactions(*common.Address, *common.Address, *string, int32) (*types.TransactionList, error)
 
-	// AccountsActive total number of accounts known to repository.
-	AccountsActive() (hexutil.Uint64, error)
+	// AccountCount total number of accounts known to repository.
+	AccountCount() (hexutil.Uint64, error)
 
 	// AccountIsKnown checks if the account of the given address is known to the API server.
 	AccountIsKnown(*common.Address) bool
 
+	// AccountHasCode checks if the given account has an associated code.
+	AccountHasCode(addr *common.Address) bool
+
 	// StoreAccount adds specified account detail into the repository.
 	StoreAccount(*types.Account) error
-
-	// AccountMarkActivity marks the latest account activity in the repository.
-	AccountMarkActivity(*common.Address, uint64) error
 
 	// BlockHeight returns the current height of the Opera blockchain in blocks.
 	BlockHeight() (*hexutil.Big, error)
@@ -88,20 +89,6 @@ type Repository interface {
 
 	// CacheBlock puts a block to the internal block ring cache.
 	CacheBlock(blk *types.Block)
-
-	// Contract extract a smart contract information by address if available.
-	Contract(*common.Address) (*types.Contract, error)
-
-	// Contracts returns list of smart contracts at Opera blockchain.
-	Contracts(bool, *string, int32) (*types.ContractList, error)
-
-	// ValidateContract tries to validate contract byte code using
-	// provided source code. If successful, the contract information
-	// is updated the the repository.
-	ValidateContract(*types.Contract) error
-
-	// StoreContract updates the contract in repository.
-	StoreContract(*types.Contract) error
 
 	// SfcVersion returns current version of the SFC contract.
 	SfcVersion() (hexutil.Uint64, error)
@@ -425,12 +412,15 @@ type Repository interface {
 	// NativeTokenAddress returns address of the native token wrapper, if available.
 	NativeTokenAddress() (*common.Address, error)
 
-	// TokenTransactions provides list of ERC20/ERC721/ERC1155 transactions based on given filters.
-	TokenTransactions(tokenType string, token *common.Address, tokenId *big.Int, acc *common.Address, txType []int32, cursor *string, count int32) (*types.TokenTransactionList, error)
+	// TokenTransactions provides list of ERC20 transactions based on given filters.
+	TokenTransactions(token *common.Address, acc *common.Address, txType []int32, cursor *string, count int32) (*types.TokenTransactionList, error)
 
 	// TokenTransactionsByCall provides a list of token transaction made inside a specific
 	// transaction call (blockchain transaction).
 	TokenTransactionsByCall(*common.Hash) ([]*types.TokenTransaction, error)
+
+	// TokenNameAttempt tries to extract token name from the contract on the given address.
+	TokenNameAttempt(adr *common.Address) (string, error)
 
 	// Erc20Token returns an ERC20 token for the given address, if available.
 	Erc20Token(*common.Address) (*types.Erc20Token, error)
@@ -465,7 +455,7 @@ type Repository interface {
 	Erc20LogoURL(*common.Address) string
 
 	// StoreTokenTransaction stores ERC20/ERC721/ERC1155 transaction into the repository.
-	StoreTokenTransaction(*types.TokenTransaction) error
+	StoreTokenTransaction(*types.TokenTransaction, uint8) error
 
 	// Erc165SupportsInterface provides information about support of the interface by the contract.
 	Erc165SupportsInterface(contract *common.Address, interfaceID [4]byte) (bool, error)
@@ -592,6 +582,28 @@ type Repository interface {
 
 	// FtmBurnList provides list of per-block burned native FTM tokens.
 	FtmBurnList(count int64) ([]types.FtmBurn, error)
+
+	// NetworkNode returns instance of Opera network node record by its ID.
+	NetworkNode(nid enode.ID) (*types.OperaNode, error)
+
+	// StoreNetworkNode stores the given Opera node record in the persistent database.
+	StoreNetworkNode(node *types.OperaNode) error
+
+	// IsNetworkNodeKnown checks if the given network node is already registered in the persistent database.
+	IsNetworkNodeKnown(id enode.ID) bool
+
+	// NetworkNodeConfirmCheck confirms successful check of the given Opera network node.
+	NetworkNodeConfirmCheck(node *enode.Node) (bool, error)
+
+	// NetworkNodeFailCheck registers failed check of the given Opera network node.
+	NetworkNodeFailCheck(node *enode.Node) error
+
+	// NetworkNodeUpdateBatch provides a list of Opera network node addresses most suitable for status update
+	// based on the registered time of the latest check.
+	NetworkNodeUpdateBatch() ([]*enode.Node, error)
+
+	// NetworkNodeBootstrapSet provides a set of known nodes to be co-used to bootstrap new search.
+	NetworkNodeBootstrapSet() []*enode.Node
 
 	// Close and cleanup the repository.
 	Close()

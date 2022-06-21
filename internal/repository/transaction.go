@@ -2,7 +2,7 @@
 Package repository implements repository for handling fast and efficient access to data required
 by the resolvers of the API server.
 
-Internally it utilizes RPC to access Opera/Lachesis full node for blockchain interaction. Mongo database
+Internally it utilizes RPC to access Opera full node for blockchain interaction. Mongo database
 for fast, robust and scalable off-chain data storage, especially for aggregated and pre-calculated data mining
 results. BigCache for in-memory object storage to speed up loading of frequently accessed entities.
 */
@@ -35,31 +35,34 @@ func (p *proxy) CacheTransaction(trx *types.Transaction) {
 // Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
 // If the transaction is not found, ErrTransactionNotFound error is returned.
 func (p *proxy) Transaction(hash *common.Hash) (*types.Transaction, error) {
-	p.log.Debugf("requested transaction %s", hash.String())
+	return p.rpc.Transaction(hash)
+	/*
+		p.log.Debugf("requested transaction %s", hash.String())
 
-	// try to use the in-memory cache
-	if trx := p.cache.PullTransaction(hash); trx != nil {
-		p.log.Debugf("transaction %s loaded from cache", hash.String())
+		// try to use the in-memory cache
+		if trx := p.cache.PullTransaction(hash); trx != nil {
+			p.log.Debugf("transaction %s loaded from cache", hash.String())
+			return trx, nil
+		}
+
+		// return the value
+		trx, err := p.LoadTransaction(hash)
+		if err != nil {
+			return nil, err
+		}
+
+		// push the transaction to the cache to speed things up next time
+		// we don't cache pending transactions since it would cause issues
+		// when re-loading data of such transactions on the client side
+		if trx.BlockHash == nil {
+			p.log.Debugf("pending transaction %s found", trx.Hash)
+			return trx, nil
+		}
+
+		// store to cache
+		p.cache.PushTransaction(trx)
 		return trx, nil
-	}
-
-	// return the value
-	trx, err := p.LoadTransaction(hash)
-	if err != nil {
-		return nil, err
-	}
-
-	// push the transaction to the cache to speed things up next time
-	// we don't cache pending transactions since it would cause issues
-	// when re-loading data of such transactions on the client side
-	if trx.BlockHash == nil {
-		p.log.Debugf("pending transaction %s found", trx.Hash)
-		return trx, nil
-	}
-
-	// store to cache
-	p.cache.PushTransaction(trx)
-	return trx, nil
+	*/
 }
 
 // LoadTransaction returns a transaction at Opera blockchain

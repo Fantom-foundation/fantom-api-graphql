@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	// coTransaction is the name of the off-chain database collection storing transaction details.
-	coTransactions = "transaction"
+	// colTransactions is the name of the off-chain database collection storing transaction details.
+	colTransactions = "transaction"
 
 	// fiTransactionPk is the name of the primary key field of the transaction collection.
 	fiTransactionPk = "_id"
@@ -41,53 +41,61 @@ const (
 	fiTransactionTimeStamp = "stamp"
 )
 
-// initTransactionsCollection initializes the transaction collection with
-// indexes and additional parameters needed by the app.
-func (db *MongoDbBridge) initTransactionsCollection(col *mongo.Collection) {
+// transactionCollectionIndexes provides a list of indexes expected to exist on the transactions' collection.
+func transactionCollectionIndexes() []mongo.IndexModel {
 	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
+	ix := make([]mongo.IndexModel, 6)
 
 	// index ordinal key sorted from high to low since this is the way we usually list
 	unique := true
-	ix = append(ix, mongo.IndexModel{
+	ixTxOrdinal := "ix_tx_orx"
+	ix[0] = mongo.IndexModel{
 		Keys: bson.D{{Key: fiTransactionOrdinalIndex, Value: -1}},
 		Options: &options.IndexOptions{
 			Unique: &unique,
+			Name:   &ixTxOrdinal,
 		},
-	})
-
-	// index sender and recipient
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiTransactionSender, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiTransactionRecipient, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiTransactionTimeStamp, Value: 1}}})
-
-	// sender + ordinal index
-	fox := "from_orx"
-	ix = append(ix, mongo.IndexModel{
-		Keys: bson.D{{Key: fiTransactionSender, Value: 1}, {Key: fiTransactionOrdinalIndex, Value: -1}},
-		Options: &options.IndexOptions{
-			Name:   &fox,
-			Unique: &unique,
-		},
-	})
-
-	// recipient + ordinal index
-	rox := "to_orx"
-	ix = append(ix, mongo.IndexModel{
-		Keys: bson.D{{Key: fiTransactionRecipient, Value: 1}, {Key: fiTransactionOrdinalIndex, Value: -1}},
-		Options: &options.IndexOptions{
-			Name:   &rox,
-			Unique: &unique,
-		},
-	})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for transaction collection; %s", err.Error())
 	}
 
-	// log we are done that
-	db.log.Debugf("transactions collection initialized")
+	ixTxFrom := "ix_tx_from"
+	ix[1] = mongo.IndexModel{
+		Keys:    bson.D{{Key: fiTransactionSender, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixTxFrom},
+	}
+
+	ixTxTo := "ix_tx_to"
+	ix[2] = mongo.IndexModel{
+		Keys:    bson.D{{Key: fiTransactionRecipient, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixTxTo},
+	}
+
+	ixTxStamp := "ix_tx_stamp"
+	ix[3] = mongo.IndexModel{
+		Keys:    bson.D{{Key: fiTransactionTimeStamp, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixTxStamp},
+	}
+
+	// sender + ordinal index
+	ixTxSenderOrdinal := "ix_tx_from_orx"
+	ix[4] = mongo.IndexModel{
+		Keys: bson.D{{Key: fiTransactionSender, Value: 1}, {Key: fiTransactionOrdinalIndex, Value: -1}},
+		Options: &options.IndexOptions{
+			Name:   &ixTxSenderOrdinal,
+			Unique: &unique,
+		},
+	}
+
+	// recipient + ordinal index
+	ixTxRecipientOrdinal := "ix_tx_to_orx"
+	ix[5] = mongo.IndexModel{
+		Keys: bson.D{{Key: fiTransactionRecipient, Value: 1}, {Key: fiTransactionOrdinalIndex, Value: -1}},
+		Options: &options.IndexOptions{
+			Name:   &ixTxRecipientOrdinal,
+			Unique: &unique,
+		},
+	}
+
+	return ix
 }
 
 // shouldAddTransaction validates if the transaction should be added to the persistent storage.
@@ -111,7 +119,7 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 	}
 
 	// get the collection for transactions
-	col := db.client.Database(db.dbName).Collection(coTransactions)
+	col := db.client.Database(db.dbName).Collection(colTransactions)
 
 	// if the transaction already exists, we don't need to add it
 	// just make sure the transaction accounts were processed
@@ -127,11 +135,6 @@ func (db *MongoDbBridge) AddTransaction(block *types.Block, trx *types.Transacti
 
 	// add transaction to the db
 	db.log.Debugf("transaction %s added to database", trx.Hash.String())
-
-	// make sure transactions collection is initialized
-	if db.initTransactions != nil {
-		db.initTransactions.Do(func() { db.initTransactionsCollection(col); db.initTransactions = nil })
-	}
 
 	return nil
 }
@@ -386,7 +389,7 @@ func (db *MongoDbBridge) txListLoad(col *mongo.Collection, cursor *string, count
 
 // TransactionsCount returns the number of transactions stored in the database.
 func (db *MongoDbBridge) TransactionsCount() (uint64, error) {
-	return db.EstimateCount(db.client.Database(db.dbName).Collection(coTransactions))
+	return db.EstimateCount(db.client.Database(db.dbName).Collection(colTransactions))
 }
 
 // Transactions pulls list of transaction hashes starting on the specified cursor.
@@ -397,7 +400,7 @@ func (db *MongoDbBridge) Transactions(cursor *string, count int32, filter *bson.
 	}
 
 	// get the collection and context
-	col := db.client.Database(db.dbName).Collection(coTransactions)
+	col := db.client.Database(db.dbName).Collection(colTransactions)
 
 	// init the list
 	list, err := db.initTrxList(col, cursor, count, filter)

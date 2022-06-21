@@ -8,7 +8,7 @@ scalar Address
 # or a hexadecimal string alternatively prefixed with 0x. Output is 0x prefixed hexadecimal.
 scalar BigInt
 
-# Long is a 64 bit unsigned integer value.
+# Long is a 64 bit unsigned integer value encoded as hex value with 0x prefix.
 scalar Long
 
 # Bytes is an arbitrary length binary string, represented as 0x-prefixed hexadecimal.

@@ -17,29 +17,50 @@ import (
 // colBurns represents the name of the native FTM burns collection in database.
 const colBurns = "burns"
 
-// initBurnsCollection initializes the burn collection indexes.
-func (db *MongoDbBridge) initBurnsCollection(col *mongo.Collection) {
+// burnCollectionIndexes provides a list of indexes expected to exist on the native FTM burns' collection.
+func burnCollectionIndexes() []mongo.IndexModel {
 	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
+	ix := make([]mongo.IndexModel, 1)
 
-	// index delegator + validator
+	ixBurnBlock := "ix_burn_block"
 	unique := true
-	ix = append(ix, mongo.IndexModel{
+	ix[4] = mongo.IndexModel{
 		Keys: bson.D{
 			{Key: "block", Value: 1},
 		},
 		Options: &options.IndexOptions{
+			Name:   &ixBurnBlock,
 			Unique: &unique,
 		},
-	})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for withdrawals collection; %s", err.Error())
 	}
 
-	// log we are done that
-	db.log.Debugf("burns collection initialized")
+	return ix
+}
+
+// BurnByBlock pulls a burn information for the given block number, if available.
+func (db *MongoDbBridge) BurnByBlock(bn hexutil.Uint64) (*types.FtmBurn, error) {
+	col := db.client.Database(db.dbName).Collection(colBurns)
+
+	// try to find existing burn
+	sr := col.FindOne(context.Background(), bson.D{{Key: "block", Value: bn}})
+	if sr.Err() != nil {
+		// if the burn has not been found, add this as a new one
+		if sr.Err() == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+
+		db.log.Errorf("could not load FTM burn at #%d; %s", bn, sr.Err())
+		return nil, sr.Err()
+	}
+
+	// decode existing burn and update
+	var ex types.FtmBurn
+	if err := sr.Decode(&sr); err != nil {
+		db.log.Errorf("could not decode FTM burn at #%d; %s", bn, sr.Err())
+		return nil, sr.Err()
+	}
+
+	return &ex, nil
 }
 
 // StoreBurn stores the given native FTM burn record.
@@ -50,54 +71,21 @@ func (db *MongoDbBridge) StoreBurn(burn *types.FtmBurn) error {
 
 	col := db.client.Database(db.dbName).Collection(colBurns)
 
-	// make sure burns collection is initialized
-	if db.initBurns != nil {
-		db.initBurns.Do(func() { db.initBurnsCollection(col); db.initBurns = nil })
+	// pull the burn
+	ex, err := db.BurnByBlock(burn.BlockNumber)
+	if err != nil {
+		return err
 	}
 
-	// try to find existing burn
-	sr := col.FindOne(context.Background(), bson.D{{Key: "block", Value: burn.BlockNumber}})
-	if sr.Err() != nil {
-		// if the burn has not been found, add this as a new one
-		if sr.Err() == mongo.ErrNoDocuments {
-			_, err := col.InsertOne(context.Background(), burn)
-			return err
-		}
-
-		db.log.Errorf("could not load FTM burn at #%d; %s", burn.BlockNumber, sr.Err())
-		return sr.Err()
+	// is this a new burn record?
+	if ex == nil {
+		_, err = col.InsertOne(context.Background(), burn)
+		return err
 	}
 
-	// decode existing burn and update
-	var ex types.FtmBurn
-	if err := sr.Decode(&sr); err != nil {
-		db.log.Errorf("could not decode FTM burn at #%d; %s", burn.BlockNumber, sr.Err())
-		return sr.Err()
-	}
-
-	// all the transactions can already be included
-	if ex.TxList != nil && burn.TxList != nil {
-		var found int
-
-		for _, in := range burn.TxList {
-			for _, e := range ex.TxList {
-				if bytes.Compare(in.Bytes(), e.Bytes()) == 0 {
-					found++
-					break
-				}
-			}
-		}
-
-		// do we have them all? if so, we have nothing to do here
-		if found == len(burn.TxList) {
-			return nil
-		}
-
-		// we can not handle partial update (some transactions are already included, but not all)
-		if found > 0 && found < len(burn.TxList) {
-			db.log.Criticalf("invalid partial burn received at #%d", burn.BlockNumber)
-			return fmt.Errorf("partial burn update rejected at #%d", burn.BlockNumber)
-		}
+	// check validity for saving
+	if !db.isBurnValidForSave(burn, ex) {
+		return nil
 	}
 
 	// add the new value to the existing one
@@ -116,8 +104,41 @@ func (db *MongoDbBridge) StoreBurn(burn *types.FtmBurn) error {
 	}
 
 	// update the record
-	_, err := col.UpdateOne(context.Background(), bson.D{{Key: "block", Value: ex.BlockNumber}}, bson.D{{Key: "$set", Value: ex}})
+	_, err = col.UpdateOne(context.Background(), bson.D{{Key: "block", Value: ex.BlockNumber}}, bson.D{{Key: "$set", Value: ex}})
 	return err
+}
+
+// isBurnValidForSave checks if the new burn should be stored within the database.
+func (db *MongoDbBridge) isBurnValidForSave(burn *types.FtmBurn, ex *types.FtmBurn) bool {
+	if burn == nil || ex == nil || ex.TxList == nil || burn.TxList == nil {
+		db.log.Criticalf("invalid burn check")
+		return false
+	}
+
+	// all the transactions can already be included
+	var found int
+
+	for _, in := range burn.TxList {
+		for _, e := range ex.TxList {
+			if bytes.Compare(in.Bytes(), e.Bytes()) == 0 {
+				found++
+				break
+			}
+		}
+	}
+
+	// do we have them all? if so, we have nothing to do here
+	if found == len(burn.TxList) {
+		return false
+	}
+
+	// we can not handle partial update (some transactions are already included, but not all)
+	if found > 0 && found < len(burn.TxList) {
+		db.log.Criticalf("invalid partial burn received at #%d", burn.BlockNumber)
+		return false
+	}
+
+	return true
 }
 
 // BurnCount estimates the number of burn records in the database.

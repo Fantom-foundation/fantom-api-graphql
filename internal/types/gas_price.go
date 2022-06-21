@@ -2,7 +2,6 @@
 package types
 
 import (
-	"go.mongodb.org/mongo-driver/bson"
 	"time"
 )
 
@@ -59,14 +58,4 @@ type GasPricePeriod struct {
 	From  time.Time `json:"from" bson:"from"`
 	To    time.Time `json:"to" bson:"to"`
 	Tick  int64     `json:"tick" bson:"tick"`
-}
-
-// MarshalBSON creates a BSON representation of the gas price estimation record.
-func (gpp *GasPricePeriod) MarshalBSON() ([]byte, error) {
-	return bson.Marshal(*gpp)
-}
-
-// UnmarshalBSON updates the value from BSON source.
-func (gpp *GasPricePeriod) UnmarshalBSON(data []byte) (err error) {
-	return bson.Unmarshal(data, gpp)
 }

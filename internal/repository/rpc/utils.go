@@ -1,20 +1,23 @@
 /*
-Package rpc implements bridge to Lachesis full node API interface.
+Package rpc implements bridge to Opera full node API interface.
 
 We recommend using local IPC for fast and the most efficient inter-process communication between the API server
-and an Opera/Lachesis node. Any remote RPC connection will work, but the performance may be significantly degraded
+and an Opera/Opera node. Any remote RPC connection will work, but the performance may be significantly degraded
 by extra networking overhead of remote RPC calls.
 
-You should also consider security implications of opening Lachesis RPC interface for a remote access.
+You should also consider security implications of opening Opera RPC interface for a remote access.
 If you considering it as your deployment strategy, you should establish encrypted channel between the API server
-and Lachesis RPC interface with connection limited to specified endpoints.
+and Opera RPC interface with connection limited to specified endpoints.
 
-We strongly discourage opening Lachesis RPC interface for unrestricted Internet access.
+We strongly discourage opening Opera RPC interface for unrestricted Internet access.
 */
 package rpc
 
 import (
+	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -24,6 +27,9 @@ import (
 
 // maxAcceptedGasPrice defines max accepted gas price, everything above invokes additional check.
 var maxAcceptedGasPrice = big.NewInt(1_000_000_000_000_000_000)
+
+// solidityCallFunctionName is the identifier for a call to Solidity function name() view returns(string)
+var solidityCallFunctionName = common.Hex2Bytes("06fdde03")
 
 // GasPrice pulls the current amount of WEI for single Gas.
 func (ftm *FtmBridge) GasPrice() (hexutil.Big, error) {
@@ -107,4 +113,24 @@ func (ftm *FtmBridge) GasEstimateWithBlock(trx *struct {
 	}
 
 	return &val, nil
+}
+
+// TokenNameAttempt tries to extract token name from the contract on the given address.
+// We assume to be able to call Solidity: function name() view returns(string)
+func (ftm *FtmBridge) TokenNameAttempt(adr *common.Address) (string, error) {
+	data, err := ftm.eth.CallContract(context.Background(), ethereum.CallMsg{
+		From: common.Address{},
+		To:   adr,
+		Data: solidityCallFunctionName,
+	}, nil)
+
+	if err != nil {
+		return "", err
+	}
+
+	if nil == data || len(data) == 0 {
+		return "", nil
+	}
+
+	return *abi.ConvertType(data, new(string)).(*string), nil
 }

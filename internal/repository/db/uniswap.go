@@ -20,8 +20,8 @@ import (
 
 const (
 
-	// coUniswap is the name of the off-chain database collection storing Uniswap swap details.
-	coUniswap = "uniswap"
+	// colUniswap is the name of the off-chain database collection storing Uniswap swap details.
+	colUniswap = "uniswap"
 
 	// fiSwapPk is the name of the primary key field of the swap collection.
 	fiSwapPk         = "_id"
@@ -65,29 +65,35 @@ func returnDecimals(am *big.Int, cr *big.Int) *big.Int {
 	return new(big.Int).Mul(am, cr)
 }
 
-// initUniswapCollection initializes the swap collection with
-// indexes and additional parameters needed by the app.
-func (db *MongoDbBridge) initUniswapCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
+// uniswapCollectionIndexes provides a list of indexes expected to exist on the uniswap's collection.
+func uniswapCollectionIndexes() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 4)
 
-	// index for primary key
-	ix = append(ix, mongo.IndexModel{
-		Keys: bson.D{{Key: fiSwapPk, Value: 1}},
-	})
-
-	// index date, sender, blk
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiSwapDate, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiSwapSender, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiSwapOrdIndex, Value: -1}}})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for swap collection; %s", err.Error())
+	ixUniswapId := "ix_uniswap_id"
+	ix[0] = mongo.IndexModel{
+		Keys:    bson.D{{Key: fiSwapPk, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixUniswapId},
 	}
 
-	// log we're done that
-	db.log.Debugf("swap collection initialized")
+	ixUniswapDate := "ix_uniswap_date"
+	ix[1] = mongo.IndexModel{
+		Keys:    bson.D{{Key: fiSwapDate, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixUniswapDate},
+	}
+
+	ixUniswapSender := "ix_uniswap_sender"
+	ix[2] = mongo.IndexModel{
+		Keys:    bson.D{{Key: fiSwapSender, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixUniswapSender},
+	}
+
+	ixUniswapOrdinal := "ix_uniswap_orx"
+	ix[3] = mongo.IndexModel{
+		Keys:    bson.D{{Key: fiSwapOrdIndex, Value: -1}},
+		Options: &options.IndexOptions{Name: &ixUniswapOrdinal},
+	}
+
+	return ix
 }
 
 // shouldAddSwap validates if the swap should be added to the persistent storage.
@@ -122,7 +128,7 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 	}
 
 	// get the collection for transactions
-	col := db.client.Database(db.dbName).Collection(coUniswap)
+	col := db.client.Database(db.dbName).Collection(colUniswap)
 
 	// check for zero amounts in the swap, because of future div by 0 during aggregation in db
 	if isZeroSwap(swap) {
@@ -155,10 +161,6 @@ func (db *MongoDbBridge) UniswapAdd(swap *types.Swap) error {
 	// add transaction to the db
 	db.log.Debugf("swap %s added to database", swapHash.String())
 
-	// make sure uniswap collection is initialized
-	if db.initSwaps != nil {
-		db.initSwaps.Do(func() { db.initUniswapCollection(col); db.initSwaps = nil })
-	}
 	return nil
 }
 
@@ -250,7 +252,7 @@ func (db *MongoDbBridge) IsSwapKnown(col *mongo.Collection, hash *common.Hash, s
 
 // SwapCount returns the number of swaps stored in the database.
 func (db *MongoDbBridge) SwapCount() (uint64, error) {
-	return db.EstimateCount(db.client.Database(db.dbName).Collection(coUniswap))
+	return db.EstimateCount(db.client.Database(db.dbName).Collection(colUniswap))
 }
 
 // LastKnownSwapBlock returns number of the last known block stored in the database.
@@ -262,7 +264,7 @@ func (db *MongoDbBridge) LastKnownSwapBlock() (uint64, error) {
 	}
 
 	// get the swaps collection
-	col := db.client.Database(db.dbName).Collection(coUniswap)
+	col := db.client.Database(db.dbName).Collection(colUniswap)
 	res := col.FindOne(context.Background(), query)
 	if res.Err() != nil {
 		// may be no block at all
@@ -310,7 +312,7 @@ func (db *MongoDbBridge) UniswapUpdateLastKnownSwapBlock(blkNumber uint64) error
 	}
 
 	// get the collection for transactions and insert data
-	col := db.client.Database(db.dbName).Collection(coUniswap)
+	col := db.client.Database(db.dbName).Collection(colUniswap)
 	if _, err := col.UpdateOne(context.Background(),
 		query, data, options.Update().SetUpsert(true)); err != nil {
 
@@ -359,7 +361,7 @@ func (db *MongoDbBridge) UniswapVolume(pairAddress *common.Address, fromTime int
 	}
 
 	// query collection
-	col := db.client.Database(db.dbName).Collection(coUniswap)
+	col := db.client.Database(db.dbName).Collection(colUniswap)
 	cursor, err := col.Aggregate(context.Background(), pipe)
 	def := types.DefiSwapVolume{
 		PairAddress: pairAddress,
@@ -425,7 +427,7 @@ func (db *MongoDbBridge) UniswapTimeVolumes(pairAddress *common.Address, resolut
 	list := make([]types.DefiSwapVolume, 0)
 
 	// execute query
-	col := db.client.Database(db.dbName).Collection(coUniswap)
+	col := db.client.Database(db.dbName).Collection(colUniswap)
 	cursor, err := col.Aggregate(context.Background(), pipe)
 
 	if err != nil {
@@ -567,7 +569,7 @@ func (db *MongoDbBridge) UniswapTimePrices(pairAddress *common.Address, resoluti
 	list := make([]types.DefiTimePrice, 0)
 
 	// execute query
-	col := db.client.Database(db.dbName).Collection(coUniswap)
+	col := db.client.Database(db.dbName).Collection(colUniswap)
 	cursor, err := col.Aggregate(context.Background(), pipe)
 	if err != nil {
 		db.log.Errorf(err.Error())
@@ -632,7 +634,7 @@ func (db *MongoDbBridge) UniswapTimeReserves(pairAddress *common.Address, resolu
 	list := make([]types.DefiTimeReserve, 0)
 
 	// execute query
-	col := db.client.Database(db.dbName).Collection(coUniswap)
+	col := db.client.Database(db.dbName).Collection(colUniswap)
 	cursor, err := col.Aggregate(context.Background(), pipe)
 	if err != nil {
 		db.log.Errorf(err.Error())
@@ -674,7 +676,7 @@ func (db *MongoDbBridge) UniswapActions(pairAddress *common.Address, cursor *str
 	}
 
 	// get the collection and context
-	col := db.client.Database(db.dbName).Collection(coUniswap)
+	col := db.client.Database(db.dbName).Collection(colUniswap)
 
 	// init the list
 	list, err := db.uniswapActionListInit(col, pairAddress, cursor, count, actionType)

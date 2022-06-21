@@ -13,7 +13,7 @@ import (
 )
 
 // reExpectedPriceSymbol represents a price symbol expected to be resolved
-var reExpectedPriceSymbol = regexp.MustCompile(`^[\w]{2,4}$`)
+var reExpectedPriceSymbol = regexp.MustCompile(`^\w{2,4}$`)
 
 // Price resolves price details of the Opera blockchain token for the given target symbols.
 func (rs *rootResolver) Price(args *struct{ To string }) (types.Price, error) {

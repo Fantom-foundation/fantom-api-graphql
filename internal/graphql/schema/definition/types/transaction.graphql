@@ -73,12 +73,4 @@ type Transaction {
     # erc20Transactions provides list of ERC-20 token transactions executed in the scope
     # of this blockchain transaction call.
     erc20Transactions: [ERC20Transaction!]!
-
-    # erc721Transactions provides list of ERC-721 NFT transactions executed in the scope
-    # of this blockchain transaction call.
-    erc721Transactions: [ERC721Transaction!]!
-
-    # erc1155Transactions provides list of ERC-1155 NFT transactions executed in the scope
-    # of this blockchain transaction call.
-    erc1155Transactions: [ERC1155Transaction!]!
 }

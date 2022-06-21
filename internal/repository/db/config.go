@@ -87,7 +87,7 @@ func (db *MongoDbBridge) lastKnownBlock() (uint64, error) {
 	opt.SetProjection(bson.D{{Key: fiTransactionBlock, Value: true}})
 
 	// get the collection for account transactions
-	col := db.client.Database(db.dbName).Collection(coTransactions)
+	col := db.client.Database(db.dbName).Collection(colTransactions)
 	res := col.FindOne(context.Background(), bson.D{}, opt)
 	if res.Err() != nil {
 		// may be no block at all

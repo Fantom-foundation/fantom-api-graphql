@@ -13,8 +13,8 @@ import (
 
 const (
 	// db.trx_volume.createIndex({"stamp": 1}, {unique: true})
-	// coTransactionVolume represents the name of the trx flow collection.
-	coTransactionVolume = "trx_volume"
+	// colTransactionVolume represents the name of the trx flow collection.
+	colTransactionVolume = "trx_volume"
 
 	// fiTrxVolumePk name of the primary key of the transaction volume row.
 	fiTrxVolumePk = "_id"
@@ -30,7 +30,7 @@ func (db *MongoDbBridge) TrxDailyFlowList(from *time.Time, to *time.Time) ([]*ty
 
 	// get the collection and context
 	ctx := context.Background()
-	col := db.client.Database(db.dbName).Collection(coTransactionVolume)
+	col := db.client.Database(db.dbName).Collection(colTransactionVolume)
 
 	// pull the data; make sure there is a limit to the range
 	ld, err := col.Find(ctx, trxDailyFlowListFilter(from, to), options.Find().SetSort(bson.D{{Key: fiTrxVolumePk, Value: 1}}).SetLimit(365))
@@ -56,7 +56,7 @@ func (db *MongoDbBridge) TrxGasSpeed(from *time.Time, to *time.Time) (float64, e
 
 	// get the collection and context
 	ctx := context.Background()
-	col := db.client.Database(db.dbName).Collection(coTransactions)
+	col := db.client.Database(db.dbName).Collection(colTransactions)
 
 	// aggregate the gas used from the given time range
 	cr, err := col.Aggregate(ctx, mongo.Pipeline{
@@ -104,7 +104,7 @@ func (db *MongoDbBridge) TrxRecentTrxSpeed(sec int32) (float64, error) {
 		sec = 60
 	}
 	from := time.Now().UTC().Add(time.Duration(-sec) * time.Second)
-	col := db.client.Database(db.dbName).Collection(coTransactions)
+	col := db.client.Database(db.dbName).Collection(colTransactions)
 
 	// find how many transactions do we have in the database
 	total, err := col.CountDocuments(context.Background(), bson.D{
@@ -170,7 +170,7 @@ func (db *MongoDbBridge) TrxDailyFlowUpdate(from time.Time) error {
 	db.log.Noticef("updating trx flow after %s", from)
 
 	// we aggregate transactions
-	col := db.client.Database(db.dbName).Collection(coTransactions)
+	col := db.client.Database(db.dbName).Collection(colTransactions)
 
 	// get the collection
 	cr, err := col.Aggregate(context.Background(), mongo.Pipeline{

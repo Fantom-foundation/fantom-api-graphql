@@ -16,7 +16,7 @@ type subscriptOnTrx struct {
 	events chan<- *Transaction
 }
 
-// OnBlock resolves subscription to new blocks event broadcast.
+// OnTransaction resolves subscription to new transactions' event broadcast.
 func (rs *rootResolver) OnTransaction(ctx context.Context) <-chan *Transaction {
 	// make the stream
 	c := make(chan *Transaction, onTrxChannelCapacity)

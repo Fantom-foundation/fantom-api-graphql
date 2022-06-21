@@ -4,11 +4,11 @@ package types
 import (
 	"encoding/binary"
 	"encoding/json"
+	"fantom-api-graphql/internal/repository/db/registry"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	retypes "github.com/ethereum/go-ethereum/core/types"
-	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
 	"time"
 )
@@ -63,7 +63,7 @@ type Transaction struct {
 	ContractAddress *common.Address `json:"contract,omitempty"`
 
 	// TrxIndex represents integer of the transaction's index position in the block. nil when its pending.
-	TrxIndex *hexutil.Uint `json:"transactionIndex,omitempty"`
+	TrxIndex *hexutil.Uint `json:"trxIndex,omitempty"`
 
 	// Value represents value transferred in Wei.
 	Value hexutil.Big `json:"value"`
@@ -222,7 +222,7 @@ func (trx *Transaction) MarshalBSON() ([]byte, error) {
 		}
 	}
 
-	return bson.Marshal(pom)
+	return registry.Marshal(pom)
 }
 
 // UnmarshalBSON updates the value from BSON source.
@@ -235,7 +235,7 @@ func (trx *Transaction) UnmarshalBSON(data []byte) (err error) {
 
 	// try to decode the BSON data
 	var row BsonTransaction
-	if err = bson.Unmarshal(data, &row); err != nil {
+	if err = registry.Unmarshal(data, &row); err != nil {
 		return err
 	}
 

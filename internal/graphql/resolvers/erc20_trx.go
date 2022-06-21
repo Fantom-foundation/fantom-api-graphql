@@ -38,5 +38,5 @@ func (trx *ERC20Transaction) Token() *ERC20Token {
 
 // TrxType resolves the type of the ERC20 transaction.
 func (trx *ERC20Transaction) TrxType() string {
-	return ercTrxTypeToName(trx.Type)
+	return ercTrxTypeToName(trx.TokenTransaction.TrxType)
 }

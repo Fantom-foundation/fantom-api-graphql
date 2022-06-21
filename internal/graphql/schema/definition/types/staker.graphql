@@ -25,6 +25,9 @@ type Staker {
     # This value depends on the amount of self staked tokens.
     delegatedLimit: BigInt!
 
+    # Is this a validator record.
+    isValidator: Boolean!
+
     # Is the staker active.
     isActive: Boolean!
 

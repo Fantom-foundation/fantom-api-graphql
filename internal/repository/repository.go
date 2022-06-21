@@ -2,7 +2,7 @@
 Package repository implements repository for handling fast and efficient access to data required
 by the resolvers of the API server.
 
-Internally it utilizes RPC to access Opera/Lachesis full node for blockchain interaction. Mongo database
+Internally it utilizes RPC to access Opera full node for blockchain interaction. Mongo database
 for fast, robust and scalable off-chain data storage, especially for aggregated and pre-calculated data mining
 results. BigCache for in-memory object storage to speed up loading of frequently accessed entities.
 */
@@ -140,10 +140,10 @@ func connect(cfg *config.Config, log logger.Logger) (*cache.MemBridge, *db.Mongo
 		return nil, nil, nil, err
 	}
 
-	// create new Lachesis RPC bridge
+	// create new Opera RPC bridge
 	rpcBridge, err := rpc.New(cfg, log)
 	if err != nil {
-		log.Criticalf("can not connect Lachesis RPC interface, %s", err.Error())
+		log.Criticalf("can not connect Opera RPC interface, %s", err.Error())
 		return nil, nil, nil, err
 	}
 	return caBridge, dbBridge, rpcBridge, nil

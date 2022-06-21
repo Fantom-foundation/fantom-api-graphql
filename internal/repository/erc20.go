@@ -116,9 +116,9 @@ func (p *proxy) Erc20TotalSupply(token *common.Address) (hexutil.Big, error) {
 	return p.rpc.Erc20TotalSupply(token)
 }
 
-// Erc20TokensList returns a list of known ERC20 tokens ordered by their activity.
+// Erc20TokensList returns a list of known ERC20 tokens.
 func (p *proxy) Erc20TokensList(count int32) ([]common.Address, error) {
-	return p.db.Erc20TokensList(count)
+	return p.db.ErcTokensList(count, types.AccountTypeERC20Contract)
 }
 
 // Erc20LogoURL provides URL address of a logo of the ERC20 token.

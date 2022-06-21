@@ -23,15 +23,6 @@ type Query {
     # Get an Account information by hash address.
     account(address:Address!):Account!
 
-    # Get list of Contracts with at most <count> edges.
-    # If <count> is positive, return edges after the cursor,
-    # if negative, return edges before the cursor.
-    # For undefined cursor, positive <count> starts the list from top,
-    # negative <count> starts the list from bottom.
-    # ValidatedOnly specifies if the list should contain all the Contracts,
-    # or just contracts with validated byte code and available source/ABI.
-    contracts(validatedOnly: Boolean = false, cursor:Cursor, count:Int!):ContractList!
-
     # Get block information by number or by hash.
     # If neither is provided, the most recent block is given.
     block(number:Long, hash: Bytes32):Block
@@ -55,12 +46,6 @@ type Query {
 
     # Get filtered list of ERC20 Transactions.
     erc20Transactions(cursor:Cursor, count:Int = 25, token: Address, account: Address, txType: [TokenTransactionType!]): ERC20TransactionList!
-
-    # Get filtered list of ERC721 Transactions.
-    erc721Transactions(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, account: Address, txType: [TokenTransactionType!]): ERC721TransactionList!
-
-    # Get filtered list of ERC1155 Transactions.
-    erc1155Transactions(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, account: Address, txType: [TokenTransactionType!]): ERC1155TransactionList!
 
     # Get the id of the current epoch of the Opera blockchain.
     currentEpoch:Long!
@@ -297,13 +282,6 @@ type Mutation {
     # SendTransaction submits a raw signed transaction into the block chain.
     # The tx parameter represents raw signed and RLP encoded transaction data.
     sendTransaction(tx: Bytes!):Transaction
-
-    # Validate a deployed contract byte code with the provided source code
-    # so potential users can check the contract source code, access contract ABI
-    # to be able to interact with the contract and get the right metadata.
-    # Returns updated contract information. If the contract can not be validated,
-    # it raises a GraphQL error.
-    validateContract(contract: ContractValidationInput!): Contract!
 }
 
 # Subscriptions to live events broadcasting

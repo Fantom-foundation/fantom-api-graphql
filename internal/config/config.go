@@ -3,6 +3,7 @@ package config
 
 import (
 	"crypto/ecdsa"
+	"github.com/ethereum/go-ethereum/p2p/enode"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -13,8 +14,8 @@ type Config struct {
 	// AppName holds the name of the application
 	AppName string `mapstructure:"app_name"`
 
-	// MySignature represents a signature of the server on blockchain.
-	MySignature ServerSignature `mapstructure:"me"`
+	// Signature represents a signature of the API server on blockchain and discovery.
+	Signature ServerSignature `mapstructure:"me"`
 
 	// Server configuration
 	Server Server `mapstructure:"server"`
@@ -22,8 +23,8 @@ type Config struct {
 	// Logger configuration
 	Log Log `mapstructure:"log"`
 
-	// Lachesis represents the node structure
-	Lachesis Lachesis `mapstructure:"node"`
+	// Opera represents the node structure
+	Opera OperaNetwork `mapstructure:"node"`
 
 	// Database configuration
 	Db Database `mapstructure:"db"`
@@ -82,8 +83,8 @@ type Server struct {
 // ServerSignature represents the signature used by this server
 // on sending requests to the blockchain, especially signed requests.
 type ServerSignature struct {
-	Address    common.Address   `mapstructure:"address"`
-	PrivateKey ecdsa.PrivateKey `mapstructure:"pkey"`
+	Address    common.Address    `mapstructure:"address"`
+	PrivateKey *ecdsa.PrivateKey `mapstructure:"pkey"`
 }
 
 // Log represents the logger configuration
@@ -92,9 +93,10 @@ type Log struct {
 	Format string `mapstructure:"format"`
 }
 
-// Lachesis represents the Lachesis node access configuration
-type Lachesis struct {
-	Url string `mapstructure:"url"`
+// OperaNetwork represents the Opera network node access configuration
+type OperaNetwork struct {
+	ApiNodeUrl     string        `mapstructure:"url"`
+	BootstrapNodes []*enode.Node `mapstructure:"bootstrap"`
 }
 
 // Database represents the database access configuration.

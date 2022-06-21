@@ -40,6 +40,7 @@ func (p *proxy) Erc721Contract(addr *common.Address) (*types.Erc721Contract, err
 	return val.(*types.Erc721Contract), nil
 }
 
+// loadErc721ContractDetails loads details of an ERC721 token.
 func (p *proxy) loadErc721ContractDetails(token *types.Erc721Contract) (*types.Erc721Contract, error) {
 	var err error
 
@@ -108,7 +109,7 @@ func (p *proxy) Erc721IsApprovedForAll(token *common.Address, owner *common.Addr
 	return p.rpc.Erc721IsApprovedForAll(token, owner, operator)
 }
 
-// Erc721ContractsList returns a list of known ERC721 tokens ordered by their activity.
+// Erc721ContractsList returns a list of known ERC721 tokens.
 func (p *proxy) Erc721ContractsList(count int32) ([]common.Address, error) {
-	return p.db.Erc721ContractsList(count)
+	return p.db.ErcTokensList(count, types.AccountTypeERC721Contract)
 }
