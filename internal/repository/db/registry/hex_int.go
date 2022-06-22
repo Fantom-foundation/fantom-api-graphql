@@ -15,14 +15,24 @@ var (
 )
 
 // HexUintEncodeValue encodes hexutil.Uint and/or hexutil.Uint64 into BSON data stream.
-func HexUintEncodeValue(_ bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {
+func HexUintEncodeValue(con bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {
 	switch val.Kind() {
 	case tHexUint.Kind():
 		v := val.Interface().(hexutil.Uint)
+		intVal := int64(v)
+		// encode as standard int if fits
+		if intVal >= 0 {
+			return bsoncodec.DefaultValueEncoders{}.IntEncodeValue(con, vw, reflect.ValueOf(intVal))
+		}
 		return vw.WriteString((&v).String())
 
 	case tHexUint64.Kind():
 		v := val.Interface().(hexutil.Uint64)
+		intVal := int64(v)
+		// encode as standard int if fits
+		if intVal >= 0 {
+			return bsoncodec.DefaultValueEncoders{}.IntEncodeValue(con, vw, reflect.ValueOf(intVal))
+		}
 		return vw.WriteString((&v).String())
 	}
 
