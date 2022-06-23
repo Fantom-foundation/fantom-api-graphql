@@ -14,6 +14,12 @@ import (
 const (
 	// colEpochs represents the name of the epochs' collection in database.
 	colGasPrice = "gas_price"
+
+	// fiGasPriceTimeFrom is the name of the starting time stamp column in the collection.
+	fiGasPriceTimeFrom = "from"
+
+	// fiGasPriceTimeTo is the name of the ending time stamp column in the collection.
+	fiGasPriceTimeTo = "to"
 )
 
 // gasPriceCollectionIndexes provides a list of indexes expected to exist on the prices' collection.
@@ -22,13 +28,13 @@ func gasPriceCollectionIndexes() []mongo.IndexModel {
 
 	ixGasPriceFrom := "ix_gas_price_from"
 	ix[0] = mongo.IndexModel{
-		Keys:    bson.D{{Key: types.FiGasPriceTimeFrom, Value: 1}},
+		Keys:    bson.D{{Key: fiGasPriceTimeFrom, Value: 1}},
 		Options: &options.IndexOptions{Name: &ixGasPriceFrom},
 	}
 
 	ixGasPriceTo := "ix_gas_price_to"
 	ix[1] = mongo.IndexModel{
-		Keys:    bson.D{{Key: types.FiGasPriceTimeTo, Value: 1}},
+		Keys:    bson.D{{Key: fiGasPriceTimeTo, Value: 1}},
 		Options: &options.IndexOptions{Name: &ixGasPriceTo},
 	}
 

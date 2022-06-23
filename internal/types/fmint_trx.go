@@ -8,20 +8,6 @@ import (
 	"math/big"
 )
 
-const (
-	FiFMintTransactionTokenAddress = "tok"
-	FiFMintTransactionUser         = "usr"
-	FiFmintTransactionType         = "typ"
-	FiFmintTransactionAmount       = "amo"
-	FiFmintTransactionFee          = "fee"
-	FiFmintTransactionFeeValue     = "fee_val"
-	FiFmintTransactionTrxHash      = "trx"
-	FiFmintTransactionTrxIndex     = "tix"
-	FiFMintTransactionTimestamp    = "stamp"
-	FiFMintTransactionValue        = "val"
-	FiFMintTransactionOrdinal      = "orx"
-)
-
 // define types of fMint operations used on the protocol
 const (
 	FMintTrxTypeDeposit = iota

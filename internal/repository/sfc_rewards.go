@@ -9,6 +9,7 @@ results. BigCache for in-memory object storage to speed up loading of frequently
 package repository
 
 import (
+	"fantom-api-graphql/internal/repository/db"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -30,7 +31,7 @@ func (p *proxy) RewardClaims(adr *common.Address, valID *big.Int, cursor *string
 	// add delegator address to the filter
 	if adr != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiRewardClaimDelegator,
+			Key:   db.FiRewardClaimDelegator,
 			Value: adr.String(),
 		})
 	}
@@ -38,7 +39,7 @@ func (p *proxy) RewardClaims(adr *common.Address, valID *big.Int, cursor *string
 	// add validator ID to the filter
 	if valID != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiRewardClaimToValidatorId,
+			Key:   db.FiRewardClaimToValidatorId,
 			Value: (*hexutil.Big)(valID).String(),
 		})
 	}
@@ -53,7 +54,7 @@ func (p *proxy) RewardsClaimed(adr *common.Address, valId *big.Int, since *int64
 	// filter by delegator address
 	if adr != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiRewardClaimDelegator,
+			Key:   db.FiRewardClaimDelegator,
 			Value: adr.String(),
 		})
 	}
@@ -61,7 +62,7 @@ func (p *proxy) RewardsClaimed(adr *common.Address, valId *big.Int, since *int64
 	// filter by validator ID
 	if valId != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiRewardClaimToValidatorId,
+			Key:   db.FiRewardClaimToValidatorId,
 			Value: (*hexutil.Big)(valId).String(),
 		})
 	}
@@ -69,7 +70,7 @@ func (p *proxy) RewardsClaimed(adr *common.Address, valId *big.Int, since *int64
 	// starting time stamp provided
 	if since != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiRewardClaimTimeStamp,
+			Key:   db.FiRewardClaimTimeStamp,
 			Value: bson.D{{Key: "$gte", Value: time.Unix(*since, 0)}},
 		})
 	}
@@ -77,7 +78,7 @@ func (p *proxy) RewardsClaimed(adr *common.Address, valId *big.Int, since *int64
 	// ending time stamp provided
 	if until != nil {
 		fi = append(fi, bson.E{
-			Key:   types.FiRewardClaimTimeStamp,
+			Key:   db.FiRewardClaimTimeStamp,
 			Value: bson.D{{Key: "$lte", Value: time.Unix(*until, 0)}},
 		})
 	}
