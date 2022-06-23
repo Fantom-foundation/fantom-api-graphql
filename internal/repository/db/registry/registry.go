@@ -20,7 +20,7 @@ func New() *bsoncodec.Registry {
 	rb := bsoncodec.NewRegistryBuilder()
 
 	// add defaults
-	bsoncodec.DefaultValueEncoders{}.RegisterDefaultEncoders(rb)
+	defaultEncoders.RegisterDefaultEncoders(rb)
 	bsoncodec.DefaultValueDecoders{}.RegisterDefaultDecoders(rb)
 
 	// add custom codecs
