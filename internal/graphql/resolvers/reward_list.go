@@ -34,8 +34,8 @@ func (rl *RewardClaimList) PageInfo() (*ListPageInfo, error) {
 	}
 
 	// get the first and last elements
-	first := Cursor(rl.Collection[0].Pk())
-	last := Cursor(rl.Collection[len(rl.Collection)-1].Pk())
+	first := Cursor(rl.Collection[0].ClaimTrx.String())
+	last := Cursor(rl.Collection[len(rl.Collection)-1].ClaimTrx.String())
 	return NewListPageInfo(&first, &last, !rl.IsEnd, !rl.IsStart)
 }
 
@@ -56,5 +56,5 @@ func (rl *RewardClaimList) Edges() []*RewardClaimListEdge {
 
 // Cursor generates the list edge cursor.
 func (rce *RewardClaimListEdge) Cursor() Cursor {
-	return Cursor(rce.Claim.Pk())
+	return Cursor(rce.Claim.ClaimTrx.String())
 }

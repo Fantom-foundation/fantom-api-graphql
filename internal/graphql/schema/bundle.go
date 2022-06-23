@@ -183,6 +183,32 @@ type Transaction {
     # erc20Transactions provides list of ERC-20 token transactions executed in the scope
     # of this blockchain transaction call.
     erc20Transactions: [ERC20Transaction!]!
+
+    # erc721Transactions provides list of ERC-721 NFT transactions executed in the scope
+    # of this blockchain transaction call.
+    erc721Transactions: [ERC721Transaction!]!
+
+    # erc1155Transactions provides list of ERC-1155 NFT transactions executed in the scope
+    # of this blockchain transaction call.
+    erc1155Transactions: [ERC1155Transaction!]!
+}
+
+# ContractList is a list of smart contract edges provided by sequential access request.
+type ContractList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ContractListEdge!]!
+
+    # TotalCount is the maximum number of contracts available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of contract edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of transactions.
+type ContractListEdge {
+    cursor: Cursor!
+    contract: Contract!
 }
 
 # Represents staker information.
@@ -1047,6 +1073,49 @@ enum DefiTokenBalanceType {
     DEBT
 }
 
+# ERC721Transaction represents a transaction on an ERC721 NFT token.
+type ERC721Transaction {
+    # trxHash represents a hash of the transaction
+    # executing the ERC721 call.
+    trxHash: Bytes32!
+
+    # transaction represents the transaction
+    # executing the ERC721 call.
+    transaction: Transaction!
+
+    # trxIndex represents the index
+    # of the ERC721 call in the transaction logs.
+    trxIndex: Long!
+
+    # tokenAddress represents the address
+    # of the ERC721 token contract.
+    tokenAddress: Address!
+
+    # token represents the ERC721 contract detail involved.
+    token: ERC721Contract!
+
+    # tokenId represents the NFT token - one ERC721 contract can handle multiple NFTs.
+    tokenId: BigInt!
+
+    # trxType is the type of the transaction.
+    trxType: TokenTransactionType!
+
+    # sender represents the address of the token owner
+    # sending the tokens, e.g. the sender.
+    sender: Address!
+
+    # recipient represents the address of the token recipient.
+    recipient: Address!
+
+    # amount represents the amount of tokens involved
+    # in the transaction; please make sure to interpret the amount
+    # with the correct number of decimals from the ERC721 token detail.
+    amount: BigInt!
+
+    # timeStamp represents the Unix epoch time stamp
+    # of the ERC721 transaction processing.
+    timeStamp: Long!
+}
 # DailyTrxVolume represents a view of an aggregated flow
 # of transactions on the network on specific day.
 type DailyTrxVolume {
@@ -1130,6 +1199,128 @@ type UniswapAction {
     amount1out: BigInt!
 }
 
+# Contract defines block-chain smart contract information container
+type Contract {
+    "Address represents the contract address."
+    address: Address!
+
+    "DeployedBy represents the smart contract deployment transaction reference."
+    deployedBy: Transaction!
+
+    "transactionHash represents the smart contract deployment transaction hash."
+    transactionHash: Bytes32!
+
+    "Smart contract name. Empty if not available."
+    name: String!
+
+    "Smart contract version identifier. Empty if not available."
+    version: String!
+
+    """
+    License specifies an open source license the contract was published with.
+    Empty if not specified.
+    """
+    license: String!
+
+    "Smart contract author contact. Empty if not available."
+    supportContact: String!
+
+    "Smart contract compiler identifier. Empty if not available."
+    compiler: String!
+
+    "Smart contract source code. Empty if not available."
+    sourceCode: String!
+
+    "Smart contract ABI definition. Empty if not available."
+    abi: String!
+
+    """
+    Validated is the unix timestamp at which the source code was validated
+    against the deployed byte code. Null if not validated yet.
+    """
+    validated: Long
+
+    "Timestamp is the unix timestamp at which this smart contract was deployed."
+    timestamp: Long!
+}
+
+# ContractValidationInput represents a set of data sent from client
+# to validate deployed contract with the provided source code.
+input ContractValidationInput {
+    "Address of the contract being validated."
+    address: Address!
+
+    "Optional smart contract name. Maximum allowed length is 64 characters."
+    name: String
+
+    "Optional smart contract version identifier. Maximum allowed length is 14 characters."
+    version: String
+
+    "Optional smart contract author contact. Maximum allowed length is 64 characters."
+    supportContact: String
+
+    """
+    License specifies an open source license the contract was published with.
+    Empty if not specified.
+    """
+    license: String
+
+    "Optimized specifies if the compiler was set to optimize the byte code."
+    optimized: Boolean = true
+
+    """
+    OptimizeRuns specifies number of optimization runs the compiler was set
+    to execute during the byte code optimizing.
+    """
+    optimizeRuns: Int = 200
+
+    "Smart contract source code."
+    sourceCode: String!
+}
+
+# ERC1155Transaction represents a transaction on an ERC1155 NFT token.
+type ERC1155Transaction {
+    # trxHash represents a hash of the transaction
+    # executing the ERC1155 call.
+    trxHash: Bytes32!
+
+    # transaction represents the transaction
+    # executing the ERC1155 call.
+    transaction: Transaction!
+
+    # trxIndex represents the index
+    # of the ERC1155 call in the transaction logs.
+    trxIndex: Long!
+
+    # tokenAddress represents the address
+    # of the ERC1155 token contract.
+    tokenAddress: Address!
+
+    # token represents the ERC1155 contract detail involved.
+    token: ERC1155Contract!
+
+    # tokenId represents the NFT token - one ERC1155 contract can handle multiple NFTs.
+    tokenId: BigInt!
+
+    # trxType is the type of the transaction.
+    trxType: TokenTransactionType!
+
+    # sender represents the address of the token owner
+    # sending the tokens, e.g. the sender.
+    sender: Address!
+
+    # recipient represents the address of the token recipient.
+    recipient: Address!
+
+    # amount represents the amount of tokens involved in the transaction;
+    # please make sure to interpret the amount with the correct number of decimals
+    # from the token Metadata JSON Schema.
+    amount: BigInt!
+
+    # timeStamp represents the Unix epoch time stamp
+    # of the ERC1155 transaction processing.
+    timeStamp: Long!
+}
 # SfcConfig represents the configuration of the SFC contract
 # responsible for managing the staking economy of the network.
 type SfcConfig {
@@ -1606,11 +1797,38 @@ type Account {
     # erc20TxList represents list of ERC20 transactions of the account.
     erc20TxList(cursor:Cursor, count:Int = 25, token: Address, txType: [TokenTransactionType!]): ERC20TransactionList!
 
+    # erc721TxList represents list of ERC721 transactions of the account.
+    erc721TxList(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, txType: [TokenTransactionType!]): ERC721TransactionList!
+
+    # erc1155TxList represents list of ERC1155 transactions of the account.
+    erc1155TxList(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, txType: [TokenTransactionType!]): ERC1155TransactionList!
+
     # Details of a staker, if the account is a staker.
     staker: Staker
 
     # List of delegations of the account, if the account is a delegator.
     delegations(cursor:Cursor, count:Int = 25): DelegationList!
+
+    # Details about smart contract, if the account is a smart contract.
+    contract: Contract
+}
+
+# ERC1155TransactionList is a list of ERC1155 transaction edges provided by sequential access request.
+type ERC1155TransactionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ERC1155TransactionListEdge!]!
+
+    # TotalCount is the maximum number of ERC1155 transactions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of ERC1155 transaction edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of ERC1155 transactions.
+type ERC1155TransactionListEdge {
+    cursor: Cursor!
+    trx: ERC1155Transaction!
 }
 
 # Bytes32 is a 32 byte binary string, represented by 0x prefixed hexadecimal hash.
@@ -1635,6 +1853,24 @@ scalar Cursor
 
 # Time represents date and time including time zone information in RFC3339 format.
 scalar Time
+
+# ERC721TransactionList is a list of ERC721 transaction edges provided by sequential access request.
+type ERC721TransactionList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ERC721TransactionListEdge!]!
+
+    # TotalCount is the maximum number of ERC721 transactions available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of ERC721 transaction edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of ERC721 transactions.
+type ERC721TransactionListEdge {
+    cursor: Cursor!
+    trx: ERC721Transaction!
+}
 
 # UniswapPair represents the information about single
 # Uniswap pair managed by the Uniswap Core.
@@ -1787,6 +2023,15 @@ type Query {
     # Get an Account information by hash address.
     account(address:Address!):Account!
 
+    # Get list of Contracts with at most <count> edges.
+    # If <count> is positive, return edges after the cursor,
+    # if negative, return edges before the cursor.
+    # For undefined cursor, positive <count> starts the list from top,
+    # negative <count> starts the list from bottom.
+    # ValidatedOnly specifies if the list should contain all the Contracts,
+    # or just contracts with validated byte code and available source/ABI.
+    contracts(validatedOnly: Boolean = false, cursor:Cursor, count:Int!):ContractList!
+
     # Get block information by number or by hash.
     # If neither is provided, the most recent block is given.
     block(number:Long, hash: Bytes32):Block
@@ -1810,6 +2055,12 @@ type Query {
 
     # Get filtered list of ERC20 Transactions.
     erc20Transactions(cursor:Cursor, count:Int = 25, token: Address, account: Address, txType: [TokenTransactionType!]): ERC20TransactionList!
+
+    # Get filtered list of ERC721 Transactions.
+    erc721Transactions(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, account: Address, txType: [TokenTransactionType!]): ERC721TransactionList!
+
+    # Get filtered list of ERC1155 Transactions.
+    erc1155Transactions(cursor:Cursor, count:Int = 25, token: Address, tokenId: BigInt, account: Address, txType: [TokenTransactionType!]): ERC1155TransactionList!
 
     # Get the id of the current epoch of the Opera blockchain.
     currentEpoch:Long!
@@ -2035,6 +2286,13 @@ type Mutation {
     # SendTransaction submits a raw signed transaction into the block chain.
     # The tx parameter represents raw signed and RLP encoded transaction data.
     sendTransaction(tx: Bytes!):Transaction
+
+    # Validate a deployed contract byte code with the provided source code
+    # so potential users can check the contract source code, access contract ABI
+    # to be able to interact with the contract and get the right metadata.
+    # Returns updated contract information. If the contract can not be validated,
+    # it raises a GraphQL error.
+    validateContract(contract: ContractValidationInput!): Contract!
 }
 
 # Subscriptions to live events broadcasting

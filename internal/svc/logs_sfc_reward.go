@@ -15,12 +15,12 @@ func handleSfcRewardClaim(lr *types.LogRecord, addr common.Address, valID *hexut
 
 	// add the rewards claim into the repository
 	if err := repo.StoreRewardClaim(&types.RewardClaim{
-		Delegator:     addr,
-		ToValidatorId: *valID,
-		Claimed:       lr.Block.TimeStamp,
-		ClaimTrx:      lr.TxHash,
-		Amount:        (hexutil.Big)(*amo),
-		IsDelegated:   isRestake,
+		Delegator:        addr,
+		ToValidatorId:    *valID,
+		ClaimedTimeStamp: uint64(lr.Block.TimeStamp),
+		ClaimTrx:         lr.TxHash,
+		Amount:           (hexutil.Big)(*amo),
+		IsDelegated:      isRestake,
 	}); err != nil {
 		log.Criticalf("can not store rewards claim; %s", err.Error())
 		return

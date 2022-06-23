@@ -21,13 +21,13 @@ func rewardCollectionIndexes() []mongo.IndexModel {
 	// index delegator, receiving validator, and creation time stamp
 	ixRewardAddress := "ix_reward_address"
 	ix[0] = mongo.IndexModel{
-		Keys:    bson.D{{Key: types.FiRewardClaimAddress, Value: 1}},
+		Keys:    bson.D{{Key: types.FiRewardClaimDelegator, Value: 1}},
 		Options: &options.IndexOptions{Name: &ixRewardAddress},
 	}
 
 	ixRewardTo := "ix_reward_to"
 	ix[1] = mongo.IndexModel{
-		Keys:    bson.D{{Key: types.FiRewardClaimToValidator, Value: 1}},
+		Keys:    bson.D{{Key: types.FiRewardClaimToValidatorId, Value: 1}},
 		Options: &options.IndexOptions{Name: &ixRewardTo},
 	}
 
@@ -39,7 +39,7 @@ func rewardCollectionIndexes() []mongo.IndexModel {
 
 	ixRewardStamp := "ix_reward_stamp"
 	ix[3] = mongo.IndexModel{
-		Keys:    bson.D{{Key: types.FiRewardClaimedTimeStamp, Value: -1}},
+		Keys:    bson.D{{Key: types.FiRewardClaimTimeStamp, Value: -1}},
 		Options: &options.IndexOptions{Name: &ixRewardStamp},
 	}
 
@@ -51,41 +51,31 @@ func (db *MongoDbBridge) AddRewardClaim(rc *types.RewardClaim) error {
 	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colRewards)
 
-	// if the delegation already exists, update it with the new one
-	if db.isRewardClaimKnown(col, rc) {
-		return nil
-	}
-
-	// try to do the insert
-	if _, err := col.InsertOne(context.Background(), rc); err != nil {
+	// try to do the upsert
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: types.FiRewardClaimTrx, Value: rc.ClaimTrx}},
+		bson.D{
+			{Key: "$set", Value: bson.D{
+				{Key: types.FiRewardClaimDelegator, Value: rc.Delegator},
+				{Key: types.FiRewardClaimToValidatorId, Value: rc.ToValidatorId},
+				{Key: types.FiRewardClaimTimeStamp, Value: rc.ClaimedTimeStamp},
+				{Key: types.FiRewardClaimAmount, Value: rc.Amount},
+				{Key: types.FiRewardClaimIsDelegated, Value: rc.IsDelegated},
+				{Key: types.FiRewardClaimValue, Value: rc.ComputedValue()},
+				{Key: types.FiRewardClaimOrdinal, Value: rc.ComputedOrdinalIndex()},
+			}},
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: types.FiRewardClaimTrx, Value: rc.ClaimTrx},
+			}},
+		},
+		options.Update().SetUpsert(true),
+	); err != nil {
 		db.log.Critical(err)
 		return err
 	}
 
 	return nil
-}
-
-// isRewardClaimKnown checks if the given reward claim exists in the database.
-func (db *MongoDbBridge) isRewardClaimKnown(col *mongo.Collection, rc *types.RewardClaim) bool {
-	// try to find the delegation in the database
-	sr := col.FindOne(context.Background(), bson.D{
-		{Key: defaultPK, Value: rc.Pk()},
-	}, options.FindOne().SetProjection(bson.D{
-		{Key: defaultPK, Value: true},
-	}))
-
-	// error on lookup?
-	if sr.Err() != nil {
-		// may be ErrNoDocuments, which we seek
-		if sr.Err() == mongo.ErrNoDocuments {
-			return false
-		}
-		// inform that we can not get the PK; should not happen
-		db.log.Errorf("can not get existing reward claim pk; %s", sr.Err().Error())
-		return false
-	}
-
-	return true
 }
 
 // RewardsCountFiltered calculates total number of reward claims in the database for the given filter.
@@ -156,7 +146,7 @@ func (db *MongoDbBridge) rewListCollectRangeMarks(col *mongo.Collection, list *t
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.rewListBorderPk(col,
-			bson.D{{Key: defaultPK, Value: *cursor}},
+			bson.D{{Key: types.FiRewardClaimTrx, Value: *cursor}},
 			options.FindOne())
 	}
 
@@ -324,7 +314,7 @@ func (db *MongoDbBridge) RewardClaims(cursor *string, count int32, filter *bson.
 func (db *MongoDbBridge) RewardsSumValue(filter *bson.D) (*big.Int, error) {
 	return db.sumFieldValue(
 		db.client.Database(db.dbName).Collection(colRewards),
-		types.FiRewardClaimedValue,
+		types.FiRewardClaimValue,
 		filter,
 		types.RewardDecimalsCorrection)
 }

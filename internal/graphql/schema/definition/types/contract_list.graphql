@@ -1,0 +1,17 @@
+# ContractList is a list of smart contract edges provided by sequential access request.
+type ContractList {
+    # Edges contains provided edges of the sequential list.
+    edges: [ContractListEdge!]!
+
+    # TotalCount is the maximum number of contracts available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of contract edges.
+    pageInfo: ListPageInfo!
+}
+
+# TransactionListEdge is a single edge in a sequential list of transactions.
+type ContractListEdge {
+    cursor: Cursor!
+    contract: Contract!
+}

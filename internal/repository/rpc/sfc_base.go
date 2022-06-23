@@ -73,7 +73,7 @@ func (ftm *FtmBridge) Epoch(id hexutil.Uint64) (*types.Epoch, error) {
 
 	return &types.Epoch{
 		Id:                    id,
-		EndTime:               hexutil.Uint64(epo.EndTime.Uint64()),
+		EndTime:               epo.EndTime.Uint64(),
 		EpochFee:              (hexutil.Big)(*epo.EpochFee),
 		TotalBaseRewardWeight: (hexutil.Big)(*epo.TotalBaseRewardWeight),
 		TotalTxRewardWeight:   (hexutil.Big)(*epo.TotalTxRewardWeight),

@@ -1,0 +1,43 @@
+# ERC1155Transaction represents a transaction on an ERC1155 NFT token.
+type ERC1155Transaction {
+    # trxHash represents a hash of the transaction
+    # executing the ERC1155 call.
+    trxHash: Bytes32!
+
+    # transaction represents the transaction
+    # executing the ERC1155 call.
+    transaction: Transaction!
+
+    # trxIndex represents the index
+    # of the ERC1155 call in the transaction logs.
+    trxIndex: Long!
+
+    # tokenAddress represents the address
+    # of the ERC1155 token contract.
+    tokenAddress: Address!
+
+    # token represents the ERC1155 contract detail involved.
+    token: ERC1155Contract!
+
+    # tokenId represents the NFT token - one ERC1155 contract can handle multiple NFTs.
+    tokenId: BigInt!
+
+    # trxType is the type of the transaction.
+    trxType: TokenTransactionType!
+
+    # sender represents the address of the token owner
+    # sending the tokens, e.g. the sender.
+    sender: Address!
+
+    # recipient represents the address of the token recipient.
+    recipient: Address!
+
+    # amount represents the amount of tokens involved in the transaction;
+    # please make sure to interpret the amount with the correct number of decimals
+    # from the token Metadata JSON Schema.
+    amount: BigInt!
+
+    # timeStamp represents the Unix epoch time stamp
+    # of the ERC1155 transaction processing.
+    timeStamp: Long!
+}

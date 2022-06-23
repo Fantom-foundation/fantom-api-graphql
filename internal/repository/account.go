@@ -133,3 +133,9 @@ func (p *proxy) StoreAccount(acc *types.Account) error {
 func (p *proxy) TokenNameAttempt(adr *common.Address) (string, error) {
 	return p.rpc.TokenNameAttempt(adr)
 }
+
+// Contracts returns list of smart contracts at Opera blockchain.
+func (p *proxy) Contracts(cursor *string, count int32) (*types.ContractList, error) {
+	// go to the database for the list of contracts searched
+	return p.db.Contracts(cursor, count)
+}

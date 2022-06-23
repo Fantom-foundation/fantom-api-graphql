@@ -111,7 +111,7 @@ func (acc *Account) Erc20TxList(args struct {
 	Count  int32
 	Token  *common.Address
 	TxType *[]string
-}) (*TokenTransactionList, error) {
+}) (*ERC20TransactionList, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction
 	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
@@ -129,6 +129,30 @@ func (acc *Account) Erc20TxList(args struct {
 	}
 
 	return NewERC20TransactionList(tl), nil
+}
+
+// Erc721TxList resolves list of ERC721 transactions associated with the account.
+func (acc *Account) Erc721TxList(args struct {
+	Cursor  *Cursor
+	Count   int32
+	Token   *common.Address
+	TokenId *hexutil.Big
+	TxType  *[]string
+}) (*ERC721TransactionList, error) {
+	// return empty transaction list to keep existing GraphQL schema
+	return NewERC721TransactionList(&types.TokenTransactionList{Collection: make([]*types.TokenTransaction, 0)}), nil
+}
+
+// Erc1155TxList resolves list of ERC1155 transactions associated with the account.
+func (acc *Account) Erc1155TxList(args struct {
+	Cursor  *Cursor
+	Count   int32
+	Token   *common.Address
+	TokenId *hexutil.Big
+	TxType  *[]string
+}) (*ERC1155TransactionList, error) {
+	// return empty transaction list to keep existing GraphQL schema
+	return NewERC1155TransactionList(&types.TokenTransactionList{Collection: make([]*types.TokenTransaction, 0)}), nil
 }
 
 // Staker resolves the account staker detail, if the account is a staker.
@@ -163,6 +187,15 @@ func (acc *Account) Delegations(args *struct {
 
 	// convert to resolvable list
 	return NewDelegationList(dl), nil
+}
+
+// Contract resolves the contract detail, if the account is a contract.
+func (acc *Account) Contract() (*Contract, error) {
+	var contract *Contract
+	if acc.IsContract {
+		contract = NewContract(&acc.Account)
+	}
+	return contract, nil
 }
 
 // delegationsTotal calculates total sum of delegations of the given account including

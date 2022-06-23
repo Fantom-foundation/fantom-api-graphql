@@ -3,7 +3,6 @@ package types
 
 import (
 	"encoding/binary"
-	"fantom-api-graphql/internal/repository/db/registry"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -41,12 +40,4 @@ func (dl *Delegation) ComputedOrdinalIndex() int64 {
 // ComputedValue returns computed delegated value on the given delegation.
 func (dl *Delegation) ComputedValue() int64 {
 	return new(big.Int).Div(dl.AmountDelegated.ToInt(), DelegationDecimalsCorrection).Int64()
-}
-
-// MarshalBSON creates a BSON representation of the Epoch record.
-func (dl *Delegation) MarshalBSON() ([]byte, error) {
-	dl.Value = dl.ComputedValue()
-	dl.OrdinalIndex = dl.ComputedOrdinalIndex()
-
-	return registry.Marshal(dl)
 }

@@ -12,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
 	"strings"
-	"time"
 )
 
 // colWithdrawals represents the name of the withdrawals' collection in database.
@@ -28,7 +27,7 @@ func withdrawalCollectionIndexes() []mongo.IndexModel {
 	ix[0] = mongo.IndexModel{
 		Keys: bson.D{
 			{Key: types.FiWithdrawalAddress, Value: 1},
-			{Key: types.FiWithdrawalToValidator, Value: 1},
+			{Key: types.FiWithdrawalToStakerID, Value: 1},
 			{Key: types.FiWithdrawalRequestID, Value: 1},
 		},
 		Options: &options.IndexOptions{
@@ -60,7 +59,7 @@ func (db *MongoDbBridge) Withdrawal(addr *common.Address, valID *hexutil.Big, re
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
 		{Key: types.FiWithdrawalAddress, Value: addr.String()},
-		{Key: types.FiWithdrawalToValidator, Value: valID.String()},
+		{Key: types.FiWithdrawalToStakerID, Value: valID.String()},
 		{Key: types.FiWithdrawalRequestID, Value: reqID.String()},
 	})
 
@@ -96,12 +95,24 @@ func (db *MongoDbBridge) AddWithdrawal(wr *types.WithdrawRequest) error {
 	}
 
 	// try to do the insert
-	if _, err := col.InsertOne(context.Background(), wr); err != nil {
-		db.log.Criticalf("failed to store %s to %d, %s, %s; %s",
-			wr.Address.String(),
-			wr.StakerID.ToInt().Uint64(),
-			wr.WithdrawRequestID.String(),
-			wr.RequestTrx.String(), err.Error())
+	_, err = col.UpdateOne(context.Background(), bson.D{
+		{Key: types.FiWithdrawalRequestTrx, Value: wr.RequestTrx},
+	}, bson.D{{Key: "$set", Value: bson.D{
+		{Key: types.FiWithdrawalRequestTrx, Value: wr.RequestTrx},
+		{Key: types.FiWithdrawalRequestID, Value: wr.WithdrawRequestID},
+		{Key: types.FiWithdrawalAddress, Value: wr.Address},
+		{Key: types.FiWithdrawalToStakerID, Value: wr.StakerID},
+		{Key: types.FiWithdrawalCreated, Value: wr.CreatedTime},
+		{Key: types.FiWithdrawalAmount, Value: wr.Amount},
+		{Key: types.FiWithdrawalType, Value: wr.Type},
+		{Key: types.FiWithdrawalOrdinal, Value: wr.ComputedOrdinalIndex()},
+		{Key: types.FiWithdrawalValue, Value: wr.ComputedValue()},
+		{Key: types.FiWithdrawalWithdrawTrx, Value: wr.WithdrawTrx},
+		{Key: types.FiWithdrawalWithdrawTime, Value: wr.WithdrawTime},
+		{Key: types.FiWithdrawalPenalty, Value: wr.Penalty},
+	}}}, new(options.UpdateOptions).SetUpsert(true))
+	if err != nil {
+		db.log.Critical(err)
 		return err
 	}
 
@@ -142,9 +153,9 @@ func (db *MongoDbBridge) shiftClosedWithdrawRequest(col *mongo.Collection, wr *t
 	// try to shift a closed withdrawal request to a different reqID by updating it in the database
 	er, err := col.UpdateOne(context.Background(), bson.D{
 		{Key: types.FiWithdrawalAddress, Value: wr.Address.String()},
-		{Key: types.FiWithdrawalToValidator, Value: wr.StakerID.String()},
+		{Key: types.FiWithdrawalToStakerID, Value: wr.StakerID.String()},
 		{Key: types.FiWithdrawalRequestID, Value: wr.WithdrawRequestID.String()},
-		{Key: types.FiWithdrawalFinTime, Value: bson.D{{Key: "$exists", Value: true}, {Key: "$ne", Value: nil}}},
+		{Key: types.FiWithdrawalWithdrawTime, Value: bson.D{{Key: "$exists", Value: true}, {Key: "$ne", Value: nil}}},
 	}, bson.D{{Key: "$set", Value: bson.D{
 		{Key: types.FiWithdrawalRequestID, Value: reqID},
 	}}})
@@ -173,9 +184,6 @@ func (db *MongoDbBridge) UpdateWithdrawal(wr *types.WithdrawRequest) error {
 	// get the collection for withdrawals
 	col := db.client.Database(db.dbName).Collection(colWithdrawals)
 
-	// calculate the value to 9 digits (and 18 billions remain available)
-	val := new(big.Int).Div(wr.Amount.ToInt(), types.WithdrawDecimalsCorrection).Uint64()
-
 	// withdraw transaction
 	var trx *string = nil
 	if wr.WithdrawTrx != nil {
@@ -194,18 +202,17 @@ func (db *MongoDbBridge) UpdateWithdrawal(wr *types.WithdrawRequest) error {
 	// we use request ID identify unique withdrawal
 	er, err := col.UpdateOne(context.Background(), bson.D{
 		{Key: types.FiWithdrawalAddress, Value: wr.Address.String()},
-		{Key: types.FiWithdrawalToValidator, Value: wr.StakerID.String()},
+		{Key: types.FiWithdrawalToStakerID, Value: wr.StakerID.String()},
 		{Key: types.FiWithdrawalRequestID, Value: wr.WithdrawRequestID.String()},
 	}, bson.D{{Key: "$set", Value: bson.D{
 		{Key: types.FiWithdrawalType, Value: wr.Type},
-		{Key: types.FiWithdrawalOrdinal, Value: wr.OrdinalIndex()},
-		{Key: types.FiWithdrawalCreated, Value: uint64(wr.CreatedTime)},
-		{Key: types.FiWithdrawalStamp, Value: time.Unix(int64(wr.CreatedTime), 0)},
-		{Key: types.FiWithdrawalValue, Value: val},
-		{Key: types.FiWithdrawalSlash, Value: pen},
+		{Key: types.FiWithdrawalOrdinal, Value: wr.ComputedOrdinalIndex()},
+		{Key: types.FiWithdrawalCreated, Value: wr.CreatedTime},
+		{Key: types.FiWithdrawalValue, Value: wr.ComputedValue()},
+		{Key: types.FiWithdrawalPenalty, Value: pen},
 		{Key: types.FiWithdrawalRequestTrx, Value: wr.RequestTrx.String()},
-		{Key: types.FiWithdrawalFinTrx, Value: trx},
-		{Key: types.FiWithdrawalFinTime, Value: (*uint64)(wr.WithdrawTime)},
+		{Key: types.FiWithdrawalWithdrawTrx, Value: trx},
+		{Key: types.FiWithdrawalWithdrawTime, Value: wr.WithdrawTime},
 	}}}, new(options.UpdateOptions).SetUpsert(true))
 	if err != nil {
 		db.log.Critical(err)
@@ -224,7 +231,7 @@ func (db *MongoDbBridge) isWithdrawalKnown(col *mongo.Collection, wr *types.With
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
 		{Key: types.FiWithdrawalAddress, Value: wr.Address.String()},
-		{Key: types.FiWithdrawalToValidator, Value: wr.StakerID.String()},
+		{Key: types.FiWithdrawalToStakerID, Value: wr.StakerID.String()},
 		{Key: types.FiWithdrawalRequestID, Value: wr.WithdrawRequestID.String()},
 	}, options.FindOne().SetProjection(bson.D{
 		{Key: defaultPK, Value: true},

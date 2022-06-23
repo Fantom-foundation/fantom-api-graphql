@@ -19,7 +19,7 @@ func fMintTrxCollectionIndexes() []mongo.IndexModel {
 
 	ixFMintTxToken := "ix_fmint_tx_tok"
 	ix[0] = mongo.IndexModel{
-		Keys:    bson.D{{Key: types.FiFMintTransactionToken, Value: 1}},
+		Keys:    bson.D{{Key: types.FiFMintTransactionTokenAddress, Value: 1}},
 		Options: &options.IndexOptions{Name: &ixFMintTxToken},
 	}
 
@@ -54,8 +54,29 @@ func (db *MongoDbBridge) AddFMintTransaction(trx *types.FMintTransaction) error 
 		return nil
 	}
 
-	// try to do the insert
-	if _, err := col.InsertOne(context.Background(), trx); err != nil {
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: defaultPK, Value: trx.ComputedPk()}},
+		bson.D{
+			{Key: "$set", Value: bson.D{
+				{Key: types.FiFMintTransactionUser, Value: trx.UserAddress},
+				{Key: types.FiFMintTransactionTokenAddress, Value: trx.TokenAddress},
+				{Key: types.FiFmintTransactionType, Value: trx.Type},
+				{Key: types.FiFmintTransactionAmount, Value: trx.Amount},
+				{Key: types.FiFmintTransactionFee, Value: trx.Fee},
+				{Key: types.FiFmintTransactionFeeValue, Value: trx.ComputedFeeValue()},
+				{Key: types.FiFmintTransactionTrxHash, Value: trx.TrxHash},
+				{Key: types.FiFmintTransactionTrxIndex, Value: trx.TrxIndex},
+				{Key: types.FiFMintTransactionTimestamp, Value: trx.TimeStamp},
+				{Key: types.FiFMintTransactionValue, Value: trx.ComputedValue()},
+				{Key: types.FiFMintTransactionOrdinal, Value: trx.ComputedOrdinalIndex()},
+			}},
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: defaultPK, Value: trx.ComputedPk()},
+			}},
+		},
+		options.Update().SetUpsert(true),
+	); err != nil {
 		db.log.Critical(err)
 		return err
 	}
@@ -67,9 +88,9 @@ func (db *MongoDbBridge) AddFMintTransaction(trx *types.FMintTransaction) error 
 func (db *MongoDbBridge) isFMintTransactionKnown(col *mongo.Collection, trx *types.FMintTransaction) bool {
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{Key: types.FiFMintTransactionId, Value: trx.Pk()},
+		{Key: defaultPK, Value: trx.ComputedPk()},
 	}, options.FindOne().SetProjection(bson.D{
-		{Key: types.FiFMintTransactionId, Value: true},
+		{Key: defaultPK, Value: true},
 	}))
 
 	// error on lookup?
@@ -186,7 +207,7 @@ func (db *MongoDbBridge) fMintTrxListCollectRangeMarks(col *mongo.Collection, li
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.fMintTrxListBorderPk(col,
-			bson.D{{Key: types.FiFMintTransactionId, Value: *cursor}},
+			bson.D{{Key: defaultPK, Value: *cursor}},
 			options.FindOne())
 	}
 

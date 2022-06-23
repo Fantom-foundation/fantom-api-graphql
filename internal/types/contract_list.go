@@ -1,6 +1,8 @@
 // Package types implements different core types of the API.
 package types
 
+import "go.mongodb.org/mongo-driver/bson"
+
 // ContractList represents a list of smart contracts.
 type ContractList struct {
 	// List keeps the actual Collection.
@@ -20,6 +22,9 @@ type ContractList struct {
 
 	// IsEnd indicates there are no contracts available below the list currently.
 	IsEnd bool
+
+	// Filter represents the base filter used for filtering the list
+	Filter bson.D
 }
 
 // Reverse reverses the order of contracts in the list.

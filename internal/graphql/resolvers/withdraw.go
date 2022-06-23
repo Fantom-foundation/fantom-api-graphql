@@ -71,3 +71,18 @@ func (wr WithdrawRequest) Staker() (*Staker, error) {
 	// return the staker information
 	return NewStaker(st), nil
 }
+
+// CreatedTime resolves the creation timestamp.
+func (wr WithdrawRequest) CreatedTime() hexutil.Uint64 {
+	return hexutil.Uint64(uint64(wr.WithdrawRequest.CreatedTime.Unix()))
+}
+
+// WithdrawTime resolves the withdraw timestamp.
+func (wr WithdrawRequest) WithdrawTime() *hexutil.Uint64 {
+	var wt *hexutil.Uint64
+	if wr.WithdrawRequest.WithdrawTime != nil {
+		t := hexutil.Uint64(uint64(wr.WithdrawRequest.WithdrawTime.Unix()))
+		wt = &t
+	}
+	return wt
+}

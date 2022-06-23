@@ -21,6 +21,11 @@ func (rs *rootResolver) Epoch(args *struct{ Id *hexutil.Uint64 }) (Epoch, error)
 	return Epoch{*epo}, nil
 }
 
+// EndTime resolves the end time of the given epoch
+func (ep Epoch) EndTime() hexutil.Uint64 {
+	return hexutil.Uint64(ep.Epoch.EndTime)
+}
+
 // Duration resolves the time length of the given epoch
 func (ep Epoch) Duration() hexutil.Uint64 {
 	// no length for the first epochs
@@ -36,8 +41,8 @@ func (ep Epoch) Duration() hexutil.Uint64 {
 	}
 
 	// can we even calculate the duration?
-	if ep.EndTime < prev.EndTime {
+	if ep.Epoch.EndTime < prev.EndTime {
 		return 0
 	}
-	return ep.EndTime - prev.EndTime
+	return hexutil.Uint64(ep.Epoch.EndTime - prev.EndTime)
 }

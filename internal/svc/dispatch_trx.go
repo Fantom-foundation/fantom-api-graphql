@@ -164,7 +164,7 @@ func (trd *trxDispatcher) waitAndStore(evt *eventTrx, wg *sync.WaitGroup) {
 	// wait until all the sub-processors finish their job
 	wg.Wait()
 	if err := repo.StoreTransaction(evt.blk, evt.trx); err != nil {
-		log.Errorf("can not store trx %s from block #%d", evt.trx.Hash.String(), evt.blk.Number)
+		log.Errorf("can not store trx %s from block #%d; %s", evt.trx.Hash.String(), evt.blk.Number, err)
 	}
 
 	repo.IncTrxCountEstimate(1)

@@ -4,6 +4,7 @@ import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // ERC20Transaction represents a resolvable ERC20 token transaction.
@@ -39,4 +40,14 @@ func (trx *ERC20Transaction) Token() *ERC20Token {
 // TrxType resolves the type of the ERC20 transaction.
 func (trx *ERC20Transaction) TrxType() string {
 	return ercTrxTypeToName(trx.TokenTransaction.TrxType)
+}
+
+// TrxIndex resolves the transaction index of the ERC20 transaction.
+func (trx *ERC20Transaction) TrxIndex() hexutil.Uint64 {
+	return hexutil.Uint64(trx.TokenTransaction.TrxIndex)
+}
+
+// Timestamp returns timestamp.
+func (trx *ERC20Transaction) Timestamp() hexutil.Uint64 {
+	return hexutil.Uint64(trx.TimeStamp.Unix())
 }

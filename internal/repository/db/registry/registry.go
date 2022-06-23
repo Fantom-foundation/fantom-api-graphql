@@ -20,7 +20,7 @@ func New() *bsoncodec.Registry {
 	rb := bsoncodec.NewRegistryBuilder()
 
 	// add defaults
-	bsoncodec.DefaultValueEncoders{}.RegisterDefaultEncoders(rb)
+	defaultEncoders.RegisterDefaultEncoders(rb)
 	bsoncodec.DefaultValueDecoders{}.RegisterDefaultDecoders(rb)
 
 	// add custom codecs
@@ -55,4 +55,8 @@ func custom(rb *bsoncodec.RegistryBuilder) {
 	rb.RegisterTypeDecoder(tHexUint, bsoncodec.ValueDecoderFunc(HexUintDecodeValue))
 	rb.RegisterTypeEncoder(tHexUint64, bsoncodec.ValueEncoderFunc(HexUintEncodeValue))
 	rb.RegisterTypeDecoder(tHexUint64, bsoncodec.ValueDecoderFunc(HexUintDecodeValue))
+
+	// add hexutil.Bytes (value) support to the BSON registry
+	rb.RegisterTypeEncoder(tHexBytes, bsoncodec.ValueEncoderFunc(HexBytesEncodeValue))
+	rb.RegisterTypeDecoder(tHexBytes, bsoncodec.ValueDecoderFunc(HexBytesDecodeValue))
 }

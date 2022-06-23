@@ -130,8 +130,8 @@ func (p *proxy) Transactions(cursor *string, count int32) (*types.TransactionLis
 			return &types.TransactionList{
 				Collection: tl,
 				Total:      uint64(p.MustEstimateTransactionsCount()),
-				First:      tl[0].Uid(),
-				Last:       tl[len(tl)-1].Uid(),
+				First:      tl[0].OrdinalIndex,
+				Last:       tl[len(tl)-1].OrdinalIndex,
 				IsStart:    true,
 				IsEnd:      false,
 				Filter:     nil,
