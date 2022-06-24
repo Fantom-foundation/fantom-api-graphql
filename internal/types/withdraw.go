@@ -10,19 +10,6 @@ import (
 )
 
 const (
-	FiWithdrawalType         = "type"
-	FiWithdrawalOrdinal      = "orx"
-	FiWithdrawalRequestID    = "req_id"
-	FiWithdrawalAddress      = "adr"
-	FiWithdrawalToStakerID   = "to"
-	FiWithdrawalAmount       = "amo"
-	FiWithdrawalCreated      = "crt"
-	FiWithdrawalValue        = "val"
-	FiWithdrawalPenalty      = "slash"
-	FiWithdrawalRequestTrx   = "_id"
-	FiWithdrawalWithdrawTrx  = "fin_trx"
-	FiWithdrawalWithdrawTime = "fin_time"
-
 	WithdrawTypeUndelegated     = "SFC3:Undelegated"
 	WithdrawTypeWithdrawRequest = "SFC1:WithdrawRequest"
 	WithdrawTypeDeactivatedDlg  = "SFC1:DeactivatedDelegation"

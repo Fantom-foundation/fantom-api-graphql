@@ -8,17 +8,6 @@ import (
 	"math/big"
 )
 
-const (
-	FiRewardClaimTrx           = "_id"
-	FiRewardClaimDelegator     = "addr"
-	FiRewardClaimToValidatorId = "to"
-	FiRewardClaimTimeStamp     = "when"
-	FiRewardClaimAmount        = "amount"
-	FiRewardClaimIsDelegated   = "red"
-	FiRewardClaimValue         = "value"
-	FiRewardClaimOrdinal       = "orx"
-)
-
 // RewardDecimalsCorrection is used to manipulate precision of a rewards value,
 // so it can be stored in database as UINT64 without loosing too much data
 var RewardDecimalsCorrection = new(big.Int).SetUint64(1000000000)
