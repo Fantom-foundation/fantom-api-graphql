@@ -32,6 +32,7 @@ func (db *MongoDbBridge) updateDatabaseIndexes() {
 		colGasPrice:          gasPriceCollectionIndexes,
 		colFMintTransactions: fMintTrxCollectionIndexes,
 		colEpochs:            epochCollectionIndexes,
+		colNftOwnerships:     nftOwnershipCollectionIndexes,
 	}
 
 	// the DB bridge needs a way to terminate this thread

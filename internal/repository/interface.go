@@ -507,6 +507,9 @@ type Repository interface {
 	// Erc1155IsApprovedForAll provides information about operator approved to manipulate with NFT tokens of given owner.
 	Erc1155IsApprovedForAll(token *common.Address, owner *common.Address, operator *common.Address) (bool, error)
 
+	// StoreNftOwnership stores the given NFT ownership record in persistent storage.
+	StoreNftOwnership(no *types.NftOwnership) error
+
 	// GovernanceContractBy provides governance contract details by its address.
 	GovernanceContractBy(*common.Address) (*config.GovernanceContract, error)
 
