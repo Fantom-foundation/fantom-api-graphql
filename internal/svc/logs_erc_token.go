@@ -56,12 +56,12 @@ func handleErc1155TransferSingle(lr *types.LogRecord) {
 
 	// updated recipient balance if method is not burn
 	if to.String() != config.EmptyAddress {
-		storeOwnership(lr.Address, tokenId, to, erc1155Balance(&lr.Address, &to, tokenId), lr.Block.TimeStamp)
+		storeOwnership(lr.Address, tokenId, to, erc1155Balance(&lr.Address, &to, tokenId), lr.Block.TimeStamp, lr.TxHash)
 	}
 
 	// updated sender balance if method is not mint
 	if from.String() != config.EmptyAddress {
-		storeOwnership(lr.Address, tokenId, from, erc1155Balance(&lr.Address, &from, tokenId), lr.Block.TimeStamp)
+		storeOwnership(lr.Address, tokenId, from, erc1155Balance(&lr.Address, &from, tokenId), lr.Block.TimeStamp, lr.TxHash)
 	}
 }
 
@@ -90,12 +90,12 @@ func handleErc1155TransferBatch(lr *types.LogRecord) {
 		id := hexutil.Big(*ids[i])
 		// updated recipient balance if method is not burn
 		if to.String() != config.EmptyAddress {
-			storeOwnership(lr.Address, id, to, erc1155Balance(&lr.Address, &to, id), lr.Block.TimeStamp)
+			storeOwnership(lr.Address, id, to, erc1155Balance(&lr.Address, &to, id), lr.Block.TimeStamp, lr.TxHash)
 		}
 
 		// updated sender balance if method is not mint
 		if from.String() != config.EmptyAddress {
-			storeOwnership(lr.Address, id, from, erc1155Balance(&lr.Address, &from, id), lr.Block.TimeStamp)
+			storeOwnership(lr.Address, id, from, erc1155Balance(&lr.Address, &from, id), lr.Block.TimeStamp, lr.TxHash)
 		}
 	}
 }
@@ -137,12 +137,12 @@ func processErc721Transfer(lr *types.LogRecord) {
 
 	// updated recipient balance if method is not burn
 	if to.String() != config.EmptyAddress {
-		storeOwnership(lr.Address, tokenId, to, erc721Balance(&lr.Address, &to, tokenId), lr.Block.TimeStamp)
+		storeOwnership(lr.Address, tokenId, to, erc721Balance(&lr.Address, &to, tokenId), lr.Block.TimeStamp, lr.TxHash)
 	}
 
 	// updated sender balance if method is not mint
 	if from.String() != config.EmptyAddress {
-		storeOwnership(lr.Address, tokenId, from, erc721Balance(&lr.Address, &from, tokenId), lr.Block.TimeStamp)
+		storeOwnership(lr.Address, tokenId, from, erc721Balance(&lr.Address, &from, tokenId), lr.Block.TimeStamp, lr.TxHash)
 	}
 }
 
@@ -199,13 +199,14 @@ func isErc721Transaction(lr *types.LogRecord) bool {
 }
 
 // storeOwnership stores nft ownership into persistent storage
-func storeOwnership(contract common.Address, tokenId hexutil.Big, owner common.Address, amount hexutil.Big, obtained hexutil.Uint64) {
+func storeOwnership(contract common.Address, tokenId hexutil.Big, owner common.Address, amount hexutil.Big, obtained hexutil.Uint64, trx common.Hash) {
 	if err := repo.StoreNftOwnership(&types.NftOwnership{
 		Contract: contract,
 		TokenId:  tokenId,
 		Owner:    owner,
 		Amount:   amount,
 		Obtained: time.Unix(int64(obtained), 0),
+		Trx:      trx,
 	}); err != nil {
 		log.Errorf("failed to update nft ownership at %s/%d; %s",
 			contract.String(), tokenId.ToInt(), err.Error())
