@@ -128,7 +128,7 @@ func processErc20Transaction(lr *types.LogRecord, trxType int32) {
 	}
 }
 
-// handleErcTokenTransfer handles Transfer event on ERC721.
+// processErc721Transfer handles Transfer event on ERC721.
 func processErc721Transfer(lr *types.LogRecord) {
 	// extract details
 	from := common.BytesToAddress(lr.Topics[1].Bytes())
