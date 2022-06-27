@@ -1,0 +1,17 @@
+# NftOwnership represents an NFT ownership.
+type NftOwnership {
+    # Owner represents token owner.
+    Owner: Address!
+
+    # TokenId represents token identifier.
+    TokenId: BigInt!
+
+    # Amount represents amount of tokens.
+    Amount: BigInt!
+
+    # Obtained represents timestamp when NFT was obtained.
+    Obtained: Long!
+
+    # Trx represents transaction hash in which NFT was obtained.
+    Trx: Bytes32!
+}

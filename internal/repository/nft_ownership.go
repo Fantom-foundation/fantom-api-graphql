@@ -7,9 +7,18 @@ for fast, robust and scalable off-chain data storage, especially for aggregated 
 results. BigCache for in-memory object storage to speed up loading of frequently accessed entities.
 */package repository
 
-import "fantom-api-graphql/internal/types"
+import (
+	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+)
 
 // StoreNftOwnership stores the given NFT ownership record in persistent storage.
 func (p *proxy) StoreNftOwnership(no *types.NftOwnership) error {
 	return p.db.StoreNftOwnership(no)
+}
+
+// ListNftOwnerships resolves list of nft ownerships based on input data.
+func (p *proxy) ListNftOwnerships(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor *string, count int32) (out *types.NftOwnershipList, err error) {
+	return p.db.ListNftOwnerships(contract, tokenId, owner, cursor, count)
 }

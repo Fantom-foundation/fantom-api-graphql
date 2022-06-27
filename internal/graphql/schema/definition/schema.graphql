@@ -279,6 +279,9 @@ type Query {
     # If the end time is not specified, the list is provided up to the current date/time.
     # The maximal date/time span of the list is 30 days.
     gasPriceList(from: Time! to: Time): [GasPriceTick!]!
+
+    # List owned NFT tokens and their amount
+    nftOwnerships(cursor: Cursor, count: Int = 25, collection: Address, owner: Address, tokenId: BigInt): NftOwnershipList!
 }
 
 # Mutation endpoints for modifying the data

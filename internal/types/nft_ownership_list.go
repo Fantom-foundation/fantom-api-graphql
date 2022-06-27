@@ -12,10 +12,10 @@ type NftOwnershipList struct {
 	Total uint64
 
 	// First is the index of the first item on the list
-	First uint64
+	First string
 
 	// Last is the index of the last item on the list
-	Last uint64
+	Last string
 
 	// IsStart indicates there are no delegations available above the list currently.
 	IsStart bool

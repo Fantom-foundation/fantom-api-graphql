@@ -108,6 +108,42 @@ type Price {
     lastUpdate: Long!
 }
 
+# NftOwnershipList is a list of nft ownership edges provided by sequential access request.
+type NftOwnershipList {
+    # Edges contains provided edges of the sequential list.
+    edges: [NftOwnershipEdge!]!
+
+    # TotalCount is the maximum number of nft ownerships available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of nft ownership edges.
+    pageInfo: ListPageInfo!
+}
+
+# NftOwnershipEdge is a single edge in a sequential list of nft ownerships.
+type NftOwnershipEdge {
+    cursor: Cursor!
+    nftOwnership: NftOwnership!
+}
+
+# NftOwnership represents an NFT ownership.
+type NftOwnership {
+    # Owner represents token owner.
+    Owner: Address!
+
+    # TokenId represents token identifier.
+    TokenId: BigInt!
+
+    # Amount represents amount of tokens.
+    Amount: BigInt!
+
+    # Obtained represents timestamp when NFT was obtained.
+    Obtained: Long!
+
+    # Trx represents transaction hash in which NFT was obtained.
+    Trx: Bytes32!
+}
+
 # Transaction is an Opera block chain transaction.
 type Transaction {
     # Hash is the unique hash of this transaction.
@@ -2279,6 +2315,9 @@ type Query {
     # If the end time is not specified, the list is provided up to the current date/time.
     # The maximal date/time span of the list is 30 days.
     gasPriceList(from: Time! to: Time): [GasPriceTick!]!
+
+    # List owned NFT tokens and their amount
+    nftOwnerships(cursor: Cursor, count: Int = 25, collection: Address, owner: Address, tokenId: BigInt): NftOwnershipList!
 }
 
 # Mutation endpoints for modifying the data

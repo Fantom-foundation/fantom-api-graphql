@@ -510,6 +510,9 @@ type Repository interface {
 	// StoreNftOwnership stores the given NFT ownership record in persistent storage.
 	StoreNftOwnership(no *types.NftOwnership) error
 
+	// ListNftOwnerships resolves list of nft ownerships based on input data.
+	ListNftOwnerships(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor *string, count int32) (out *types.NftOwnershipList, err error)
+
 	// GovernanceContractBy provides governance contract details by its address.
 	GovernanceContractBy(*common.Address) (*config.GovernanceContract, error)
 

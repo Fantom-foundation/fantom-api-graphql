@@ -179,11 +179,6 @@ func (db *MongoDbBridge) ErcTokensList(count int32, accountType int) ([]common.A
 
 // Contracts provides list of smart contracts stored in the persistent storage.
 func (db *MongoDbBridge) Contracts(cursor *string, count int32) (*types.ContractList, error) {
-	// nothing to load?
-	if count == 0 {
-		return nil, fmt.Errorf("nothing to do, zero contracts requested")
-	}
-
 	// get the collection and context
 	col := db.client.Database(db.dbName).Collection(colAccounts)
 
@@ -196,33 +191,35 @@ func (db *MongoDbBridge) Contracts(cursor *string, count int32) (*types.Contract
 		return nil, err
 	}
 
-	// load data
-	err = db.contractListLoad(col, cursor, count, list)
-	if err != nil {
-		db.log.Errorf("can not load contracts list from database; %s", err.Error())
-		return nil, err
+	if count == 0 {
+		return list, nil // interested in Total only
 	}
 
-	// check collection has data
-	if len(list.Collection) == 0 {
-		return list, nil
+	if list.Total > 0 {
+		// load data
+		err = db.contractListLoad(col, cursor, count, list)
+		if err != nil {
+			db.log.Errorf("can not load contracts list from database; %s", err.Error())
+			return nil, err
+		}
+
+		// shift the first item on cursor
+		if cursor != nil {
+			list.First = uint64(*list.Collection[0].ContractUid)
+		}
+
+		// reverse on negative so new-er contracts will be on top
+		if count < 0 {
+			list.Reverse()
+			count = -count
+		}
+
+		// cut the end?
+		if len(list.Collection) > int(count) {
+			list.Collection = list.Collection[:len(list.Collection)-1]
+		}
 	}
 
-	// shift the first item on cursor
-	if cursor != nil {
-		list.First = uint64(*list.Collection[0].ContractUid)
-	}
-
-	// reverse on negative so new-er contracts will be on top
-	if count < 0 {
-		list.Reverse()
-		count = -count
-	}
-
-	// cut the end?
-	if len(list.Collection) > int(count) {
-		list.Collection = list.Collection[:len(list.Collection)-1]
-	}
 	return list, nil
 }
 
