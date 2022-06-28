@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"fantom-api-graphql/cmd/apiserver/build"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/graphql/resolvers"
@@ -14,6 +15,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -24,6 +26,7 @@ type apiServer struct {
 	log          logger.Logger
 	api          resolvers.ApiResolver
 	srv          *http.Server
+	wg           *sync.WaitGroup
 	isVersionReq bool
 }
 
@@ -42,6 +45,7 @@ func (app *apiServer) init() {
 
 	// configure logger based on the configuration
 	app.log = logger.New(app.cfg)
+	app.wg = new(sync.WaitGroup)
 
 	// make sure to pass logger and config to internals
 	repository.SetConfig(app.cfg)
@@ -79,8 +83,8 @@ func (app *apiServer) run() {
 		app.log.Errorf(err.Error())
 	}
 
-	// terminate the app
-	app.terminate()
+	// waiting for terminate to finish
+	app.wg.Wait()
 }
 
 // makeHttpServer creates and configures the HTTP server to be used to serve incoming requests
@@ -133,16 +137,27 @@ func (app *apiServer) observeSignals() {
 	signal.Notify(ts, syscall.SIGINT, syscall.SIGTERM)
 
 	// start monitoring
+	app.wg.Add(1)
 	go func() {
+		defer func() {
+			app.terminate()
+			app.wg.Done()
+		}()
+
 		// wait for the signal
 		<-ts
 
 		// terminate HTTP responder
 		app.log.Notice("closing HTTP server")
-		if err := app.srv.Close(); err != nil {
-			app.log.Errorf("could not terminate HTTP listener")
-			os.Exit(0)
+
+		ct, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		if err := app.srv.Shutdown(ct); err != nil {
+			app.log.Errorf("could not terminate HTTP listener; %s", err.Error())
 		}
+
+		// we closed
+		cancel()
+		app.log.Notice("HTTP server closed")
 	}()
 }
 
