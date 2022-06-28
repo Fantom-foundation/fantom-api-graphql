@@ -43,12 +43,24 @@ func (nc *netCrawler) init() {
 
 // run starts the network discovery scanner
 func (nc *netCrawler) run() {
+	// make sure we are orchestrated
+	if nc.mgr == nil {
+		panic(fmt.Errorf("no svc manager set on %s", nc.name()))
+	}
+
 	// if we can not communicate, terminate the crawler right away
 	if nc.client == nil {
-		nc.mgr.finished(nc)
+		log.Warningf("client not open, network discovery disabled")
 		return
 	}
 
+	// signal orchestrator we started and go
+	nc.mgr.started(nc)
+	go nc.execute()
+}
+
+// run starts the network discovery scanner
+func (nc *netCrawler) execute() {
 	// keep track of active iterators and prep their signaling channels
 	iterators := make(map[enode.Iterator]string)
 	iteratorDone := make(chan enode.Iterator)
@@ -181,6 +193,8 @@ func (nc *netCrawler) confirm(node *enode.Node) {
 	if err != nil {
 		log.Errorf("could not confirm node %s; %s", node.ID().String(), err.Error())
 	}
+
+	log.Infof("confirmed network node %s", node.String())
 }
 
 // fail the given node check - e.g. register a failure in verifying node status.
