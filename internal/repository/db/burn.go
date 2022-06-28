@@ -24,7 +24,7 @@ func burnCollectionIndexes() []mongo.IndexModel {
 
 	ixBurnBlock := "ix_burn_block"
 	unique := true
-	ix[4] = mongo.IndexModel{
+	ix[0] = mongo.IndexModel{
 		Keys: bson.D{
 			{Key: "block", Value: 1},
 		},
