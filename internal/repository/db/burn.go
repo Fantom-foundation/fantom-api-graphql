@@ -55,7 +55,7 @@ func (db *MongoDbBridge) BurnByBlock(bn hexutil.Uint64) (*types.FtmBurn, error) 
 
 	// decode existing burn and update
 	var ex types.FtmBurn
-	if err := sr.Decode(&sr); err != nil {
+	if err := sr.Decode(&ex); err != nil {
 		db.log.Errorf("could not decode FTM burn at #%d; %s", bn, sr.Err())
 		return nil, sr.Err()
 	}
@@ -111,7 +111,7 @@ func (db *MongoDbBridge) StoreBurn(burn *types.FtmBurn) error {
 // isBurnValidForSave checks if the new burn should be stored within the database.
 func (db *MongoDbBridge) isBurnValidForSave(burn *types.FtmBurn, ex *types.FtmBurn) bool {
 	if burn == nil || ex == nil || ex.TxList == nil || burn.TxList == nil {
-		db.log.Criticalf("invalid burn check")
+		db.log.Criticalf("#%d invalid burn check %t; %t", uint64(burn.BlockNumber), burn.TxList, ex.TxList)
 		return false
 	}
 
