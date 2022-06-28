@@ -24,7 +24,10 @@ type Config struct {
 	Log Log `mapstructure:"log"`
 
 	// Opera represents the node structure
-	Opera OperaNetwork `mapstructure:"node"`
+	Opera OperaNode `mapstructure:"node"`
+
+	// OperaNetwork defines peer to peer networking options
+	OperaNetwork PeerNetworking `mapstructure:"p2p"`
 
 	// Database configuration
 	Db Database `mapstructure:"db"`
@@ -93,9 +96,14 @@ type Log struct {
 	Format string `mapstructure:"format"`
 }
 
-// OperaNetwork represents the Opera network node access configuration
-type OperaNetwork struct {
-	ApiNodeUrl     string        `mapstructure:"url"`
+// OperaNode represents the Opera network node access configuration
+type OperaNode struct {
+	ApiNodeUrl string `mapstructure:"url"`
+}
+
+// PeerNetworking defines configuration for Opera p2p protocol.
+type PeerNetworking struct {
+	DiscoveryUDP   string        `mapstructure:"bind_udp"`
 	BootstrapNodes []*enode.Node `mapstructure:"bootstrap"`
 }
 

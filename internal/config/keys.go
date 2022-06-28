@@ -64,4 +64,6 @@ const (
 	keyDefiFMintAddressProvider = "defi.fmint.address_provider"
 	keyDefiUniswapCore          = "defi.uniswap.core"
 	keyDefiUniswapRouter        = "defi.uniswap.router"
+
+	keyP2PBindUDP = "p2p.bind_udp"
 )
