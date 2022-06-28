@@ -144,4 +144,7 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyDefiFMintAddressProvider, defDefiFMintAddressProvider)
 	cfg.SetDefault(keyDefiUniswapCore, defDefiUniswapCore)
 	cfg.SetDefault(keyDefiUniswapRouter, defDefiUniswapRouter)
+
+	// P2P defaults
+	cfg.SetDefault(keyP2PBindUDP, "0.0.0.0:19173")
 }
