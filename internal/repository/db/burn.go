@@ -42,6 +42,32 @@ func (db *MongoDbBridge) initBurnsCollection(col *mongo.Collection) {
 	db.log.Debugf("burns collection initialized")
 }
 
+// BurnByBlock pulls a burn information for the given block number, if available.
+func (db *MongoDbBridge) BurnByBlock(bn hexutil.Uint64) (*types.FtmBurn, error) {
+	col := db.client.Database(db.dbName).Collection(colBurns)
+
+	// try to find existing burn
+	sr := col.FindOne(context.Background(), bson.D{{Key: "block", Value: bn}})
+	if sr.Err() != nil {
+		// if the burn has not been found, add this as a new one
+		if sr.Err() == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+
+		db.log.Errorf("could not load FTM burn at #%d; %s", bn, sr.Err())
+		return nil, sr.Err()
+	}
+
+	// decode existing burn and update
+	var ex types.FtmBurn
+	if err := sr.Decode(&ex); err != nil {
+		db.log.Errorf("could not decode FTM burn at #%d; %s", bn, sr.Err())
+		return nil, sr.Err()
+	}
+
+	return &ex, nil
+}
+
 // StoreBurn stores the given native FTM burn record.
 func (db *MongoDbBridge) StoreBurn(burn *types.FtmBurn) error {
 	if burn == nil {
@@ -118,6 +144,39 @@ func (db *MongoDbBridge) StoreBurn(burn *types.FtmBurn) error {
 	// update the record
 	_, err := col.UpdateOne(context.Background(), bson.D{{Key: "block", Value: ex.BlockNumber}}, bson.D{{Key: "$set", Value: ex}})
 	return err
+}
+
+// isBurnValidForSave checks if the new burn should be stored within the database.
+func (db *MongoDbBridge) isBurnValidForSave(burn *types.FtmBurn, ex *types.FtmBurn) bool {
+	if burn == nil || ex == nil || ex.TxList == nil || burn.TxList == nil {
+		db.log.Criticalf("#%d invalid burn check %t; %t", uint64(burn.BlockNumber), burn.TxList, ex.TxList)
+		return false
+	}
+
+	// all the transactions can already be included
+	var found int
+
+	for _, in := range burn.TxList {
+		for _, e := range ex.TxList {
+			if bytes.Compare(in.Bytes(), e.Bytes()) == 0 {
+				found++
+				break
+			}
+		}
+	}
+
+	// do we have them all? if so, we have nothing to do here
+	if found == len(burn.TxList) {
+		return false
+	}
+
+	// we can not handle partial update (some transactions are already included, but not all)
+	if found > 0 && found < len(burn.TxList) {
+		db.log.Criticalf("invalid partial burn received at #%d", burn.BlockNumber)
+		return false
+	}
+
+	return true
 }
 
 // BurnCount estimates the number of burn records in the database.
