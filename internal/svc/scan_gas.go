@@ -60,7 +60,7 @@ func (gps *gpsMonitor) name() string {
 
 // init prepares the account dispatcher to perform its function.
 func (gps *gpsMonitor) init() {
-	gps.sigStop = make(chan bool, 1)
+	gps.sigStop = make(chan struct{})
 
 	// calculate number of expected ticks and make the tick container for them
 	expTicks := int(gasPriceSuggestionPeriodInterval/gasPriceSuggestionTickerInterval) + 1
@@ -87,7 +87,7 @@ func (gps *gpsMonitor) close() {
 		gps.logTicker.Stop()
 	}
 	if gps.sigStop != nil {
-		gps.sigStop <- true
+		close(gps.sigStop)
 	}
 }
 
@@ -96,7 +96,6 @@ func (gps *gpsMonitor) close() {
 // for analysis.
 func (gps *gpsMonitor) execute() {
 	defer func() {
-		close(gps.sigStop)
 		gps.mgr.finished(gps)
 	}()
 

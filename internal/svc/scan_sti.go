@@ -38,13 +38,6 @@ func (sti *stiScanner) run() {
 	go sti.execute()
 }
 
-// close terminates the staker information scanner.
-func (sti *stiScanner) close() {
-	if sti.sigStop != nil {
-		sti.sigStop <- true
-	}
-}
-
 // execute runs the staker information monitoring task.
 func (sti *stiScanner) execute() {
 	// start the ticker
@@ -53,7 +46,6 @@ func (sti *stiScanner) execute() {
 	// make sure to clean up on exit
 	defer func() {
 		scanTick.Stop()
-		close(sti.sigStop)
 		sti.mgr.finished(sti)
 	}()
 

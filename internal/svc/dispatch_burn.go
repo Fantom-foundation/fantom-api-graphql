@@ -31,7 +31,7 @@ func (bud *burnDispatcher) name() string {
 
 // init prepares the transaction dispatcher to perform its function.
 func (bud *burnDispatcher) init() {
-	bud.sigStop = make(chan bool, 1)
+	bud.sigStop = make(chan struct{})
 }
 
 // run starts the transaction dispatcher job
@@ -46,17 +46,9 @@ func (bud *burnDispatcher) run() {
 	go bud.execute()
 }
 
-// close terminates the block dispatcher.
-func (bud *burnDispatcher) close() {
-	if bud.sigStop != nil {
-		bud.sigStop <- true
-	}
-}
-
 // execute runs the main loop of the burn dispatcher.
 func (bud *burnDispatcher) execute() {
 	defer func() {
-		close(bud.sigStop)
 		bud.mgr.finished(bud)
 	}()
 

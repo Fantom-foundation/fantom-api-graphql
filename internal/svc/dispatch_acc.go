@@ -41,7 +41,6 @@ func (acd *accDispatcher) run() {
 // loop in a separate thread.
 func (acd *accDispatcher) execute() {
 	defer func() {
-		close(acd.sigStop)
 		acd.mgr.finished(acd)
 	}()
 

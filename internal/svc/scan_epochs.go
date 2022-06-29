@@ -35,7 +35,7 @@ func (eps *epochScanner) name() string {
 
 // init prepares the epoch scanner sig channel and storage queue.
 func (eps *epochScanner) init() {
-	eps.sigStop = make(chan bool, 1)
+	eps.sigStop = make(chan struct{})
 	eps.queue = make(chan *types.Epoch, epsStoreQueueLength)
 }
 
@@ -69,7 +69,7 @@ func (eps *epochScanner) close() {
 	}
 
 	if eps.sigStop != nil {
-		eps.sigStop <- true
+		close(eps.sigStop)
 	}
 }
 
@@ -77,9 +77,7 @@ func (eps *epochScanner) close() {
 func (eps *epochScanner) execute() {
 	// make sure to clean up
 	defer func() {
-		close(eps.sigStop)
 		close(eps.queue)
-
 		eps.mgr.finished(eps)
 	}()
 
@@ -140,7 +138,6 @@ func (eps *epochScanner) next() {
 	case eps.queue <- ep:
 		eps.current++
 	case <-eps.sigStop:
-		eps.sigStop <- true
 	}
 }
 
