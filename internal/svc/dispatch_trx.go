@@ -32,12 +32,13 @@ type eventAcc struct {
 // trxDispatcher implements dispatcher of new transactions in the blockchain.
 type trxDispatcher struct {
 	service
-	onTransaction chan *types.Transaction
-	bot           *time.Ticker
-	blkObserver   *atomic.Uint64
-	inTransaction chan *eventTrx
-	outAccount    chan *eventAcc
-	outLog        chan *types.LogRecord
+	onTransaction  chan *types.Transaction
+	bot            *time.Ticker
+	blkObserver    *atomic.Uint64
+	inTransaction  chan *eventTrx
+	outTransaction chan *eventTrx
+	outAccount     chan *eventAcc
+	outLog         chan *types.LogRecord
 }
 
 // name returns the name of the service used by orchestrator.
@@ -47,10 +48,11 @@ func (trd *trxDispatcher) name() string {
 
 // init prepares the transaction dispatcher to perform its function.
 func (trd *trxDispatcher) init() {
-	trd.sigStop = make(chan bool, 5)
+	trd.sigStop = make(chan struct{})
 	trd.blkObserver = atomic.NewUint64(1)
 	trd.outAccount = make(chan *eventAcc, trxAddressQueueCapacity)
 	trd.outLog = make(chan *types.LogRecord, trxLogQueueCapacity)
+	trd.outTransaction = make(chan *eventTrx, trxLogQueueCapacity)
 }
 
 // run starts the transaction dispatcher job
@@ -74,7 +76,7 @@ func (trd *trxDispatcher) close() {
 		trd.bot.Stop()
 	}
 	if trd.sigStop != nil {
-		trd.sigStop <- true
+		close(trd.sigStop)
 	}
 }
 
@@ -82,9 +84,9 @@ func (trd *trxDispatcher) close() {
 func (trd *trxDispatcher) execute() {
 	// don't forget to sign off after we are done
 	defer func() {
-		close(trd.sigStop)
 		close(trd.outAccount)
 		close(trd.outLog)
+		close(trd.outTransaction)
 
 		trd.mgr.finished(trd)
 	}()
@@ -129,6 +131,9 @@ func (trd *trxDispatcher) updateLastSeenBlock() {
 
 // process the given transaction event into the required targets.
 func (trd *trxDispatcher) process(evt *eventTrx) {
+	// send the transaction out for burns processing
+	trd.outTransaction <- evt
+
 	// process transaction accounts; exit if terminated
 	var wg sync.WaitGroup
 	if !trd.pushAccounts(evt, &wg) {
@@ -198,7 +203,6 @@ func (trd *trxDispatcher) pushAccount(adr *common.Address, blk *types.Block, trx
 		trx:      trx,
 	}:
 	case <-trd.sigStop:
-		trd.sigStop <- true
 		return false
 	}
 	return true
@@ -215,7 +219,6 @@ func (trd *trxDispatcher) pushLog(lg retypes.Log, blk *types.Block, trx *types.T
 		Log:      lg,
 	}:
 	case <-trd.sigStop:
-		trd.sigStop <- true
 		return false
 	}
 	return true

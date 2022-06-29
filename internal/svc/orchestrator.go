@@ -28,7 +28,7 @@ func (or *orchestrator) name() string {
 
 // init sets the initial connection state for the managed services
 func (or *orchestrator) init() {
-	or.sigStop = make(chan bool, 1)
+	or.sigStop = make(chan struct{})
 	or.blkCache = ring.New(orBlockCacheCapacity)
 
 	// connect services' input channels to their source
@@ -37,6 +37,7 @@ func (or *orchestrator) init() {
 	or.mgr.lgd.inLog = or.mgr.trd.outLog
 	or.mgr.bld.inBlock = or.mgr.bls.outBlock
 	or.mgr.bls.inDispatched = or.mgr.bld.outDispatched
+	or.mgr.bud.inTransaction = or.mgr.trd.outTransaction
 	or.inScanStateSwitch = or.mgr.bls.outStateSwitch
 
 	// read initial block scanner state
@@ -62,7 +63,6 @@ func (or *orchestrator) run() {
 // by an inbound channel.
 func (or *orchestrator) execute() {
 	defer func() {
-		close(or.sigStop)
 		or.mgr.finished(or)
 	}()
 

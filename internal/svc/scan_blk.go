@@ -53,7 +53,7 @@ func (bls *blkScanner) name() string {
 // init prepares the block scanner.
 func (bls *blkScanner) init() {
 	bls.onIdle = false
-	bls.sigStop = make(chan bool, 1)
+	bls.sigStop = make(chan struct{})
 	bls.outStateSwitch = make(chan bool, 1)
 	bls.outBlock = make(chan *types.Block, blsBlockBufferCapacity)
 }
@@ -90,7 +90,7 @@ func (bls *blkScanner) close() {
 		bls.observeTick.Stop()
 	}
 	if bls.sigStop != nil {
-		bls.sigStop <- true
+		close(bls.sigStop)
 	}
 }
 
@@ -115,7 +115,6 @@ func (bls *blkScanner) boundaries() (uint64, error) {
 // to the output channel for processing.
 func (bls *blkScanner) execute() {
 	defer func() {
-		close(bls.sigStop)
 		close(bls.outBlock)
 		close(bls.outStateSwitch)
 		bls.mgr.finished(bls)
@@ -186,7 +185,6 @@ func (bls *blkScanner) updateState(target bool) {
 	select {
 	case bls.outStateSwitch <- target:
 	case <-bls.sigStop:
-		bls.sigStop <- true
 		return
 	}
 
@@ -228,6 +226,5 @@ func (bls *blkScanner) shift() {
 	case bls.outBlock <- block:
 		bls.next++
 	case <-bls.sigStop:
-		bls.sigStop <- true
 	}
 }

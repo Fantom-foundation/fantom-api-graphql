@@ -41,7 +41,7 @@ const (
 	// defLoggingFormat holds default format of the Logger output
 	defLoggingFormat = "%{color}%{level:-8s} %{shortpkg}/%{shortfunc}%{color:reset}: %{message}"
 
-	// defLachesisUrl holds default Lachesis connection string
+	// defLachesisUrl holds default Opera network connection string
 	defLachesisUrl = "~/.lachesis/data/lachesis.ipc"
 
 	// defMongoUrl holds default MongoDB connection string
@@ -144,4 +144,7 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyDefiFMintAddressProvider, defDefiFMintAddressProvider)
 	cfg.SetDefault(keyDefiUniswapCore, defDefiUniswapCore)
 	cfg.SetDefault(keyDefiUniswapRouter, defDefiUniswapRouter)
+
+	// P2P defaults
+	cfg.SetDefault(keyP2PBindUDP, "0.0.0.0:19173")
 }

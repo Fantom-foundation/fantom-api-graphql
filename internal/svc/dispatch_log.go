@@ -21,7 +21,7 @@ func (lgd *logDispatcher) name() string {
 
 // init prepares the log dispatcher to perform its function.
 func (lgd *logDispatcher) init() {
-	lgd.sigStop = make(chan bool, 1)
+	lgd.sigStop = make(chan struct{})
 	lgd.knownTopics = map[common.Hash]func(*types.LogRecord){
 		/* SFC1::CreatedDelegation(address indexed delegator, uint256 indexed toStakerID, uint256 amount) */
 		common.HexToHash("0xfd8c857fb9acd6f4ad59b8621a2a77825168b7b4b76de9586d08e00d4ed462be"): handleSfcCreatedDelegation,
@@ -152,7 +152,6 @@ func (lgd *logDispatcher) run() {
 func (lgd *logDispatcher) execute() {
 	// don't forget to sign off after we are done
 	defer func() {
-		close(lgd.sigStop)
 		lgd.mgr.finished(lgd)
 	}()
 

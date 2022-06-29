@@ -67,28 +67,22 @@ func returnDecimals(am *big.Int, cr *big.Int) *big.Int {
 
 // uniswapCollectionIndexes provides a list of indexes expected to exist on the uniswap's collection.
 func uniswapCollectionIndexes() []mongo.IndexModel {
-	ix := make([]mongo.IndexModel, 4)
-
-	ixUniswapId := "ix_uniswap_id"
-	ix[0] = mongo.IndexModel{
-		Keys:    bson.D{{Key: fiSwapPk, Value: 1}},
-		Options: &options.IndexOptions{Name: &ixUniswapId},
-	}
+	ix := make([]mongo.IndexModel, 3)
 
 	ixUniswapDate := "ix_uniswap_date"
-	ix[1] = mongo.IndexModel{
+	ix[0] = mongo.IndexModel{
 		Keys:    bson.D{{Key: fiSwapDate, Value: 1}},
 		Options: &options.IndexOptions{Name: &ixUniswapDate},
 	}
 
 	ixUniswapSender := "ix_uniswap_sender"
-	ix[2] = mongo.IndexModel{
+	ix[1] = mongo.IndexModel{
 		Keys:    bson.D{{Key: fiSwapSender, Value: 1}},
 		Options: &options.IndexOptions{Name: &ixUniswapSender},
 	}
 
 	ixUniswapOrdinal := "ix_uniswap_orx"
-	ix[3] = mongo.IndexModel{
+	ix[2] = mongo.IndexModel{
 		Keys:    bson.D{{Key: fiSwapOrdIndex, Value: -1}},
 		Options: &options.IndexOptions{Name: &ixUniswapOrdinal},
 	}

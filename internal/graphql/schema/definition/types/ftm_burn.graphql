@@ -1,0 +1,14 @@
+# FtmBlockBurn represents a native FTM tokens burn record per created block.
+type FtmBlockBurn {
+    # blockNumber represents the number of the block.
+    blockNumber: Long!
+
+    # Timestamp is the unix timestamp at which this block was created.
+    timestamp: Long!
+
+    # amount represents the amount of FTM tokens burned in WEI units (18 digits fixed INT encoded as HEX number).
+    amount: BigInt!
+
+    # ftmValue represents FTM value of the burned FTM tokens.
+    ftmValue: Float!
+}

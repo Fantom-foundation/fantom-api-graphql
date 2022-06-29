@@ -20,6 +20,7 @@ type ServiceManager struct {
 	acd *accDispatcher
 	lgd *logDispatcher
 	bls *blkScanner
+	bud *burnDispatcher
 
 	// collection of all the managed services
 	svc []Svc
@@ -108,6 +109,10 @@ func (mgr *ServiceManager) init() {
 	mgr.lgd = &logDispatcher{service: service{mgr: mgr}}
 	mgr.svc = append(mgr.svc, mgr.lgd)
 
+	// make burn dispatcher
+	mgr.bud = &burnDispatcher{service: service{mgr: mgr}}
+	mgr.svc = append(mgr.svc, mgr.bud)
+
 	// make block scanner
 	mgr.bls = &blkScanner{service: service{mgr: mgr}, cfg: cfg.RepoCommand}
 	mgr.svc = append(mgr.svc, mgr.bls)
@@ -125,6 +130,9 @@ func (mgr *ServiceManager) init() {
 
 	// make transaction flow monitor
 	mgr.svc = append(mgr.svc, &trxFlowMonitor{service: service{mgr: mgr}})
+
+	// make the network discovery
+	mgr.svc = append(mgr.svc, &netCrawler{service: service{mgr: mgr}})
 
 	// add orchestrator as the last service, so it can safely operate on all the other
 	mgr.ora = &orchestrator{service: service{mgr: mgr}}

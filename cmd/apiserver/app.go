@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"fantom-api-graphql/cmd/apiserver/build"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/graphql/resolvers"
@@ -24,6 +25,7 @@ type apiServer struct {
 	log          logger.Logger
 	api          resolvers.ApiResolver
 	srv          *http.Server
+	closed       chan interface{}
 	isVersionReq bool
 }
 
@@ -42,6 +44,7 @@ func (app *apiServer) init() {
 
 	// configure logger based on the configuration
 	app.log = logger.New(app.cfg)
+	app.closed = make(chan interface{})
 
 	// make sure to pass logger and config to internals
 	repository.SetConfig(app.cfg)
@@ -79,8 +82,8 @@ func (app *apiServer) run() {
 		app.log.Errorf(err.Error())
 	}
 
-	// terminate the app
-	app.terminate()
+	// waiting for terminate to finish
+	<-app.closed
 }
 
 // makeHttpServer creates and configures the HTTP server to be used to serve incoming requests
@@ -134,15 +137,25 @@ func (app *apiServer) observeSignals() {
 
 	// start monitoring
 	go func() {
+		defer func() {
+			app.terminate()
+			close(app.closed)
+		}()
+
 		// wait for the signal
 		<-ts
 
 		// terminate HTTP responder
 		app.log.Notice("closing HTTP server")
-		if err := app.srv.Close(); err != nil {
-			app.log.Errorf("could not terminate HTTP listener")
-			os.Exit(0)
+
+		ct, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		if err := app.srv.Shutdown(ct); err != nil {
+			app.log.Errorf("could not terminate HTTP listener; %s", err.Error())
 		}
+
+		// we closed
+		cancel()
+		app.log.Notice("HTTP server closed")
 	}()
 }
 
@@ -163,4 +176,6 @@ func (app *apiServer) terminate() {
 	if repo := repository.R(); repo != nil {
 		repo.Close()
 	}
+
+	app.log.Notice("terminated")
 }

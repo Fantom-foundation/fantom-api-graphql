@@ -25,6 +25,7 @@ func (db *MongoDbBridge) updateDatabaseIndexes() {
 	var ixLoaders = map[string]indexListProvider{
 		colTokenTransactions: tokenTrxCollectionIndexes,
 		colDelegations:       delegationCollectionIndexes,
+		colNetworkNodes:      operaNodeCollectionIndexes,
 		colWithdrawals:       withdrawalCollectionIndexes,
 		colUniswap:           uniswapCollectionIndexes,
 		colTransactions:      transactionCollectionIndexes,
@@ -33,6 +34,7 @@ func (db *MongoDbBridge) updateDatabaseIndexes() {
 		colFMintTransactions: fMintTrxCollectionIndexes,
 		colEpochs:            epochCollectionIndexes,
 		colNftOwnerships:     nftOwnershipCollectionIndexes,
+		colBurns:             burnCollectionIndexes,
 	}
 
 	// the DB bridge needs a way to terminate this thread

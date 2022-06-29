@@ -1,15 +1,15 @@
 /*
-Package rpc implements bridge to Lachesis full node API interface.
+Package rpc implements bridge to Opera full node API interface.
 
 We recommend using local IPC for fast and the most efficient inter-process communication between the API server
-and an Opera/Lachesis node. Any remote RPC connection will work, but the performance may be significantly degraded
+and an Opera/Opera node. Any remote RPC connection will work, but the performance may be significantly degraded
 by extra networking overhead of remote RPC calls.
 
-You should also consider security implications of opening Lachesis RPC interface for a remote access.
+You should also consider security implications of opening Opera RPC interface for a remote access.
 If you considering it as your deployment strategy, you should establish encrypted channel between the API server
-and Lachesis RPC interface with connection limited to specified endpoints.
+and Opera RPC interface with connection limited to specified endpoints.
 
-We strongly discourage opening Lachesis RPC interface for unrestricted Internet access.
+We strongly discourage opening Opera RPC interface for unrestricted Internet access.
 */
 package rpc
 
@@ -35,7 +35,7 @@ func (ftm *FtmBridge) Erc20Name(token *common.Address) (string, error) {
 	// get the token name
 	name, err := contract.Name(nil)
 	if err != nil {
-		ftm.log.Errorf("ERC20 token %s name not available; %s", token.String(), err.Error())
+		ftm.log.Debugf("ERC20 token %s name not available; %s", token.String(), err.Error())
 		return "", err
 	}
 
@@ -54,7 +54,7 @@ func (ftm *FtmBridge) Erc20Symbol(token *common.Address) (string, error) {
 	// get the token name
 	symbol, err := contract.Symbol(nil)
 	if err != nil {
-		ftm.log.Errorf("ERC20 token %s symbol not available; %s", token.String(), err.Error())
+		ftm.log.Debugf("ERC20 token %s symbol not available; %s", token.String(), err.Error())
 		return "", err
 	}
 
@@ -73,7 +73,7 @@ func (ftm *FtmBridge) Erc20Decimals(token *common.Address) (int32, error) {
 	// get the token name
 	deci, err := contract.Decimals(nil)
 	if err != nil {
-		ftm.log.Errorf("ERC20 token %s decimals not available; %s", token.String(), err.Error())
+		ftm.log.Debugf("ERC20 token %s decimals not available; %s", token.String(), err.Error())
 		return 0, nil
 	}
 
@@ -93,11 +93,11 @@ func (ftm *FtmBridge) Erc20BalanceOf(token *common.Address, owner *common.Addres
 	// get the balance
 	val, err := contract.BalanceOf(nil, *owner)
 	if err != nil {
-		ftm.log.Errorf("can not ERC20 %s balance for %s; %s", token.String(), owner.String(), err.Error())
+		ftm.log.Debugf("can not get ERC20 %s balance for %s; %s", token.String(), owner.String(), err.Error())
 		return hexutil.Big{}, err
 	}
 
-	// make sur we always have a value; at least zero
+	// make sure we always have a value; at least zero
 	// this should always be the case since the contract should
 	// return zero even for unknown owners, but let's be sure here
 	if val == nil {
@@ -128,7 +128,7 @@ func (ftm *FtmBridge) Erc20Allowance(token *common.Address, owner *common.Addres
 	// get the amount of tokens allowed for DeFi
 	val, err := contract.Allowance(nil, *owner, *spender)
 	if err != nil {
-		ftm.log.Errorf("can not get defi ERC20 %s allowance for %s; %s", token.String(), owner.String(), err.Error())
+		ftm.log.Errorf("can not get ERC20 %s allowance for %s; %s", token.String(), owner.String(), err.Error())
 		return hexutil.Big{}, err
 	}
 
@@ -162,7 +162,7 @@ func (ftm *FtmBridge) Erc20TotalSupply(token *common.Address) (hexutil.Big, erro
 
 	// make sure we always have a value; at least zero
 	if val == nil {
-		ftm.log.Errorf("no supply available for ERC20 %s", token.String())
+		ftm.log.Debugf("no supply available for ERC20 %s", token.String())
 		val = new(big.Int)
 	}
 
