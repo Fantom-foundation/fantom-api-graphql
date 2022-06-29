@@ -18,7 +18,6 @@ var discoveryNodeEmptyID = [32]byte{}
 // a list of running network nodes to allow network health and layout analysis
 type netCrawler struct {
 	client *discover.UDPv5
-	closed chan bool
 	service
 }
 
@@ -30,7 +29,6 @@ func (nc *netCrawler) name() string {
 // init prepares the discovery analyzer.
 func (nc *netCrawler) init() {
 	nc.sigStop = make(chan struct{})
-	nc.closed = make(chan bool)
 
 	// initialise discovery protocol
 	var err error
@@ -97,7 +95,6 @@ func (nc *netCrawler) handle(iterators map[enode.Iterator]string, inNode chan *e
 	for {
 		select {
 		case <-nc.sigStop:
-			close(nc.closed)
 			return
 
 		case done := <-inDone:
@@ -151,7 +148,7 @@ func (nc *netCrawler) traverse(iter enode.Iterator, nodeFeed chan *enode.Node, d
 	for iter.Next() {
 		select {
 		case nodeFeed <- iter.Node():
-		case <-nc.closed:
+		case <-nc.sigStop:
 			return
 		}
 	}
