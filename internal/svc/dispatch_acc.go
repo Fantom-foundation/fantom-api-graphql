@@ -98,15 +98,15 @@ func (acd *accDispatcher) accountType(adr *common.Address) (int, string, bool) {
 
 	log.Debugf("contract found at %s", adr.String())
 
+	// is it the Opera's special purpose contract?
+	if repo.IsSfcContract(adr) {
+		return types.AccountTypeSFCContract, "SFC", true
+	}
+
 	// is it a token contract?
 	ct, name, err := acd.contractTokenType(adr)
 	if err == nil {
 		return ct, name, true
-	}
-
-	// is it the Opera's special purpose contract?
-	if repo.IsSfcContract(adr) {
-		return types.AccountTypeSFCContract, "SFC", true
 	}
 
 	log.Debugf("unknown contract at %s", adr.String())
@@ -115,16 +115,16 @@ func (acd *accDispatcher) accountType(adr *common.Address) (int, string, bool) {
 
 // contractTokenType tries to check if the contract is some type of tokens contract (ERC20 and/or an NFT).
 func (acd *accDispatcher) contractTokenType(addr *common.Address) (int, string, error) {
-	isErc1155, err := repo.Erc165SupportsInterface(addr, erc1155InterfaceId)
-	if err == nil && isErc1155 {
+	isNFT, err := repo.Erc165SupportsInterface(addr, erc1155InterfaceId)
+	if err == nil && isNFT {
 		log.Noticef("ERC1155 multi-token detected at %s", addr.String())
 		return types.AccountTypeERC1155Contract, "ERC-1155", nil
 	}
 
-	isErc721, name := acd.detectErc721Token(addr)
-	if err == nil && isErc721 {
-		log.Noticef("ERC721 NFT token detected at %s", addr.String())
-		return types.AccountTypeERC721Contract, name, nil
+	isNFT, err = repo.Erc165SupportsInterface(addr, erc721InterfaceId)
+	if err == nil && isNFT {
+		log.Noticef("ERC721 multi-token detected at %s", addr.String())
+		return types.AccountTypeERC721Contract, "ERC-721", nil
 	}
 
 	isErc20, name := acd.detectErc20Token(addr)
@@ -157,22 +157,6 @@ func (acd *accDispatcher) detectErc20Token(addr *common.Address) (isErc20 bool, 
 	// try to detect total supply
 	if _, err := repo.Erc20TotalSupply(addr); err != nil {
 		return false, ""
-	}
-
-	return true, name
-}
-
-// detectErc721Token checks for ERC-721 interface and extracts collection name, if available.
-func (acd *accDispatcher) detectErc721Token(addr *common.Address) (isErc721 bool, name string) {
-	isErc721, err := repo.Erc165SupportsInterface(addr, erc721InterfaceId)
-	if err != nil || !isErc721 {
-		return false, ""
-	}
-
-	// try to detect name - but it is optional for ERC721
-	name, err = repo.TokenNameAttempt(addr)
-	if err != nil {
-		return true, "ERC-721"
 	}
 
 	return true, name
