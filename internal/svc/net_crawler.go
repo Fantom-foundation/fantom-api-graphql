@@ -3,6 +3,7 @@ package svc
 
 import (
 	"bytes"
+	"fantom-api-graphql/internal/repository/db"
 	"fmt"
 	"github.com/ethereum/go-ethereum/p2p/discover"
 	"github.com/ethereum/go-ethereum/p2p/enode"
@@ -28,7 +29,7 @@ func (nc *netCrawler) name() string {
 
 // init prepares the discovery analyzer.
 func (nc *netCrawler) init() {
-	nc.sigStop = make(chan bool, 1)
+	nc.sigStop = make(chan struct{})
 	nc.closed = make(chan bool)
 
 	// initialise discovery protocol
@@ -142,13 +143,6 @@ func (nc *netCrawler) scheduleUpdateBatch(iterators map[enode.Iterator]string, i
 	return updateIterator
 }
 
-// close terminates the discovery scanner.
-func (nc *netCrawler) close() {
-	if nc.sigStop != nil {
-		nc.sigStop <- true
-	}
-}
-
 // traverse given node iterator extracting nodes in it and sending them into the feed channel for processing.
 func (nc *netCrawler) traverse(iter enode.Iterator, nodeFeed chan *enode.Node, done chan enode.Iterator) {
 	defer func() { done <- iter }()
@@ -189,20 +183,20 @@ func (nc *netCrawler) update(node *enode.Node) {
 
 // confirm the given node was contacted, is live and available.
 func (nc *netCrawler) confirm(node *enode.Node) {
+	log.Debugf("node %s confirmed at %s", node.IP().String(), node.URLv4())
+
 	_, err := repo.NetworkNodeConfirmCheck(node)
 	if err != nil {
 		log.Errorf("could not confirm node %s; %s", node.ID().String(), err.Error())
 	}
-
-	log.Infof("confirmed network node %s", node.String())
 }
 
 // fail the given node check - e.g. register a failure in verifying node status.
 func (nc *netCrawler) fail(node *enode.Node) {
-	log.Debugf("node %s failed at %s [#%s]", node.IP().String(), node.URLv4(), node.ID())
+	log.Debugf("node %s failed at %s", node.IP().String(), node.URLv4())
 
 	err := repo.NetworkNodeFailCheck(node)
-	if err != nil {
+	if err != nil && err != db.ErrUnknownNetworkNode {
 		log.Errorf("could not store node %s check failure; %s", node.ID().String(), err.Error())
 	}
 }
@@ -212,7 +206,7 @@ func newDiscovery() (*discover.UDPv5, error) {
 	// combine pre-configured list of nodes taken from Opera
 	// with a random set of servers we already discovered and verified to get the bootstrap set
 	boot := repo.NetworkNodeBootstrapSet()
-	boot = append(boot, cfg.Opera.BootstrapNodes...)
+	boot = append(boot, cfg.OperaNetwork.BootstrapNodes...)
 
 	// prepare configuration using global config
 	conf := discover.Config{
@@ -224,14 +218,14 @@ func newDiscovery() (*discover.UDPv5, error) {
 	// it always starts with an empty database and the client builds the network topology schema from scratch
 	// we provide a random set of servers collected before along with preconfigured bootstraps
 	// to kick off the initial search and discovery
-	db, err := enode.OpenDB("")
+	buckets, err := enode.OpenDB("")
 	if err != nil {
 		log.Criticalf("can not initialize discovery database; %s", err.Error())
 		return nil, err
 	}
 
 	// construct local node; it's going to be a full-featured participant of the discovery protocol
-	ln := enode.NewLocalNode(db, conf.PrivateKey)
+	ln := enode.NewLocalNode(buckets, conf.PrivateKey)
 
 	// get UDP socket listener
 	socket, err := attachUDPSocket(ln)
@@ -247,7 +241,7 @@ func newDiscovery() (*discover.UDPv5, error) {
 func attachUDPSocket(ln *enode.LocalNode) (*net.UDPConn, error) {
 	// we try to attach to all network interfaces;
 	// port is not defined and is assigned automatically by the networking layer
-	addr := "0.0.0.0:0"
+	addr := cfg.OperaNetwork.DiscoveryUDP
 
 	socket, err := net.ListenPacket("udp4", addr)
 	if err != nil {

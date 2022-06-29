@@ -50,7 +50,7 @@ func (trd *trxDispatcher) name() string {
 
 // init prepares the transaction dispatcher to perform its function.
 func (trd *trxDispatcher) init() {
-	trd.sigStop = make(chan bool, 1)
+	trd.sigStop = make(chan struct{})
 	trd.blkObserver = atomic.NewUint64(1)
 	trd.outAccount = make(chan *eventAcc, trxAddressQueueCapacity)
 	trd.outLog = make(chan *types.LogRecord, trxLogQueueCapacity)
@@ -78,7 +78,7 @@ func (trd *trxDispatcher) close() {
 		trd.bot.Stop()
 	}
 	if trd.sigStop != nil {
-		trd.sigStop <- true
+		close(trd.sigStop)
 	}
 }
 
@@ -86,7 +86,6 @@ func (trd *trxDispatcher) close() {
 func (trd *trxDispatcher) execute() {
 	// don't forget to sign off after we are done
 	defer func() {
-		close(trd.sigStop)
 		close(trd.outAccount)
 		close(trd.outLog)
 		close(trd.outTransaction)
@@ -209,7 +208,6 @@ func (trd *trxDispatcher) pushAccount(at string, adr *common.Address, blk *types
 		deploy:   nil,
 	}:
 	case <-trd.sigStop:
-		trd.sigStop <- true
 		return false
 	}
 	return true
@@ -226,7 +224,6 @@ func (trd *trxDispatcher) pushLog(lg retypes.Log, blk *types.Block, trx *types.T
 		Log:      lg,
 	}:
 	case <-trd.sigStop:
-		trd.sigStop <- true
 		return false
 	}
 	return true

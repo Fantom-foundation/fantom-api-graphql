@@ -34,7 +34,7 @@ func (bld *blockDispatcher) name() string {
 
 // init prepares the block dispatcher to perform its function.
 func (bld *blockDispatcher) init() {
-	bld.sigStop = make(chan bool, 1)
+	bld.sigStop = make(chan struct{})
 	bld.outTransaction = make(chan *eventTrx, trxBufferCapacity)
 	bld.outDispatched = make(chan uint64, blsBlockBufferCapacity)
 }
@@ -57,7 +57,6 @@ func (bld *blockDispatcher) execute() {
 	// make sure to clean up
 	defer func() {
 		// close our channels
-		close(bld.sigStop)
 		close(bld.outTransaction)
 		close(bld.outDispatched)
 
@@ -104,7 +103,6 @@ func (bld *blockDispatcher) process(blk *types.Block) bool {
 	select {
 	case bld.outDispatched <- uint64(blk.Number):
 	case <-bld.sigStop:
-		bld.sigStop <- true
 		return false
 	}
 
@@ -136,7 +134,6 @@ func (bld *blockDispatcher) processTxs(blk *types.Block) bool {
 				trx: trx,
 			}:
 			case <-bld.sigStop:
-				bld.sigStop <- true
 				return false
 			}
 		}

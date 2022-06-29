@@ -49,7 +49,6 @@ func (acd *accDispatcher) run() {
 func (acd *accDispatcher) execute() {
 	// don't forget to sign off after we are done
 	defer func() {
-		close(acd.sigStop)
 		acd.mgr.finished(acd)
 	}()
 

@@ -46,7 +46,7 @@ func (tfm *trxFlowMonitor) close() {
 		tfm.countTicker.Stop()
 	}
 	if tfm.sigStop != nil {
-		tfm.sigStop <- true
+		close(tfm.sigStop)
 	}
 }
 
@@ -54,7 +54,6 @@ func (tfm *trxFlowMonitor) close() {
 // and sends the collected data to persistent repository.
 func (tfm *trxFlowMonitor) execute() {
 	defer func() {
-		close(tfm.sigStop)
 		tfm.mgr.finished(tfm)
 	}()
 

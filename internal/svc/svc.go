@@ -20,17 +20,17 @@ type Svc interface {
 // service implements general base for services implementing svc interface.
 type service struct {
 	mgr     *ServiceManager
-	sigStop chan bool
+	sigStop chan struct{}
 }
 
 // init prepares the service stop signal channel.
 func (s *service) init() {
-	s.sigStop = make(chan bool, 1)
+	s.sigStop = make(chan struct{})
 }
 
 // close terminates the service by sending the stop signal down the channel.
 func (s *service) close() {
 	if s.sigStop != nil {
-		s.sigStop <- true
+		close(s.sigStop)
 	}
 }
