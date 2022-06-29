@@ -37,6 +37,7 @@ func (nc *netCrawler) init() {
 	nc.client, err = newDiscovery()
 	if err != nil {
 		log.Criticalf("network discovery is not available; %s", err.Error())
+		return
 	}
 
 	log.Notice("discovery v5 started")
