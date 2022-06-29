@@ -13,7 +13,7 @@ import (
 var tNodeAddress = reflect.TypeOf(enode.Node{})
 
 // tNodeID represents the reflection type of the Opera network node ID.
-var tNodeID = reflect.TypeOf(enode.Node{})
+var tNodeID = reflect.TypeOf(enode.ID{})
 
 // NodeAddressEncodeValue encodes Opera network node discovery address to BSON.
 func NodeAddressEncodeValue(_ bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {

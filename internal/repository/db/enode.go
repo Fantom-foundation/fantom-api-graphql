@@ -16,7 +16,7 @@ import (
 const colNetworkNodes = "discovery"
 
 // ErrUnknownNetworkNode error is returned on update attempt of an unknown node record.
-var ErrUnknownNetworkNode = fmt.Errorf("unknown network nnode")
+var ErrUnknownNetworkNode = fmt.Errorf("unknown network node")
 
 // operaNodeCollectionIndexes provides a list of indexes expected to exist on the opera nodes' collection.
 func operaNodeCollectionIndexes() []mongo.IndexModel {
@@ -79,7 +79,7 @@ func (db *MongoDbBridge) StoreNetworkNode(node *types.OperaNode) error {
 	}
 
 	if nu.MatchedCount == 0 {
-		db.log.Infof("new network node %s found", node.Node.ID())
+		db.log.Debugf("new network node %s stored", node.Node.ID())
 	}
 	return nil
 }
