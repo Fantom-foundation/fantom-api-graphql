@@ -15,7 +15,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 )
@@ -26,7 +25,7 @@ type apiServer struct {
 	log          logger.Logger
 	api          resolvers.ApiResolver
 	srv          *http.Server
-	wg           *sync.WaitGroup
+	closed       chan interface{}
 	isVersionReq bool
 }
 
@@ -45,7 +44,7 @@ func (app *apiServer) init() {
 
 	// configure logger based on the configuration
 	app.log = logger.New(app.cfg)
-	app.wg = new(sync.WaitGroup)
+	app.closed = make(chan interface{})
 
 	// make sure to pass logger and config to internals
 	repository.SetConfig(app.cfg)
@@ -84,7 +83,7 @@ func (app *apiServer) run() {
 	}
 
 	// waiting for terminate to finish
-	app.wg.Wait()
+	<-app.closed
 }
 
 // makeHttpServer creates and configures the HTTP server to be used to serve incoming requests
@@ -137,11 +136,10 @@ func (app *apiServer) observeSignals() {
 	signal.Notify(ts, syscall.SIGINT, syscall.SIGTERM)
 
 	// start monitoring
-	app.wg.Add(1)
 	go func() {
 		defer func() {
 			app.terminate()
-			app.wg.Done()
+			close(app.closed)
 		}()
 
 		// wait for the signal
@@ -178,4 +176,6 @@ func (app *apiServer) terminate() {
 	if repo := repository.R(); repo != nil {
 		repo.Close()
 	}
+
+	app.log.Notice("terminated")
 }
