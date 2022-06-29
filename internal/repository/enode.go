@@ -42,6 +42,9 @@ func (p *proxy) NetworkNodeConfirmCheck(node *enode.Node) (bool, error) {
 		return false, err
 	}
 
+	// inform about new node
+	p.log.Infof("new network node %s found at %s", node.ID(), node.URLv4())
+
 	// make new node
 	now := time.Now().UTC()
 	return true, p.db.StoreNetworkNode(&types.OperaNode{
