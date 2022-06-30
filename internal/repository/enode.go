@@ -67,11 +67,11 @@ func (p *proxy) NetworkNodeFailCheck(node *enode.Node) error {
 
 	// node not known at all
 	if err == db.ErrUnknownNetworkNode {
-		p.log.Errorf("unknown node %s at %s failed as unknown", node.ID().String(), node.URLv4())
+		p.log.Debugf("failed unknown node %s at %s", node.ID().String(), node.URLv4())
 		return nil
 	}
 
-	p.log.Infof("node %s at %s failed %d times with score %d, last seen %s", node.ID().String(), node.URLv4(), fails, score, seen.Format(time.Stamp))
+	p.log.Noticef("node %s at %s failed %d times with score %d, last seen %s", node.ID().String(), node.URLv4(), fails, score, seen.Format(time.Stamp))
 
 	// decide on eviction
 	if score == 0 && seen.Before(time.Now().Add(-24*time.Hour)) {
