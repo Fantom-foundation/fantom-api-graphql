@@ -59,7 +59,28 @@ func (p *proxy) NetworkNodeConfirmCheck(node *enode.Node) (bool, error) {
 
 // NetworkNodeFailCheck registers failed check of the given Opera network node.
 func (p *proxy) NetworkNodeFailCheck(node *enode.Node) error {
-	return p.db.NetworkNodeFailCheck(node.ID())
+	// mark the failure in the database
+	seen, score, fails, err := p.db.NetworkNodeFailCheck(node.ID())
+	if err != nil && err != db.ErrUnknownNetworkNode {
+		return err
+	}
+
+	// node not known at all
+	if err == db.ErrUnknownNetworkNode {
+		p.log.Errorf("unknown node %s at %s failed as unknown", node.ID().String(), node.URLv4())
+		return nil
+	}
+
+	p.log.Infof("node %s at %s failed %d times with score %d, last seen %s", node.ID().String(), node.URLv4(), fails, score, seen.Format(time.Stamp))
+
+	// decide on eviction
+	if score == 0 && seen.Before(time.Now().Add(-24*time.Hour)) {
+		err = p.db.NetworkNodeEvict(node.ID())
+		if err != nil {
+			p.log.Errorf("could not evict node %s at %s; %s", node.ID().String(), node.URLv4(), err.Error())
+		}
+	}
+	return nil
 }
 
 // NetworkNodeUpdateBatch provides a list of Opera network node addresses most suitable for status update

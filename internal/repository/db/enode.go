@@ -64,6 +64,13 @@ func (db *MongoDbBridge) NetworkNode(nid enode.ID) (*types.OperaNode, error) {
 	return &node, nil
 }
 
+// NetworkNodeEvict removes record of a lost Opera network node from the database by its network identifier.
+func (db *MongoDbBridge) NetworkNodeEvict(nid enode.ID) error {
+	col := db.client.Database(db.dbName).Collection(colNetworkNodes)
+	_, err := col.DeleteOne(context.Background(), bson.D{{Key: defaultPK, Value: nid}})
+	return err
+}
+
 // StoreNetworkNode stores the given Opera node record in the persistent database.
 func (db *MongoDbBridge) StoreNetworkNode(node *types.OperaNode) error {
 	col := db.client.Database(db.dbName).Collection(colNetworkNodes)
@@ -128,7 +135,7 @@ func (db *MongoDbBridge) NetworkNodeConfirmCheck(id enode.ID) error {
 }
 
 // NetworkNodeFailCheck registers failed check of the given Opera network node.
-func (db *MongoDbBridge) NetworkNodeFailCheck(id enode.ID) error {
+func (db *MongoDbBridge) NetworkNodeFailCheck(id enode.ID) (time.Time, int64, int64, error) {
 	col := db.client.Database(db.dbName).Collection(colNetworkNodes)
 
 	// we need a pipeline here to be able to aggregate
@@ -138,9 +145,16 @@ func (db *MongoDbBridge) NetworkNodeFailCheck(id enode.ID) error {
 			{Key: defaultPK, Value: id},
 		}}},
 		{{Key: "$project", Value: bson.D{
+			{Key: "seen_last", Value: true},
 			{Key: "score", Value: bson.D{
 				{Key: "$floor", Value: bson.D{
 					{Key: "$divide", Value: bson.A{"$score", 2}},
+				}},
+			}},
+			{Key: "fails", Value: bson.D{
+				{Key: "$add", Value: bson.A{
+					"$fails",
+					1,
 				}},
 			}},
 		}}},
@@ -157,14 +171,25 @@ func (db *MongoDbBridge) NetworkNodeFailCheck(id enode.ID) error {
 
 	if err != nil {
 		db.log.Errorf("could not register node %s check failure; %s", id.String(), err.Error())
-		return err
+		return time.Time{}, 0, 0, err
 	}
 
 	defer db.closeCursor(cu)
 	if !cu.Next(context.Background()) {
-		return ErrUnknownNetworkNode
+		return time.Time{}, 0, 0, ErrUnknownNetworkNode
 	}
-	return nil
+
+	var row struct {
+		LastSeen time.Time `bson:"seen_last"`
+		Score    int64     `bson:"score"`
+		Fails    int64     `bson:"fails"`
+	}
+	if err := cu.Decode(&row); err != nil {
+		db.log.Errorf("can not decode failure record; %s", err.Error())
+		return time.Time{}, 0, 0, nil
+	}
+
+	return row.LastSeen, row.Score, row.Fails, nil
 }
 
 // NetworkNodeUpdateBatch provides a list of Opera network node addresses most suitable for status update

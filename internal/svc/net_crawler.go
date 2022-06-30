@@ -85,7 +85,7 @@ func (nc *netCrawler) execute() {
 // handle running iterators collecting and/or updating network nodes.
 func (nc *netCrawler) handle(iterators map[enode.Iterator]string, inNode chan *enode.Node, inDone chan enode.Iterator) {
 	// monitor update batch status periodically
-	updateTick := time.NewTicker(60 * time.Second)
+	updateTick := time.NewTicker(30 * time.Second)
 	defer updateTick.Stop()
 
 	// start initial batches
@@ -135,7 +135,7 @@ func (nc *netCrawler) scheduleUpdateBatch(iterators map[enode.Iterator]string, i
 
 	// make the iterator and run it
 	updateIterator := enode.IterNodes(nodes)
-	iterators[updateIterator] = fmt.Sprintf("update batch %s", time.Now().String())
+	iterators[updateIterator] = fmt.Sprintf("batch %s (%d nodes)", time.Now().Format("15:04:05"), len(nodes))
 	go nc.traverse(updateIterator, inNode, inDone)
 
 	return updateIterator
@@ -191,7 +191,7 @@ func (nc *netCrawler) confirm(node *enode.Node) {
 
 // fail the given node check - e.g. register a failure in verifying node status.
 func (nc *netCrawler) fail(node *enode.Node) {
-	log.Debugf("node %s failed at %s", node.IP().String(), node.URLv4())
+	log.Infof("node %s failed at %s [#%s]", node.IP().String(), node.URLv4(), node.ID())
 
 	err := repo.NetworkNodeFailCheck(node)
 	if err != nil && err != db.ErrUnknownNetworkNode {
