@@ -191,7 +191,7 @@ func (nc *netCrawler) confirm(node *enode.Node) {
 
 // fail the given node check - e.g. register a failure in verifying node status.
 func (nc *netCrawler) fail(node *enode.Node) {
-	log.Infof("node %s failed at %s [#%s]", node.IP().String(), node.URLv4(), node.ID())
+	log.Debugf("node %s failed at %s [#%s]", node.IP().String(), node.URLv4(), node.ID())
 
 	err := repo.NetworkNodeFailCheck(node)
 	if err != nil && err != db.ErrUnknownNetworkNode {
