@@ -202,13 +202,8 @@ func (db *MongoDbBridge) NetworkNodeUpdateBatch() ([]*enode.Node, error) {
 	col := db.client.Database(db.dbName).Collection(colNetworkNodes)
 	cu, err := col.Find(
 		context.Background(),
-		bson.D{
-			{Key: "checked", Value: bson.E{Key: "$lt", Value: window}},
-		},
-		options.Find().
-			SetSort(bson.D{{Key: "checked", Value: 1}}).
-			SetProjection(bson.D{{Key: "node", Value: true}}).
-			SetLimit(100),
+		bson.D{{Key: "checked", Value: bson.D{{Key: "$lt", Value: window}}}},
+		options.Find().SetSort(bson.D{{Key: "checked", Value: 1}}).SetLimit(100),
 	)
 
 	if err != nil {
