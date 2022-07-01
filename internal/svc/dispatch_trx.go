@@ -132,7 +132,11 @@ func (trd *trxDispatcher) updateLastSeenBlock() {
 // process the given transaction event into the required targets.
 func (trd *trxDispatcher) process(evt *eventTrx) {
 	// send the transaction out for burns processing
-	trd.outTransaction <- evt
+	select {
+	case trd.outTransaction <- evt:
+	case <-trd.sigStop:
+		return
+	}
 
 	// process transaction accounts; exit if terminated
 	var wg sync.WaitGroup
@@ -155,6 +159,7 @@ func (trd *trxDispatcher) process(evt *eventTrx) {
 	select {
 	case trd.onTransaction <- evt.trx:
 	case <-time.After(200 * time.Millisecond):
+	case <-trd.sigStop:
 	}
 }
 

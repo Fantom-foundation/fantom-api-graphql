@@ -73,7 +73,7 @@ func (p *proxy) NetworkNodeFailCheck(node *enode.Node) error {
 
 	// decide on eviction
 	if nn.Score == 0 && nn.LastSeen.Before(time.Now().Add(-24*time.Hour)) {
-		p.log.Infof("evicting node %s: failed %d×, last seen %s", node.URLv4(), nn.Fails, nn.Score, nn.LastSeen.Format(time.Stamp))
+		p.log.Infof("evicting node %s: failed %d×, last seen %s", node.URLv4(), nn.Fails, nn.LastSeen.Format(time.Stamp))
 
 		err = p.db.NetworkNodeEvict(node.ID())
 		if err != nil {
