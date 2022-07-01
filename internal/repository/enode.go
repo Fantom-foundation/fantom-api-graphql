@@ -45,33 +45,33 @@ func (p *proxy) NetworkNodeConfirmCheck(node *enode.Node) (bool, error) {
 	// make new node
 	now := time.Now().UTC()
 	return true, p.db.StoreNetworkNode(&types.OperaNode{
-		Node:              *node,
-		Score:             1,
-		CheckFailureCount: 0,
-		FirstResponse:     now,
-		LastResponse:      now,
-		LastCheck:         now,
+		Node:      *node,
+		Score:     1,
+		Fails:     0,
+		Found:     now,
+		LastSeen:  now,
+		LastCheck: now,
 	})
 }
 
 // NetworkNodeFailCheck registers failed check of the given Opera network node.
 func (p *proxy) NetworkNodeFailCheck(node *enode.Node) error {
 	// mark the failure in the database
-	seen, score, fails, err := p.db.NetworkNodeFailCheck(node.ID())
-	if err != nil && err != db.ErrUnknownNetworkNode {
+	nn, err := p.db.NetworkNodeFailCheck(node.ID())
+	if err != nil {
 		return err
 	}
 
 	// node not known at all
-	if err == db.ErrUnknownNetworkNode {
-		p.log.Debugf("failed unknown node %s at %s", node.ID().String(), node.URLv4())
+	if nn == nil {
+		p.log.Warningf("failed unknown node %s at %s", node.ID().String(), node.URLv4())
 		return nil
 	}
 
-	p.log.Noticef("node %s at %s failed %d times with score %d, last seen %s", node.ID().String(), node.URLv4(), fails, score, seen.Format(time.Stamp))
+	p.log.Noticef("node %s at %s failed %d times with score %d, last seen %s", node.ID().String(), node.URLv4(), nn.Fails, nn.Score, nn.LastSeen.Format(time.Stamp))
 
 	// decide on eviction
-	if score == 0 && seen.Before(time.Now().Add(-24*time.Hour)) {
+	if nn.Score == 0 && nn.LastSeen.Before(time.Now().Add(-24*time.Hour)) {
 		err = p.db.NetworkNodeEvict(node.ID())
 		if err != nil {
 			p.log.Errorf("could not evict node %s at %s; %s", node.ID().String(), node.URLv4(), err.Error())
