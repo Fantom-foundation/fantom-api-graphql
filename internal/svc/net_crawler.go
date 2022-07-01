@@ -154,7 +154,7 @@ func (nc *netCrawler) traverse(iter enode.Iterator, nodeFeed chan *enode.Node, d
 func (nc *netCrawler) update(node *enode.Node) {
 	defer func() {
 		if re := recover(); re != nil {
-			log.Criticalf("network discovery panicked at %s; %x", node.String(), re)
+			log.Criticalf("network discovery panicked at %s, %s", node.ID(), node.URLv4())
 		}
 	}()
 
@@ -165,6 +165,7 @@ func (nc *netCrawler) update(node *enode.Node) {
 	}
 
 	// request node ENR record
+	log.Debugf("checking peer %s at %s", node.ID(), node.URLv4())
 	enr, err := nc.client.RequestENR(node)
 	if err != nil {
 		nc.fail(node)

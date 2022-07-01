@@ -64,7 +64,7 @@ func (p *proxy) NetworkNodeFailCheck(node *enode.Node) error {
 
 	// node not known at all
 	if nn == nil {
-		p.log.Warningf("failed unknown node %s at %s", node.ID().String(), node.URLv4())
+		p.log.Debugf("failed unknown node %s at %s", node.ID().String(), node.URLv4())
 		return nil
 	}
 
