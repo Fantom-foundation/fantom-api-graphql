@@ -50,7 +50,7 @@ func (db *MongoDbBridge) NetworkNode(nid enode.ID) (*types.OperaNode, error) {
 	// do we have the data?
 	if sr.Err() != nil {
 		if sr.Err() == mongo.ErrNoDocuments {
-			db.log.Errorf("node ID %s not found", nid.String())
+			db.log.Debugf("node ID %s not found", nid.String())
 			return nil, nil
 		}
 		return nil, sr.Err()
