@@ -110,7 +110,7 @@ func (nc *netCrawler) handle(iterators map[enode.Iterator]string, inNode chan *e
 		case <-updateTick.C:
 			_, ok := iterators[updateIterator]
 			if !ok {
-				nc.scheduleUpdateBatch(iterators, inNode, inDone)
+				updateIterator = nc.scheduleUpdateBatch(iterators, inNode, inDone)
 			}
 		}
 	}
