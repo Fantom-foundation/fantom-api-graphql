@@ -138,9 +138,6 @@ func (db *MongoDbBridge) NetworkNodeConfirmCheck(id enode.ID) error {
 func (db *MongoDbBridge) NetworkNodeFailCheck(id enode.ID) (*types.OperaNode, error) {
 	col := db.client.Database(db.dbName).Collection(colNetworkNodes)
 
-	pre, _ := db.NetworkNode(id)
-	db.log.Noticef("node %s score is %d", pre.Node.URLv4(), pre.Score)
-
 	// we need a pipeline here to be able to aggregate
 	pipeline := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{
