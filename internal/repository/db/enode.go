@@ -135,12 +135,14 @@ func (db *MongoDbBridge) NetworkNodeConfirmCheck(id enode.ID) error {
 }
 
 // NetworkNodeFailCheck registers failed check of the given Opera network node.
-func (db *MongoDbBridge) NetworkNodeFailCheck(id enode.ID) (time.Time, int64, int64, error) {
+func (db *MongoDbBridge) NetworkNodeFailCheck(id enode.ID) (*types.OperaNode, error) {
 	col := db.client.Database(db.dbName).Collection(colNetworkNodes)
 
+	pre, _ := db.NetworkNode(id)
+	db.log.Noticef("node %s score is %d", pre.Node.URLv4(), pre.Score)
+
 	// we need a pipeline here to be able to aggregate
-	now := time.Now().UTC()
-	cu, err := col.Aggregate(context.Background(), mongo.Pipeline{
+	pipeline := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{
 			{Key: defaultPK, Value: id},
 		}}},
@@ -159,7 +161,7 @@ func (db *MongoDbBridge) NetworkNodeFailCheck(id enode.ID) (time.Time, int64, in
 			}},
 		}}},
 		{{Key: "$addFields", Value: bson.D{
-			{Key: "checked", Value: now},
+			{Key: "checked", Value: time.Now().UTC()},
 		}}},
 		{{Key: "$merge", Value: bson.D{
 			{Key: "into", Value: colNetworkNodes},
@@ -167,29 +169,16 @@ func (db *MongoDbBridge) NetworkNodeFailCheck(id enode.ID) (time.Time, int64, in
 			{Key: "whenMatched", Value: "merge"},
 			{Key: "whenNotMatched", Value: "discard"},
 		}}},
-	})
-
+	}
+	_, err := col.Aggregate(context.Background(), pipeline)
 	if err != nil {
 		db.log.Errorf("could not register node %s check failure; %s", id.String(), err.Error())
-		return time.Time{}, 0, 0, err
+		return nil, err
 	}
 
-	defer db.closeCursor(cu)
-	if !cu.Next(context.Background()) {
-		return time.Time{}, 0, 0, ErrUnknownNetworkNode
-	}
-
-	var row struct {
-		LastSeen time.Time `bson:"seen_last"`
-		Score    int64     `bson:"score"`
-		Fails    int64     `bson:"fails"`
-	}
-	if err := cu.Decode(&row); err != nil {
-		db.log.Errorf("can not decode failure record; %s", err.Error())
-		return time.Time{}, 0, 0, nil
-	}
-
-	return row.LastSeen, row.Score, row.Fails, nil
+	// unfortunately, the $merge aggregation consumes the matched document, the document is not provided in results
+	// we have to load the record from database in a separate call to get the new record version after the update
+	return db.NetworkNode(id)
 }
 
 // NetworkNodeUpdateBatch provides a list of Opera network node addresses most suitable for status update
