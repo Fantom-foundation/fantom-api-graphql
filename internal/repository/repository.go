@@ -13,7 +13,9 @@ import (
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository/cache"
 	"fantom-api-graphql/internal/repository/db"
+	"fantom-api-graphql/internal/repository/filecache"
 	"fantom-api-graphql/internal/repository/rpc"
+	"fantom-api-graphql/internal/repository/uri"
 	"fmt"
 	"golang.org/x/sync/singleflight"
 	"sync"
@@ -57,11 +59,13 @@ func R() Repository {
 // Proxy represents Repository interface implementation and controls access to data
 // trough several low level bridges.
 type proxy struct {
-	cache *cache.MemBridge
-	db    *db.MongoDbBridge
-	rpc   *rpc.FtmBridge
-	log   logger.Logger
-	cfg   *config.Config
+	cache     *cache.MemBridge
+	db        *db.MongoDbBridge
+	rpc       *rpc.FtmBridge
+	uri       *uri.Downloader
+	filecache *filecache.FileCache
+	log       logger.Logger
+	cfg       *config.Config
 
 	// transaction estimator counter
 	txCount uint64
@@ -94,11 +98,13 @@ func newRepository() Repository {
 
 	// construct the proxy instance
 	p := proxy{
-		cache: caBridge,
-		db:    dbBridge,
-		rpc:   rpcBridge,
-		log:   log,
-		cfg:   cfg,
+		cache:     caBridge,
+		db:        dbBridge,
+		rpc:       rpcBridge,
+		log:       log,
+		cfg:       cfg,
+		uri:       uri.New(cfg, log),
+		filecache: filecache.New(cfg, log),
 
 		// get the map of governance contracts
 		govContracts: governanceContractsMap(&cfg.Governance),
@@ -146,6 +152,7 @@ func connect(cfg *config.Config, log logger.Logger) (*cache.MemBridge, *db.Mongo
 		log.Criticalf("can not connect Opera RPC interface, %s", err.Error())
 		return nil, nil, nil, err
 	}
+
 	return caBridge, dbBridge, rpcBridge, nil
 }
 
