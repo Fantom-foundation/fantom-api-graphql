@@ -614,6 +614,9 @@ type Repository interface {
 	// NetworkNodeBootstrapSet provides a set of known nodes to be co-used to bootstrap new search.
 	NetworkNodeBootstrapSet() []*enode.Node
 
+	// GetTokenJsonMetadata provides decoded JSON metadata for the given token metadata URI.
+	GetTokenJsonMetadata(uri string) (*types.NftMetadata, error)
+
 	// Close and cleanup the repository.
 	Close()
 }

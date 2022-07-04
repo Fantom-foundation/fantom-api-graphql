@@ -53,15 +53,20 @@ func handleErc1155TransferSingle(lr *types.LogRecord) {
 	from := common.BytesToAddress(lr.Topics[2].Bytes())
 	to := common.BytesToAddress(lr.Topics[3].Bytes())
 	tokenId := hexutil.Big(*new(big.Int).SetBytes(lr.Data[:32]))
+	var tokenName *string
+
+	if uri, _ := repo.Erc1155Uri(&lr.Address, tokenId.ToInt()); uri != "" {
+		tokenName = getTokenName(uri)
+	}
 
 	// updated recipient balance if method is not burn
 	if to.String() != config.EmptyAddress {
-		storeOwnership(lr.Address, tokenId, to, erc1155Balance(&lr.Address, &to, tokenId), lr.Block.TimeStamp, lr.TxHash)
+		storeOwnership(lr.Address, tokenId, to, erc1155Balance(&lr.Address, &to, tokenId), lr.Block.TimeStamp, lr.TxHash, tokenName)
 	}
 
 	// updated sender balance if method is not mint
 	if from.String() != config.EmptyAddress {
-		storeOwnership(lr.Address, tokenId, from, erc1155Balance(&lr.Address, &from, tokenId), lr.Block.TimeStamp, lr.TxHash)
+		storeOwnership(lr.Address, tokenId, from, erc1155Balance(&lr.Address, &from, tokenId), lr.Block.TimeStamp, lr.TxHash, tokenName)
 	}
 }
 
@@ -88,14 +93,20 @@ func handleErc1155TransferBatch(lr *types.LogRecord) {
 
 	for i := range ids {
 		id := hexutil.Big(*ids[i])
+		var tokenName *string
+
+		if uri, _ := repo.Erc1155Uri(&lr.Address, id.ToInt()); uri != "" {
+			tokenName = getTokenName(uri)
+		}
+
 		// updated recipient balance if method is not burn
 		if to.String() != config.EmptyAddress {
-			storeOwnership(lr.Address, id, to, erc1155Balance(&lr.Address, &to, id), lr.Block.TimeStamp, lr.TxHash)
+			storeOwnership(lr.Address, id, to, erc1155Balance(&lr.Address, &to, id), lr.Block.TimeStamp, lr.TxHash, tokenName)
 		}
 
 		// updated sender balance if method is not mint
 		if from.String() != config.EmptyAddress {
-			storeOwnership(lr.Address, id, from, erc1155Balance(&lr.Address, &from, id), lr.Block.TimeStamp, lr.TxHash)
+			storeOwnership(lr.Address, id, from, erc1155Balance(&lr.Address, &from, id), lr.Block.TimeStamp, lr.TxHash, tokenName)
 		}
 	}
 }
@@ -134,16 +145,31 @@ func processErc721Transfer(lr *types.LogRecord) {
 	from := common.BytesToAddress(lr.Topics[1].Bytes())
 	to := common.BytesToAddress(lr.Topics[2].Bytes())
 	tokenId := hexutil.Big(*new(big.Int).SetBytes(lr.Topics[3].Bytes()))
+	var tokenName *string
+
+	if uri, _ := repo.Erc721TokenURI(&lr.Address, tokenId.ToInt()); uri != "" {
+		tokenName = getTokenName(uri)
+	}
 
 	// updated recipient balance if method is not burn
 	if to.String() != config.EmptyAddress {
-		storeOwnership(lr.Address, tokenId, to, erc721Balance(&lr.Address, &to, tokenId), lr.Block.TimeStamp, lr.TxHash)
+		storeOwnership(lr.Address, tokenId, to, erc721Balance(&lr.Address, &to, tokenId), lr.Block.TimeStamp, lr.TxHash, tokenName)
 	}
 
 	// updated sender balance if method is not mint
 	if from.String() != config.EmptyAddress {
-		storeOwnership(lr.Address, tokenId, from, erc721Balance(&lr.Address, &from, tokenId), lr.Block.TimeStamp, lr.TxHash)
+		storeOwnership(lr.Address, tokenId, from, erc721Balance(&lr.Address, &from, tokenId), lr.Block.TimeStamp, lr.TxHash, tokenName)
 	}
+}
+
+// getTokenName returns token name.
+func getTokenName(uri string) *string {
+	md, err := repo.GetTokenJsonMetadata(uri)
+	if err != nil {
+		log.Errorf("could not fetch token json meta data; %s", err.Error())
+		return nil
+	}
+	return md.Name
 }
 
 // erc721Balance returns current balance for given contract, owner and token identifier.
@@ -199,14 +225,15 @@ func isErc721Transaction(lr *types.LogRecord) bool {
 }
 
 // storeOwnership stores nft ownership into persistent storage
-func storeOwnership(contract common.Address, tokenId hexutil.Big, owner common.Address, amount hexutil.Big, obtained hexutil.Uint64, trx common.Hash) {
+func storeOwnership(contract common.Address, tokenId hexutil.Big, owner common.Address, amount hexutil.Big, obtained hexutil.Uint64, trx common.Hash, tokenName *string) {
 	if err := repo.StoreNftOwnership(&types.NftOwnership{
-		Contract: contract,
-		TokenId:  tokenId,
-		Owner:    owner,
-		Amount:   amount,
-		Obtained: time.Unix(int64(obtained), 0),
-		Trx:      trx,
+		Contract:  contract,
+		TokenId:   tokenId,
+		Owner:     owner,
+		Amount:    amount,
+		Obtained:  time.Unix(int64(obtained), 0),
+		Trx:       trx,
+		TokenName: tokenName,
 	}); err != nil {
 		log.Errorf("failed to update nft ownership at %s/%d; %s",
 			contract.String(), tokenId.ToInt(), err.Error())
