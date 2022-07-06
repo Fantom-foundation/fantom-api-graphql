@@ -5,6 +5,7 @@ import (
 	"context"
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
+	"fantom-api-graphql/internal/repository/db/registry"
 	"fmt"
 	"math/big"
 	"sync"
@@ -77,7 +78,7 @@ func connectDb(cfg *config.Database) (*mongo.Client, error) {
 	ctx := context.Background()
 
 	// create new Mongo client
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Url))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Url).SetRegistry(registry.DefaultRegistry()))
 	if err != nil {
 		return nil, err
 	}
