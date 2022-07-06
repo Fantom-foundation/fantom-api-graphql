@@ -12,6 +12,7 @@ import (
 	"fantom-api-graphql/internal/repository/db"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/p2p/enode"
+	"net"
 	"time"
 )
 
@@ -42,6 +43,12 @@ func (p *proxy) NetworkNodeConfirmCheck(node *enode.Node) (bool, error) {
 		return false, err
 	}
 
+	// locate the server
+	loc, err := p.GeoLocation(node.IP())
+	if err != nil {
+		p.log.Errorf("geographic location not found for %s; %s", node.IP().String(), err.Error())
+	}
+
 	// inform about new node
 	p.log.Infof("new network node %s found at %s", node.ID(), node.URLv4())
 
@@ -54,6 +61,7 @@ func (p *proxy) NetworkNodeConfirmCheck(node *enode.Node) (bool, error) {
 		Found:     now,
 		LastSeen:  now,
 		LastCheck: now,
+		Location:  loc,
 	})
 }
 
@@ -92,4 +100,9 @@ func (p *proxy) NetworkNodeUpdateBatch() ([]*enode.Node, error) {
 // NetworkNodeBootstrapSet provides a set of known nodes to be co-used to bootstrap new search.
 func (p *proxy) NetworkNodeBootstrapSet() []*enode.Node {
 	return p.db.NetworkNodeBootstrapSet()
+}
+
+// GeoLocation provides geographic location information for the given IP address using GeoIP bridge.
+func (p *proxy) GeoLocation(ip net.IP) (types.GeoLocation, error) {
+	return p.geoip.Location(ip)
 }

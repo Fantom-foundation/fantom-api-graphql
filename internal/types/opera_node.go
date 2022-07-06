@@ -6,6 +6,18 @@ import (
 	"time"
 )
 
+// GeoLocation represent geographic location.
+type GeoLocation struct {
+	Continent string  `bson:"continent"`
+	Country   string  `bson:"country"`
+	Region    string  `bson:"region"`
+	City      string  `bson:"city"`
+	TimeZone  string  `bson:"tz"`
+	Latitude  float64 `bson:"lat"`
+	Longitude float64 `bson:"lon"`
+	Accuracy  uint16  `bson:"accuracy"`
+}
+
 // OperaNode represents a node on Fantom Opera network.
 type OperaNode struct {
 	// Node address in native form
@@ -25,13 +37,6 @@ type OperaNode struct {
 	// This one tracks the time of our last attempt to contact the node.
 	LastCheck time.Time `bson:"checked"`
 
-	// Server geolocation
-	LocationContinent string  `bson:"geo_con"`
-	LocationCountry   string  `bson:"geo_cry"`
-	LocationCity      string  `bson:"geo_city"`
-	LocationRegion    string  `bson:"geo_sub"`
-	LocationTimeZone  string  `bson:"geo_tz"`
-	LocationLatitude  float64 `bson:"geo_lt"`
-	LocationLongitude float64 `bson:"geo_lg"`
-	LocationAccuracy  int16   `bson:"geo_acu"`
+	// Geographic location information
+	Location GeoLocation `bson:"location"`
 }

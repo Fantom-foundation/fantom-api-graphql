@@ -8,6 +8,7 @@
 # Local configuration files
 doc/config*
 doc/deploy*
+/doc/geoip/
 
 # Test binary, built with `go test -c`
 *.test

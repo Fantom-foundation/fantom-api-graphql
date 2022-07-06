@@ -14,6 +14,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/p2p/enode"
 	"math/big"
+	"net"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -615,6 +616,9 @@ type Repository interface {
 
 	// NetworkNodeBootstrapSet provides a set of known nodes to be co-used to bootstrap new search.
 	NetworkNodeBootstrapSet() []*enode.Node
+
+	// GeoLocation provides geographic location information for the given IP address using GeoIP bridge.
+	GeoLocation(net.IP) (types.GeoLocation, error)
 
 	// Close and cleanup the repository.
 	Close()

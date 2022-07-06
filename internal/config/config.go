@@ -104,6 +104,7 @@ type OperaNode struct {
 // PeerNetworking defines configuration for Opera p2p protocol.
 type PeerNetworking struct {
 	DiscoveryUDP   string        `mapstructure:"bind_udp"`
+	GeoIPPath      string        `mapstructure:"geo_db"`
 	BootstrapNodes []*enode.Node `mapstructure:"bootstrap"`
 }
 
