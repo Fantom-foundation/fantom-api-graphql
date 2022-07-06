@@ -290,6 +290,9 @@ type Query {
 
     # ftmLatestBlockBurnList provides a list of latest burned native FTM tokens per-block.
     ftmLatestBlockBurnList(count: Int = 25): [FtmBlockBurn!]!
+
+    # networkNodesAggregated provides an aggregated list of network nodes on the Opera network.
+    networkNodesAggregated(level: NetworkNodeGroupLevel = COUNTRY): NetworkNodeGroupList!
 }
 
 # Mutation endpoints for modifying the data
