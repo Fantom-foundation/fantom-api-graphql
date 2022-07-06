@@ -220,6 +220,10 @@ func (db *MongoDbBridge) NetworkNodeBootstrapSet() []*enode.Node {
 			{Key: "node", Value: true},
 		}}},
 	})
+	if err != nil {
+		db.log.Criticalf("can not load bootstrap set; %s", err.Error())
+		return nil
+	}
 
 	defer db.closeCursor(cu)
 
@@ -245,6 +249,56 @@ func (db *MongoDbBridge) NetworkNodeAddressList(cur *mongo.Cursor, size uint) ([
 			continue
 		}
 		list = append(list, &n.Node)
+	}
+
+	return list, nil
+}
+
+// NetworkNodesGeoAggregated provides a list of aggregated Opera nodes.
+func (db *MongoDbBridge) NetworkNodesGeoAggregated(level int) ([]*types.OperaNodeLocationAggregate, error) {
+	col := db.client.Database(db.dbName).Collection(colNetworkNodes)
+
+	var mainKey, topKey string
+	switch level {
+	case types.OperaNodeGeoAggregationLevelContinent:
+		mainKey = "$location.continent"
+		topKey = "$location.continent"
+
+	case types.OperaNodeGeoAggregationLevelCountry:
+		mainKey = "$location.country"
+		topKey = "$location.continent"
+
+	case types.OperaNodeGeoAggregationLevelState:
+		mainKey = "$location.region"
+		topKey = "$location.continent"
+	}
+
+	// sample random set of nodes without failed checks, sorted down from the most recently seen
+	cu, err := col.Aggregate(context.Background(), mongo.Pipeline{
+		{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: mainKey},
+			{Key: "top_region", Value: bson.D{{Key: "$first", Value: topKey}}},
+			{Key: "total", Value: bson.D{{Key: "$sum", Value: 1}}},
+		}}},
+		{{Key: "$sort", Value: bson.D{
+			{Key: "total", Value: -1},
+		}}},
+	})
+	if err != nil {
+		db.log.Criticalf("can not load bootstrap set; %s", err.Error())
+		return nil, err
+	}
+
+	defer db.closeCursor(cu)
+
+	list := make([]*types.OperaNodeLocationAggregate, 0)
+	for cu.Next(context.Background()) {
+		var ag types.OperaNodeLocationAggregate
+		if err := cu.Decode(&ag); err != nil {
+			db.log.Errorf("could not decode network node aggregate; %s", err.Error())
+			continue
+		}
+		list = append(list, &ag)
 	}
 
 	return list, nil

@@ -416,6 +416,43 @@ type Transaction {
     erc1155Transactions: [ERC1155Transaction!]!
 }
 
+# NetworkNodeGroupLevel represents the detail of network node count aggregation.
+enum NetworkNodeGroupLevel {
+    CONTINENT
+    COUNTRY
+    STATE
+}
+
+# NetworkNodeGroup represents an aggregated group of Opera network nodes.
+type NetworkNodeGroup {
+    # topRegion represents the name of the top level location of the aggregation group.
+    topRegion: String!
+
+    # region represents the name of the location of the aggregation group
+    # based on selected detail level.
+    region: String!
+
+    # count represents the number of nodes in the aggregation group.
+    count: Int!
+
+    # pct represents the percentage share of the aggregation group
+    # compared to the number of all known active nodes. The number is provided
+    # as fixed point integer with 1 decimal precision (i.e. 258 = 25.8%, 1000 = 100%)
+    pct: Int!
+}
+
+# NetworkNodeGroupList represents a list of network node groups with a specified detail level.
+type NetworkNodeGroupList {
+    # level represents the level of detail of the aggregation group list.
+    level: NetworkNodeGroupLevel!
+
+    # totalCount represents the total number of nodes in the list.
+    totalCount: Int!
+
+    # groups represents an array of groups in the list.
+    groups: [NetworkNodeGroup!]!
+}
+
 # Block is an Opera block chain block.
 type Block {
     # Number is the number of this block, starting at 0 for the genesis block.
@@ -2301,6 +2338,9 @@ type Query {
 
     # ftmLatestBlockBurnList provides a list of latest burned native FTM tokens per-block.
     ftmLatestBlockBurnList(count: Int = 25): [FtmBlockBurn!]!
+
+    # networkNodesAggregated provides an aggregated list of network nodes on the Opera network.
+    networkNodesAggregated(level: NetworkNodeGroupLevel = COUNTRY): NetworkNodeGroupList!
 }
 
 # Mutation endpoints for modifying the data

@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+const (
+	OperaNodeGeoAggregationLevelContinent = iota
+	OperaNodeGeoAggregationLevelCountry
+	OperaNodeGeoAggregationLevelState
+)
+
 // GeoLocation represent geographic location.
 type GeoLocation struct {
 	Continent string  `bson:"continent"`
@@ -39,4 +45,18 @@ type OperaNode struct {
 
 	// Geographic location information
 	Location GeoLocation `bson:"location"`
+}
+
+// OperaNodeLocationAggregate represents an aggregated summary of Opera network nodes
+// based on their geographic location.
+type OperaNodeLocationAggregate struct {
+	// TopRegion represents the name of the top level location of the aggregation group.
+	TopRegion string `bson:"top_region" json:"topRegion"`
+
+	// Region represents the name of the location of the aggregation group
+	// based on selected detail level.
+	Region string `bson:"_id"`
+
+	// Count represents the number of nodes in the aggregation group.
+	Count int32 `bson:"total"`
 }

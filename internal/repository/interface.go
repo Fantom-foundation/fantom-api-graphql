@@ -620,6 +620,9 @@ type Repository interface {
 	// GeoLocation provides geographic location information for the given IP address using GeoIP bridge.
 	GeoLocation(net.IP) (types.GeoLocation, error)
 
+	// NetworkNodesGeoAggregated provides a list of aggregated opera nodes based on given location detail level.
+	NetworkNodesGeoAggregated(level int) ([]*types.OperaNodeLocationAggregate, error)
+
 	// Close and cleanup the repository.
 	Close()
 }

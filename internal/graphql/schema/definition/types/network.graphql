@@ -1,5 +1,6 @@
 # NetworkNodeGroupLevel represents the detail of network node count aggregation.
 enum NetworkNodeGroupLevel {
+    CONTINENT
     COUNTRY
     STATE
 }

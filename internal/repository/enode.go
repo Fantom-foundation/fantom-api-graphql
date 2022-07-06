@@ -106,3 +106,8 @@ func (p *proxy) NetworkNodeBootstrapSet() []*enode.Node {
 func (p *proxy) GeoLocation(ip net.IP) (types.GeoLocation, error) {
 	return p.geoip.Location(ip)
 }
+
+// NetworkNodesGeoAggregated provides a list of aggregated opera nodes based on given location detail level.
+func (p *proxy) NetworkNodesGeoAggregated(level int) ([]*types.OperaNodeLocationAggregate, error) {
+	return p.db.NetworkNodesGeoAggregated(level)
+}

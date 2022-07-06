@@ -48,7 +48,7 @@ func (gib *Bridge) Location(ip net.IP) (types.GeoLocation, error) {
 		return loc, err
 	}
 
-	loc.Continent = record.Continent.Code
+	loc.Continent = record.Continent.Names[defaultLocationNameFormat]
 	loc.Country = record.Country.Names[defaultLocationNameFormat]
 	loc.City = record.City.Names[defaultLocationNameFormat]
 	loc.TimeZone = record.Location.TimeZone
