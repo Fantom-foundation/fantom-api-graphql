@@ -44,7 +44,7 @@ func (db *MongoDbBridge) NetworkNode(nid enode.ID) (*types.OperaNode, error) {
 
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{Key: defaultPK, Value: nid},
+		{Key: "_id", Value: nid},
 	})
 
 	// do we have the data?
@@ -67,7 +67,7 @@ func (db *MongoDbBridge) NetworkNode(nid enode.ID) (*types.OperaNode, error) {
 // NetworkNodeEvict removes record of a lost Opera network node from the database by its network identifier.
 func (db *MongoDbBridge) NetworkNodeEvict(nid enode.ID) error {
 	col := db.client.Database(db.dbName).Collection(colNetworkNodes)
-	_, err := col.DeleteOne(context.Background(), bson.D{{Key: defaultPK, Value: nid}})
+	_, err := col.DeleteOne(context.Background(), bson.D{{Key: "_id", Value: nid}})
 	return err
 }
 
@@ -97,8 +97,8 @@ func (db *MongoDbBridge) IsNetworkNodeKnown(id enode.ID) bool {
 
 	sr := col.FindOne(
 		context.Background(),
-		bson.D{{Key: defaultPK, Value: id}},
-		options.FindOne().SetProjection(bson.D{{Key: defaultPK, Value: true}}),
+		bson.D{{Key: "_id", Value: id}},
+		options.FindOne().SetProjection(bson.D{{Key: "_id", Value: true}}),
 	)
 	if sr.Err() != nil && sr.Err() != mongo.ErrNoDocuments {
 		db.log.Errorf("could not check network node %s; %s", id.String(), sr.Err().Error())
@@ -141,7 +141,7 @@ func (db *MongoDbBridge) NetworkNodeFailCheck(id enode.ID) (*types.OperaNode, er
 	// we need a pipeline here to be able to aggregate
 	pipeline := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{
-			{Key: defaultPK, Value: id},
+			{Key: "_id", Value: id},
 		}}},
 		{{Key: "$project", Value: bson.D{
 			{Key: "seen_last", Value: true},
@@ -162,7 +162,7 @@ func (db *MongoDbBridge) NetworkNodeFailCheck(id enode.ID) (*types.OperaNode, er
 		}}},
 		{{Key: "$merge", Value: bson.D{
 			{Key: "into", Value: colNetworkNodes},
-			{Key: "on", Value: defaultPK},
+			{Key: "on", Value: "_id"},
 			{Key: "whenMatched", Value: "merge"},
 			{Key: "whenNotMatched", Value: "discard"},
 		}}},

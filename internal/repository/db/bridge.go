@@ -22,6 +22,10 @@ type MongoDbBridge struct {
 	log    logger.Logger
 	dbName string
 
+	// sync DB related processes
+	wg  sync.WaitGroup
+	sig []chan bool
+
 	// init state marks
 	initAccounts     *sync.Once
 	initTransactions *sync.Once
@@ -68,6 +72,7 @@ func New(cfg *config.Config, log logger.Logger) (*MongoDbBridge, error) {
 	}
 
 	// check the state
+	db.updateDatabaseIndexes()
 	db.CheckDatabaseInitState()
 	return db, nil
 }
