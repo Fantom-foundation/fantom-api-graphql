@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"strconv"
 )
 
 const (
@@ -292,9 +293,16 @@ func (db *MongoDbBridge) contractListCollectRangeMarks(col *mongo.Collection, li
 		list.IsEnd = true
 
 	} else if cursor != nil {
+		var ix uint64
+		ix, err = strconv.ParseUint(*cursor, 10, 64)
+
+		if err != nil {
+			return nil, fmt.Errorf("invalid cursor value; %s", err.Error())
+		}
+
 		// the cursor itself is the starting point
 		list.First, err = db.contractListBorderPk(col,
-			bson.D{{Key: defaultPK, Value: *cursor}},
+			bson.D{{Key: fiAccountContractUid, Value: ix}},
 			options.FindOne())
 	}
 
