@@ -275,6 +275,9 @@ func (db *MongoDbBridge) NetworkNodesGeoAggregated(level int) ([]*types.OperaNod
 
 	// sample random set of nodes without failed checks, sorted down from the most recently seen
 	cu, err := col.Aggregate(context.Background(), mongo.Pipeline{
+		{{Key: "$match", Value: bson.D{
+			{Key: "fails", Value: 0},
+		}}},
 		{{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: mainKey},
 			{Key: "top_region", Value: bson.D{{Key: "$first", Value: topKey}}},
