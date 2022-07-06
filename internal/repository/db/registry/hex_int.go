@@ -43,7 +43,7 @@ func HexUintEncodeValue(con bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val 
 // HexUintDecodeValue decodes hexutil.Uint and/or hexutil.Uint64 from BSON data stream.
 func HexUintDecodeValue(_ bsoncodec.DecodeContext, vr bsonrw.ValueReader, val reflect.Value) error {
 	if !val.CanSet() || (val.Type() != tHexUint && val.Type() != tHexUint64) {
-		return bsoncodec.ValueDecoderError{Name: "HexUintDecodeValue", Types: []reflect.Type{tHexUint}, Received: val}
+		return bsoncodec.ValueDecoderError{Name: "HexUintDecodeValue", Types: []reflect.Type{tHexUint, tHexUint64}, Received: val}
 	}
 
 	var value uint64
