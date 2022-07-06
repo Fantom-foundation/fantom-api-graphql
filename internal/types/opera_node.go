@@ -15,12 +15,12 @@ type OperaNode struct {
 	// every time the node passes a check, and halved every time it doesn't.
 	Score int64 `bson:"score"`
 
-	// CheckFailureCount tracks the number of failed checks performed on the node.
-	CheckFailureCount int64 `bson:"fails"`
+	// Fails tracks the number of failed checks performed on the node.
+	Fails int64 `bson:"fails"`
 
 	// These two track the time of last successful contact.
-	FirstResponse time.Time `bson:"seen_first"`
-	LastResponse  time.Time `bson:"seen_last"`
+	Found    time.Time `bson:"seen_first"`
+	LastSeen time.Time `bson:"seen_last"`
 
 	// This one tracks the time of our last attempt to contact the node.
 	LastCheck time.Time `bson:"checked"`
