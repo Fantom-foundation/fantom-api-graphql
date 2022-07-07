@@ -32,6 +32,23 @@ func (p *proxy) Account(addr *common.Address) (acc *types.Account, err error) {
 	return acc, nil
 }
 
+// Contract returns contract at Opera blockchain for an address, nil if not found.
+func (p *proxy) Contract(addr *common.Address) (con *types.Account, err error) {
+	// try to get the account from cache
+	con = p.cache.PullAccount(addr)
+
+	// we still don't know the account? try to get it from database
+	if con == nil {
+		con, err = p.getContract(addr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// return the contract
+	return con, nil
+}
+
 // getAccount builds the account representation after validating it against Opera node.
 func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 	// any address given?
@@ -58,6 +75,31 @@ func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 		p.log.Warningf("can not keep account [%s] information in memory; %s", addr.String(), err.Error())
 	}
 	return acc, nil
+}
+
+// getContract builds the contract representation after validating it against Opera node.
+func (p *proxy) getContract(addr *common.Address) (*types.Account, error) {
+	// any address given?
+	if addr == nil {
+		p.log.Error("no address given")
+		return nil, fmt.Errorf("no address given")
+	}
+
+	// try to get the contract from database
+	con, err := p.db.Contract(addr)
+	if err != nil {
+		p.log.Errorf("can not get the contract %s; %s", addr.String(), err.Error())
+		return nil, err
+	}
+
+	// also keep a copy at the in-memory cache
+	if con != nil {
+		if err = p.cache.PushAccount(con); err != nil {
+			p.log.Warningf("can not keep contract [%s] information in memory; %s", addr.String(), err.Error())
+		}
+	}
+
+	return con, nil
 }
 
 // AccountBalance returns the current balance of an account at Opera blockchain.

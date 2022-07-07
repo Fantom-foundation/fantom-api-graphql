@@ -26,6 +26,9 @@ type Repository interface {
 	// Account returns account at Opera blockchain for an address, nil if not found.
 	Account(*common.Address) (*types.Account, error)
 
+	// Contract returns contract at Opera blockchain for an address, nil if not found.
+	Contract(addr *common.Address) (*types.Account, error)
+
 	// AccountBalance returns the current balance of an account at Opera blockchain.
 	AccountBalance(*common.Address) (*hexutil.Big, error)
 
@@ -508,6 +511,12 @@ type Repository interface {
 	// Erc1155IsApprovedForAll provides information about operator approved to manipulate with NFT tokens of given owner.
 	Erc1155IsApprovedForAll(token *common.Address, owner *common.Address, operator *common.Address) (bool, error)
 
+	// StoreNftOwnership stores the given NFT ownership record in persistent storage.
+	StoreNftOwnership(no *types.NftOwnership) error
+
+	// ListNftOwnerships resolves list of nft ownerships based on input data.
+	ListNftOwnerships(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor *string, count int32) (out *types.NftOwnershipList, err error)
+
 	// GovernanceContractBy provides governance contract details by its address.
 	GovernanceContractBy(*common.Address) (*config.GovernanceContract, error)
 
@@ -607,6 +616,9 @@ type Repository interface {
 
 	// NetworkNodeBootstrapSet provides a set of known nodes to be co-used to bootstrap new search.
 	NetworkNodeBootstrapSet() []*enode.Node
+
+	// GetTokenJsonMetadata provides decoded JSON metadata for the given token metadata URI.
+	GetTokenJsonMetadata(uri string) (*types.NftMetadata, error)
 
 	// Close and cleanup the repository.
 	Close()
