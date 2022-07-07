@@ -201,6 +201,10 @@ func (db *MongoDbBridge) nftOwnershipListCollectRangeMarks(col *mongo.Collection
 		var oid primitive.ObjectID
 		oid, err = primitive.ObjectIDFromHex(*cursor)
 
+		if err != nil {
+			return nil, fmt.Errorf("invalid cursor value; %s", err.Error())
+		}
+
 		// the cursor itself is the starting point
 		list.First, err = db.nftOwnershipListBorderPk(col,
 			bson.D{{Key: defaultPK, Value: oid}},
