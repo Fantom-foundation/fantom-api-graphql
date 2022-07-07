@@ -133,7 +133,7 @@ func (p *proxy) DelegationsByAddressAll(addr *common.Address) ([]*types.Delegati
 // DelegationsOfValidator extract a list of delegations for a given validator.
 func (p *proxy) DelegationsOfValidator(valID *hexutil.Big, cursor *string, count int32) (*types.DelegationList, error) {
 	p.log.Debugf("loading delegations of #%d", valID.ToInt().Uint64())
-	return p.db.Delegations(cursor, count, &bson.D{{Key: db.FiDelegationToStakerAddress, Value: valID.String()}})
+	return p.db.Delegations(cursor, count, &bson.D{{Key: db.FiDelegationToStakerId, Value: valID.String()}})
 }
 
 // DelegationLock returns delegation lock information using SFC contract binding.

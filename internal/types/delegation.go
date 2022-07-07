@@ -15,7 +15,7 @@ var DelegationDecimalsCorrection = new(big.Int).SetUint64(1000000000)
 // Delegation represents a delegator in Opera blockchain.
 type Delegation struct {
 	ID              string         `json:"id" bson:"_id"`
-	Address         common.Address `json:"addr" bson:"adr"`
+	Address         common.Address `json:"addr" bson:"addr"`
 	ToStakerId      *hexutil.Big   `json:"to_id" bson:"to"`
 	Transaction     common.Hash    `json:"trx" bson:"trx"`
 	ToStakerAddress common.Address `json:"to_addr" bson:"toad"`
