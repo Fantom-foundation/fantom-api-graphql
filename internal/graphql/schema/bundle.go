@@ -224,6 +224,42 @@ type EpochListEdge {
     epoch: Epoch!
 }
 
+# Price represents price information of core Opera token
+type Price {
+    "Source unit symbol."
+    fromSymbol: String!
+
+    "Target unit symbol."
+    toSymbol: String!
+
+    "Price of the source symbol unit in target symbol unit."
+    price: Float!
+
+    "Price change in last 24h."
+    change24: Float!
+
+    "Price change in percent in last 24h."
+    changePct24: Float!
+
+    "Open 24h price."
+    open24: Float!
+
+    "Highest 24h price."
+    high24: Float!
+
+    "Lowest 24h price."
+    low24: Float!
+
+    "Volume exchanged in last 24h price."
+    volume24: Float!
+
+    "Market cap of the source unit."
+    marketCap: Float!
+
+    "Timestamp of the last update of this price value."
+    lastUpdate: Long!
+}
+
 # ERC1155Contract represents a generic ERC1155 multi-token contract.
 type ERC1155Contract {
     # address of the token is used as the token's unique identifier.
@@ -434,6 +470,14 @@ type NetworkNodeGroup {
 
     # count represents the number of nodes in the aggregation group.
     count: Int!
+
+    # latitude represents an average geographic coordinate
+    # that specifies the north–south position of the group on the Earth's surface.
+    latitude: Float!
+
+    # longitude represents an average geographic coordinate
+    # that specifies the east–west position of the group on the Earth's surface.
+    longitude: Float!
 
     # pct represents the percentage share of the aggregation group
     # compared to the number of all known active nodes. The number is provided
@@ -1603,42 +1647,6 @@ type RewardClaim {
     # to be processed and granted.
     trxHash: Bytes32!
 }
-# Price represents price information of core Opera token
-type Price {
-    "Source unit symbol."
-    fromSymbol: String!
-
-    "Target unit symbol."
-    toSymbol: String!
-
-    "Price of the source symbol unit in target symbol unit."
-    price: Float!
-
-    "Price change in last 24h."
-    change24: Float!
-
-    "Price change in percent in last 24h."
-    changePct24: Float!
-
-    "Open 24h price."
-    open24: Float!
-
-    "Highest 24h price."
-    high24: Float!
-
-    "Lowest 24h price."
-    low24: Float!
-
-    "Volume exchanged in last 24h price."
-    volume24: Float!
-
-    "Market cap of the source unit."
-    marketCap: Float!
-
-    "Timestamp of the last update of this price value."
-    lastUpdate: Long!
-}
-
 # ERC1155Transaction represents a transaction on an ERC1155 NFT token.
 type ERC1155Transaction {
     # trxHash represents a hash of the transaction

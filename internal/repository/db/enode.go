@@ -281,6 +281,8 @@ func (db *MongoDbBridge) NetworkNodesGeoAggregated(level int) ([]*types.OperaNod
 		{{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: mainKey},
 			{Key: "top_region", Value: bson.D{{Key: "$first", Value: topKey}}},
+			{Key: "lat", Value: bson.D{{Key: "$avg", Value: "$location.lat"}}},
+			{Key: "lon", Value: bson.D{{Key: "$avg", Value: "$location.lon"}}},
 			{Key: "total", Value: bson.D{{Key: "$sum", Value: 1}}},
 		}}},
 		{{Key: "$sort", Value: bson.D{

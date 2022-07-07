@@ -17,6 +17,14 @@ type NetworkNodeGroup {
     # count represents the number of nodes in the aggregation group.
     count: Int!
 
+    # latitude represents an average geographic coordinate
+    # that specifies the north–south position of the group on the Earth's surface.
+    latitude: Float!
+
+    # longitude represents an average geographic coordinate
+    # that specifies the east–west position of the group on the Earth's surface.
+    longitude: Float!
+
     # pct represents the percentage share of the aggregation group
     # compared to the number of all known active nodes. The number is provided
     # as fixed point integer with 1 decimal precision (i.e. 258 = 25.8%, 1000 = 100%)
