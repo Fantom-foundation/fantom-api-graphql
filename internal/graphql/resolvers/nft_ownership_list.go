@@ -65,8 +65,8 @@ func (nol *NftOwnershipList) PageInfo() (*ListPageInfo, error) {
 	}
 
 	// get the first and last elements
-	first := Cursor(nol.Collection[0].ComputedPk().String())
-	last := Cursor(nol.Collection[len(nol.Collection)-1].ComputedPk().String())
+	first := Cursor(nol.Collection[0].ComputedPk().Hex())
+	last := Cursor(nol.Collection[len(nol.Collection)-1].ComputedPk().Hex())
 	return NewListPageInfo(&first, &last, !nol.IsEnd, !nol.IsStart)
 }
 
@@ -92,5 +92,5 @@ func (nol *NftOwnershipList) Edges() []*NftOwnershipListEdge {
 
 // Cursor resolves the nft ownership cursor in the edges list.
 func (nole *NftOwnershipListEdge) Cursor() Cursor {
-	return Cursor(nole.NftOwnership.ComputedPk().String())
+	return Cursor(nole.NftOwnership.ComputedPk().Hex())
 }

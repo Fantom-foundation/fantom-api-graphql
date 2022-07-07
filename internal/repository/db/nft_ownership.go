@@ -17,14 +17,29 @@ const (
 	// colTokenOwnerships is the name of the collection keeping token nft ownership.
 	colNftOwnerships = "nft_ownerships"
 
-	// fiOwnershipContract is the name of the DB column of the NFT contract address.
+	// fiNftOwnershipContract is the name of the DB column of the NFT contract address.
 	fiNftOwnershipContract = "contract"
 
-	// fiOwnershipTokenId is the name of the DB column of the token ID.
+	// fiNftOwnershipTokenId is the name of the DB column of the token ID.
 	fiNftOwnershipTokenId = "token_id"
 
-	// fiOwnershipOwner is the name of the DB column of the token owner address.
+	// fiNftOwnershipOwner is the name of the DB column of the token owner address.
 	fiNftOwnershipOwner = "owner"
+
+	// fiNftOwnershipAmount is the name of the DB column of the NFT amount.
+	fiNftOwnershipAmount = "amount"
+
+	// fiNftOwnershipObtained is the name of the DB column of the obtained date.
+	fiNftOwnershipObtained = "obtained"
+
+	// fiNftOwnershipTrx is the name of the DB column of the transaction hash.
+	fiNftOwnershipTrx = "trx"
+
+	// fiNftOwnershipTokenName is the name of the DB column of the NFT name.
+	fiNftOwnershipTokenName = "token_name"
+
+	// fiNftOwnershipOrdinalIndex is the name of the DB column of the ordinal index.
+	fiNftOwnershipOrdinalIndex = "orx"
 )
 
 // StoreNftOwnership updates NFT ownership in the persistent storage. If the Amount dropped to zero,
@@ -48,7 +63,16 @@ func (db *MongoDbBridge) StoreNftOwnership(no *types.NftOwnership) error {
 		context.Background(),
 		bson.D{{Key: defaultPK, Value: id}},
 		bson.D{
-			{Key: "$set", Value: no},
+			{Key: "$set", Value: bson.D{
+				{Key: fiNftOwnershipContract, Value: no.Contract},
+				{Key: fiNftOwnershipTokenId, Value: no.TokenId},
+				{Key: fiNftOwnershipOwner, Value: no.Owner},
+				{Key: fiNftOwnershipAmount, Value: no.Amount},
+				{Key: fiNftOwnershipObtained, Value: no.Obtained},
+				{Key: fiNftOwnershipTrx, Value: no.Trx},
+				{Key: fiNftOwnershipTokenName, Value: no.TokenName},
+				{Key: fiNftOwnershipOrdinalIndex, Value: no.ComputedOrdinalIndex()},
+			}},
 			{Key: "$setOnInsert", Value: bson.D{{Key: defaultPK, Value: id}}},
 		},
 		options.Update().SetUpsert(true),
@@ -138,8 +162,8 @@ func (db *MongoDbBridge) nftOwnershipListInit(col *mongo.Collection, cursor *str
 	list := types.NftOwnershipList{
 		Collection: make([]*types.NftOwnership, 0),
 		Total:      uint64(total),
-		First:      "",
-		Last:       "",
+		First:      0,
+		Last:       0,
 		IsStart:    total == 0,
 		IsEnd:      total == 0,
 		Filter:     *filter,
@@ -163,19 +187,24 @@ func (db *MongoDbBridge) nftOwnershipListCollectRangeMarks(col *mongo.Collection
 		// get the highest available pk
 		list.First, err = db.nftOwnershipListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{Key: defaultPK, Value: -1}}))
+			options.FindOne().SetSort(bson.D{{Key: fiNftOwnershipOrdinalIndex, Value: -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available pk
 		list.First, err = db.nftOwnershipListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{Key: defaultPK, Value: 1}}))
+			options.FindOne().SetSort(bson.D{{Key: fiNftOwnershipOrdinalIndex, Value: 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
+		var oid primitive.ObjectID
+		oid, err = primitive.ObjectIDFromHex(*cursor)
+
 		// the cursor itself is the starting point
-		list.First = *cursor
+		list.First, err = db.nftOwnershipListBorderPk(col,
+			bson.D{{Key: defaultPK, Value: oid}},
+			options.FindOne())
 	}
 
 	// check the error
@@ -190,22 +219,24 @@ func (db *MongoDbBridge) nftOwnershipListCollectRangeMarks(col *mongo.Collection
 }
 
 // nftOwnershipListBorderPk finds the top PK of the nft ownership collection based on given filter and options.
-func (db *MongoDbBridge) nftOwnershipListBorderPk(col *mongo.Collection, filter bson.D, opt *options.FindOneOptions) (string, error) {
+func (db *MongoDbBridge) nftOwnershipListBorderPk(col *mongo.Collection, filter bson.D, opt *options.FindOneOptions) (uint64, error) {
 	// prep container
 	var row struct {
-		Value primitive.ObjectID `bson:"_id"`
+		Value uint64 `bson:"orx"`
 	}
 
 	// make sure we pull only what we need
-	opt.SetProjection(bson.D{{Key: defaultPK, Value: true}})
+	opt.SetProjection(bson.D{{Key: fiNftOwnershipOrdinalIndex, Value: true}})
 
 	// try to decode
 	sr := col.FindOne(context.Background(), filter, opt)
+
 	err := sr.Decode(&row)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	return row.Value.String(), nil
+
+	return row.Value, nil
 }
 
 // nftOwnershipListLoad load the initialized list of nft ownerships from database.
@@ -263,15 +294,15 @@ func (db *MongoDbBridge) nftOwnershipListFilter(cursor *string, count int32, lis
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: defaultPK, Value: bson.D{{Key: "$lte", Value: list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: fiNftOwnershipOrdinalIndex, Value: bson.D{{Key: "$lte", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: defaultPK, Value: bson.D{{Key: "$gte", Value: list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: fiNftOwnershipOrdinalIndex, Value: bson.D{{Key: "$gte", Value: list.First}}})
 		}
 	} else {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: defaultPK, Value: bson.D{{Key: "$lt", Value: list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: fiNftOwnershipOrdinalIndex, Value: bson.D{{Key: "$lt", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: defaultPK, Value: bson.D{{Key: "$gt", Value: list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: fiNftOwnershipOrdinalIndex, Value: bson.D{{Key: "$gt", Value: list.First}}})
 		}
 	}
 	// return the new filter
@@ -291,7 +322,7 @@ func (db *MongoDbBridge) nftOwnershipListOptions(count int32) *options.FindOptio
 	}
 
 	// sort with the direction we want
-	opt.SetSort(bson.D{{Key: defaultPK, Value: sd}})
+	opt.SetSort(bson.D{{Key: fiNftOwnershipOrdinalIndex, Value: sd}})
 
 	// prep the loading limit
 	var limit = int64(count)
@@ -306,7 +337,7 @@ func (db *MongoDbBridge) nftOwnershipListOptions(count int32) *options.FindOptio
 
 // nftOwnershipCollectionIndexes provides a list of indexes expected to exist on nft ownership records.
 func nftOwnershipCollectionIndexes() []mongo.IndexModel {
-	ix := make([]mongo.IndexModel, 2)
+	ix := make([]mongo.IndexModel, 3)
 
 	ixContractToken := "ix_no_contract_token"
 	ix[0] = mongo.IndexModel{
@@ -319,6 +350,13 @@ func nftOwnershipCollectionIndexes() []mongo.IndexModel {
 		Keys:    bson.D{{Key: fiNftOwnershipOwner, Value: 1}},
 		Options: &options.IndexOptions{Name: &ixOwner},
 	}
+
+	ixOrx := "ix_no_orx"
+	ix[2] = mongo.IndexModel{
+		Keys:    bson.D{{Key: fiNftOwnershipOrdinalIndex, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixOrx},
+	}
+
 	return ix
 }
 

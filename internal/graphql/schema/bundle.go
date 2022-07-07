@@ -129,19 +129,22 @@ type NftOwnershipEdge {
 # NftOwnership represents an NFT ownership.
 type NftOwnership {
     # Owner represents token owner.
-    Owner: Address!
+    owner: Address!
 
     # TokenId represents token identifier.
-    TokenId: BigInt!
+    tokenId: BigInt!
 
     # Amount represents amount of tokens.
-    Amount: BigInt!
+    amount: BigInt!
 
     # Obtained represents timestamp when NFT was obtained.
-    Obtained: Long!
+    obtained: Long!
 
     # Trx represents transaction hash in which NFT was obtained.
-    Trx: Bytes32!
+    trx: Bytes32!
+
+    # tokenName represents NFT name.
+    tokenName: String
 }
 
 # Transaction is an Opera block chain transaction.
@@ -441,6 +444,20 @@ type ERC1155Contract {
     isApprovedForAll(owner: Address!, operator: Address!): Boolean
 }
 
+# FtmBlockBurn represents a native FTM tokens burn record per created block.
+type FtmBlockBurn {
+    # blockNumber represents the number of the block.
+    blockNumber: Long!
+
+    # Timestamp is the unix timestamp at which this block was created.
+    timestamp: Long!
+
+    # amount represents the amount of FTM tokens burned in WEI units (18 digits fixed INT encoded as HEX number).
+    amount: BigInt!
+
+    # ftmValue represents FTM value of the burned FTM tokens.
+    ftmValue: Float!
+}
 # Delegation represents a delegation on Opera block chain.
 type Delegation {
     # Address of the delegator account.
@@ -2315,6 +2332,17 @@ type Query {
     # If the end time is not specified, the list is provided up to the current date/time.
     # The maximal date/time span of the list is 30 days.
     gasPriceList(from: Time! to: Time): [GasPriceTick!]!
+
+    # ftmBurnedTotal provides the total amount of native FTM tokens burned
+    # by the chain from paid transaction fees in WEI units.
+    ftmBurnedTotal: BigInt!
+
+    # ftmBurnedTotalAmount provides the total amount of native FTM tokens burned
+    # by the chain from paid transaction fees in FTM units.
+    ftmBurnedTotalAmount: Float!
+
+    # ftmLatestBlockBurnList provides a list of latest burned native FTM tokens per-block.
+    ftmLatestBlockBurnList(count: Int = 25): [FtmBlockBurn!]!
 
     # List owned NFT tokens and their amount
     nftOwnerships(cursor: Cursor, count: Int = 25, collection: Address, owner: Address, tokenId: BigInt): NftOwnershipList!
