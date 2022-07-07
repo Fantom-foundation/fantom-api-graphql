@@ -70,6 +70,37 @@ func (db *MongoDbBridge) Account(addr *common.Address) (*types.Account, error) {
 	return &row, nil
 }
 
+// Contract tries to load a contract identified by the address given from
+// the off-chain database.
+func (db *MongoDbBridge) Contract(addr *common.Address) (*types.Account, error) {
+	col := db.client.Database(db.dbName).Collection(colAccounts)
+
+	filter := bson.D{
+		bson.E{Key: fiAccountType, Value: bson.D{{Key: "$ne", Value: types.AccountTypeWallet}}},
+		bson.E{Key: defaultPK, Value: addr},
+	}
+
+	// try to find the account
+	sr := col.FindOne(context.Background(), filter, options.FindOne())
+	if sr.Err() != nil {
+		if sr.Err() == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+
+		db.log.Error("can not get existing contract %s; %s", addr.String(), sr.Err().Error())
+		return nil, sr.Err()
+	}
+
+	// try to decode the row
+	var row types.Account
+	if err := sr.Decode(&row); err != nil {
+		db.log.Error("can not decode account %s; %s", addr.String(), err.Error())
+		return nil, err
+	}
+
+	return &row, nil
+}
+
 // StoreAccount stores a unique account record in the database.
 func (db *MongoDbBridge) StoreAccount(acc *types.Account) error {
 	// do we have account data?

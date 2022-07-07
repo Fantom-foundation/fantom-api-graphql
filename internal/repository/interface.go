@@ -26,6 +26,9 @@ type Repository interface {
 	// Account returns account at Opera blockchain for an address, nil if not found.
 	Account(*common.Address) (*types.Account, error)
 
+	// Contract returns contract at Opera blockchain for an address, nil if not found.
+	Contract(addr *common.Address) (*types.Account, error)
+
 	// AccountBalance returns the current balance of an account at Opera blockchain.
 	AccountBalance(*common.Address) (*hexutil.Big, error)
 

@@ -17,4 +17,7 @@ type NftOwnership {
 
     # tokenName represents NFT name.
     tokenName: String
+
+    # contract represents related contract.
+    contract: Contract!
 }

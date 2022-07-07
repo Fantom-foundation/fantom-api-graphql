@@ -128,23 +128,26 @@ type NftOwnershipEdge {
 
 # NftOwnership represents an NFT ownership.
 type NftOwnership {
-    # Owner represents token owner.
+    # owner represents token owner.
     owner: Address!
 
-    # TokenId represents token identifier.
+    # tokenId represents token identifier.
     tokenId: BigInt!
 
-    # Amount represents amount of tokens.
+    # amount represents amount of tokens.
     amount: BigInt!
 
-    # Obtained represents timestamp when NFT was obtained.
+    # obtained represents timestamp when NFT was obtained.
     obtained: Long!
 
-    # Trx represents transaction hash in which NFT was obtained.
+    # trx represents transaction hash in which NFT was obtained.
     trx: Bytes32!
 
     # tokenName represents NFT name.
     tokenName: String
+
+    # contract represents related contract.
+    contract: Contract!
 }
 
 # Transaction is an Opera block chain transaction.
