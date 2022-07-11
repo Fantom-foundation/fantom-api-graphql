@@ -19,7 +19,7 @@ func setupP2PTest(_ *testing.T) func(t *testing.T) {
 
 	// mock-up a config
 	SetConfig(&config.Config{
-		AppName: "FantomGraphQL",
+		AppName: "Fantom/GraphQL-API",
 		Signature: config.ServerSignature{
 			Address:    common.HexToAddress("0x5894C4DA7d4576bA38C763Cc9e6B140E8887D1AD"),
 			PrivateKey: pk,
@@ -43,6 +43,7 @@ func TestPeerInformation(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
 	peers := []string{
+		"enode://a66f6a25db8d2f8148bde5aae5b06eb65a066f9d0fb47469d45f7421a289ea727afd50e1576e7d36650c6e19705749d5f1fa499989117a2b4dce79a4b7b3080d@65.108.75.66:5050",
 		"enode://4d3e983641f8218862eb367db58b99df4e7a568477859f56d0c0e824dfa5d9f78a0fb0675ace9ed7778bfb35dcd5a852441d27858f95323a15935975492250bc@85.195.103.153:5050",
 		"enode://f14381f5dd20f2ecb0ed61179ae223b5ad2c22249ab4d580c0cb7e62a3e9bdd7d948ea6d905493d6bd42e4827c6239f59e7e36cc0cfaa15950577f19a0b27b9b@135.181.220.15:5050",
 		"enode://06d35b7a537ada8b0a32f909e7228e2a458424b4c323e79ee24c22980192a9ace90fd05830bc2741588f73f43685305cb032d231e986220a4b3af7b7d8f447a7@95.179.220.89:35050",
@@ -60,5 +61,5 @@ func TestPeerInformation(t *testing.T) {
 	}
 
 	g.Expect(err).To(gomega.BeNil())
-	g.Expect(info.Name).To(gomega.ContainSubstring("Opera"))
+	g.Expect(info.Name).To(gomega.ContainSubstring("opera"))
 }

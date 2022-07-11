@@ -7,6 +7,7 @@ import (
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/ethereum/go-ethereum/p2p/rlpx"
 	"github.com/ethereum/go-ethereum/rlp"
@@ -52,7 +53,7 @@ func PeerInformation(node *enode.Node) (*types.OperaNodeInformation, error) {
 
 	// establish TCP connection to the remote peer
 	addr := fmt.Sprintf("%s:%d", node.IP().String(), node.TCP())
-	log.Debugf("p2p connecting to %s", addr)
+	log.Debugf("p2p connecting to %s; signing as %s", addr, crypto.PubkeyToAddress(cfg.Signature.PrivateKey.PublicKey).String())
 
 	c, err := net.DialTimeout("tcp", addr, peerConnectionTimeout)
 	if err != nil {
@@ -60,7 +61,7 @@ func PeerInformation(node *enode.Node) (*types.OperaNodeInformation, error) {
 		return nil, err
 	}
 
-	con := rlpx.NewConn(c, &cfg.Signature.PrivateKey.PublicKey)
+	con := rlpx.NewConn(c, node.Pubkey())
 	defer func() {
 		if e := con.Close(); e != nil {
 			log.Warningf("p2p could not close connection to %s; %s", addr, e.Error())
@@ -101,7 +102,7 @@ func chat(con *rlpx.Conn) (*types.OperaNodeInformation, error) {
 
 		case chatStageReceiveInfo:
 			// extract the actual peer information, if they will not reject us
-			stage, err = readNextInfo(con, &info)
+			stage, err = readNext(con, &info)
 
 		case chatStageGoodbye:
 			// an error here does not need to propagate; we are just saying goodbye
@@ -116,9 +117,9 @@ func chat(con *rlpx.Conn) (*types.OperaNodeInformation, error) {
 	return &info, err
 }
 
-// readNextInfo reads next message and updates peer information with the data received.
+// readNext reads next message and updates peer information with the data received.
 // The call returns the next chat state to be executed.
-func readNextInfo(con *rlpx.Conn, info *types.OperaNodeInformation) (int, error) {
+func readNext(con *rlpx.Conn, info *types.OperaNodeInformation) (int, error) {
 	mt, msg, err := receive(con)
 	if err != nil {
 		log.Warningf("p2p receiver failed; %s", err.Error())
@@ -167,12 +168,14 @@ func receive(con *rlpx.Conn) (mt uint64, target interface{}, err error) {
 	case msgTypeHandshake:
 		var hs msgHandshake
 		target = &hs
+		data = data[2:]
 	case msgTypeHello:
 		var he msgHello
 		target = &he
 	case msgTypeProgress:
 		var pp msgPeerProgress
 		target = &pp
+		data = data[2:]
 	case msgTypeDisconnect:
 		var di msgDisconnect
 		target = &di
@@ -180,7 +183,7 @@ func receive(con *rlpx.Conn) (mt uint64, target interface{}, err error) {
 
 	// decode received data block to the target structure
 	// @todo why do we skip 2 bytes here?
-	if err := rlp.DecodeBytes(data[2:], target); err != nil {
+	if err := rlp.DecodeBytes(data[:], target); err != nil {
 		return 0, nil, err
 	}
 	return mt, target, nil

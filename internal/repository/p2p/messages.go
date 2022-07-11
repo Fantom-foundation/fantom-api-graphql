@@ -68,7 +68,7 @@ func myHello() []byte {
 				{Name: "opera", Version: 62},
 				{Name: "opera", Version: 63},
 			},
-			ID: crypto.FromECDSAPub(&cfg.Signature.PrivateKey.PublicKey),
+			ID: crypto.FromECDSAPub(&cfg.Signature.PrivateKey.PublicKey)[1:],
 		}
 
 		var err error
