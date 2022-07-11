@@ -14,6 +14,7 @@ import (
 	"fantom-api-graphql/internal/repository/cache"
 	"fantom-api-graphql/internal/repository/db"
 	"fantom-api-graphql/internal/repository/geoip"
+	"fantom-api-graphql/internal/repository/p2p"
 	"fantom-api-graphql/internal/repository/rpc"
 	"fmt"
 	"golang.org/x/sync/singleflight"
@@ -86,6 +87,9 @@ func newRepository() Repository {
 	if log == nil {
 		panic(fmt.Errorf("missing logger"))
 	}
+
+	p2p.SetConfig(cfg)
+	p2p.SetLogger(log)
 
 	// create connections
 	caBridge, dbBridge, rpcBridge, geoBridge, err := connect(cfg, log)
