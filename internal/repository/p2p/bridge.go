@@ -7,6 +7,7 @@ import (
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/ethereum/go-ethereum/p2p/rlpx"
@@ -17,7 +18,7 @@ import (
 )
 
 // peerConnectionTimeout is the timeout enforced on a new connection to remote p2p peer.
-const peerConnectionTimeout = 5 * time.Second
+const peerConnectionTimeout = 2 * time.Second
 
 const (
 	// p2p chat stages used to communicate with a peer and to get the info we need
@@ -26,7 +27,16 @@ const (
 	chatStageReceiveInfo
 	chatStageGoodbye
 	chatStageDone
+
+	// syncedNodeFlagBlockDiff is the max number of blocks below current known head we tolerate
+	// to consider peer to be synced for the purpose of this detailed peer node check.
+	syncedNodeFlagBlockDiff = 25
 )
+
+// BlockHeightProvider is an interface capable of providing the current known block height.
+type BlockHeightProvider interface {
+	BlockHeight() uint64
+}
 
 // cfg contains instance of the configuration to be used by the p2p module.
 var cfg *config.Config
@@ -45,7 +55,7 @@ func SetLogger(l logger.Logger) {
 }
 
 // PeerInformation returns detailed information of the given peer, if it can be obtained.
-func PeerInformation(node *enode.Node) (*types.OperaNodeInformation, error) {
+func PeerInformation(node *enode.Node, bhp BlockHeightProvider) (*types.OperaNodeInformation, error) {
 	// make sure we have a way to sign
 	if cfg == nil || cfg.Signature.PrivateKey == nil {
 		return nil, fmt.Errorf("p2p key configuration is missing")
@@ -69,11 +79,11 @@ func PeerInformation(node *enode.Node) (*types.OperaNodeInformation, error) {
 	}()
 
 	log.Debug("p2p connected")
-	return chat(con)
+	return chat(con, bhp)
 }
 
 // chat with the connected peer to get the node information we need.
-func chat(con *rlpx.Conn) (*types.OperaNodeInformation, error) {
+func chat(con *rlpx.Conn, bhp BlockHeightProvider) (*types.OperaNodeInformation, error) {
 	var info types.OperaNodeInformation
 	var stage int
 	var err error
@@ -102,7 +112,7 @@ func chat(con *rlpx.Conn) (*types.OperaNodeInformation, error) {
 
 		case chatStageReceiveInfo:
 			// extract the actual peer information, if they will not reject us
-			stage, err = readNext(con, &info)
+			stage, err = readNext(con, &info, bhp)
 
 		case chatStageGoodbye:
 			// an error here does not need to propagate; we are just saying goodbye
@@ -119,7 +129,7 @@ func chat(con *rlpx.Conn) (*types.OperaNodeInformation, error) {
 
 // readNext reads next message and updates peer information with the data received.
 // The call returns the next chat state to be executed.
-func readNext(con *rlpx.Conn, info *types.OperaNodeInformation) (int, error) {
+func readNext(con *rlpx.Conn, info *types.OperaNodeInformation, bhp BlockHeightProvider) (int, error) {
 	mt, msg, err := receive(con)
 	if err != nil {
 		log.Warningf("p2p receiver failed; %s", err.Error())
@@ -129,11 +139,11 @@ func readNext(con *rlpx.Conn, info *types.OperaNodeInformation) (int, error) {
 	// update info
 	switch mt {
 	case msgTypeDisconnect:
-		log.Noticef("peer sent disconnect, %s", msg.(*msgDisconnect).Reason.String())
+		log.Infof("peer sent disconnect, %s", msg.(*msgDisconnect).Reason.String())
 		return chatStageDone, nil
 
 	case msgTypeHandshake:
-		log.Noticef("peer network is #%d, with genesis %s", msg.(*msgHandshake).NetworkID, msg.(*msgHandshake).Genesis.String())
+		log.Infof("peer network is #%d, with genesis %s", msg.(*msgHandshake).NetworkID, msg.(*msgHandshake).Genesis.String())
 
 	case msgTypeHello:
 		info.Name = msg.(*msgHello).Name
@@ -141,9 +151,13 @@ func readNext(con *rlpx.Conn, info *types.OperaNodeInformation) (int, error) {
 		log.Noticef("peer is %s, version %s", info.Name, info.Version)
 
 	case msgTypeProgress:
+		bh := int64(bhp.BlockHeight())
+
 		info.Epoch = int64(msg.(*msgPeerProgress).Epoch)
 		info.BlockHeight = int64(msg.(*msgPeerProgress).LastBlock)
-		log.Noticef("peer epoch is #%d, block #%d", info.Epoch, info.BlockHeight)
+		info.IsSynced = (bh - info.BlockHeight) <= syncedNodeFlagBlockDiff
+
+		log.Infof("peer epoch is #%d, block #%d (head is #%d)", info.Epoch, info.BlockHeight, bh)
 
 		// we hang up the connection with an excuse after the progress
 		return chatStageGoodbye, nil
@@ -161,8 +175,6 @@ func receive(con *rlpx.Conn) (mt uint64, target interface{}, err error) {
 		return 0, nil, err
 	}
 
-	log.Infof("p2p received #%d", mt)
-
 	// prep the target interface based on message type
 	switch mt {
 	case msgTypeHandshake:
@@ -179,12 +191,16 @@ func receive(con *rlpx.Conn) (mt uint64, target interface{}, err error) {
 	case msgTypeDisconnect:
 		var di msgDisconnect
 		target = &di
+		data = data[2:]
 	}
 
 	// decode received data block to the target structure
-	// @todo why do we skip 2 bytes here?
-	if err := rlp.DecodeBytes(data[:], target); err != nil {
+	// Check your RLP here, if needed https://toolkit.abdk.consulting/ethereum#rlp
+	err = rlp.DecodeBytes(data[:], target)
+	if err != nil {
+		log.Errorf("p2p data block %s; %s", hexutil.Encode(data[:]), err.Error())
 		return 0, nil, err
 	}
+
 	return mt, target, nil
 }

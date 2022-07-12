@@ -108,16 +108,24 @@ func (db *MongoDbBridge) IsNetworkNodeKnown(id enode.ID) bool {
 }
 
 // NetworkNodeConfirmCheck confirms successful check of the given Opera network node.
-func (db *MongoDbBridge) NetworkNodeConfirmCheck(id enode.ID) error {
+func (db *MongoDbBridge) NetworkNodeConfirmCheck(id enode.ID, inf *types.OperaNodeInformation) error {
 	col := db.client.Database(db.dbName).Collection(colNetworkNodes)
 
+	// prep update set
 	now := time.Now().UTC()
+	set := bson.D{
+		{Key: "fails", Value: int64(0)},
+		{Key: "seen_last", Value: now},
+		{Key: "checked", Value: now},
+	}
+
+	// add detailed information, if available
+	if inf != nil && inf.BlockHeight > 0 {
+		set = append(set, bson.E{Key: "info", Value: inf})
+	}
+
 	ur, err := col.UpdateByID(context.Background(), id, bson.D{
-		{Key: "$set", Value: bson.D{
-			{Key: "fails", Value: int64(0)},
-			{Key: "seen_last", Value: now},
-			{Key: "checked", Value: now},
-		}},
+		{Key: "$set", Value: set},
 		{Key: "$inc", Value: bson.D{
 			{Key: "score", Value: int64(1)},
 		}},

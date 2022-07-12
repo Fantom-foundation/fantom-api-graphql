@@ -6,12 +6,19 @@ import (
 	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/types"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/onsi/gomega"
 	"testing"
 )
+
+// MockBlockHeightProvider mocks block height provider interface.
+type MockBlockHeightProvider struct {
+}
+
+func (bhp *MockBlockHeightProvider) BlockHeight() uint64 {
+	return 37676547
+}
 
 func setupP2PTest(_ *testing.T) func(t *testing.T) {
 	// bitter bundle shaft slogan spirit unlock soul gaze fun sister ozone better
@@ -21,7 +28,7 @@ func setupP2PTest(_ *testing.T) func(t *testing.T) {
 	SetConfig(&config.Config{
 		AppName: "Fantom/GraphQL-API",
 		Signature: config.ServerSignature{
-			Address:    common.HexToAddress("0x5894C4DA7d4576bA38C763Cc9e6B140E8887D1AD"),
+			Address:    crypto.PubkeyToAddress(pk.PublicKey),
 			PrivateKey: pk,
 		},
 		Log: config.Log{
@@ -54,7 +61,7 @@ func TestPeerInformation(t *testing.T) {
 
 	// decode a target peer
 	for _, adr := range peers {
-		info, err = PeerInformation(enode.MustParse(adr))
+		info, err = PeerInformation(enode.MustParse(adr), &MockBlockHeightProvider{})
 		if err == nil {
 			break
 		}

@@ -67,10 +67,17 @@ func (nc *netCrawler) execute() {
 	nodeFeed := make(chan *enode.Node)
 
 	defer func() {
+		after := time.After(4 * time.Second)
+
 		// close active iterators and clean-up their closing signals to make sure they are done
 		for i := range iterators {
 			i.Close()
-			<-iteratorDone
+			select {
+			case <-iteratorDone:
+			case <-after:
+				log.Error("slow crawler iterators terminate")
+				break
+			}
 		}
 
 		// the crawler done
@@ -183,7 +190,7 @@ func (nc *netCrawler) update(node *enode.Node) {
 func (nc *netCrawler) confirm(node *enode.Node) {
 	log.Debugf("node %s confirmed at %s", node.IP().String(), node.URLv4())
 
-	_, err := repo.NetworkNodeConfirmCheck(node)
+	_, err := repo.NetworkNodeConfirmCheck(node, nc.mgr)
 	if err != nil {
 		log.Errorf("could not confirm node %s; %s", node.ID().String(), err.Error())
 	}

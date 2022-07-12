@@ -10,6 +10,7 @@ package repository
 
 import (
 	"fantom-api-graphql/internal/repository/db"
+	"fantom-api-graphql/internal/repository/p2p"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/p2p/enode"
 	"net"
@@ -32,13 +33,22 @@ func (p *proxy) IsNetworkNodeKnown(id enode.ID) bool {
 }
 
 // NetworkNodeConfirmCheck confirms successful check of the given Opera network node.
-func (p *proxy) NetworkNodeConfirmCheck(node *enode.Node) (bool, error) {
-	err := p.db.NetworkNodeConfirmCheck(node.ID())
+func (p *proxy) NetworkNodeConfirmCheck(node *enode.Node, bhp p2p.BlockHeightProvider) (bool, error) {
+	// get detailed node information from p2p, if possible
+	inf, err := p2p.PeerInformation(node, bhp)
+	if err != nil {
+		p.log.Warningf("could not get node %s:%d information; %s", node.IP().String(), node.TCP(), err.Error())
+		inf = nil
+	}
+
+	// write the updated info to the DB
+	err = p.db.NetworkNodeConfirmCheck(node.ID(), inf)
 	if err == nil {
 		return false, nil
 	}
 
-	// other error
+	// DB returns ErrUnknownNetworkNode if the node is new
+	// other errors are returned right away
 	if err != db.ErrUnknownNetworkNode {
 		return false, err
 	}
@@ -110,4 +120,9 @@ func (p *proxy) GeoLocation(ip net.IP) (types.GeoLocation, error) {
 // NetworkNodesGeoAggregated provides a list of aggregated opera nodes based on given location detail level.
 func (p *proxy) NetworkNodesGeoAggregated(level int) ([]*types.OperaNodeLocationAggregate, error) {
 	return p.db.NetworkNodesGeoAggregated(level)
+}
+
+// PeerInformation returns detailed information of the given peer, if it can be obtained.
+func (p *proxy) PeerInformation(node *enode.Node, bhp p2p.BlockHeightProvider) (*types.OperaNodeInformation, error) {
+	return p2p.PeerInformation(node, bhp)
 }

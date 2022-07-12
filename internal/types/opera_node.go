@@ -48,8 +48,6 @@ type OperaNode struct {
 
 	// detailed Opera node information from p2p chat
 	NodeInformation *OperaNodeInformation `bson:"info"`
-	NodeInfoExpires time.Time             `bson:"info_expire"`
-	NodeInfoChecked time.Time             `bson:"info_checked"`
 }
 
 // OperaNodeInformation represents detailed information about Opera network node

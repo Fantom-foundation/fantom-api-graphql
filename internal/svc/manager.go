@@ -152,3 +152,11 @@ func (mgr *ServiceManager) finished(svc Svc) {
 	mgr.wg.Done()
 	log.Noticef("%s terminated", svc.name())
 }
+
+// BlockHeight provides identifier of the top known block.
+func (mgr *ServiceManager) BlockHeight() uint64 {
+	if mgr.bls == nil {
+		return 0
+	}
+	return mgr.bls.blockHeight()
+}

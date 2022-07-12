@@ -6,6 +6,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"sync/atomic"
 	"time"
 )
 
@@ -132,8 +133,9 @@ func (bls *blkScanner) execute() {
 			return
 		case bin, ok := <-bls.inDispatched:
 			// ignore block re-scans; do not skip blocks in dispatched # counter
-			if ok && (bls.done == 0 || int64(bin)-int64(bls.done) == 1) {
-				bls.done = bin
+			done := atomic.LoadUint64(&bls.done)
+			if ok && (done == 0 || int64(bin)-int64(done) == 1) {
+				atomic.StoreUint64(&bls.done, bin)
 			}
 		case <-bls.observeTick.C:
 			bls.updateState(bls.observe())
@@ -157,16 +159,18 @@ func (bls *blkScanner) observe() bool {
 	// we use a hysteresis to delay state flip back to active scan
 	// we compare current block height with the latest known dispatched block number
 	target := bh.ToInt().Uint64()
-	if bls.onIdle && target < bls.done+blsReScanHysteresis {
-		bls.next = bls.done
-		bls.from = bls.done
+	done := atomic.LoadUint64(&bls.done)
+
+	if bls.onIdle && target < done+blsReScanHysteresis {
+		bls.next = done
+		bls.from = done
 		log.Infof("block scanner idling at #%d, head at #%d", bls.next, target)
 		return true
 	}
 
 	// adjust target block number; log the progress of the scan
 	bls.to = target
-	log.Infof("block scanner at #%d of <#%d, #%d>, #%d dispatched", bls.next, bls.from, bls.to, bls.done)
+	log.Infof("block scanner at #%d of <#%d, #%d>, #%d dispatched", bls.next, bls.from, bls.to, done)
 	return bls.to < bls.next
 }
 
@@ -227,4 +231,9 @@ func (bls *blkScanner) shift() {
 		bls.next++
 	case <-bls.sigStop:
 	}
+}
+
+// blockHeight provides information about processed block height.
+func (bls *blkScanner) blockHeight() uint64 {
+	return atomic.LoadUint64(&bls.done)
 }

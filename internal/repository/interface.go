@@ -10,6 +10,7 @@ package repository
 
 import (
 	"fantom-api-graphql/internal/config"
+	"fantom-api-graphql/internal/repository/p2p"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/p2p/enode"
@@ -605,10 +606,13 @@ type Repository interface {
 	IsNetworkNodeKnown(id enode.ID) bool
 
 	// NetworkNodeConfirmCheck confirms successful check of the given Opera network node.
-	NetworkNodeConfirmCheck(node *enode.Node) (bool, error)
+	NetworkNodeConfirmCheck(node *enode.Node, bhp p2p.BlockHeightProvider) (bool, error)
 
 	// NetworkNodeFailCheck registers failed check of the given Opera network node.
 	NetworkNodeFailCheck(node *enode.Node) error
+
+	// PeerInformation returns detailed information of the given peer, if it can be obtained.
+	PeerInformation(node *enode.Node, bhp p2p.BlockHeightProvider) (*types.OperaNodeInformation, error)
 
 	// NetworkNodeUpdateBatch provides a list of Opera network node addresses most suitable for status update
 	// based on the registered time of the latest check.
