@@ -63,21 +63,15 @@ func (nc *netCrawler) run() {
 func (nc *netCrawler) execute() {
 	// keep track of active iterators and prep their signaling channels
 	iterators := make(map[enode.Iterator]string)
-	iteratorDone := make(chan enode.Iterator)
+	iteratorDone := make(chan enode.Iterator, 5)
 	nodeFeed := make(chan *enode.Node)
 
 	defer func() {
-		after := time.After(4 * time.Second)
-
 		// close active iterators and clean-up their closing signals to make sure they are done
+		log.Infof("closing iterators")
 		for i := range iterators {
 			i.Close()
-			select {
-			case <-iteratorDone:
-			case <-after:
-				log.Error("slow crawler iterators terminate")
-				break
-			}
+			<-iteratorDone
 		}
 
 		// the crawler done
@@ -111,7 +105,10 @@ func (nc *netCrawler) handle(iterators map[enode.Iterator]string, inNode chan *e
 				log.Infof("discovery iterator %s done", name)
 			}
 
-		case node := <-inNode:
+		case node, ok := <-inNode:
+			if !ok {
+				return
+			}
 			nc.update(node)
 
 		case <-updateTick.C:
@@ -143,8 +140,8 @@ func (nc *netCrawler) scheduleUpdateBatch(iterators map[enode.Iterator]string, i
 	// make the iterator and run it
 	updateIterator := enode.IterNodes(nodes)
 	iterators[updateIterator] = fmt.Sprintf("batch %s (%d nodes)", time.Now().Format("15:04:05"), len(nodes))
-	go nc.traverse(updateIterator, inNode, inDone)
 
+	go nc.traverse(updateIterator, inNode, inDone)
 	return updateIterator
 }
 

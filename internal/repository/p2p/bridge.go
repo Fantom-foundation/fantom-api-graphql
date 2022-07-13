@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/p2p"
 	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/ethereum/go-ethereum/p2p/rlpx"
 	"github.com/ethereum/go-ethereum/rlp"
@@ -17,8 +18,13 @@ import (
 	"time"
 )
 
-// peerConnectionTimeout is the timeout enforced on a new connection to remote p2p peer.
-const peerConnectionTimeout = 2 * time.Second
+const (
+	// peerConnectionTimeout is the timeout enforced on a new connection to remote p2p peer.
+	peerConnectionTimeout = 2 * time.Second
+
+	// peerChatDeadline specifies the max aount of time we are willing to chat with a remote peer.
+	peerChatDeadline = 5 * time.Second
+)
 
 const (
 	// p2p chat stages used to communicate with a peer and to get the info we need
@@ -43,6 +49,9 @@ var cfg *config.Config
 
 // log contains instance of the app logger.
 var log logger.Logger
+
+// ErrNonOperaPeer defines error sent if non-opera node has been found.
+var ErrNonOperaPeer = fmt.Errorf("useless non-opera node found")
 
 // SetConfig configures default configuration.
 func SetConfig(c *config.Config) {
@@ -77,6 +86,11 @@ func PeerInformation(node *enode.Node, bhp BlockHeightProvider) (*types.OperaNod
 			log.Warningf("p2p could not close connection to %s; %s", addr, e.Error())
 		}
 	}()
+
+	// make sure the com is finished in the specified time
+	if err := con.SetDeadline(time.Now().Add(peerChatDeadline)); err != nil {
+		log.Errorf("can not set p2p deadline; %s", err.Error())
+	}
 
 	log.Debug("p2p connected")
 	return chat(con, bhp)
@@ -140,6 +154,9 @@ func readNext(con *rlpx.Conn, info *types.OperaNodeInformation, bhp BlockHeightP
 	switch mt {
 	case msgTypeDisconnect:
 		log.Infof("peer sent disconnect, %s", msg.(*msgDisconnect).Reason.String())
+		if msg.(*msgDisconnect).Reason == p2p.DiscUselessPeer {
+			return chatStageDone, ErrNonOperaPeer
+		}
 		return chatStageDone, nil
 
 	case msgTypeHandshake:
@@ -148,7 +165,12 @@ func readNext(con *rlpx.Conn, info *types.OperaNodeInformation, bhp BlockHeightP
 	case msgTypeHello:
 		info.Name = msg.(*msgHello).Name
 		info.Version = strconv.FormatUint(msg.(*msgHello).Version, 16)
-		log.Noticef("peer is %s, version %s", info.Name, info.Version)
+
+		if !hasOperaProtocol(msg.(*msgHello).Caps) {
+			log.Errorf("useless peer is %s, version %s", info.Name, info.Version)
+			return chatStageGoodbye, ErrNonOperaPeer
+		}
+		log.Debugf("peer is %s, version %s", info.Name, info.Version)
 
 	case msgTypeProgress:
 		bh := int64(bhp.BlockHeight())
@@ -157,13 +179,28 @@ func readNext(con *rlpx.Conn, info *types.OperaNodeInformation, bhp BlockHeightP
 		info.BlockHeight = int64(msg.(*msgPeerProgress).LastBlock)
 		info.IsSynced = (bh - info.BlockHeight) <= syncedNodeFlagBlockDiff
 
-		log.Infof("peer epoch is #%d, block #%d (head is #%d)", info.Epoch, info.BlockHeight, bh)
+		log.Debugf("peer epoch is #%d, block #%d (head is #%d)", info.Epoch, info.BlockHeight, bh)
 
 		// we hang up the connection with an excuse after the progress
 		return chatStageGoodbye, nil
 	}
 
 	return chatStageReceiveInfo, nil
+}
+
+// hasOperaProtocol checks if the set of p2p protocols contains Opera protocol.
+func hasOperaProtocol(caps []p2p.Cap) bool {
+	if caps == nil {
+		return false
+	}
+
+	for _, c := range caps {
+		if c.Name == "opera" {
+			return true
+		}
+	}
+
+	return false
 }
 
 // receive a message from the connected remote party.
@@ -191,7 +228,9 @@ func receive(con *rlpx.Conn) (mt uint64, target interface{}, err error) {
 	case msgTypeDisconnect:
 		var di msgDisconnect
 		target = &di
-		data = data[2:]
+		if len(data) > 2 {
+			data = data[2:]
+		}
 	}
 
 	// decode received data block to the target structure

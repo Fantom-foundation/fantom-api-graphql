@@ -37,6 +37,11 @@ func (p *proxy) NetworkNodeConfirmCheck(node *enode.Node, bhp p2p.BlockHeightPro
 	// get detailed node information from p2p, if possible
 	inf, err := p2p.PeerInformation(node, bhp)
 	if err != nil {
+		if err == p2p.ErrNonOperaPeer {
+			p.log.Warningf("useless non-opera node skipped at %s", node.URLv4())
+			return false, nil
+		}
+
 		p.log.Warningf("could not get node %s:%d information; %s", node.IP().String(), node.TCP(), err.Error())
 		inf = nil
 	}
@@ -61,8 +66,6 @@ func (p *proxy) NetworkNodeConfirmCheck(node *enode.Node, bhp p2p.BlockHeightPro
 
 	// inform about new node
 	p.log.Infof("new network node %s found at %s", node.ID(), node.URLv4())
-
-	// make new node
 	now := time.Now().UTC()
 	return true, p.db.StoreNetworkNode(&types.OperaNode{
 		Node:      *node,
