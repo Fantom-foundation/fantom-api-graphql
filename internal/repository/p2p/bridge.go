@@ -168,11 +168,12 @@ func readNext(con *rlpx.Conn, info *types.OperaNodeInformation, bhp BlockHeightP
 		info.Version = strconv.FormatUint(msg.(*msgHello).Version, 16)
 
 		isOk, caps := hasOperaProtocol(msg.(*msgHello).Caps)
+		info.Protocols = caps
+
 		if !isOk {
 			log.Errorf("useless peer is %s, ver.%s with caps [%s]", info.Name, info.Version, caps)
 			return chatStageGoodbye, ErrNonOperaPeer
 		}
-		info.Protocols = caps
 		log.Debugf("peer is %s, ver.%s, [%s]", info.Name, info.Version, caps)
 
 	case msgTypeProgress:
