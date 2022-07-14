@@ -98,9 +98,13 @@ func PeerInformation(node *enode.Node, bhp BlockHeightProvider) (*types.OperaNod
 
 // chat with the connected peer to get the node information we need.
 func chat(con *rlpx.Conn, bhp BlockHeightProvider) (*types.OperaNodeInformation, error) {
-	var info types.OperaNodeInformation
 	var stage int
 	var err error
+
+	// prep the info container
+	var info = types.OperaNodeInformation{
+		Updated: time.Now().UTC(),
+	}
 
 	for stage < chatStageDone {
 		switch stage {
@@ -125,7 +129,7 @@ func chat(con *rlpx.Conn, bhp BlockHeightProvider) (*types.OperaNodeInformation,
 			stage = chatStageReceiveInfo
 
 		case chatStageReceiveInfo:
-			// extract the actual peer information, if they will not reject us
+			// extract the peer information from received messages coming from them
 			stage, err = readNext(con, &info, bhp)
 
 		case chatStageGoodbye:
@@ -215,9 +219,11 @@ func hasOperaProtocol(caps []p2p.Cap) (bool, string) {
 
 // receive a message from the connected remote party.
 func receive(con *rlpx.Conn) (mt uint64, target interface{}, err error) {
-	// get a message from the connection
+	var rawData []byte
 	var data []byte
-	mt, data, _, err = con.Read()
+
+	// get the next RLP message from the connection
+	mt, rawData, _, err = con.Read()
 	if err != nil {
 		return 0, nil, err
 	}
@@ -227,19 +233,20 @@ func receive(con *rlpx.Conn) (mt uint64, target interface{}, err error) {
 	case msgTypeHandshake:
 		var hs msgHandshake
 		target = &hs
-		data = data[2:]
+		data = rawData[2:]
 	case msgTypeHello:
 		var he msgHello
+		data = rawData[:]
 		target = &he
 	case msgTypeProgress:
 		var pp msgPeerProgress
 		target = &pp
-		data = data[2:]
+		data = rawData[2:]
 	case msgTypeDisconnect:
 		var di msgDisconnect
 		target = &di
-		if len(data) > 2 {
-			data = data[2:]
+		if len(rawData) > 2 {
+			data = rawData[2:]
 		}
 	}
 
@@ -247,7 +254,7 @@ func receive(con *rlpx.Conn) (mt uint64, target interface{}, err error) {
 	// Check your RLP here, if needed https://toolkit.abdk.consulting/ethereum#rlp
 	err = rlp.DecodeBytes(data[:], target)
 	if err != nil {
-		log.Errorf("p2p data block %s; %s", hexutil.Encode(data[:]), err.Error())
+		log.Errorf("p2p data block %s; %s", hexutil.Encode(rawData), err.Error())
 		return 0, nil, err
 	}
 
