@@ -53,12 +53,13 @@ type OperaNode struct {
 // OperaNodeInformation represents detailed information about Opera network node
 // obtained from a direct p2p communication with the node.
 type OperaNodeInformation struct {
-	Name        string `bson:"name"`
-	Version     string `bson:"ver"`
-	Epoch       int64  `bson:"epoch"`
-	BlockHeight int64  `bson:"block"`
-	IsSynced    bool   `bson:"synced"`
-	Protocols   string `bson:"caps"`
+	Name             string `bson:"name"`
+	Version          string `bson:"ver"`
+	Epoch            int64  `bson:"epoch"`
+	BlockHeight      int64  `bson:"block"`
+	IsSynced         bool   `bson:"synced"`
+	IsOperaConfirmed bool   `bson:"is_opera"`
+	Protocols        string `bson:"caps"`
 }
 
 // OperaNodeLocationAggregate represents an aggregated summary of Opera network nodes

@@ -167,14 +167,13 @@ func readNext(con *rlpx.Conn, info *types.OperaNodeInformation, bhp BlockHeightP
 		info.Name = msg.(*msgHello).Name
 		info.Version = strconv.FormatUint(msg.(*msgHello).Version, 16)
 
-		isOk, caps := hasOperaProtocol(msg.(*msgHello).Caps)
-		info.Protocols = caps
-
-		if !isOk {
-			log.Errorf("useless peer is %s, ver.%s with caps [%s]", info.Name, info.Version, caps)
+		// validate protocols selection
+		info.IsOperaConfirmed, info.Protocols = hasOperaProtocol(msg.(*msgHello).Caps)
+		if !info.IsOperaConfirmed {
+			log.Errorf("useless peer is %s, ver.%s with caps [%s]", info.Name, info.Version, info.Protocols)
 			return chatStageGoodbye, ErrNonOperaPeer
 		}
-		log.Debugf("peer is %s, ver.%s, [%s]", info.Name, info.Version, caps)
+		log.Debugf("peer is %s, ver.%s, [%s]", info.Name, info.Version, info.Protocols)
 
 	case msgTypeProgress:
 		bh := int64(bhp.BlockHeight())
@@ -195,11 +194,12 @@ func readNext(con *rlpx.Conn, info *types.OperaNodeInformation, bhp BlockHeightP
 // hasOperaProtocol checks if the set of p2p protocols contains Opera protocol.
 func hasOperaProtocol(caps []p2p.Cap) (bool, string) {
 	if caps == nil {
-		return false, "n/a"
+		return false, "none/0"
 	}
 
 	var sb strings.Builder
 	var ok bool
+
 	for i, c := range caps {
 		if i > 0 {
 			sb.WriteString(", ")
