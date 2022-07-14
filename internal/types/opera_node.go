@@ -58,6 +58,7 @@ type OperaNodeInformation struct {
 	Epoch       int64  `bson:"epoch"`
 	BlockHeight int64  `bson:"block"`
 	IsSynced    bool   `bson:"synced"`
+	Protocols   string `bson:"caps"`
 }
 
 // OperaNodeLocationAggregate represents an aggregated summary of Opera network nodes

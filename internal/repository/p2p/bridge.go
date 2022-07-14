@@ -15,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 	"net"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -166,11 +167,13 @@ func readNext(con *rlpx.Conn, info *types.OperaNodeInformation, bhp BlockHeightP
 		info.Name = msg.(*msgHello).Name
 		info.Version = strconv.FormatUint(msg.(*msgHello).Version, 16)
 
-		if !hasOperaProtocol(msg.(*msgHello).Caps) {
-			log.Errorf("useless peer is %s, version %s", info.Name, info.Version)
+		isOk, caps := hasOperaProtocol(msg.(*msgHello).Caps)
+		if !isOk {
+			log.Errorf("useless peer is %s, ver.%s with caps [%s]", info.Name, info.Version, caps)
 			return chatStageGoodbye, ErrNonOperaPeer
 		}
-		log.Debugf("peer is %s, version %s", info.Name, info.Version)
+		info.Protocols = caps
+		log.Debugf("peer is %s, ver.%s, [%s]", info.Name, info.Version, caps)
 
 	case msgTypeProgress:
 		bh := int64(bhp.BlockHeight())
@@ -189,18 +192,25 @@ func readNext(con *rlpx.Conn, info *types.OperaNodeInformation, bhp BlockHeightP
 }
 
 // hasOperaProtocol checks if the set of p2p protocols contains Opera protocol.
-func hasOperaProtocol(caps []p2p.Cap) bool {
+func hasOperaProtocol(caps []p2p.Cap) (bool, string) {
 	if caps == nil {
-		return false
+		return false, "n/a"
 	}
 
-	for _, c := range caps {
+	var sb strings.Builder
+	var ok bool
+	for i, c := range caps {
+		if i > 0 {
+			sb.WriteString(", ")
+		}
+		sb.WriteString(c.String())
+
 		if c.Name == "opera" {
-			return true
+			ok = true
 		}
 	}
 
-	return false
+	return ok, sb.String()
 }
 
 // receive a message from the connected remote party.
