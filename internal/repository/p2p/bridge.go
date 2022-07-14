@@ -77,14 +77,14 @@ func PeerInformation(node *enode.Node, bhp BlockHeightProvider) (*types.OperaNod
 
 	c, err := net.DialTimeout("tcp", addr, peerConnectionTimeout)
 	if err != nil {
-		log.Warningf("no connection to peer %s; %s", node.URLv4(), err.Error())
+		log.Debugf("no connection to peer %s; %s", node.URLv4(), err.Error())
 		return nil, err
 	}
 
 	con := rlpx.NewConn(c, node.Pubkey())
 	defer func() {
 		if e := con.Close(); e != nil {
-			log.Warningf("p2p could not close connection to %s; %s", addr, e.Error())
+			log.Debugf("p2p could not close connection to %s; %s", addr, e.Error())
 		}
 	}()
 
@@ -93,7 +93,6 @@ func PeerInformation(node *enode.Node, bhp BlockHeightProvider) (*types.OperaNod
 		log.Errorf("can not set p2p deadline; %s", err.Error())
 	}
 
-	log.Debug("p2p connected")
 	return chat(con, bhp)
 }
 
@@ -108,7 +107,7 @@ func chat(con *rlpx.Conn, bhp BlockHeightProvider) (*types.OperaNodeInformation,
 		case chatStageHandshake:
 			_, err = con.Handshake(cfg.Signature.PrivateKey)
 			if err != nil {
-				log.Warningf("p2p handshake failed; %s", err.Error())
+				log.Debugf("p2p handshake failed; %s", err.Error())
 				stage = chatStageDone
 				continue
 			}
@@ -118,7 +117,7 @@ func chat(con *rlpx.Conn, bhp BlockHeightProvider) (*types.OperaNodeInformation,
 		case chatStageSendHello:
 			_, err = con.Write(msgTypeHello, myHello())
 			if err != nil {
-				log.Warningf("p2p hello failed; %s", err.Error())
+				log.Debugf("p2p hello failed; %s", err.Error())
 				stage = chatStageDone
 				continue
 			}
@@ -133,7 +132,7 @@ func chat(con *rlpx.Conn, bhp BlockHeightProvider) (*types.OperaNodeInformation,
 			// an error here does not need to propagate; we are just saying goodbye
 			_, e := con.Write(msgTypeDisconnect, myDisconnect())
 			if e != nil {
-				log.Warningf("p2p graceful disconnect failed; %s", err.Error())
+				log.Debugf("p2p graceful disconnect failed; %s", err.Error())
 			}
 			stage = chatStageDone
 		}
@@ -154,14 +153,14 @@ func readNext(con *rlpx.Conn, info *types.OperaNodeInformation, bhp BlockHeightP
 	// update info
 	switch mt {
 	case msgTypeDisconnect:
-		log.Infof("peer sent disconnect, %s", msg.(*msgDisconnect).Reason.String())
+		log.Debugf("peer sent disconnect, %s", msg.(*msgDisconnect).Reason.String())
 		if msg.(*msgDisconnect).Reason == p2p.DiscUselessPeer {
 			return chatStageDone, ErrNonOperaPeer
 		}
 		return chatStageDone, nil
 
 	case msgTypeHandshake:
-		log.Infof("peer network is #%d, with genesis %s", msg.(*msgHandshake).NetworkID, msg.(*msgHandshake).Genesis.String())
+		log.Debugf("peer network is #%d, with genesis %s", msg.(*msgHandshake).NetworkID, msg.(*msgHandshake).Genesis.String())
 
 	case msgTypeHello:
 		info.Name = msg.(*msgHello).Name
@@ -173,7 +172,7 @@ func readNext(con *rlpx.Conn, info *types.OperaNodeInformation, bhp BlockHeightP
 			log.Errorf("useless peer is %s, ver.%s with caps [%s]", info.Name, info.Version, info.Protocols)
 			return chatStageGoodbye, ErrNonOperaPeer
 		}
-		log.Debugf("peer is %s, ver.%s, [%s]", info.Name, info.Version, info.Protocols)
+		log.Infof("p2p peer is %s, ver.%s, [%s]", info.Name, info.Version, info.Protocols)
 
 	case msgTypeProgress:
 		bh := int64(bhp.BlockHeight())

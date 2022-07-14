@@ -42,7 +42,7 @@ func (p *proxy) NetworkNodeConfirmCheck(node *enode.Node, bhp p2p.BlockHeightPro
 			return false, nil
 		}
 
-		p.log.Warningf("could not get node %s:%d information; %s", node.IP().String(), node.TCP(), err.Error())
+		p.log.Debugf("could not get node %s:%d information; %s", node.IP().String(), node.TCP(), err.Error())
 		inf = nil
 	}
 
