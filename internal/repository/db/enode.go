@@ -120,7 +120,7 @@ func (db *MongoDbBridge) NetworkNodeConfirmCheck(id enode.ID, inf *types.OperaNo
 	}
 
 	// add detailed information, if available
-	if inf != nil && inf.BlockHeight > 0 {
+	if inf != nil {
 		set = append(set, bson.E{Key: "info", Value: inf})
 	}
 
