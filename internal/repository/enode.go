@@ -38,12 +38,11 @@ func (p *proxy) NetworkNodeConfirmCheck(node *enode.Node, bhp p2p.BlockHeightPro
 	inf, err := p2p.PeerInformation(node, bhp)
 	if err != nil {
 		if err == p2p.ErrNonOperaPeer {
-			p.markNonOperaPeer(node, inf)
-			return false, nil
+			p.log.Warningf("non-opera node found at %s:%d; id %s", node.IP().String(), node.TCP(), node.ID().String())
+		} else {
+			p.log.Debugf("no node information from %s:%d; %s", node.IP().String(), node.TCP(), err.Error())
+			inf = nil
 		}
-
-		p.log.Debugf("could not get node %s:%d information; %s", node.IP().String(), node.TCP(), err.Error())
-		inf = nil
 	}
 
 	// write the updated info to the DB
@@ -76,17 +75,6 @@ func (p *proxy) NetworkNodeConfirmCheck(node *enode.Node, bhp p2p.BlockHeightPro
 		LastCheck: now,
 		Location:  loc,
 	})
-}
-
-// markNonOperaPeer marks confirmed non-opera peer on the network.
-func (p *proxy) markNonOperaPeer(node *enode.Node, inf *types.OperaNodeInformation) {
-	p.log.Warningf("non-opera node confirmed at %s:%d", node.IP().String(), node.TCP())
-
-	// write the updated info to the DB
-	err := p.db.NetworkNodeConfirmCheck(node.ID(), inf)
-	if err != nil {
-		p.log.Debugf("non-opera node not updated; %s", err.Error())
-	}
 }
 
 // NetworkNodeFailCheck registers failed check of the given Opera network node.
