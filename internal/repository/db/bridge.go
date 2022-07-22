@@ -215,10 +215,10 @@ func (db *MongoDbBridge) CountFiltered(col *mongo.Collection, filter *bson.D) (u
 	}
 
 	// do the counting
-	val, err := col.CountDocuments(context.Background(), *filter)
+	val, err := col.CountDocuments(context.Background(), *filter, options.Count().SetMaxTime(5*time.Second))
 	if err != nil {
 		db.log.Errorf("can not count documents in rewards collection; %s", err.Error())
-		return 0, err
+		return db.EstimateCount(col)
 	}
 	return uint64(val), nil
 }

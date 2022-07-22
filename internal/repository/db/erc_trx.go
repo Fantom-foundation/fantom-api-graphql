@@ -109,7 +109,7 @@ func (db *MongoDbBridge) ercTrxListInit(col *mongo.Collection, cursor *string, c
 	}
 
 	// find how many transactions do we have in the database
-	total, err := col.CountDocuments(context.Background(), *filter)
+	total, err := db.ErcTransactionCountFiltered(filter)
 	if err != nil {
 		db.log.Errorf("can not count ERC20 transactions")
 		return nil, err
