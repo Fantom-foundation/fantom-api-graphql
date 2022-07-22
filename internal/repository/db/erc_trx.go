@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 // colErcTransactions represents the name of the ERC20 transaction collection in database.
@@ -119,7 +120,7 @@ func (db *MongoDbBridge) ercTrxListInit(col *mongo.Collection, cursor *string, c
 	db.log.Debugf("found %d filtered ERC20 transactions", total)
 	list := types.TokenTransactionList{
 		Collection: make([]*types.TokenTransaction, 0),
-		Total:      uint64(total),
+		Total:      total,
 		First:      0,
 		Last:       0,
 		IsStart:    total == 0,
@@ -241,7 +242,8 @@ func (db *MongoDbBridge) ercTrxListOptions(count int32) *options.FindOptions {
 // ercTrxListLoad load the initialized list of ERC20 transactions from database.
 func (db *MongoDbBridge) ercTrxListLoad(col *mongo.Collection, cursor *string, count int32, list *types.TokenTransactionList) (err error) {
 	// get the context for loader
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
 
 	// load the data
 	ld, err := col.Find(ctx, db.ercTrxListFilter(cursor, count, list), db.ercTrxListOptions(count))
@@ -260,7 +262,7 @@ func (db *MongoDbBridge) ercTrxListLoad(col *mongo.Collection, cursor *string, c
 
 	// loop and load the list; we may not store the last value
 	var trx *types.TokenTransaction
-	for ld.Next(ctx) {
+	for ld.Next(context.Background()) {
 		// append a previous value to the list, if we have one
 		if trx != nil {
 			list.Collection = append(list.Collection, trx)

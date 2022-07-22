@@ -27,7 +27,7 @@ Initialize aggregate table:
 			"amount": { $sum: "$amount"}
 		}},
 		{$project: {
-			"_id": new Date("1970-01-01T00:00:00"),
+			"_id": new ISODate("1970-01-01T00:00:00Z"),
 			"amount": true
 		}},
 		{$merge: {
