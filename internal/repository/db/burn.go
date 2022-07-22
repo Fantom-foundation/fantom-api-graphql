@@ -2,20 +2,42 @@
 package db
 
 import (
-	"bytes"
 	"context"
 	"fantom-api-graphql/internal/types"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"math/big"
+	"time"
 )
 
 // colBurns represents the name of the native FTM burns collection in database.
 const colBurns = "burns"
+const colBurnsAggregate = "burns_sum"
+
+// burnBaseAggregateDate represents the timestamp of the materialised burn aggregate
+var burnBaseAggregateDate = time.Unix(0, 0)
+
+/*
+Initialize aggregate table:
+	db.burns.aggregate([
+		{$group: {
+			"_id": null,
+			"amount": { $sum: "$amount"}
+		}},
+		{$project: {
+			"_id": new Date("1970-01-01T00:00:00"),
+			"amount": true
+		}},
+		{$merge: {
+			"into": "burns_sum",
+			"on": "_id",
+			"whenMatched": "replace",
+			"whenNotMatched": "insert"
+		}}
+	])
+*/
 
 // initBurnsCollection initializes the burn collection indexes.
 func (db *MongoDbBridge) initBurnsCollection(col *mongo.Collection) {
@@ -81,102 +103,33 @@ func (db *MongoDbBridge) StoreBurn(burn *types.FtmBurn) error {
 		db.initBurns.Do(func() { db.initBurnsCollection(col); db.initBurns = nil })
 	}
 
-	// try to find existing burn
-	sr := col.FindOne(context.Background(), bson.D{{Key: "block", Value: burn.BlockNumber}})
-	if sr.Err() != nil {
-		// if the burn has not been found, add this as a new one
-		if sr.Err() == mongo.ErrNoDocuments {
-			_, err := col.InsertOne(context.Background(), burn)
-			return err
-		}
-
-		db.log.Errorf("could not load FTM burn at #%d; %s", burn.BlockNumber, sr.Err())
-		return sr.Err()
+	// insert/update the burn data
+	re, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: "block", Value: burn.BlockNumber}},
+		bson.D{{Key: "$set", Value: burn}},
+		options.Update().SetUpsert(true))
+	if err != nil {
+		db.log.Criticalf("could not update burn #%d; %s", burn.BlockNumber, err.Error())
+		return err
 	}
 
-	// decode existing burn and update
-	var ex types.FtmBurn
-	if err := sr.Decode(&sr); err != nil {
-		db.log.Errorf("could not decode FTM burn at #%d; %s", burn.BlockNumber, sr.Err())
-		return sr.Err()
+	if re.UpsertedCount > 0 {
+		db.burnAddBurnValue(burn.Value())
 	}
-
-	// all the transactions can already be included
-	if ex.TxList != nil && burn.TxList != nil {
-		var found int
-
-		for _, in := range burn.TxList {
-			for _, e := range ex.TxList {
-				if bytes.Compare(in.Bytes(), e.Bytes()) == 0 {
-					found++
-					break
-				}
-			}
-		}
-
-		// do we have them all? if so, we have nothing to do here
-		if found == len(burn.TxList) {
-			return nil
-		}
-
-		// we can not handle partial update (some transactions are already included, but not all)
-		if found > 0 && found < len(burn.TxList) {
-			db.log.Criticalf("invalid partial burn received at #%d", burn.BlockNumber)
-			return fmt.Errorf("partial burn update rejected at #%d", burn.BlockNumber)
-		}
-	}
-
-	// add the new value to the existing one
-	val := new(big.Int).Add((*big.Int)(&ex.Amount), (*big.Int)(&burn.Amount))
-	ex.Amount = (hexutil.Big)(*val)
-
-	// update the list of included transactions
-	if burn.TxList != nil && len(burn.TxList) > 0 {
-		if ex.TxList == nil {
-			ex.TxList = make([]common.Hash, 0)
-		}
-
-		for _, v := range burn.TxList {
-			ex.TxList = append(ex.TxList, v)
-		}
-	}
-
-	// update the record
-	_, err := col.UpdateOne(context.Background(), bson.D{{Key: "block", Value: ex.BlockNumber}}, bson.D{{Key: "$set", Value: ex}})
-	return err
+	return nil
 }
 
-// isBurnValidForSave checks if the new burn should be stored within the database.
-func (db *MongoDbBridge) isBurnValidForSave(burn *types.FtmBurn, ex *types.FtmBurn) bool {
-	if burn == nil || ex == nil || ex.TxList == nil || burn.TxList == nil {
-		db.log.Criticalf("#%d invalid burn check %t; %t", uint64(burn.BlockNumber), burn.TxList, ex.TxList)
-		return false
+// burnAddBurnValue adds the given value to the total burned amount.
+func (db *MongoDbBridge) burnAddBurnValue(v int64) {
+	col := db.client.Database(db.dbName).Collection(colBurnsAggregate)
+
+	_, err := col.UpdateByID(context.Background(), burnBaseAggregateDate, bson.D{
+		{Key: "$inc", Value: bson.D{{Key: "amount", Value: v}}},
+	})
+	if err != nil {
+		db.log.Criticalf("could not update burned total; %s", err.Error())
 	}
-
-	// all the transactions can already be included
-	var found int
-
-	for _, in := range burn.TxList {
-		for _, e := range ex.TxList {
-			if bytes.Compare(in.Bytes(), e.Bytes()) == 0 {
-				found++
-				break
-			}
-		}
-	}
-
-	// do we have them all? if so, we have nothing to do here
-	if found == len(burn.TxList) {
-		return false
-	}
-
-	// we can not handle partial update (some transactions are already included, but not all)
-	if found > 0 && found < len(burn.TxList) {
-		db.log.Criticalf("invalid partial burn received at #%d", burn.BlockNumber)
-		return false
-	}
-
-	return true
 }
 
 // BurnCount estimates the number of burn records in the database.
@@ -186,6 +139,25 @@ func (db *MongoDbBridge) BurnCount() (uint64, error) {
 
 // BurnTotal aggregates the total amount of burned fee across all blocks.
 func (db *MongoDbBridge) BurnTotal() (int64, error) {
+	col := db.client.Database(db.dbName).Collection(colBurnsAggregate)
+
+	sr := col.FindOne(context.Background(), bson.D{{Key: "_id", Value: burnBaseAggregateDate}})
+	if sr.Err() != nil {
+		db.log.Criticalf("could not get burned total; %s", sr.Err().Error())
+		return 0, sr.Err()
+	}
+
+	var out struct {
+		Amount int64 `bson:"amount"`
+	}
+	if err := sr.Decode(&out); err != nil {
+		return 0, err
+	}
+	return out.Amount, nil
+}
+
+// BurnTotalSlow aggregates the total amount of burned fee across all blocks.
+func (db *MongoDbBridge) BurnTotalSlow() (int64, error) {
 	col := db.client.Database(db.dbName).Collection(colBurns)
 
 	// aggregate the total amount of burned native tokens
