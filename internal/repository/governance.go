@@ -98,3 +98,8 @@ func (p *proxy) GovernanceTotalWeight(gov *common.Address) (hexutil.Big, error) 
 
 	return *we, nil
 }
+
+// GovernanceProposalOwner returns the owner of the given proposal contract.
+func (p *proxy) GovernanceProposalOwner(gp *common.Address) (*common.Address, error) {
+	return p.rpc.GovernanceProposalOwner(gp)
+}

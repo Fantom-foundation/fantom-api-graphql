@@ -116,6 +116,15 @@ func (gp *GovernanceProposal) VotedWeightRatio() int32 {
 	return int32(new(big.Int).Div(new(big.Int).Mul(big.NewInt(1000), state.Votes.ToInt()), total.ToInt()).Int64())
 }
 
+// Owner resolves the owner of the governance proposal.
+func (gp *GovernanceProposal) Owner() common.Address {
+	o, err := repository.R().GovernanceProposalOwner(&gp.Contract)
+	if err != nil {
+		return common.Address{}
+	}
+	return *o
+}
+
 // WinnerId resolves id of the winner of the proposal.
 func (gps *GovernanceProposalState) WinnerId() (*hexutil.Big, error) {
 	// non-resolved proposal means no winner

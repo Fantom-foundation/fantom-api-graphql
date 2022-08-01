@@ -1916,6 +1916,9 @@ type GovernanceProposal {
     # parameters, options and finalization actions.
     contract: Address!
 
+    # owner represents the owning wallet of the proposal
+    owner: Address!
+
     # proposalType represents the type of the Proposal that corresponds
     # with the Proposal Template.
     proposalType: Long!

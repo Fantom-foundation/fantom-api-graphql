@@ -14,8 +14,10 @@ We strongly discourage opening Opera RPC interface for unrestricted Internet acc
 package rpc
 
 import (
+	"context"
 	"fantom-api-graphql/internal/repository/rpc/contracts"
 	"fantom-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -371,4 +373,23 @@ func (ftm *FtmBridge) GovernanceTotalWeight(ge *common.Address) (*hexutil.Big, e
 	}
 
 	return (*hexutil.Big)(w), nil
+}
+
+// GovernanceProposalOwner returns the owner of the given proposal contract.
+func (ftm *FtmBridge) GovernanceProposalOwner(gp *common.Address) (*common.Address, error) {
+	// make the call
+	data, err := ftm.eth.CallContract(context.Background(), ethereum.CallMsg{
+		From: common.Address{},
+		To:   gp,
+		Data: common.Hex2Bytes("8da5cb5b"), /* owner() public view returns (address) */
+	}, nil)
+	if err != nil {
+		ftm.log.Criticalf("proposal owner not found; %s", err.Error())
+		return nil, err
+	}
+
+	// make an address off the result
+	a := common.Address{}
+	a.SetBytes(data)
+	return &a, nil
 }

@@ -549,6 +549,9 @@ type Repository interface {
 	// in given Governance contract context.
 	GovernanceProposalFee(*common.Address) (hexutil.Big, error)
 
+	// GovernanceProposalOwner returns the owner of the given proposal contract.
+	GovernanceProposalOwner(*common.Address) (*common.Address, error)
+
 	// GovernanceTotalWeight provides the total weight of all available votes
 	// in the governance contract identified by the address.
 	GovernanceTotalWeight(*common.Address) (hexutil.Big, error)
