@@ -89,6 +89,12 @@ func (lgd *logDispatcher) init() {
 		/* SFC3::RestakedRewards(address indexed delegator, uint256 indexed toValidatorID, uint256 lockupExtraReward, uint256 lockupBaseReward, uint256 unlockedReward) */
 		common.HexToHash("0x4119153d17a36f9597d40e3ab4148d03261a439dddbec4e91799ab7159608e26"): handleSfcRestakeRewards,
 
+		/* SFC3::LockedUpStake(address indexed delegator, uint256 indexed validatorID, uint256 duration, uint256 amount) */
+		common.HexToHash("0x138940e95abffcd789b497bf6188bba3afa5fbd22fb5c42c2f6018d1bf0f4e78"): handleLockedUpStake,
+
+		/* SFC3::UnlockedStake(address indexed delegator, uint256 indexed validatorID, uint256 amount, uint256 penalty) */
+		common.HexToHash("0xef6c0c14fe9aa51af36acd791464dec3badbde668b63189b47bfa4e25be9b2b9"): handleUnlockedStake,
+
 		/* ---------------- ERC20 and ERC721 contracts related event hooks below this line ---------------- */
 
 		/* ERC20::Approval(address indexed owner, address indexed spender, uint256 value) */

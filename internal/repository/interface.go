@@ -246,6 +246,12 @@ type Repository interface {
 	// DelegationAmountUnlocked returns delegation lock information using SFC contract binding.
 	DelegationAmountUnlocked(addr *common.Address, valID *big.Int) (hexutil.Big, error)
 
+	// StoreLockedDelegation stores the given locked delegation into the database.
+	StoreLockedDelegation(dl *types.LockedDelegation) error
+
+	// AdjustLockedDelegation reduces the given locked delegation by the give amount in the database.
+	AdjustLockedDelegation(common.Address, int64, int64) error
+
 	// PendingRewards returns a detail of pending rewards for the given delegation.
 	PendingRewards(*common.Address, *hexutil.Big) (*types.PendingRewards, error)
 

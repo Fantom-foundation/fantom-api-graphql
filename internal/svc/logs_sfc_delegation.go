@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"time"
 )
 
 // handleDelegationLog handles a new delegation event from logs.
@@ -310,4 +311,50 @@ func makeAdHocDelegation(lr *types.LogRecord, addr *common.Address, stakerID *he
 		AmountStaked:    (*hexutil.Big)(amo),
 		CreatedTime:     lr.Block.TimeStamp,
 	})
+}
+
+// handleLockedUpStake handles a new and/or updated delegation processed on the SFC.
+// event LockedUpStake(address indexed delegator, uint256 indexed validatorID, uint256 duration, uint256 amount)
+func handleLockedUpStake(lr *types.LogRecord) {
+	// sanity check for data (3x topic + 2x uint256 = 64 bytes)
+	if len(lr.Topics) != 3 || len(lr.Data) != 64 {
+		log.Criticalf("%s is not event LockedUpStake; expected 64 bytes, %d bytes given; expected 3 topics, %d given", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
+		return
+	}
+
+	// extract the basic info about the lock
+	lock := types.LockedDelegation{
+		Delegator:   common.BytesToAddress(lr.Topics[1].Bytes()),
+		ValidatorId: new(big.Int).SetBytes(lr.Topics[2].Bytes()).Int64(),
+		Locked:      time.Unix(int64(lr.Block.TimeStamp), 0),
+		Duration:    new(big.Int).SetBytes(lr.Data[:32]).Int64(),
+	}
+	lock.LockedUntil = time.Unix(int64(lr.Block.TimeStamp), 0).Add(time.Duration(lock.Duration) * time.Second)
+	lock.SetAmount((*hexutil.Big)(new(big.Int).SetBytes(lr.Data[32:])))
+
+	// log what happened
+	log.Noticef("delegation of %s to #%d locked until %s", lock.Delegator.String(), lock.ValidatorId, lock.LockedUntil.String())
+	err := repo.StoreLockedDelegation(&lock)
+	if err != nil {
+		log.Errorf("failed to store locked delegation; %s", err.Error())
+	}
+}
+
+// handleUnlockedStake handles a new and/or updated delegation processed on the SFC.
+// event UnlockedStake(address indexed delegator, uint256 indexed validatorID, uint256 amount, uint256 penalty)
+func handleUnlockedStake(lr *types.LogRecord) {
+	// sanity check for data (3x topic + 2x uint256 = 64 bytes)
+	if len(lr.Topics) != 3 || len(lr.Data) != 64 {
+		log.Criticalf("%s is not event UnlockedStake; expected 64 bytes, %d bytes given; expected 3 topics, %d given", lr.TxHash.String(), len(lr.Data), len(lr.Topics))
+		return
+	}
+
+	err := repo.AdjustLockedDelegation(
+		common.BytesToAddress(lr.Topics[1].Bytes()),
+		new(big.Int).SetBytes(lr.Topics[2].Bytes()).Int64(),
+		-types.LockedDelegationValue(new(big.Int).SetBytes(lr.Data[32:])),
+	)
+	if err != nil {
+		log.Errorf("failed to adjust locked delegation value; %s", err.Error())
+	}
 }

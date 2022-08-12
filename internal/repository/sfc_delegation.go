@@ -192,3 +192,13 @@ func (p *proxy) DelegationTokenizerUnlocked(addr *common.Address, toStaker *hexu
 func (p *proxy) DelegationFluidStakingActive(_ *common.Address, _ *hexutil.Big) (bool, error) {
 	return true, nil
 }
+
+// StoreLockedDelegation stores the given locked delegation into the database.
+func (p *proxy) StoreLockedDelegation(dl *types.LockedDelegation) error {
+	return p.db.StoreLockedDelegation(dl)
+}
+
+// AdjustLockedDelegation changes value the given locked delegation by the give amount in the database.
+func (p *proxy) AdjustLockedDelegation(dlg common.Address, validatorID int64, delta int64) error {
+	return p.db.AdjustLockedDelegation(dlg, validatorID, delta)
+}

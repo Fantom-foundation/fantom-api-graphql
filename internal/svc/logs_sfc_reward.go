@@ -61,6 +61,24 @@ func handleSfcCommonRewardClaim(lr *types.LogRecord, isRestake bool) {
 // event RestakedRewards(address indexed delegator, uint256 indexed toValidatorID, uint256 lockupExtraReward, uint256 lockupBaseReward, uint256 unlockedReward)
 func handleSfcRestakeRewards(lr *types.LogRecord) {
 	handleSfcCommonRewardClaim(lr, true)
+
+	// adjust locked stake amount (data should be 3x 32 bytes = 96 bytes)
+	if len(lr.Data) != 96 {
+		log.Criticalf("%s lr invalid data length; expected 96 bytes, given %d bytes", lr.TxHash.String(), len(lr.Data))
+		return
+	}
+
+	extra := new(big.Int).SetBytes(lr.Data[:32])
+	base := new(big.Int).SetBytes(lr.Data[32:64])
+
+	err := repo.AdjustLockedDelegation(
+		common.BytesToAddress(lr.Topics[1].Bytes()),
+		new(big.Int).SetBytes(lr.Topics[2].Bytes()).Int64(),
+		types.LockedDelegationValue(new(big.Int).Add(base, extra)),
+	)
+	if err != nil {
+		log.Errorf("could not adjust locked delegation; %s", err.Error())
+	}
 }
 
 // handleSfcClaimedRewards handles a rewards re-stake event.

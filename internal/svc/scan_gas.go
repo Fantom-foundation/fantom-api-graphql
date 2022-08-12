@@ -58,7 +58,7 @@ func (gps *gpsMonitor) name() string {
 	return "gas price monitor"
 }
 
-// init prepares the account dispatcher to perform its function.
+// init prepares the gas monitor to perform its function.
 func (gps *gpsMonitor) init() {
 	gps.sigStop = make(chan struct{})
 

@@ -50,10 +50,10 @@ type Delegation struct {
 	CreatedTime     hexutil.Uint64 `json:"createdTime"`
 	Index           uint64         `json:"ordinalIndex"`
 
-	// AmountStaked represents the current staked amount
+	// AmountStaked represents the original staked amount
 	AmountStaked *hexutil.Big `json:"amountStaked"`
 
-	// AmountDelegated is the original amount delegated
+	// AmountDelegated is the current amount delegated
 	AmountDelegated *hexutil.Big `json:"amountDelegated"`
 }
 

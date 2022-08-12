@@ -23,7 +23,8 @@ type IndexList struct {
 func (db *MongoDbBridge) updateDatabaseIndexes() {
 	// define index list loaders
 	var ixLoaders = map[string]indexListProvider{
-		colNetworkNodes: operaNodeCollectionIndexes,
+		colNetworkNodes:      operaNodeCollectionIndexes,
+		colLockedDelegations: lockedDelegationsIndexes,
 	}
 
 	// the DB bridge needs a way to terminate this thread
