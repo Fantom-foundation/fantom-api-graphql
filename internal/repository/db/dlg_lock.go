@@ -35,9 +35,9 @@ func (db *MongoDbBridge) StoreLockedDelegation(dl *types.LockedDelegation) error
 	_, err := col.DeleteOne(context.Background(), bson.D{
 		{Key: "from", Value: dl.Delegator},
 		{Key: "to", Value: dl.ValidatorId},
-		{Key: "$or", Value: bson.D{
-			{Key: "created", Value: dl.Locked},
-			{Key: "expires", Value: bson.D{{Key: "$lte", Value: dl.Locked}}},
+		{Key: "$or", Value: bson.A{
+			bson.D{{Key: "created", Value: dl.Locked}},
+			bson.D{{Key: "expires", Value: bson.D{{Key: "$lte", Value: dl.Locked}}}},
 		}},
 	})
 	if err != nil {
