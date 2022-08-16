@@ -65,7 +65,11 @@
       "CNY",
       "GBP",
       "JPY",
-      "KRW"
+      "KRW",
+      "AUD",
+      "CAD",
+      "CHF",
+      "AED"
     ]
   },
   "governance": {
