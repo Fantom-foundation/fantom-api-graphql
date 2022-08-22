@@ -73,7 +73,7 @@ type proxy struct {
 	apiRequestGroup singleflight.Group
 
 	// governance contracts reference
-	govContracts map[string]*config.GovernanceContract
+	govContracts map[string]config.GovernanceContract
 
 	// smart contract compilers
 	solCompiler string
@@ -108,7 +108,7 @@ func newRepository() Repository {
 		cfg:   cfg,
 
 		// get the map of governance contracts
-		govContracts: governanceContractsMap(&cfg.Governance),
+		govContracts: governanceContractsMap(cfg.Governance),
 
 		// keep reference to the SOL compiler
 		solCompiler: cfg.Compiler.DefaultSolCompilerPath,
@@ -120,13 +120,13 @@ func newRepository() Repository {
 
 // governanceContractsMap creates map of governance contracts keyed
 // by the contract address.
-func governanceContractsMap(cfg *config.Governance) map[string]*config.GovernanceContract {
+func governanceContractsMap(cfg config.Governance) map[string]config.GovernanceContract {
 	// prep the result set
-	res := make(map[string]*config.GovernanceContract)
+	res := make(map[string]config.GovernanceContract)
 
 	// collect all the configured governance contracts into the map
 	for _, gv := range cfg.Contracts {
-		res[gv.Address.String()] = &gv
+		res[gv.Address.String()] = gv
 	}
 	return res
 }

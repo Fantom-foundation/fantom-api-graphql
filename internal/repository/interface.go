@@ -525,7 +525,7 @@ type Repository interface {
 	Erc1155IsApprovedForAll(token *common.Address, owner *common.Address, operator *common.Address) (bool, error)
 
 	// GovernanceContractBy provides governance contract details by its address.
-	GovernanceContractBy(*common.Address) (*config.GovernanceContract, error)
+	GovernanceContractBy(common.Address) (config.GovernanceContract, error)
 
 	// GovernanceProposalsCount provides the total number of proposals
 	// in a given Governance contract.
@@ -533,7 +533,7 @@ type Repository interface {
 
 	// GovernanceProposal provides a detail of Proposal of a governance contract
 	// specified by its id.
-	GovernanceProposal(*common.Address, *hexutil.Big) (*types.GovernanceProposal, error)
+	GovernanceProposal(common.Address, *hexutil.Big) (*types.GovernanceProposal, error)
 
 	// GovernanceProposalState provides a state of Proposal of a governance contract
 	// specified by its id.
@@ -549,7 +549,7 @@ type Repository interface {
 	GovernanceVote(*common.Address, *hexutil.Big, *common.Address, *common.Address) (*types.GovernanceVote, error)
 
 	// GovernanceProposals loads list of proposals from given set of Governance contracts.
-	GovernanceProposals([]*common.Address, *string, int32, bool) (*types.GovernanceProposalList, error)
+	GovernanceProposals([]common.Address, *string, int32, bool) (*types.GovernanceProposalList, error)
 
 	// GovernanceProposalFee returns the fee payable for a new proposal
 	// in given Governance contract context.

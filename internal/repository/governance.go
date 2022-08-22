@@ -24,7 +24,7 @@ func (p *proxy) GovernanceProposalsCount(address *common.Address) (hexutil.Big, 
 
 // GovernanceProposal provides a detail of Proposal of a governance contract
 // specified by its id.
-func (p *proxy) GovernanceProposal(gov *common.Address, id *hexutil.Big) (*types.GovernanceProposal, error) {
+func (p *proxy) GovernanceProposal(gov common.Address, id *hexutil.Big) (*types.GovernanceProposal, error) {
 	return p.rpc.GovernanceProposal(gov, id)
 }
 
@@ -54,14 +54,14 @@ func (p *proxy) GovernanceVote(
 }
 
 // GovernanceContractBy provides governance contract details by its address.
-func (p *proxy) GovernanceContractBy(addr *common.Address) (*config.GovernanceContract, error) {
+func (p *proxy) GovernanceContractBy(addr common.Address) (config.GovernanceContract, error) {
 	// try to pull the config from the map
 	if gc, ok := p.govContracts[addr.String()]; ok {
 		return gc, nil
 	}
 
 	// contract not found
-	return nil, fmt.Errorf("governance contract %s not found", addr.String())
+	return config.GovernanceContract{}, fmt.Errorf("governance contract %s not found", addr.String())
 }
 
 // GovernanceProposalFee returns the fee payable for a new proposal

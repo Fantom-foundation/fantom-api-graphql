@@ -60,7 +60,7 @@ func (gp *GovernanceProposal) Vote(args *struct {
 // Governance resolves the parent Governance instance.
 func (gp *GovernanceProposal) Governance() (*GovernanceContract, error) {
 	// get the governance contract by address
-	gc, err := repository.R().GovernanceContractBy(&gp.GovernanceId)
+	gc, err := repository.R().GovernanceContractBy(gp.GovernanceId)
 	if err != nil {
 		return nil, err
 	}

@@ -24,7 +24,7 @@ type GovernanceContract struct {
 // GovContract resolves a governance contract details recognized by the API by address.
 func (rs *rootResolver) GovContract(args struct{ Address common.Address }) (*GovernanceContract, error) {
 	// get the contract by the address
-	gc, err := repository.R().GovernanceContractBy(&args.Address)
+	gc, err := repository.R().GovernanceContractBy(args.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (gc *GovernanceContract) TotalProposals() (hexutil.Big, error) {
 // by the proposal id inside the contract.
 func (gc *GovernanceContract) Proposal(args *struct{ Id hexutil.Big }) (*GovernanceProposal, error) {
 	// get the proposal
-	prop, err := repository.R().GovernanceProposal(&gc.Address, &args.Id)
+	prop, err := repository.R().GovernanceProposal(gc.Address, &args.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (gc *GovernanceContract) Proposals(args *struct {
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get the list of all proposals
-	list, err := repository.R().GovernanceProposals([]*common.Address{&gc.Address}, (*string)(args.Cursor), args.Count, args.ActiveOnly)
+	list, err := repository.R().GovernanceProposals([]common.Address{gc.Address}, (*string)(args.Cursor), args.Count, args.ActiveOnly)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func (gc *GovernanceContract) sfcDelegationsBy(addr common.Address) ([]common.Ad
 
 // sfcCanVote resolves if a given address can vote in SFC governance context.
 func (gc *GovernanceContract) sfcCanVote(addr common.Address) (bool, error) {
-	// even validators are actually delegating to themself on SFCv3
+	// even validators are actually delegating to themselves on SFCv3
 	return repository.R().IsDelegating(&addr)
 }
 

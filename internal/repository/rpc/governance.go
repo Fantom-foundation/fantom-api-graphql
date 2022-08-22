@@ -57,9 +57,9 @@ func (ftm *FtmBridge) GovernanceProposalsCount(gov *common.Address) (hexutil.Big
 
 // GovernanceProposal provides a detail of Proposal of a governance contract
 // specified by its id.
-func (ftm *FtmBridge) GovernanceProposal(gov *common.Address, id *hexutil.Big) (*types.GovernanceProposal, error) {
+func (ftm *FtmBridge) GovernanceProposal(gov common.Address, id *hexutil.Big) (*types.GovernanceProposal, error) {
 	// get the contract
-	gc, err := contracts.NewGovernance(*gov, ftm.eth)
+	gc, err := contracts.NewGovernance(gov, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not access governance %s; %s", gov.String(), err.Error())
 		return nil, err
@@ -77,7 +77,7 @@ func (ftm *FtmBridge) GovernanceProposal(gov *common.Address, id *hexutil.Big) (
 
 // GovernanceProposal provides a detail of Proposal of a governance contract
 // specified by its id.
-func (ftm *FtmBridge) governanceProposalDetail(gc *contracts.Governance, govId *common.Address, id *big.Int) (*types.GovernanceProposal, error) {
+func (ftm *FtmBridge) governanceProposalDetail(gc *contracts.Governance, govId common.Address, id *big.Int) (*types.GovernanceProposal, error) {
 	// try to get proposal params
 	data, err := gc.ProposalParams(nil, id)
 	if err != nil {
@@ -92,7 +92,7 @@ func (ftm *FtmBridge) governanceProposalDetail(gc *contracts.Governance, govId *
 
 	// make and return the proposal detail
 	return &types.GovernanceProposal{
-		GovernanceId:  *govId,
+		GovernanceId:  govId,
 		Id:            hexutil.Big(*id),
 		Name:          ext.Name,
 		Description:   ext.Desc,
@@ -294,9 +294,9 @@ func (ftm *FtmBridge) GovernanceVote(
 }
 
 // GovernanceProposalsBy loads list of proposals of the given Governance contract.
-func (ftm *FtmBridge) GovernanceProposalsBy(gov *common.Address) ([]*types.GovernanceProposal, error) {
+func (ftm *FtmBridge) GovernanceProposalsBy(gov common.Address) ([]*types.GovernanceProposal, error) {
 	// get the contract
-	gc, err := contracts.NewGovernance(*gov, ftm.eth)
+	gc, err := contracts.NewGovernance(gov, ftm.eth)
 	if err != nil {
 		ftm.log.Errorf("can not access governance %s; %s", gov.String(), err.Error())
 		return nil, err
@@ -312,7 +312,7 @@ func (ftm *FtmBridge) GovernanceProposalsBy(gov *common.Address) ([]*types.Gover
 	// log what we do
 	ftm.log.Noticef("loading %d proposals of %s", maxProposalId.Uint64(), gov.String())
 
-	// make the array; the maxProposalId starts with 1 so we need array for one less
+	// make the array; the maxProposalId starts with 1, so we need array for one less
 	result := make([]*types.GovernanceProposal, 0)
 
 	// loop the sys to load proposals

@@ -36,12 +36,12 @@ func (s GovernanceProposalsByStart) Swap(i, j int) {
 }
 
 // GovernanceProposalsBy loads list of proposals of the given Governance contract.
-func (p *proxy) GovernanceProposalsBy(gov *common.Address) ([]*types.GovernanceProposal, error) {
+func (p *proxy) GovernanceProposalsBy(gov common.Address) ([]*types.GovernanceProposal, error) {
 	return p.rpc.GovernanceProposalsBy(gov)
 }
 
 // GovernanceProposals loads list of proposals from given set of Governance contracts.
-func (p *proxy) GovernanceProposals(govs []*common.Address, cursor *string, count int32, activeOnly bool) (*types.GovernanceProposalList, error) {
+func (p *proxy) GovernanceProposals(govs []common.Address, cursor *string, count int32, activeOnly bool) (*types.GovernanceProposalList, error) {
 	// prep the container
 	var result []*types.GovernanceProposal
 

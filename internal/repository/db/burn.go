@@ -132,6 +132,18 @@ func (db *MongoDbBridge) burnAddBurnValue(v int64) {
 	}
 }
 
+// burnAddTotalAggregate creates a container for the total aggregate.
+func (db *MongoDbBridge) burnAddTotalAggregate() error {
+	col := db.client.Database(db.dbName).Collection(colBurnsAggregate)
+	_, err := col.UpdateByID(context.Background(), burnBaseAggregateDate, bson.D{
+		{Key: "$setOnInsert", Value: bson.D{
+			{Key: "_id", Value: burnBaseAggregateDate},
+			{Key: "amount", Value: int64(0)},
+		}},
+	}, options.Update().SetUpsert(true))
+	return err
+}
+
 // BurnCount estimates the number of burn records in the database.
 func (db *MongoDbBridge) BurnCount() (uint64, error) {
 	return db.EstimateCount(db.client.Database(db.dbName).Collection(colBurns))
@@ -144,6 +156,10 @@ func (db *MongoDbBridge) BurnTotal() (int64, error) {
 	sr := col.FindOne(context.Background(), bson.D{{Key: "_id", Value: burnBaseAggregateDate}})
 	if sr.Err() != nil {
 		db.log.Criticalf("could not get burned total; %s", sr.Err().Error())
+		if sr.Err() == mongo.ErrNoDocuments {
+			return 0, db.burnAddTotalAggregate()
+		}
+
 		return 0, sr.Err()
 	}
 
