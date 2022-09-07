@@ -8,6 +8,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"reflect"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/p2p/enode"
@@ -15,11 +21,6 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
-	"io/ioutil"
-	"log"
-	"os"
-	"reflect"
-	"strings"
 )
 
 // Load provides a loaded configuration for Fantom API server.
@@ -233,7 +234,7 @@ func parseNodeAddress(uri string) (*enode.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	return enode.New(enode.ValidSchemes, &r)
+	return enode.New(OperaNodeValidSchemes, &r)
 }
 
 // decodeNodeRecordHex decodes RLP encoded enode record in HEX notation.

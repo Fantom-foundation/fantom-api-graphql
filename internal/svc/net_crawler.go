@@ -3,12 +3,14 @@ package svc
 
 import (
 	"bytes"
+	"fantom-api-graphql/internal/config"
 	"fantom-api-graphql/internal/repository/db"
 	"fmt"
-	"github.com/ethereum/go-ethereum/p2p/discover"
-	"github.com/ethereum/go-ethereum/p2p/enode"
 	"net"
 	"time"
+
+	"github.com/ethereum/go-ethereum/p2p/discover"
+	"github.com/ethereum/go-ethereum/p2p/enode"
 )
 
 // discoveryNodeEmptyID represents an undefined ID of a discovery node.
@@ -212,8 +214,9 @@ func newDiscovery() (*discover.UDPv5, error) {
 
 	// prepare configuration using global config
 	conf := discover.Config{
-		PrivateKey: cfg.Signature.PrivateKey,
-		Bootnodes:  boot,
+		PrivateKey:   cfg.Signature.PrivateKey,
+		Bootnodes:    boot,
+		ValidSchemes: config.OperaNodeValidSchemes,
 	}
 
 	// make in-memory key-value database; it's used by the client to track neighbors' buckets
