@@ -10,7 +10,7 @@ import (
 // primitive codecs.
 var defaultRegistry = New()
 
-// DefaultRegistry returns default BSON Registry
+// DefaultRegistry returns default BSON codec registry
 func DefaultRegistry() *bsoncodec.Registry {
 	return defaultRegistry
 }

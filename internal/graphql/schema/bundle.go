@@ -48,6 +48,30 @@ type DailyTrxVolume {
     gas: BigInt!
 }
 
+# NftOwnership represents an NFT ownership.
+type NftOwnership {
+    # owner represents token owner.
+    owner: Address!
+
+    # tokenId represents token identifier.
+    tokenId: BigInt!
+
+    # amount represents amount of tokens.
+    amount: BigInt!
+
+    # obtained represents timestamp when NFT was obtained.
+    obtained: Long!
+
+    # trx represents transaction hash in which NFT was obtained.
+    trx: Bytes32!
+
+    # tokenName represents NFT name.
+    tokenName: String
+
+    # contract represents related contract.
+    contract: Contract!
+}
+
 # DefiToken represents a token available for DeFi operations.
 type DefiToken {
     # address of the token is used as the token's unique identifier.
@@ -707,7 +731,7 @@ type Delegation {
     lockedUntil: Long!
 
     # lockedAmount represents the amount of delegation stake locked.
-    # The undelegate process must call unlock prior to creating withdraw
+    # The un-delegate process must call unlock prior to creating withdraw
     # request if outstanding unlocked amount
     # is lower than demanded amount to undelegate.
     lockedAmount: BigInt!
@@ -927,7 +951,7 @@ scalar Address
 # or a hexadecimal string alternatively prefixed with 0x. Output is 0x prefixed hexadecimal.
 scalar BigInt
 
-# Long is a 64 bit unsigned integer value.
+# Long is a 64 bit unsigned integer value encoded as hex value with 0x prefix.
 scalar Long
 
 # Bytes is an arbitrary length binary string, represented as 0x-prefixed hexadecimal.
@@ -971,6 +995,24 @@ type CurrentState {
     # sfcLockingEnabled indicates if the SFC locking feature is enabled.
     sfcLockingEnabled: Boolean!
 }
+# NftOwnershipList is a list of nft ownership edges provided by sequential access request.
+type NftOwnershipList {
+    # Edges contains provided edges of the sequential list.
+    edges: [NftOwnershipEdge!]!
+
+    # TotalCount is the maximum number of nft ownerships available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of nft ownership edges.
+    pageInfo: ListPageInfo!
+}
+
+# NftOwnershipEdge is a single edge in a sequential list of nft ownerships.
+type NftOwnershipEdge {
+    cursor: Cursor!
+    nftOwnership: NftOwnership!
+}
+
 # UniswapActionList is a list of uniswap action edges provided by sequential access request.
 type UniswapActionList {
     # Edges contains provided edges of the sequential list.
@@ -1059,6 +1101,9 @@ type Staker {
     # on a new delegation in WEI.
     # This value depends on the amount of self staked tokens.
     delegatedLimit: BigInt!
+
+    # Is this a validator record.
+    isValidator: Boolean!
 
     # Is the staker active.
     isActive: Boolean!
@@ -2352,6 +2397,9 @@ type Query {
 
     # networkNodesAggregated provides an aggregated list of network nodes on the Opera network.
     networkNodesAggregated(level: NetworkNodeGroupLevel = COUNTRY): NetworkNodeGroupList!
+
+    # List owned NFT tokens and their amount
+    nftOwnerships(cursor: Cursor, count: Int = 25, collection: Address, owner: Address, tokenId: BigInt): NftOwnershipList!
 }
 
 # Mutation endpoints for modifying the data

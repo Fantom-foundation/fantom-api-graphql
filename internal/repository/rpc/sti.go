@@ -30,7 +30,7 @@ import (
 )
 
 // stiRequestTimeout is number of seconds we wait for the staker information request to finish.
-const stiRequestTimeout = 1 * time.Second
+const stiRequestTimeout = 3 * time.Second
 
 // stiNameCheckRegex is the expression used to check for staker name validity
 var stiNameCheckRegex = regexp.MustCompile(`^[\w\d\s.\-_'$()]+$`)

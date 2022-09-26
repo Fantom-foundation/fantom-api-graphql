@@ -145,45 +145,22 @@ func (trx *Transaction) Erc20Transactions() ([]*ERC20Transaction, error) {
 
 	list := make([]*ERC20Transaction, 0)
 	for _, tx := range tl {
-		if tx.TokenType == types.AccountTypeERC20Token {
-			list = append(list, NewErc20Transaction(tx))
-		}
+		list = append(list, NewErc20Transaction(tx))
 	}
+
 	return list, nil
 }
 
 // Erc721Transactions resolves list of ERC-721 transactions executed in the scope
 // of this general transaction function call.
 func (trx *Transaction) Erc721Transactions() ([]*ERC721Transaction, error) {
-	// get all the transaction
-	tl, err := trx.tokenTransactions()
-	if err != nil {
-		return nil, err
-	}
-
-	list := make([]*ERC721Transaction, 0)
-	for _, tx := range tl {
-		if tx.TokenType == types.AccountTypeERC721Contract {
-			list = append(list, NewErc721Transaction(tx))
-		}
-	}
-	return list, nil
+	// return empty transaction list to keep existing GraphQL schema
+	return make([]*ERC721Transaction, 0), nil
 }
 
 // Erc1155Transactions resolves list of ERC-155 transactions executed in the scope
 // of this general transaction function call.
 func (trx *Transaction) Erc1155Transactions() ([]*ERC1155Transaction, error) {
-	// get all the transaction
-	tl, err := trx.tokenTransactions()
-	if err != nil {
-		return nil, err
-	}
-
-	list := make([]*ERC1155Transaction, 0)
-	for _, tx := range tl {
-		if tx.TokenType == types.AccountTypeERC1155Contract {
-			list = append(list, NewErc1155Transaction(tx))
-		}
-	}
-	return list, nil
+	// return empty transaction list to keep existing GraphQL schema
+	return make([]*ERC1155Transaction, 0), nil
 }

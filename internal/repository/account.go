@@ -32,6 +32,23 @@ func (p *proxy) Account(addr *common.Address) (acc *types.Account, err error) {
 	return acc, nil
 }
 
+// Contract returns contract at Opera blockchain for an address, nil if not found.
+func (p *proxy) Contract(addr *common.Address) (con *types.Account, err error) {
+	// try to get the account from cache
+	con = p.cache.PullAccount(addr)
+
+	// we still don't know the account? try to get it from database
+	if con == nil {
+		con, err = p.getContract(addr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// return the contract
+	return con, nil
+}
+
 // getAccount builds the account representation after validating it against Opera node.
 func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 	// any address given?
@@ -49,21 +66,40 @@ func (p *proxy) getAccount(addr *common.Address) (*types.Account, error) {
 
 	// found the account in database?
 	if acc == nil {
-		// log an unknown address
 		p.log.Debugf("unknown address %s detected", addr.String())
-
-		// at least we know the account existed
-		acc = &types.Account{Address: *addr, Type: types.AccountTypeWallet}
-
-		// check if this is a smart contract account; we log the error on the call
-		acc.ContractTx, _ = p.db.ContractTransaction(addr)
+		acc = &types.Account{Address: *addr, AccountType: types.AccountTypeWallet}
 	}
 
 	// also keep a copy at the in-memory cache
 	if err = p.cache.PushAccount(acc); err != nil {
-		p.log.Warningf("can not keep account [%s] information in memory; %s", addr.Hex(), err.Error())
+		p.log.Warningf("can not keep account [%s] information in memory; %s", addr.String(), err.Error())
 	}
 	return acc, nil
+}
+
+// getContract builds the contract representation after validating it against Opera node.
+func (p *proxy) getContract(addr *common.Address) (*types.Account, error) {
+	// any address given?
+	if addr == nil {
+		p.log.Error("no address given")
+		return nil, fmt.Errorf("no address given")
+	}
+
+	// try to get the contract from database
+	con, err := p.db.Contract(addr)
+	if err != nil {
+		p.log.Errorf("can not get the contract %s; %s", addr.String(), err.Error())
+		return nil, err
+	}
+
+	// also keep a copy at the in-memory cache
+	if con != nil {
+		if err = p.cache.PushAccount(con); err != nil {
+			p.log.Warningf("can not keep contract [%s] information in memory; %s", addr.String(), err.Error())
+		}
+	}
+
+	return con, nil
 }
 
 // AccountBalance returns the current balance of an account at Opera blockchain.
@@ -74,6 +110,16 @@ func (p *proxy) AccountBalance(addr *common.Address) (*hexutil.Big, error) {
 // AccountNonce returns the current number of sent transactions of an account at Opera blockchain.
 func (p *proxy) AccountNonce(addr *common.Address) (*hexutil.Uint64, error) {
 	return p.rpc.AccountNonce(addr)
+}
+
+// AccountHasCode checks if the given account has an associated code.
+func (p *proxy) AccountHasCode(addr *common.Address) bool {
+	c, err := p.rpc.AccountCode(addr)
+	if err != nil {
+		p.log.Errorf("account %s code check failed; %s", addr.String(), err.Error())
+		return false
+	}
+	return c != nil && len(c) > 0
 }
 
 // AccountTransactions returns slice of AccountTransaction structure for a given account at Opera blockchain.
@@ -87,8 +133,8 @@ func (p *proxy) AccountTransactions(addr *common.Address, rec *common.Address, c
 	return p.db.AccountTransactions(addr, rec, cursor, count)
 }
 
-// AccountsActive returns total number of accounts known to repository.
-func (p *proxy) AccountsActive() (hexutil.Uint64, error) {
+// AccountCount returns total number of accounts known to repository.
+func (p *proxy) AccountCount() (hexutil.Uint64, error) {
 	val, err := p.db.AccountCount()
 	return hexutil.Uint64(val), err
 }
@@ -118,14 +164,20 @@ func (p *proxy) AccountIsKnown(addr *common.Address) bool {
 // StoreAccount adds specified account detail into the repository.
 func (p *proxy) StoreAccount(acc *types.Account) error {
 	// add this account to the database and remember it's been added
-	err := p.db.AddAccount(acc)
+	err := p.db.StoreAccount(acc)
 	if err == nil {
 		p.cache.PushAccountKnown(&acc.Address)
 	}
 	return err
 }
 
-// AccountMarkActivity marks the latest account activity in the repository.
-func (p *proxy) AccountMarkActivity(addr *common.Address, ts uint64) error {
-	return p.db.AccountMarkActivity(addr, ts)
+// TokenNameAttempt tries to extract token name from the contract on the given address.
+func (p *proxy) TokenNameAttempt(adr *common.Address) (string, error) {
+	return p.rpc.TokenNameAttempt(adr)
+}
+
+// Contracts returns list of smart contracts at Opera blockchain.
+func (p *proxy) Contracts(cursor *string, count int32) (*types.ContractList, error) {
+	// go to the database for the list of contracts searched
+	return p.db.Contracts(cursor, count)
 }

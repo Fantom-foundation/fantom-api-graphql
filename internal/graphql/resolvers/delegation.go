@@ -269,3 +269,8 @@ func (del Delegation) TokenizerAllowedToWithdraw() (bool, error) {
 	}
 	return lock, nil
 }
+
+// CreatedTime returns creation date
+func (del Delegation) CreatedTime() hexutil.Uint64 {
+	return hexutil.Uint64(del.Created.Unix())
+}

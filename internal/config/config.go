@@ -61,6 +61,9 @@ type Config struct {
 
 	// ReScanBlocks represents the number of blocks to be re-scanned.
 	RepoCommand RepoCmd `mapstructure:"cmd"`
+
+	// IPFS represents the node structure
+	Ipfs Ipfs `mapstructure:"ipfs"`
 }
 
 // RepoCmd represents a repository command configuration.
@@ -176,4 +179,22 @@ type GovernanceContract struct {
 // DeFiFLend represents the fLend DeFi module configuration.
 type DeFiFLend struct {
 	LendingPool common.Address `mapstructure:"lending_pool"`
+}
+
+// Ipfs represents the IPFS node access configuration
+type Ipfs struct {
+	// Url of the IPFS node
+	Url string `mapstructure:"url"`
+
+	// Skip known HTTP-to-IPFS gateways and use our IPFS node instead
+	SkipHttpGateways bool `mapstructure:"skip_http_gateways"`
+
+	// Gateway to process IPFS requests instead of IPFS node (like Pinata)
+	Gateway string `mapstructure:"gateway"`
+
+	// GatewayBearer represents API key (JWT) to be used for Gateway auth
+	GatewayBearer string `mapstructure:"gateway_bearer"`
+
+	// FileCacheDir is a directory, where can be uploaded files cached
+	FileCacheDir string `mapstructure:"file_cache_dir"`
 }

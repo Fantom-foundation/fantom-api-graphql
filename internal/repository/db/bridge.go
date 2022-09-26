@@ -16,6 +16,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// docListCountAggregationTimeout represents a max duration of DB query executed to calculate
+// exact document count in filtered collection. If this duration is exceeded, the query fails
+// ad we fall back to full collection documents count estimation.
+const docListCountAggregationTimeout = 500 * time.Millisecond
+
+// defaultPk represents the default MongoDB primary key attribute name.
+const defaultPK = "_id"
+
 // MongoDbBridge represents Mongo DB abstraction layer.
 type MongoDbBridge struct {
 	client *mongo.Client
@@ -25,26 +33,7 @@ type MongoDbBridge struct {
 	// sync DB related processes
 	wg  sync.WaitGroup
 	sig []chan bool
-
-	// init state marks
-	initAccounts     *sync.Once
-	initTransactions *sync.Once
-	initContracts    *sync.Once
-	initSwaps        *sync.Once
-	initDelegations  *sync.Once
-	initWithdrawals  *sync.Once
-	initRewards      *sync.Once
-	initErc20Trx     *sync.Once
-	initFMintTrx     *sync.Once
-	initEpochs       *sync.Once
-	initGasPrice     *sync.Once
-	initBurns        *sync.Once
 }
-
-// docListCountAggregationTimeout represents a max duration of DB query executed to calculate
-// exact document count in filtered collection. If this duration is exceeded, the query fails
-// ad we fall back to full collection documents count estimation.
-const docListCountAggregationTimeout = 500 * time.Millisecond
 
 // intZero represents an empty big value.
 var intZero = new(big.Int)
@@ -69,11 +58,11 @@ func New(cfg *config.Config, log logger.Logger) (*MongoDbBridge, error) {
 		client: con,
 		log:    log,
 		dbName: cfg.Db.DbName,
+		sig:    make([]chan bool, 0),
 	}
 
 	// check the state
 	db.updateDatabaseIndexes()
-	db.CheckDatabaseInitState()
 	return db, nil
 }
 
@@ -99,6 +88,12 @@ func connectDb(cfg *config.Database) (*mongo.Client, error) {
 
 // Close will terminate or finish all operations and close the connection to Mongo database.
 func (db *MongoDbBridge) Close() {
+	// signal terminate and wait for processes to finish
+	for _, sig := range db.sig {
+		sig <- true
+	}
+	db.wg.Wait()
+
 	// do we have a client?
 	if db.client != nil {
 		// prep context
@@ -163,48 +158,6 @@ func (db *MongoDbBridge) getAggregateValue(col *mongo.Collection, pipeline *bson
 	}
 
 	return uint64(row.Value), nil
-}
-
-// CheckDatabaseInitState verifies if database collections have been
-// already initialized and marks the empty collections so they can be properly
-// configured when created.
-func (db *MongoDbBridge) CheckDatabaseInitState() {
-	// log what we do
-	db.log.Debugf("checking database init state")
-
-	db.collectionNeedInit("accounts", db.AccountCount, &db.initAccounts)
-	db.collectionNeedInit("transactions", db.TransactionsCount, &db.initTransactions)
-	db.collectionNeedInit("contracts", db.ContractCount, &db.initContracts)
-	db.collectionNeedInit("swaps", db.SwapCount, &db.initSwaps)
-	db.collectionNeedInit("delegations", db.DelegationsCount, &db.initDelegations)
-	db.collectionNeedInit("withdrawals", db.WithdrawalsCount, &db.initWithdrawals)
-	db.collectionNeedInit("rewards", db.RewardsCount, &db.initRewards)
-	db.collectionNeedInit("erc20 transactions", db.ErcTransactionCount, &db.initErc20Trx)
-	db.collectionNeedInit("fmint transactions", db.FMintTransactionCount, &db.initFMintTrx)
-	db.collectionNeedInit("epochs", db.EpochsCount, &db.initEpochs)
-	db.collectionNeedInit("gas price periods", db.GasPricePeriodCount, &db.initGasPrice)
-	db.collectionNeedInit("burned fees", db.BurnCount, &db.initBurns)
-}
-
-// checkAccountCollectionState checks the Accounts' collection state.
-func (db *MongoDbBridge) collectionNeedInit(name string, counter func() (uint64, error), init **sync.Once) {
-	// use the counter to get the collection size
-	count, err := counter()
-	if err != nil {
-		db.log.Errorf("can not check %s count; %s", name, err.Error())
-		return
-	}
-
-	// collection not empty,
-	if 0 != count {
-		db.log.Debugf("found %d %s", count, name)
-		return
-	}
-
-	// collection init needed, create the init control
-	db.log.Noticef("%s collection empty", name)
-	var once sync.Once
-	*init = &once
 }
 
 // CountFiltered calculates total number of documents in the given collection for the given filter.

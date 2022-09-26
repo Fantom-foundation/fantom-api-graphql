@@ -28,6 +28,9 @@ type Repository interface {
 	// Account returns account at Opera blockchain for an address, nil if not found.
 	Account(*common.Address) (*types.Account, error)
 
+	// Contract returns contract at Opera blockchain for an address, nil if not found.
+	Contract(addr *common.Address) (*types.Account, error)
+
 	// AccountBalance returns the current balance of an account at Opera blockchain.
 	AccountBalance(*common.Address) (*hexutil.Big, error)
 
@@ -50,17 +53,17 @@ type Repository interface {
 	// Transactions are always sorted from newer to older.
 	AccountTransactions(*common.Address, *common.Address, *string, int32) (*types.TransactionList, error)
 
-	// AccountsActive total number of accounts known to repository.
-	AccountsActive() (hexutil.Uint64, error)
+	// AccountCount total number of accounts known to repository.
+	AccountCount() (hexutil.Uint64, error)
 
 	// AccountIsKnown checks if the account of the given address is known to the API server.
 	AccountIsKnown(*common.Address) bool
 
+	// AccountHasCode checks if the given account has an associated code.
+	AccountHasCode(addr *common.Address) bool
+
 	// StoreAccount adds specified account detail into the repository.
 	StoreAccount(*types.Account) error
-
-	// AccountMarkActivity marks the latest account activity in the repository.
-	AccountMarkActivity(*common.Address, uint64) error
 
 	// BlockHeight returns the current height of the Opera blockchain in blocks.
 	BlockHeight() (*hexutil.Big, error)
@@ -92,19 +95,8 @@ type Repository interface {
 	// CacheBlock puts a block to the internal block ring cache.
 	CacheBlock(blk *types.Block)
 
-	// Contract extract a smart contract information by address if available.
-	Contract(*common.Address) (*types.Contract, error)
-
 	// Contracts returns list of smart contracts at Opera blockchain.
-	Contracts(bool, *string, int32) (*types.ContractList, error)
-
-	// ValidateContract tries to validate contract byte code using
-	// provided source code. If successful, the contract information
-	// is updated the the repository.
-	ValidateContract(*types.Contract) error
-
-	// StoreContract updates the contract in repository.
-	StoreContract(*types.Contract) error
+	Contracts(*string, int32) (*types.ContractList, error)
 
 	// SfcVersion returns current version of the SFC contract.
 	SfcVersion() (hexutil.Uint64, error)
@@ -434,12 +426,15 @@ type Repository interface {
 	// NativeTokenAddress returns address of the native token wrapper, if available.
 	NativeTokenAddress() (*common.Address, error)
 
-	// TokenTransactions provides list of ERC20/ERC721/ERC1155 transactions based on given filters.
-	TokenTransactions(tokenType string, token *common.Address, tokenId *big.Int, acc *common.Address, txType []int32, cursor *string, count int32) (*types.TokenTransactionList, error)
+	// TokenTransactions provides list of ERC20 transactions based on given filters.
+	TokenTransactions(token *common.Address, acc *common.Address, txType []int32, cursor *string, count int32) (*types.TokenTransactionList, error)
 
 	// TokenTransactionsByCall provides a list of token transaction made inside a specific
 	// transaction call (blockchain transaction).
 	TokenTransactionsByCall(*common.Hash) ([]*types.TokenTransaction, error)
+
+	// TokenNameAttempt tries to extract token name from the contract on the given address.
+	TokenNameAttempt(adr *common.Address) (string, error)
 
 	// Erc20Token returns an ERC20 token for the given address, if available.
 	Erc20Token(*common.Address) (*types.Erc20Token, error)
@@ -474,7 +469,7 @@ type Repository interface {
 	Erc20LogoURL(*common.Address) string
 
 	// StoreTokenTransaction stores ERC20/ERC721/ERC1155 transaction into the repository.
-	StoreTokenTransaction(*types.TokenTransaction) error
+	StoreTokenTransaction(*types.TokenTransaction, uint8) error
 
 	// Erc165SupportsInterface provides information about support of the interface by the contract.
 	Erc165SupportsInterface(contract *common.Address, interfaceID [4]byte) (bool, error)
@@ -523,6 +518,12 @@ type Repository interface {
 
 	// Erc1155IsApprovedForAll provides information about operator approved to manipulate with NFT tokens of given owner.
 	Erc1155IsApprovedForAll(token *common.Address, owner *common.Address, operator *common.Address) (bool, error)
+
+	// StoreNftOwnership stores the given NFT ownership record in persistent storage.
+	StoreNftOwnership(no *types.NftOwnership) error
+
+	// ListNftOwnerships resolves list of nft ownerships based on input data.
+	ListNftOwnerships(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor *string, count int32) (out *types.NftOwnershipList, err error)
 
 	// GovernanceContractBy provides governance contract details by its address.
 	GovernanceContractBy(common.Address) (config.GovernanceContract, error)
@@ -635,6 +636,9 @@ type Repository interface {
 
 	// NetworkNodesGeoAggregated provides a list of aggregated opera nodes based on given location detail level.
 	NetworkNodesGeoAggregated(level int) ([]*types.OperaNodeLocationAggregate, error)
+
+	// GetTokenJsonMetadata provides decoded JSON metadata for the given token metadata URI.
+	GetTokenJsonMetadata(uri string) (*types.NftMetadata, error)
 
 	// Close and cleanup the repository.
 	Close()

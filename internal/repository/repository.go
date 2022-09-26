@@ -13,9 +13,11 @@ import (
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository/cache"
 	"fantom-api-graphql/internal/repository/db"
+	"fantom-api-graphql/internal/repository/filecache"
 	"fantom-api-graphql/internal/repository/geoip"
 	"fantom-api-graphql/internal/repository/p2p"
 	"fantom-api-graphql/internal/repository/rpc"
+	"fantom-api-graphql/internal/repository/uri"
 	"fmt"
 	"golang.org/x/sync/singleflight"
 	"sync"
@@ -59,12 +61,14 @@ func R() Repository {
 // Proxy represents Repository interface implementation and controls access to data
 // trough several low level bridges.
 type proxy struct {
-	cache *cache.MemBridge
-	db    *db.MongoDbBridge
-	rpc   *rpc.FtmBridge
-	geoip *geoip.Bridge
-	log   logger.Logger
-	cfg   *config.Config
+	cache     *cache.MemBridge
+	db        *db.MongoDbBridge
+	rpc       *rpc.FtmBridge
+	geoip     *geoip.Bridge
+	uri       *uri.Downloader
+	filecache *filecache.FileCache
+	log       logger.Logger
+	cfg       *config.Config
 
 	// transaction estimator counter
 	txCount uint64
@@ -100,12 +104,14 @@ func newRepository() Repository {
 
 	// construct the proxy instance
 	p := proxy{
-		cache: caBridge,
-		db:    dbBridge,
-		rpc:   rpcBridge,
-		geoip: geoBridge,
-		log:   log,
-		cfg:   cfg,
+		cache:     caBridge,
+		db:        dbBridge,
+		rpc:       rpcBridge,
+		geoip:     geoBridge,
+		uri:       uri.New(cfg, log),
+		filecache: filecache.New(cfg, log),
+		log:       log,
+		cfg:       cfg,
 
 		// get the map of governance contracts
 		govContracts: governanceContractsMap(cfg.Governance),

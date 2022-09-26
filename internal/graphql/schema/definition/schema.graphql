@@ -293,6 +293,9 @@ type Query {
 
     # networkNodesAggregated provides an aggregated list of network nodes on the Opera network.
     networkNodesAggregated(level: NetworkNodeGroupLevel = COUNTRY): NetworkNodeGroupList!
+
+    # List owned NFT tokens and their amount
+    nftOwnerships(cursor: Cursor, count: Int = 25, collection: Address, owner: Address, tokenId: BigInt): NftOwnershipList!
 }
 
 # Mutation endpoints for modifying the data

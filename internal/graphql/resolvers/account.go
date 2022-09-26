@@ -37,9 +37,9 @@ func (rs *rootResolver) Account(args struct{ Address common.Address }) (*Account
 	return NewAccount(acc), nil
 }
 
-// AccountsActive resolves total number of active accounts on the blockchain.
+// AccountsActive resolves total number of accounts on the blockchain.
 func (rs *rootResolver) AccountsActive() (hexutil.Uint64, error) {
-	return repository.R().AccountsActive()
+	return repository.R().AccountCount()
 }
 
 // Balance resolves total balance of the account.
@@ -118,9 +118,7 @@ func (acc *Account) Erc20TxList(args struct {
 
 	// get the transaction hash list from repository
 	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC20Token,
 		args.Token,
-		nil,
 		&acc.Address,
 		ercTrxTypesFromNames(args.TxType),
 		(*string)(args.Cursor),
@@ -141,25 +139,8 @@ func (acc *Account) Erc721TxList(args struct {
 	TokenId *hexutil.Big
 	TxType  *[]string
 }) (*ERC721TransactionList, error) {
-	// limit query size; the count can be either positive or negative
-	// this controls the loading direction
-	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
-
-	// get the transaction hash list from repository
-	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC721Contract,
-		args.Token,
-		(*big.Int)(args.TokenId),
-		&acc.Address,
-		ercTrxTypesFromNames(args.TxType),
-		(*string)(args.Cursor),
-		args.Count,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewERC721TransactionList(tl), nil
+	// return empty transaction list to keep existing GraphQL schema
+	return NewERC721TransactionList(&types.TokenTransactionList{Collection: make([]*types.TokenTransaction, 0)}), nil
 }
 
 // Erc1155TxList resolves list of ERC1155 transactions associated with the account.
@@ -170,25 +151,8 @@ func (acc *Account) Erc1155TxList(args struct {
 	TokenId *hexutil.Big
 	TxType  *[]string
 }) (*ERC1155TransactionList, error) {
-	// limit query size; the count can be either positive or negative
-	// this controls the loading direction
-	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
-
-	// get the transaction hash list from repository
-	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC1155Contract,
-		args.Token,
-		(*big.Int)(args.TokenId),
-		&acc.Address,
-		ercTrxTypesFromNames(args.TxType),
-		(*string)(args.Cursor),
-		args.Count,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewERC1155TransactionList(tl), nil
+	// return empty transaction list to keep existing GraphQL schema
+	return NewERC1155TransactionList(&types.TokenTransactionList{Collection: make([]*types.TokenTransaction, 0)}), nil
 }
 
 // Staker resolves the account staker detail, if the account is a staker.
@@ -225,20 +189,13 @@ func (acc *Account) Delegations(args *struct {
 	return NewDelegationList(dl), nil
 }
 
-// Contract resolves the account smart contract detail,
-// if the account is a smart contract address.
+// Contract resolves the contract detail, if the account is a contract.
 func (acc *Account) Contract() (*Contract, error) {
-	// is this actually a contract account?
-	if acc.ContractTx == nil {
-		return nil, nil
+	var contract *Contract
+	if acc.IsContract {
+		contract = NewContract(&acc.Account)
 	}
-
-	// get new contract
-	con, err := repository.R().Contract(&acc.Address)
-	if err != nil {
-		return nil, err
-	}
-	return NewContract(con), nil
+	return contract, nil
 }
 
 // delegationsTotal calculates total sum of delegations of the given account including

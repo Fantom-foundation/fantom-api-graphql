@@ -36,7 +36,7 @@ func (rs *rootResolver) Contracts(args *struct {
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// get the contract list from repository
-	cl, err := repository.R().Contracts(args.ValidatedOnly, (*string)(args.Cursor), args.Count)
+	cl, err := repository.R().Contracts((*string)(args.Cursor), args.Count)
 	if err != nil {
 		log.Errorf("can not get contracts list; %s", err.Error())
 		return nil, err
@@ -76,7 +76,7 @@ func (cl *ContractList) Edges() []*ContractListEdge {
 		// make the element
 		edge := ContractListEdge{
 			Contract: NewContract(c),
-			Cursor:   Cursor(strconv.FormatUint(c.Uid(), 10)),
+			Cursor:   Cursor(strconv.FormatUint(uint64(*c.ContractUid), 10)),
 		}
 
 		// add it to the list

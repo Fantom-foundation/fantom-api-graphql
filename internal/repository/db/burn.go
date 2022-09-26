@@ -39,29 +39,24 @@ Initialize aggregate table:
 	])
 */
 
-// initBurnsCollection initializes the burn collection indexes.
-func (db *MongoDbBridge) initBurnsCollection(col *mongo.Collection) {
+// burnCollectionIndexes provides a list of indexes expected to exist on the native FTM burns' collection.
+func burnCollectionIndexes() []mongo.IndexModel {
 	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
+	ix := make([]mongo.IndexModel, 1)
 
-	// index delegator + validator
+	ixBurnBlock := "ix_burn_block"
 	unique := true
-	ix = append(ix, mongo.IndexModel{
+	ix[0] = mongo.IndexModel{
 		Keys: bson.D{
 			{Key: "block", Value: 1},
 		},
 		Options: &options.IndexOptions{
+			Name:   &ixBurnBlock,
 			Unique: &unique,
 		},
-	})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for withdrawals collection; %s", err.Error())
 	}
 
-	// log we are done that
-	db.log.Debugf("burns collection initialized")
+	return ix
 }
 
 // BurnByBlock pulls a burn information for the given block number, if available.
@@ -97,11 +92,6 @@ func (db *MongoDbBridge) StoreBurn(burn *types.FtmBurn) error {
 	}
 
 	col := db.client.Database(db.dbName).Collection(colBurns)
-
-	// make sure burns collection is initialized
-	if db.initBurns != nil {
-		db.initBurns.Do(func() { db.initBurnsCollection(col); db.initBurns = nil })
-	}
 
 	// insert/update the burn data
 	re, err := col.UpdateOne(

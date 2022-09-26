@@ -10,28 +10,51 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// colFMintTransactions represents the name of the fMint transaction collection in database.
-const colFMintTransactions = "fmint_trx"
+const (
+	// colFMintTransactions represents the name of the fMint transaction collection in database.
+	colFMintTransactions           = "fmint_trx"
+	fiFMintTransactionTokenAddress = "tok"
+	fiFMintTransactionUser         = "usr"
+	fiFmintTransactionType         = "typ"
+	fiFmintTransactionAmount       = "amo"
+	fiFmintTransactionFee          = "fee"
+	fiFmintTransactionFeeValue     = "fee_val"
+	fiFmintTransactionTrxHash      = "trx"
+	fiFmintTransactionTrxIndex     = "tix"
+	fiFMintTransactionTimestamp    = "stamp"
+	fiFMintTransactionValue        = "val"
+	fiFMintTransactionOrdinal      = "orx"
+)
 
-// initFMintTrxCollection initializes the fMint transaction list collection with
-// indexes and additional parameters needed by the app.
-func (db *MongoDbBridge) initFMintTrxCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
+// fMintTrxCollectionIndexes provides a list of indexes expected to exist on the fmint transactions' collection.
+func fMintTrxCollectionIndexes() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 4)
 
-	// index specific elements
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiFMintTransactionToken, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiFMintTransactionUser, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiFMintTransactionTimestamp, Value: -1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiFMintTransactionOrdinal, Value: -1}}})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for fMint trx collection; %s", err.Error())
+	ixFMintTxToken := "ix_fmint_tx_tok"
+	ix[0] = mongo.IndexModel{
+		Keys:    bson.D{{Key: fiFMintTransactionTokenAddress, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixFMintTxToken},
 	}
 
-	// log we are done that
-	db.log.Debugf("fMint trx collection initialized")
+	ixFMintTxUser := "ix_fmint_tx_usr"
+	ix[1] = mongo.IndexModel{
+		Keys:    bson.D{{Key: fiFMintTransactionUser, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixFMintTxUser},
+	}
+
+	ixFMintTxStamp := "ix_fmint_tx_stamp"
+	ix[2] = mongo.IndexModel{
+		Keys:    bson.D{{Key: fiFMintTransactionTimestamp, Value: -1}},
+		Options: &options.IndexOptions{Name: &ixFMintTxStamp},
+	}
+
+	ixFMintTxOrdinal := "ix_fmin_tx_orx"
+	ix[3] = mongo.IndexModel{
+		Keys:    bson.D{{Key: fiFMintTransactionOrdinal, Value: -1}},
+		Options: &options.IndexOptions{Name: &ixFMintTxOrdinal},
+	}
+
+	return ix
 }
 
 // AddFMintTransaction stores an fMint transaction in the database if it doesn't exist.
@@ -44,16 +67,33 @@ func (db *MongoDbBridge) AddFMintTransaction(trx *types.FMintTransaction) error 
 		return nil
 	}
 
-	// try to do the insert
-	if _, err := col.InsertOne(context.Background(), trx); err != nil {
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: defaultPK, Value: trx.ComputedPk()}},
+		bson.D{
+			{Key: "$set", Value: bson.D{
+				{Key: fiFMintTransactionUser, Value: trx.UserAddress},
+				{Key: fiFMintTransactionTokenAddress, Value: trx.TokenAddress},
+				{Key: fiFmintTransactionType, Value: trx.Type},
+				{Key: fiFmintTransactionAmount, Value: trx.Amount},
+				{Key: fiFmintTransactionFee, Value: trx.Fee},
+				{Key: fiFmintTransactionFeeValue, Value: trx.ComputedFeeValue()},
+				{Key: fiFmintTransactionTrxHash, Value: trx.TrxHash},
+				{Key: fiFmintTransactionTrxIndex, Value: trx.TrxIndex},
+				{Key: fiFMintTransactionTimestamp, Value: trx.TimeStamp},
+				{Key: fiFMintTransactionValue, Value: trx.ComputedValue()},
+				{Key: fiFMintTransactionOrdinal, Value: trx.ComputedOrdinalIndex()},
+			}},
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: defaultPK, Value: trx.ComputedPk()},
+			}},
+		},
+		options.Update().SetUpsert(true),
+	); err != nil {
 		db.log.Critical(err)
 		return err
 	}
 
-	// make sure delegation collection is initialized
-	if db.initFMintTrx != nil {
-		db.initFMintTrx.Do(func() { db.initFMintTrxCollection(col); db.initErc20Trx = nil })
-	}
 	return nil
 }
 
@@ -61,9 +101,9 @@ func (db *MongoDbBridge) AddFMintTransaction(trx *types.FMintTransaction) error 
 func (db *MongoDbBridge) isFMintTransactionKnown(col *mongo.Collection, trx *types.FMintTransaction) bool {
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{
-		{Key: types.FiFMintTransactionId, Value: trx.Pk()},
+		{Key: defaultPK, Value: trx.ComputedPk()},
 	}, options.FindOne().SetProjection(bson.D{
-		{Key: types.FiFMintTransactionId, Value: true},
+		{Key: defaultPK, Value: true},
 	}))
 
 	// error on lookup?
@@ -167,20 +207,20 @@ func (db *MongoDbBridge) fMintTrxListCollectRangeMarks(col *mongo.Collection, li
 		// get the highest available pk
 		list.First, err = db.fMintTrxListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{Key: types.FiFMintTransactionOrdinal, Value: -1}}))
+			options.FindOne().SetSort(bson.D{{Key: fiFMintTransactionOrdinal, Value: -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available pk
 		list.First, err = db.fMintTrxListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{Key: types.FiFMintTransactionOrdinal, Value: 1}}))
+			options.FindOne().SetSort(bson.D{{Key: fiFMintTransactionOrdinal, Value: 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.fMintTrxListBorderPk(col,
-			bson.D{{Key: types.FiFMintTransactionId, Value: *cursor}},
+			bson.D{{Key: defaultPK, Value: *cursor}},
 			options.FindOne())
 	}
 
@@ -203,7 +243,7 @@ func (db *MongoDbBridge) fMintTrxListBorderPk(col *mongo.Collection, filter bson
 	}
 
 	// make sure we pull only what we need
-	opt.SetProjection(bson.D{{Key: types.FiFMintTransactionOrdinal, Value: true}})
+	opt.SetProjection(bson.D{{Key: fiFMintTransactionOrdinal, Value: true}})
 
 	// try to decode
 	sr := col.FindOne(context.Background(), filter, opt)
@@ -219,15 +259,15 @@ func (db *MongoDbBridge) fMintTrxListFilter(cursor *string, count int32, list *t
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiFMintTransactionOrdinal, Value: bson.D{{Key: "$lte", Value: list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: fiFMintTransactionOrdinal, Value: bson.D{{Key: "$lte", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiFMintTransactionOrdinal, Value: bson.D{{Key: "$gte", Value: list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: fiFMintTransactionOrdinal, Value: bson.D{{Key: "$gte", Value: list.First}}})
 		}
 	} else {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiFMintTransactionOrdinal, Value: bson.D{{Key: "$lt", Value: list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: fiFMintTransactionOrdinal, Value: bson.D{{Key: "$lt", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiFMintTransactionOrdinal, Value: bson.D{{Key: "$gt", Value: list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: fiFMintTransactionOrdinal, Value: bson.D{{Key: "$gt", Value: list.First}}})
 		}
 	}
 	// return the new filter
@@ -247,7 +287,7 @@ func (db *MongoDbBridge) fMintTrxListOptions(count int32) *options.FindOptions {
 	}
 
 	// sort with the direction we want
-	opt.SetSort(bson.D{{Key: types.FiFMintTransactionOrdinal, Value: sd}})
+	opt.SetSort(bson.D{{Key: fiFMintTransactionOrdinal, Value: sd}})
 
 	// prep the loading limit
 	var limit = int64(count)

@@ -5,7 +5,6 @@ import (
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"math/big"
 )
 
 // Erc20Transactions resolves list of ERC20 transactions.
@@ -22,9 +21,7 @@ func (rs *rootResolver) Erc20Transactions(args struct {
 
 	// get the transaction hash list from repository
 	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC20Token,
 		args.Token,
-		nil,
 		args.Account,
 		ercTrxTypesFromNames(args.TxType),
 		(*string)(args.Cursor),
@@ -46,25 +43,8 @@ func (rs *rootResolver) Erc721Transactions(args struct {
 	Account *common.Address
 	TxType  *[]string
 }) (*ERC721TransactionList, error) {
-	// limit query size; the count can be either positive or negative
-	// this controls the loading direction
-	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
-
-	// get the transaction hash list from repository
-	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC721Contract,
-		args.Token,
-		(*big.Int)(args.TokenId),
-		args.Account,
-		ercTrxTypesFromNames(args.TxType),
-		(*string)(args.Cursor),
-		args.Count,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewERC721TransactionList(tl), nil
+	// return empty transaction list to keep existing GraphQL schema
+	return NewERC721TransactionList(&types.TokenTransactionList{Collection: make([]*types.TokenTransaction, 0)}), nil
 }
 
 // Erc1155Transactions resolves list of ERC1155 transactions.
@@ -76,23 +56,6 @@ func (rs *rootResolver) Erc1155Transactions(args struct {
 	Account *common.Address
 	TxType  *[]string
 }) (*ERC1155TransactionList, error) {
-	// limit query size; the count can be either positive or negative
-	// this controls the loading direction
-	args.Count = listLimitCount(args.Count, accMaxTransactionsPerRequest)
-
-	// get the transaction hash list from repository
-	tl, err := repository.R().TokenTransactions(
-		types.AccountTypeERC1155Contract,
-		args.Token,
-		(*big.Int)(args.TokenId),
-		args.Account,
-		ercTrxTypesFromNames(args.TxType),
-		(*string)(args.Cursor),
-		args.Count,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewERC1155TransactionList(tl), nil
+	// return empty transaction list to keep existing GraphQL schema
+	return NewERC1155TransactionList(&types.TokenTransactionList{Collection: make([]*types.TokenTransaction, 0)}), nil
 }

@@ -51,21 +51,21 @@ func (p *proxy) loadErc20TokenDetails(token *types.Erc20Token) (*types.Erc20Toke
 	// get the name
 	token.Name, err = p.rpc.Erc20Name(&token.Address)
 	if err != nil {
-		p.log.Errorf("ERC20 token name not recognized at %s; %s", token.Address.String(), err.Error())
+		p.log.Debugf("ERC20 token name not recognized at %s; %s", token.Address.String(), err.Error())
 		token.Name = token.Address.String()
 	}
 
 	// get symbol
 	token.Symbol, err = p.rpc.Erc20Symbol(&token.Address)
 	if err != nil {
-		p.log.Errorf("ERC20 token symbol not recognized at %s; %s", token.Address.String(), err.Error())
+		p.log.Debugf("ERC20 token symbol not recognized at %s; %s", token.Address.String(), err.Error())
 		token.Symbol = "-"
 	}
 
 	// get decimals
 	token.Decimals, err = p.rpc.Erc20Decimals(&token.Address)
 	if err != nil {
-		p.log.Errorf("ERC20 token decimals not recognized at %s; %s", token.Address.String(), err.Error())
+		p.log.Debugf("ERC20 token decimals not recognized at %s; %s", token.Address.String(), err.Error())
 		token.Decimals = 0
 	}
 
@@ -116,9 +116,9 @@ func (p *proxy) Erc20TotalSupply(token *common.Address) (hexutil.Big, error) {
 	return p.rpc.Erc20TotalSupply(token)
 }
 
-// Erc20TokensList returns a list of known ERC20 tokens ordered by their activity.
+// Erc20TokensList returns a list of known ERC20 tokens.
 func (p *proxy) Erc20TokensList(count int32) ([]common.Address, error) {
-	return p.db.Erc20TokensList(count)
+	return p.db.ErcTokensList(count, types.AccountTypeERC20Contract)
 }
 
 // Erc20LogoURL provides URL address of a logo of the ERC20 token.

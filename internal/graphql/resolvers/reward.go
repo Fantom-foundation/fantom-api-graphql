@@ -35,3 +35,8 @@ func (rwc RewardClaim) IsRestaked() bool {
 func (rwc RewardClaim) TrxHash() common.Hash {
 	return rwc.ClaimTrx
 }
+
+// Claimed resolves the claimed timestamp.
+func (rwc RewardClaim) Claimed() hexutil.Uint64 {
+	return hexutil.Uint64(rwc.ClaimedTimeStamp)
+}

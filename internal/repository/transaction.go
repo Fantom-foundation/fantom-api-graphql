@@ -35,31 +35,34 @@ func (p *proxy) CacheTransaction(trx *types.Transaction) {
 // Transaction returns a transaction at Opera blockchain by a hash, nil if not found.
 // If the transaction is not found, ErrTransactionNotFound error is returned.
 func (p *proxy) Transaction(hash *common.Hash) (*types.Transaction, error) {
-	p.log.Debugf("requested transaction %s", hash.String())
+	return p.rpc.Transaction(hash)
+	/*
+		p.log.Debugf("requested transaction %s", hash.String())
 
-	// try to use the in-memory cache
-	if trx := p.cache.PullTransaction(hash); trx != nil {
-		p.log.Debugf("transaction %s loaded from cache", hash.String())
+		// try to use the in-memory cache
+		if trx := p.cache.PullTransaction(hash); trx != nil {
+			p.log.Debugf("transaction %s loaded from cache", hash.String())
+			return trx, nil
+		}
+
+		// return the value
+		trx, err := p.LoadTransaction(hash)
+		if err != nil {
+			return nil, err
+		}
+
+		// push the transaction to the cache to speed things up next time
+		// we don't cache pending transactions since it would cause issues
+		// when re-loading data of such transactions on the client side
+		if trx.BlockHash == nil {
+			p.log.Debugf("pending transaction %s found", trx.Hash)
+			return trx, nil
+		}
+
+		// store to cache
+		p.cache.PushTransaction(trx)
 		return trx, nil
-	}
-
-	// return the value
-	trx, err := p.LoadTransaction(hash)
-	if err != nil {
-		return nil, err
-	}
-
-	// push the transaction to the cache to speed things up next time
-	// we don't cache pending transactions since it would cause issues
-	// when re-loading data of such transactions on the client side
-	if trx.BlockHash == nil {
-		p.log.Debugf("pending transaction %s found", trx.Hash)
-		return trx, nil
-	}
-
-	// store to cache
-	p.cache.PushTransaction(trx)
-	return trx, nil
+	*/
 }
 
 // LoadTransaction returns a transaction at Opera blockchain
@@ -127,8 +130,8 @@ func (p *proxy) Transactions(cursor *string, count int32) (*types.TransactionLis
 			return &types.TransactionList{
 				Collection: tl,
 				Total:      uint64(p.MustEstimateTransactionsCount()),
-				First:      tl[0].Uid(),
-				Last:       tl[len(tl)-1].Uid(),
+				First:      tl[0].OrdinalIndex,
+				Last:       tl[len(tl)-1].OrdinalIndex,
 				IsStart:    true,
 				IsEnd:      false,
 				Filter:     nil,

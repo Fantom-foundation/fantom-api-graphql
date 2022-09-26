@@ -14,7 +14,9 @@ We strongly discourage opening Opera RPC interface for unrestricted Internet acc
 package rpc
 
 import (
+	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -24,6 +26,9 @@ import (
 
 // maxAcceptedGasPrice defines max accepted gas price, everything above invokes additional check.
 var maxAcceptedGasPrice = big.NewInt(1_000_000_000_000_000_000)
+
+// solidityCallFunctionName is the identifier for a call to Solidity function name() view returns(string)
+var solidityCallFunctionName = common.Hex2Bytes("06fdde03")
 
 // GasPrice pulls the current amount of WEI for single Gas.
 func (ftm *FtmBridge) GasPrice() (hexutil.Big, error) {
@@ -107,4 +112,46 @@ func (ftm *FtmBridge) GasEstimateWithBlock(trx *struct {
 	}
 
 	return &val, nil
+}
+
+// TokenNameAttempt tries to extract token name from the contract on the given address.
+// We assume to be able to call Solidity: function name() view returns(string)
+func (ftm *FtmBridge) TokenNameAttempt(adr *common.Address) (string, error) {
+	// call the function on the contract address
+	data, err := ftm.eth.CallContract(context.Background(), ethereum.CallMsg{
+		From: common.Address{},
+		To:   adr,
+		Data: solidityCallFunctionName,
+	}, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return parseAbiString(data)
+}
+
+// parseAbiString decodes a string in ABI format, if possible.
+func parseAbiString(data []byte) (string, error) {
+	// we expect string in response => offset + string length + string body padded to 32 bytes (at least 3x32 bytes)
+	if nil == data || len(data) < 96 {
+		return "", fmt.Errorf("abi encoded string expected, only %d bytes received", len(data))
+	}
+
+	// read the offset of the actual string
+	bigOffset := new(big.Int).SetBytes(data[:32])
+	if bigOffset.BitLen() > 63 {
+		return "", fmt.Errorf("string offset larger than int64: %v", bigOffset)
+	}
+
+	// the string data starts with the length, so add another 32 bytes to skip it
+	offset := int(bigOffset.Add(bigOffset, common.Big32).Uint64())
+
+	// how long is the string?
+	bigLength := new(big.Int).SetBytes(data[offset-32 : offset])
+	if bigLength.BitLen() > 63 {
+		return "", fmt.Errorf("string length larger than int64: %v", bigLength)
+	}
+	length := int(bigLength.Uint64())
+
+	return string(data[offset : offset+length]), nil
 }

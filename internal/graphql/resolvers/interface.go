@@ -28,18 +28,6 @@ type ApiResolver interface {
 	// Account resolves blockchain account by address.
 	Account(struct{ Address common.Address }) (*Account, error)
 
-	// Contracts resolves list of blockchain smart contracts encapsulated in a listable structure.
-	Contracts(*struct {
-		ValidatedOnly bool
-		Cursor        *Cursor
-		Count         int32
-	}) (*ContractList, error)
-
-	// ValidateContract resolves smart contract source code vs. deployed byte code and marks
-	// the contract as validated if the match is found. Peer API points are ringed on success
-	// to notify them about the change.
-	ValidateContract(*struct{ Contract ContractValidationInput }) (*Contract, error)
-
 	// Block resolves blockchain block by number or by hash. If neither is provided, the most recent block is given.
 	Block(*struct {
 		Number *hexutil.Uint64

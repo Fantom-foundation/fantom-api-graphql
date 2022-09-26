@@ -1,0 +1,17 @@
+# NftOwnershipList is a list of nft ownership edges provided by sequential access request.
+type NftOwnershipList {
+    # Edges contains provided edges of the sequential list.
+    edges: [NftOwnershipEdge!]!
+
+    # TotalCount is the maximum number of nft ownerships available for sequential access.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of nft ownership edges.
+    pageInfo: ListPageInfo!
+}
+
+# NftOwnershipEdge is a single edge in a sequential list of nft ownerships.
+type NftOwnershipEdge {
+    cursor: Cursor!
+    nftOwnership: NftOwnership!
+}

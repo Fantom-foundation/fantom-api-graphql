@@ -35,6 +35,13 @@
     "url": "mongodb://127.0.0.1:27017",
     "db": "mainnet"
   },
+  "ipfs": {
+    "url": "localhost:5001",
+    "gateway": "https://artion.mypinata.cloud",
+    "gateway_bearer": "xyz.abc.def",
+    "skip_http_gateways": true,
+    "file_cache_dir": "/tmp/fantom-api-graphql/"
+  },
   "compiler": {
     "temp": "/tmp/solidity",
     "sol": "/usr/local/bin/solc"

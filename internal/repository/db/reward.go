@@ -11,28 +11,49 @@ import (
 	"math/big"
 )
 
-// colRewards represents the name of the reward claim collection in database.
-const colRewards = "rewards"
+const (
+	// colRewards represents the name of the reward claim collection in database.
+	colRewards                 = "rewards"
+	FiRewardClaimTrx           = "_id"
+	FiRewardClaimDelegator     = "addr"
+	FiRewardClaimToValidatorId = "to"
+	FiRewardClaimTimeStamp     = "when"
+	FiRewardClaimAmount        = "amount"
+	FiRewardClaimIsDelegated   = "red"
+	FiRewardClaimValue         = "value"
+	FiRewardClaimOrdinal       = "orx"
+)
 
-// initRewardsCollection initializes the reward claims collection with
-// indexes and additional parameters needed by the app.
-func (db *MongoDbBridge) initRewardsCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
+// rewardCollectionIndexes provides a list of indexes expected to exist on the rewards' collection.
+func rewardCollectionIndexes() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 4)
 
 	// index delegator, receiving validator, and creation time stamp
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiRewardClaimAddress, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiRewardClaimToValidator, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiRewardClaimOrdinal, Value: -1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiRewardClaimedTimeStamp, Value: -1}}})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for reward claims collection; %s", err.Error())
+	ixRewardAddress := "ix_reward_address"
+	ix[0] = mongo.IndexModel{
+		Keys:    bson.D{{Key: FiRewardClaimDelegator, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixRewardAddress},
 	}
 
-	// log we done that
-	db.log.Debugf("reward claims collection initialized")
+	ixRewardTo := "ix_reward_to"
+	ix[1] = mongo.IndexModel{
+		Keys:    bson.D{{Key: FiRewardClaimToValidatorId, Value: 1}},
+		Options: &options.IndexOptions{Name: &ixRewardTo},
+	}
+
+	ixRewardOrdinal := "ix_reward_orx"
+	ix[2] = mongo.IndexModel{
+		Keys:    bson.D{{Key: FiRewardClaimOrdinal, Value: -1}},
+		Options: &options.IndexOptions{Name: &ixRewardOrdinal},
+	}
+
+	ixRewardStamp := "ix_reward_stamp"
+	ix[3] = mongo.IndexModel{
+		Keys:    bson.D{{Key: FiRewardClaimTimeStamp, Value: -1}},
+		Options: &options.IndexOptions{Name: &ixRewardStamp},
+	}
+
+	return ix
 }
 
 // AddRewardClaim stores a reward claim in the database if it doesn't exist.
@@ -40,45 +61,31 @@ func (db *MongoDbBridge) AddRewardClaim(rc *types.RewardClaim) error {
 	// get the collection for delegations
 	col := db.client.Database(db.dbName).Collection(colRewards)
 
-	// if the delegation already exists, update it with the new one
-	if db.isRewardClaimKnown(col, rc) {
-		return nil
-	}
-
-	// try to do the insert
-	if _, err := col.InsertOne(context.Background(), rc); err != nil {
+	// try to do the upsert
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: FiRewardClaimTrx, Value: rc.ClaimTrx}},
+		bson.D{
+			{Key: "$set", Value: bson.D{
+				{Key: FiRewardClaimDelegator, Value: rc.Delegator},
+				{Key: FiRewardClaimToValidatorId, Value: rc.ToValidatorId},
+				{Key: FiRewardClaimTimeStamp, Value: rc.ClaimedTimeStamp},
+				{Key: FiRewardClaimAmount, Value: rc.Amount},
+				{Key: FiRewardClaimIsDelegated, Value: rc.IsDelegated},
+				{Key: FiRewardClaimValue, Value: rc.ComputedValue()},
+				{Key: FiRewardClaimOrdinal, Value: rc.ComputedOrdinalIndex()},
+			}},
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: FiRewardClaimTrx, Value: rc.ClaimTrx},
+			}},
+		},
+		options.Update().SetUpsert(true),
+	); err != nil {
 		db.log.Critical(err)
 		return err
 	}
 
-	// make sure delegation collection is initialized
-	if db.initRewards != nil {
-		db.initRewards.Do(func() { db.initRewardsCollection(col); db.initRewards = nil })
-	}
 	return nil
-}
-
-// isDelegationKnown checks if the given delegation exists in the database.
-func (db *MongoDbBridge) isRewardClaimKnown(col *mongo.Collection, rc *types.RewardClaim) bool {
-	// try to find the delegation in the database
-	sr := col.FindOne(context.Background(), bson.D{
-		{Key: types.FiRewardClaimPk, Value: rc.Pk()},
-	}, options.FindOne().SetProjection(bson.D{
-		{Key: types.FiRewardClaimPk, Value: true},
-	}))
-
-	// error on lookup?
-	if sr.Err() != nil {
-		// may be ErrNoDocuments, which we seek
-		if sr.Err() == mongo.ErrNoDocuments {
-			return false
-		}
-		// inform that we can not get the PK; should not happen
-		db.log.Errorf("can not get existing reward claim pk; %s", sr.Err().Error())
-		return false
-	}
-
-	return true
 }
 
 // RewardsCountFiltered calculates total number of reward claims in the database for the given filter.
@@ -136,20 +143,20 @@ func (db *MongoDbBridge) rewListCollectRangeMarks(col *mongo.Collection, list *t
 		// get the highest available pk
 		list.First, err = db.rewListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{Key: types.FiRewardClaimOrdinal, Value: -1}}))
+			options.FindOne().SetSort(bson.D{{Key: FiRewardClaimOrdinal, Value: -1}}))
 		list.IsStart = true
 
 	} else if cursor == nil && count < 0 {
 		// get the lowest available pk
 		list.First, err = db.rewListBorderPk(col,
 			list.Filter,
-			options.FindOne().SetSort(bson.D{{Key: types.FiRewardClaimOrdinal, Value: 1}}))
+			options.FindOne().SetSort(bson.D{{Key: FiRewardClaimOrdinal, Value: 1}}))
 		list.IsEnd = true
 
 	} else if cursor != nil {
 		// the cursor itself is the starting point
 		list.First, err = db.rewListBorderPk(col,
-			bson.D{{Key: types.FiRewardClaimPk, Value: *cursor}},
+			bson.D{{Key: FiRewardClaimTrx, Value: *cursor}},
 			options.FindOne())
 	}
 
@@ -172,7 +179,7 @@ func (db *MongoDbBridge) rewListBorderPk(col *mongo.Collection, filter bson.D, o
 	}
 
 	// make sure we pull only what we need
-	opt.SetProjection(bson.D{{Key: types.FiRewardClaimOrdinal, Value: true}})
+	opt.SetProjection(bson.D{{Key: FiRewardClaimOrdinal, Value: true}})
 
 	// try to decode
 	sr := col.FindOne(context.Background(), filter, opt)
@@ -188,15 +195,15 @@ func (db *MongoDbBridge) rewListFilter(cursor *string, count int32, list *types.
 	// build an extended filter for the query; add PK (decoded cursor) to the original filter
 	if cursor == nil {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiRewardClaimOrdinal, Value: bson.D{{Key: "$lte", Value: list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: FiRewardClaimOrdinal, Value: bson.D{{Key: "$lte", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiRewardClaimOrdinal, Value: bson.D{{Key: "$gte", Value: list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: FiRewardClaimOrdinal, Value: bson.D{{Key: "$gte", Value: list.First}}})
 		}
 	} else {
 		if count > 0 {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiRewardClaimOrdinal, Value: bson.D{{Key: "$lt", Value: list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: FiRewardClaimOrdinal, Value: bson.D{{Key: "$lt", Value: list.First}}})
 		} else {
-			list.Filter = append(list.Filter, bson.E{Key: types.FiRewardClaimOrdinal, Value: bson.D{{Key: "$gt", Value: list.First}}})
+			list.Filter = append(list.Filter, bson.E{Key: FiRewardClaimOrdinal, Value: bson.D{{Key: "$gt", Value: list.First}}})
 		}
 	}
 	// return the new filter
@@ -216,7 +223,7 @@ func (db *MongoDbBridge) rewListOptions(count int32) *options.FindOptions {
 	}
 
 	// sort with the direction we want
-	opt.SetSort(bson.D{{Key: types.FiRewardClaimOrdinal, Value: sd}})
+	opt.SetSort(bson.D{{Key: FiRewardClaimOrdinal, Value: sd}})
 
 	// prep the loading limit
 	var limit = int64(count)
@@ -317,7 +324,7 @@ func (db *MongoDbBridge) RewardClaims(cursor *string, count int32, filter *bson.
 func (db *MongoDbBridge) RewardsSumValue(filter *bson.D) (*big.Int, error) {
 	return db.sumFieldValue(
 		db.client.Database(db.dbName).Collection(colRewards),
-		types.FiRewardClaimedValue,
+		FiRewardClaimValue,
 		filter,
 		types.RewardDecimalsCorrection)
 }

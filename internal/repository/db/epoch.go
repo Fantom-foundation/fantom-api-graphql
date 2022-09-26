@@ -22,23 +22,21 @@ const (
 	fiEpochEndTime = "end"
 )
 
-// initEpochsCollection initializes the epochs collection with
-// indexes and additional parameters needed by the app.
-func (db *MongoDbBridge) initEpochsCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
+// epochCollectionIndexes provides a list of indexes expected to exist on the epochs' collection.
+func epochCollectionIndexes() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 1)
 
-	// index ordinal key sorted from high to low since this is the way we usually list
-	ix = append(ix, mongo.IndexModel{
-		Keys:    bson.D{{Key: fiEpochEndTime, Value: -1}},
-		Options: new(options.IndexOptions).SetUnique(true),
-	})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for epoch collection; %s", err.Error())
+	unique := true
+	ixEpochEnd := "ix_epoch_end"
+	ix[0] = mongo.IndexModel{
+		Keys: bson.D{{Key: fiEpochEndTime, Value: -1}},
+		Options: &options.IndexOptions{
+			Name:   &ixEpochEnd,
+			Unique: &unique,
+		},
 	}
-	db.log.Debugf("epochs collection initialized")
+
+	return ix
 }
 
 // AddEpoch stores an epoch reference in connected persistent storage.
@@ -61,11 +59,6 @@ func (db *MongoDbBridge) AddEpoch(e *types.Epoch) error {
 	if _, err := col.InsertOne(context.Background(), e); err != nil {
 		db.log.Critical(err)
 		return err
-	}
-
-	// make sure epochs collection is initialized
-	if db.initEpochs != nil {
-		db.initEpochs.Do(func() { db.initEpochsCollection(col); db.initEpochs = nil })
 	}
 
 	// log what we did
@@ -165,7 +158,7 @@ func (db *MongoDbBridge) epochListCollectRangeMarks(col *mongo.Collection, list 
 func (db *MongoDbBridge) epochListBorderPk(col *mongo.Collection, opt *options.FindOneOptions) (uint64, error) {
 	// prep container
 	var row struct {
-		Value uint64 `bson:"_id"`
+		Value hexutil.Uint64 `bson:"_id"`
 	}
 
 	// make sure we pull only what we need
@@ -177,7 +170,7 @@ func (db *MongoDbBridge) epochListBorderPk(col *mongo.Collection, opt *options.F
 	if err != nil {
 		return 0, err
 	}
-	return row.Value, nil
+	return uint64(row.Value), nil
 }
 
 // epochListFilter creates a filter for epoch list loading.
