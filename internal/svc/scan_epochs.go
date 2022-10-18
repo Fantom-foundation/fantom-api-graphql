@@ -12,7 +12,7 @@ import (
 const epsScanTickerDuration = 25 * time.Millisecond
 
 // epsObserverTickerDuration represents the frequency of the sealed epoch observer.
-const epsObserverTickerDuration = 5 * time.Second
+const epsObserverTickerDuration = 10 * time.Second
 
 // epsStoreQueueLength represents the capacity of the epoch scanner store queue.
 const epsStoreQueueLength = 100
@@ -95,6 +95,9 @@ func (eps *epochScanner) execute() {
 		case <-eps.scanTick.C:
 			eps.next()
 		case <-eps.observeTick.C:
+			if eps.top != nil && uint64(eps.top.Id) > eps.current {
+				log.Noticef("epoch scan at #%d of #%d", eps.current, eps.top.Id)
+			}
 			eps.observe()
 		}
 	}
