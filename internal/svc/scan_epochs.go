@@ -9,10 +9,10 @@ import (
 )
 
 // epsScanTickerDuration represents the frequency of the scanner ticker.
-const epsScanTickerDuration = 100 * time.Millisecond
+const epsScanTickerDuration = 25 * time.Millisecond
 
 // epsObserverTickerDuration represents the frequency of the sealed epoch observer.
-const epsObserverTickerDuration = 10 * time.Second
+const epsObserverTickerDuration = 5 * time.Second
 
 // epsStoreQueueLength represents the capacity of the epoch scanner store queue.
 const epsStoreQueueLength = 100
@@ -115,14 +115,21 @@ func (eps *epochScanner) observe() {
 	}
 
 	// a new epoch found
-	log.Noticef("current sealed epoch is #%d", ep.Id)
+	log.Noticef("current sealed epoch is #%d; scanner at #%d", ep.Id, eps.current)
 	eps.top = ep
 }
 
 // next processes epoch data based on the stored current epoch number.
 func (eps *epochScanner) next() {
 	// do we have a space to grow to
-	if eps.top == nil || uint64(eps.top.Id) < eps.current {
+	if eps.top == nil {
+		log.Debugf("top sealed epoch not known")
+		return
+	}
+
+	// already reached top epoch
+	if uint64(eps.top.Id) < eps.current {
+		log.Debugf("already on top epoch #%d", eps.current)
 		return
 	}
 
@@ -134,6 +141,7 @@ func (eps *epochScanner) next() {
 	}
 
 	// process and move to the next epoch
+	log.Debugf("loaded epoch #%d", ep.Id)
 	select {
 	case eps.queue <- ep:
 		eps.current++
@@ -159,7 +167,7 @@ func (eps *epochScanner) dequeue() {
 func (eps *epochScanner) store(ep *types.Epoch) {
 	// log the epoch
 	if ep.EndTime == 0 {
-		log.Debugf("epoch #%d details not available", eps.current)
+		log.Warningf("epoch #%d details not available", eps.current)
 		return
 	}
 
