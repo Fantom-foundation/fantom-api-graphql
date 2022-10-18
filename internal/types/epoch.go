@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
+	"math/big"
 	"time"
 )
 
@@ -14,6 +15,8 @@ type Epoch struct {
 	Id                    hexutil.Uint64 `json:"id"`
 	EndTime               hexutil.Uint64 `json:"end"`
 	EpochFee              hexutil.Big    `json:"fee"`
+	EpochFeeBurn          hexutil.Big    `json:"burn"`
+	EpochFeeTreasury      hexutil.Big    `json:"treasury"`
 	TotalBaseRewardWeight hexutil.Big    `json:"trw"`
 	TotalTxRewardWeight   hexutil.Big    `json:"txw"`
 	BaseRewardPerSecond   hexutil.Big    `json:"brw"`
@@ -27,11 +30,15 @@ type BsonEpoch struct {
 	EndTime             int64     `bson:"et"`
 	End                 time.Time `bson:"end"`
 	Fee                 string    `bson:"fee"`
+	FeeBurn             string    `bson:"feb"`
+	FeeTreasury         string    `bson:"fet"`
 	BaseRewardWeight    string    `bson:"brw"`
 	TrxRewardWeight     string    `bson:"trw"`
 	BaseRewardPerSecond string    `bson:"rew"`
 	TotalStake          string    `bson:"stake"`
 	TotalSupply         string    `bson:"supply"`
+	Burned              int64     `bson:"burned"`
+	Treasured           int64     `bson:"treasured"`
 }
 
 // UnmarshalEpoch parses the JSON-encoded Epoch data.
@@ -48,17 +55,24 @@ func (e *Epoch) Marshal() ([]byte, error) {
 
 // MarshalBSON creates a BSON representation of the Epoch record.
 func (e *Epoch) MarshalBSON() ([]byte, error) {
+	amBurned := new(big.Int).Div(e.EpochFeeBurn.ToInt(), BurnDecimalsCorrection)
+	amTreasured := new(big.Int).Div(e.EpochFeeTreasury.ToInt(), BurnDecimalsCorrection)
+
 	// prep the structure for saving
 	return bson.Marshal(BsonEpoch{
 		ID:                  int64(e.Id),
 		EndTime:             int64(e.EndTime),
 		End:                 time.Unix(int64(e.EndTime), 0),
 		Fee:                 e.EpochFee.String(),
+		FeeBurn:             e.EpochFeeBurn.String(),
+		FeeTreasury:         e.EpochFeeTreasury.String(),
 		BaseRewardWeight:    e.TotalBaseRewardWeight.String(),
 		TrxRewardWeight:     e.TotalTxRewardWeight.String(),
 		BaseRewardPerSecond: e.BaseRewardPerSecond.String(),
 		TotalStake:          e.StakeTotalAmount.String(),
 		TotalSupply:         e.TotalSupply.String(),
+		Burned:              amBurned.Int64(),
+		Treasured:           amTreasured.Int64(),
 	})
 }
 
@@ -80,6 +94,8 @@ func (e *Epoch) UnmarshalBSON(data []byte) (err error) {
 	e.Id = (hexutil.Uint64)(row.ID)
 	e.EndTime = (hexutil.Uint64)(row.EndTime)
 	e.EpochFee = (hexutil.Big)(*hexutil.MustDecodeBig(row.Fee))
+	e.EpochFeeBurn = (hexutil.Big)(*hexutil.MustDecodeBig(row.FeeBurn))
+	e.EpochFeeTreasury = (hexutil.Big)(*hexutil.MustDecodeBig(row.FeeTreasury))
 	e.TotalBaseRewardWeight = (hexutil.Big)(*hexutil.MustDecodeBig(row.BaseRewardWeight))
 	e.TotalTxRewardWeight = (hexutil.Big)(*hexutil.MustDecodeBig(row.TrxRewardWeight))
 	e.BaseRewardPerSecond = (hexutil.Big)(*hexutil.MustDecodeBig(row.BaseRewardPerSecond))

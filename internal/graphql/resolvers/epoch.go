@@ -5,6 +5,7 @@ import (
 	"fantom-api-graphql/internal/repository"
 	"fantom-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 )
 
 // Epoch represents a resolvable Epoch representation
@@ -40,4 +41,24 @@ func (ep Epoch) Duration() hexutil.Uint64 {
 		return 0
 	}
 	return ep.EndTime - prev.EndTime
+}
+
+// FtmTreasuryTotal resolves total amount of FTM tokens in WEI units sent into treasury.
+func (rs *rootResolver) FtmTreasuryTotal() hexutil.Big {
+	val, err := repository.R().FtmTreasuryTotal()
+	if err != nil {
+		log.Criticalf("failed to load treasury total; %s", err.Error())
+		return hexutil.Big{}
+	}
+	return hexutil.Big(*new(big.Int).Mul(big.NewInt(val), types.BurnDecimalsCorrection))
+}
+
+// FtmTreasuryTotalAmount resolves total amount of FTM tokens in FTM units sent into treasury.
+func (rs *rootResolver) FtmTreasuryTotalAmount() float64 {
+	val, err := repository.R().FtmTreasuryTotal()
+	if err != nil {
+		log.Criticalf("failed to load treasury total; %s", err.Error())
+		return 0
+	}
+	return float64(val) / types.BurnFTMDecimalsCorrection
 }

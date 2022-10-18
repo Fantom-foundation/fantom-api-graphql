@@ -16,14 +16,6 @@ type burnDispatcher struct {
 	inTransaction chan *eventTrx
 }
 
-var (
-	// feePartToBurn represents the percentage of the transaction fee burned in 4 digits fixed int.
-	feePartToBurn = big.NewInt(300)
-
-	// feeBurnDigitCorrection reduces the fixed number of amount digits back to WEI after burn calculation.
-	feeBurnDigitCorrection = big.NewInt(1000)
-)
-
 // name returns the name of the service used by orchestrator.
 func (bud *burnDispatcher) name() string {
 	return "native burn dispatcher"
@@ -103,9 +95,20 @@ func (bud *burnDispatcher) process(tx *eventTrx, burn *types.FtmBurn) *types.Ftm
 
 // burnedFee calculates the amount of burned FTMs from the transaction fee.
 func (bud *burnDispatcher) burnedFee(trx *types.Transaction) *big.Int {
+	// the transaction is pending, no fees are stashed yet
+	if trx.BlockNumber == nil {
+		return new(big.Int)
+	}
+
+	// find the appropriate share for this transaction block
+	share := repo.BurnTreasuryStashShareByBlock(uint64(*trx.BlockNumber))
+	if share == nil {
+		return new(big.Int)
+	}
+
 	// calculate the total amount of fee paid for the transaction in consumed gas
 	fee := new(big.Int).Mul((*big.Int)(&trx.GasPrice), big.NewInt(int64(*trx.GasUsed)))
 
-	// now get 30% by multiplying by 300 and dividing by 1000
-	return new(big.Int).Div(new(big.Int).Mul(fee, feePartToBurn), feeBurnDigitCorrection)
+	// now get % by multiplying by 100 and dividing by 1000
+	return new(big.Int).Div(new(big.Int).Mul(fee, share.ToBurn), share.DigitCorrection)
 }

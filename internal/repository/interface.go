@@ -605,6 +605,15 @@ type Repository interface {
 	// FtmBurnList provides list of per-block burned native FTM tokens.
 	FtmBurnList(count int64) ([]types.FtmBurn, error)
 
+	// BurnTreasuryStashShareByBlock finds treasury/burn share for the given block ID.
+	BurnTreasuryStashShareByBlock(blk uint64) *BurnTreasuryShare
+
+	// BurnTreasuryStashShareByTimeStamp finds treasury/burn share for the given time stamp.
+	BurnTreasuryStashShareByTimeStamp(ts int64) *BurnTreasuryShare
+
+	// FtmTreasuryTotal provides the total amount of native FTM sent into treasury.
+	FtmTreasuryTotal() (int64, error)
+
 	// NetworkNode returns instance of Opera network node record by its ID.
 	NetworkNode(nid enode.ID) (*types.OperaNode, error)
 

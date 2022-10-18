@@ -305,3 +305,34 @@ func (db *MongoDbBridge) Epochs(cursor *string, count int32) (*types.EpochList, 
 	}
 	return list, nil
 }
+
+// TreasuryTotal aggregates the total amount of treasury fee across all epochs.
+func (db *MongoDbBridge) TreasuryTotal() (int64, error) {
+	col := db.client.Database(db.dbName).Collection(colEpochs)
+
+	// aggregate the total amount of burned native tokens
+	cr, err := col.Aggregate(context.Background(), mongo.Pipeline{
+		{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil},
+			{Key: "amount", Value: bson.D{{Key: "$sum", Value: "$treasured"}}},
+		}}},
+	})
+	if err != nil {
+		db.log.Errorf("can not collect total treasure fee; %s", err.Error())
+		return 0, err
+	}
+
+	defer db.closeCursor(cr)
+	if !cr.Next(context.Background()) {
+		return 0, fmt.Errorf("treasure fee aggregation failed")
+	}
+
+	var row struct {
+		Amount int64 `bson:"amount"`
+	}
+	if err := cr.Decode(&row); err != nil {
+		db.log.Errorf("can not decode treasure fee aggregation cursor; %s", err.Error())
+		return 0, err
+	}
+	return row.Amount, nil
+}

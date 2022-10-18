@@ -10,6 +10,43 @@ package repository
 
 import (
 	"fantom-api-graphql/internal/types"
+	"math"
+	"math/big"
+)
+
+// BurnTreasuryShare is the share between burned and treasury fee.
+type BurnTreasuryShare struct {
+	SinceBlockID    uint64
+	UntilBlockID    uint64
+	Since           int64
+	Until           int64
+	ToBurn          *big.Int
+	ToTreasury      *big.Int
+	DigitCorrection *big.Int
+}
+
+var (
+	// burnTreasury defines the amount of FTM burned and sent to treasury of different setups based on starting block
+	burnTreasury = []BurnTreasuryShare{
+		{
+			SinceBlockID:    0,
+			UntilBlockID:    48552263,
+			Since:           0,
+			Until:           1665060100,
+			ToBurn:          big.NewInt(300),
+			ToTreasury:      new(big.Int),
+			DigitCorrection: big.NewInt(1000),
+		},
+		{
+			SinceBlockID:    48552264,
+			UntilBlockID:    math.MaxUint64,
+			Since:           1665060101,
+			Until:           math.MaxInt64,
+			ToBurn:          big.NewInt(200),
+			ToTreasury:      big.NewInt(100),
+			DigitCorrection: big.NewInt(1000),
+		},
+	}
 )
 
 // StoreFtmBurn stores the given native FTM burn per block record into the persistent storage.
@@ -26,4 +63,24 @@ func (p *proxy) FtmBurnTotal() (int64, error) {
 // FtmBurnList provides list of per-block burned native FTM tokens.
 func (p *proxy) FtmBurnList(count int64) ([]types.FtmBurn, error) {
 	return p.db.BurnList(count)
+}
+
+// BurnTreasuryStashShareByBlock finds treasury/burn share for the given block ID.
+func (p *proxy) BurnTreasuryStashShareByBlock(blk uint64) *BurnTreasuryShare {
+	for _, s := range burnTreasury {
+		if blk >= s.SinceBlockID && blk <= s.UntilBlockID {
+			return &s
+		}
+	}
+	return nil
+}
+
+// BurnTreasuryStashShareByTimeStamp finds treasury/burn share for the given time stamp.
+func (p *proxy) BurnTreasuryStashShareByTimeStamp(ts int64) *BurnTreasuryShare {
+	for _, s := range burnTreasury {
+		if ts >= s.Since && ts <= s.Until {
+			return &s
+		}
+	}
+	return nil
 }

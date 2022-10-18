@@ -11,6 +11,7 @@ package repository
 import (
 	"bytes"
 	"fantom-api-graphql/internal/types"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -88,6 +89,17 @@ func (p *proxy) Epoch(id *hexutil.Uint64) (*types.Epoch, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// find fee share
+	share := p.BurnTreasuryStashShareByTimeStamp(int64(ep.EndTime))
+	if share == nil {
+		p.log.Criticalf("epoch fee share not found at %d", ep.Id)
+		return nil, fmt.Errorf("fee share not found")
+	}
+
+	// calculate fee shares
+	ep.EpochFeeBurn = hexutil.Big(*new(big.Int).Div(new(big.Int).Mul(ep.EpochFee.ToInt(), share.ToBurn), share.DigitCorrection))
+	ep.EpochFeeTreasury = hexutil.Big(*new(big.Int).Div(new(big.Int).Mul(ep.EpochFee.ToInt(), share.ToTreasury), share.DigitCorrection))
 
 	// cache for future use
 	p.cache.PushEpoch(ep)
@@ -167,4 +179,9 @@ func (p *proxy) AddEpoch(e *types.Epoch) error {
 // Epochs pulls list of epochs starting at the specified cursor.
 func (p *proxy) Epochs(cursor *string, count int32) (*types.EpochList, error) {
 	return p.db.Epochs(cursor, count)
+}
+
+// FtmTreasuryTotal provides the total amount of native FTM sent into treasury.
+func (p *proxy) FtmTreasuryTotal() (int64, error) {
+	return p.db.TreasuryTotal()
 }

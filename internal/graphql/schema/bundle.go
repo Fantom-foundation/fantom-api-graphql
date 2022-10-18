@@ -2350,6 +2350,14 @@ type Query {
     # ftmLatestBlockBurnList provides a list of latest burned native FTM tokens per-block.
     ftmLatestBlockBurnList(count: Int = 25): [FtmBlockBurn!]!
 
+    # ftmTreasuryTotal provides the total amount of native FTM tokens sent into treasury
+    # by the chain from paid transaction fees in WEI units.
+    ftmTreasuryTotal: BigInt!
+
+    # ftmTreasuryTotalAmount provides the total amount of native FTM tokens sent into treasury
+    # by the chain from paid transaction fees in FTM units.
+    ftmTreasuryTotalAmount: Float!
+
     # networkNodesAggregated provides an aggregated list of network nodes on the Opera network.
     networkNodesAggregated(level: NetworkNodeGroupLevel = COUNTRY): NetworkNodeGroupList!
 }
