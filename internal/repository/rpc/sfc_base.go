@@ -108,30 +108,66 @@ func (ftm *FtmBridge) TotalStaked() (*big.Int, error) {
 
 // SfcMinValidatorStake extracts a value of minimal validator self stake.
 func (ftm *FtmBridge) SfcMinValidatorStake() (*big.Int, error) {
-	return ftm.SfcContract().MinSelfStake(ftm.DefaultCallOpts())
+	val, err := ftm.SfcContract().MinSelfStake(ftm.DefaultCallOpts())
+	if err == nil {
+		return val, err
+	}
+
+	// fallback to shards (the new SFC)
+	return ftm.sfcShards.minSelfStake()
 }
 
 // SfcMaxDelegatedRatio extracts a ratio between self delegation and received stake.
 func (ftm *FtmBridge) SfcMaxDelegatedRatio() (*big.Int, error) {
-	return ftm.SfcContract().MaxDelegatedRatio(ftm.DefaultCallOpts())
+	val, err := ftm.SfcContract().MaxDelegatedRatio(ftm.DefaultCallOpts())
+	if err == nil {
+		return val, err
+	}
+
+	// fallback to shards (the new SFC)
+	return ftm.sfcShards.maxDelegatedRatio()
 }
 
 // SfcMinLockupDuration extracts a minimal lockup duration.
 func (ftm *FtmBridge) SfcMinLockupDuration() (*big.Int, error) {
-	return ftm.SfcContract().MinLockupDuration(ftm.DefaultCallOpts())
+	val, err := ftm.SfcContract().MinLockupDuration(ftm.DefaultCallOpts())
+	if err == nil {
+		return val, err
+	}
+
+	// fallback to shards (the new SFC)
+	return ftm.sfcShards.minLockupDuration()
 }
 
 // SfcMaxLockupDuration extracts a maximal lockup duration.
 func (ftm *FtmBridge) SfcMaxLockupDuration() (*big.Int, error) {
-	return ftm.SfcContract().MaxLockupDuration(ftm.DefaultCallOpts())
+	val, err := ftm.SfcContract().MaxLockupDuration(ftm.DefaultCallOpts())
+	if err == nil {
+		return val, err
+	}
+
+	// fallback to shards (the new SFC)
+	return ftm.sfcShards.maxLockupDuration()
 }
 
 // SfcWithdrawalPeriodEpochs extracts a minimal number of epochs between un-delegate and withdraw.
 func (ftm *FtmBridge) SfcWithdrawalPeriodEpochs() (*big.Int, error) {
-	return ftm.SfcContract().WithdrawalPeriodEpochs(ftm.DefaultCallOpts())
+	val, err := ftm.SfcContract().WithdrawalPeriodEpochs(ftm.DefaultCallOpts())
+	if err == nil {
+		return val, err
+	}
+
+	// fallback to shards (the new SFC)
+	return ftm.sfcShards.withdrawalPeriodEpochs()
 }
 
 // SfcWithdrawalPeriodTime extracts a minimal number of seconds between un-delegate and withdraw.
 func (ftm *FtmBridge) SfcWithdrawalPeriodTime() (*big.Int, error) {
-	return ftm.SfcContract().WithdrawalPeriodTime(ftm.DefaultCallOpts())
+	val, err := ftm.SfcContract().WithdrawalPeriodTime(ftm.DefaultCallOpts())
+	if err == nil {
+		return val, err
+	}
+
+	// fallback to shards (the new SFC)
+	return ftm.sfcShards.withdrawalPeriodTime()
 }

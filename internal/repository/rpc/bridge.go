@@ -50,6 +50,7 @@ type FtmBridge struct {
 	// common contracts
 	sfcAbi      *abi.ABI
 	sfcContract *contracts.SfcContract
+	sfcShards   sfcShards
 
 	// received blocks proxy
 	wg       *sync.WaitGroup
@@ -80,6 +81,9 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 			addressProvider: cfg.DeFi.FMint.AddressProvider,
 		},
 		fLendCfg: fLendConfig{lendigPoolAddress: cfg.DeFi.FLend.LendingPool},
+
+		// empty shards
+		sfcShards: sfcShards{client: con, sfc: cfg.Staking.SFCContract},
 
 		// configure block observation loop
 		wg:       new(sync.WaitGroup),
