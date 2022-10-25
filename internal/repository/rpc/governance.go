@@ -325,7 +325,7 @@ func (ftm *FtmBridge) GovernanceProposalsBy(gov common.Address) ([]*types.Govern
 		}
 
 		// keep the proposal in the list
-		ftm.log.Noticef("found proposal #%d on %s", gp.Id.ToInt().Uint64(), gov.String())
+		ftm.log.Debugf("found proposal #%d on %s", gp.Id.ToInt().Uint64(), gov.String())
 		result = append(result, gp)
 	}
 

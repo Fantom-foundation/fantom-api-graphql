@@ -83,7 +83,7 @@ func New(cfg *config.Config, log logger.Logger) (*FtmBridge, error) {
 		fLendCfg: fLendConfig{lendigPoolAddress: cfg.DeFi.FLend.LendingPool},
 
 		// empty shards
-		sfcShards: sfcShards{client: con, sfc: cfg.Staking.SFCContract},
+		sfcShards: sfcShards{log: log, client: con, sfc: cfg.Staking.SFCContract},
 
 		// configure block observation loop
 		wg:       new(sync.WaitGroup),

@@ -15,9 +15,12 @@ package rpc
 
 import (
 	"context"
+	"fantom-api-graphql/internal/logger"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/status-im/keycard-go/hexutils"
 	"math/big"
 	"sync"
 	"time"
@@ -25,6 +28,7 @@ import (
 
 // sfcShards holds a cached values for SFC contract shards.
 type sfcShards struct {
+	log       logger.Logger
 	client    *ethclient.Client
 	sfc       common.Address
 	update    time.Time
@@ -94,11 +98,13 @@ func (sha *sfcShards) loadConstantsAddress() {
 		Data: callSigConstAddress,
 	}, nil)
 	if err != nil {
+		sha.log.Criticalf("failed to get SFC constants address; %s", err.Error())
 		return
 	}
 
 	// the address is at the tail of 32 bytes long ABI response; we skip bytes 0..11 and use the rest
 	sha.constants.SetBytes(data[12:])
+	sha.log.Noticef("SFC constants address is %s", sha.constants.String())
 }
 
 // sfcConstants provides address of SFC constants shard.
@@ -112,18 +118,26 @@ func (sha *sfcShards) sfcConstants() common.Address {
 	return sha.constants
 }
 
-// constantBySignature puls a single uint256 value from the SFC ConstantsManager using given call signature.
+// constantBySignature pulls a single uint256 value from the SFC ConstantsManager using given call signature.
 func (sha *sfcShards) constantBySignature(sig []byte) (*big.Int, error) {
+	// get the constants shard address
+	cad := sha.sfcConstants()
+
+	// call the contract to get this value
 	data, err := sha.client.CallContract(context.Background(), ethereum.CallMsg{
 		From: common.Address{},
-		To:   &sha.sfc,
+		To:   &cad,
 		Data: sig,
 	}, nil)
 	if err != nil {
+		sha.log.Errorf("SFC constant %s failed; %s", hexutils.BytesToHex(sig), err.Error())
 		return nil, err
 	}
 
-	return new(big.Int).SetBytes(data), nil
+	val := new(big.Int).SetBytes(data)
+	sha.log.Debugf("SFC constant %s = %s", hexutils.BytesToHex(sig), (*hexutil.Big)(val).String())
+
+	return val, nil
 }
 
 // minSelfStake provides minimum amount of stake for a validator in WEI, i.e. 500000 FTM.
