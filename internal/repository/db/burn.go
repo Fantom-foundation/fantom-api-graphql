@@ -55,6 +55,13 @@ func (db *MongoDbBridge) initBurnsCollection(col *mongo.Collection) {
 		},
 	})
 
+	ix = append(ix, mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "ts", Value: -1},
+		},
+		Options: &options.IndexOptions{},
+	})
+
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
 		db.log.Panicf("can not create indexes for withdrawals collection; %s", err.Error())
@@ -204,7 +211,7 @@ func (db *MongoDbBridge) BurnTotalSlow() (int64, error) {
 }
 
 // BurnList provides list of native FTM burns per blocks stored in the persistent database.
-func (db *MongoDbBridge) BurnList(count int64) ([]types.FtmBurn, error) {
+func (db *MongoDbBridge) BurnList(count int64) ([]*types.FtmBurn, error) {
 	col := db.client.Database(db.dbName).Collection(colBurns)
 
 	cr, err := col.Find(context.Background(), bson.D{}, options.Find().SetSort(bson.D{{Key: "block", Value: -1}}).SetLimit(count))
@@ -215,7 +222,7 @@ func (db *MongoDbBridge) BurnList(count int64) ([]types.FtmBurn, error) {
 	defer db.closeCursor(cr)
 
 	ctx := context.Background()
-	list := make([]types.FtmBurn, 0, count)
+	list := make([]*types.FtmBurn, 0, count)
 
 	for cr.Next(ctx) {
 		var row types.FtmBurn
@@ -223,8 +230,97 @@ func (db *MongoDbBridge) BurnList(count int64) ([]types.FtmBurn, error) {
 			db.log.Errorf("failed to decode burn; %s", err.Error())
 			continue
 		}
-		list = append(list, row)
+		list = append(list, &row)
 	}
 
 	return list, nil
+}
+
+// BurnDailyUpdate provides an aggregated amount of burned FTMs by days.
+/**
+db.burns.createIndex({"ts": -1},{unique: false})
+db.burns.aggregate([
+    {
+        $match: {
+            ts: {$gte: ISODate("2019-01-01T00:00:00Z"), $lte: ISODate("2022-12-31T00:00:00Z")},
+        },
+	},
+	{
+        $group: {
+            _id: {$dateToString:{format: "%Y-%m-%d", date: "$ts"}},
+            burn_amount: {$sum: "$amount"},
+			fee_amount: {$sum: "$fee_amount"},
+			treasury_amount: {$sum: "$try_amount"},
+			rewards_amount: {$sum: "$rew_amount"},
+            blocks_count: {$sum: 1}
+        }
+    },
+	{
+		$project: {
+			_id: {$toDate:"$_id"},
+			burn_amount: 1,
+			fee_amount: 1,
+			treasury_amount: 1,
+			rewards_amount: 1,
+			blocks_count: 1
+		}
+	},
+	{
+		$merge: {
+			into: "fee_stats",
+			on: "_id",
+			whenMatched: "replace",
+			whenNotMatched: "insert"
+		}
+	}
+])
+*/
+func (db *MongoDbBridge) BurnDailyUpdate(from time.Time, to time.Time) error {
+	// how many days do we have to pull off
+	days := to.Sub(from).Hours() / 24
+	if days < 1 {
+		return fmt.Errorf("invalid date range %s to %s", from.String(), to.String())
+	}
+
+	// connect the DB
+	col := db.client.Database(db.dbName).Collection(colBurns)
+
+	// create the result set using Mongo aggregation
+	cur, err := col.Aggregate(context.Background(), mongo.Pipeline{
+		{{Key: "$match", Value: bson.D{
+			{Key: "tx", Value: bson.D{
+				{Key: "$gte", Value: from},
+				{Key: "$lte", Value: to},
+			}},
+		}}},
+		{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: bson.D{{Key: "$dateToString", Value: bson.D{{Key: "format", Value: "%Y-%m-%d"}, {Key: "date", Value: "$ts"}}}}},
+			{Key: "burn_amount", Value: bson.D{{Key: "$sum", Value: "$amount"}}},
+			{Key: "fee_amount", Value: bson.D{{Key: "$sum", Value: "$fee_amount"}}},
+			{Key: "treasury_amount", Value: bson.D{{Key: "$sum", Value: "$try_amount"}}},
+			{Key: "rewards_amount", Value: bson.D{{Key: "$sum", Value: "$rew_amount"}}},
+			{Key: "blocks_count", Value: bson.D{{Key: "$sum", Value: 1}}},
+		}}},
+		{{Key: "$project", Value: bson.D{
+			{Key: "_id", Value: bson.D{{Key: "$toDate", Value: "$_id"}}},
+			{Key: "burn_amount", Value: 1},
+			{Key: "fee_amount", Value: 1},
+			{Key: "treasury_amount", Value: 1},
+			{Key: "rewards_amount", Value: 1},
+			{Key: "blocks_count", Value: 1},
+		}}},
+		{{Key: "$merge", Value: bson.D{
+			{Key: "into", Value: "fee_stats"},
+			{Key: "on", Value: "_id"},
+			{Key: "whenMatched", Value: "replace"},
+			{Key: "whenNotMatched", Value: "insert"},
+		}}},
+	})
+	if err != nil {
+		db.log.Criticalf("can not load bootstrap set; %s", err.Error())
+		return err
+	}
+
+	defer db.closeCursor(cur)
+	return nil
 }

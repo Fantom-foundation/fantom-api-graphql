@@ -596,6 +596,9 @@ type Repository interface {
 	// TrxFlowSpeed provides speed of transaction per second for the last <sec> seconds.
 	TrxFlowSpeed(sec int32) (float64, error)
 
+	// BurnDailyUpdate update daily aggregate of the burn flow.
+	BurnDailyUpdate()
+
 	// StoreFtmBurn stores the given native FTM burn per block record into the persistent storage.
 	StoreFtmBurn(burn *types.FtmBurn) error
 
@@ -603,7 +606,7 @@ type Repository interface {
 	FtmBurnTotal() (int64, error)
 
 	// FtmBurnList provides list of per-block burned native FTM tokens.
-	FtmBurnList(count int64) ([]types.FtmBurn, error)
+	FtmBurnList(count int64) ([]*types.FtmBurn, error)
 
 	// BurnTreasuryStashShareByBlock finds treasury/burn share for the given block ID.
 	BurnTreasuryStashShareByBlock(blk uint64) *BurnTreasuryShare

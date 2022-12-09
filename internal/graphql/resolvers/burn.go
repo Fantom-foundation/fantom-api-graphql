@@ -29,7 +29,7 @@ func (rs *rootResolver) FtmBurnedTotalAmount() float64 {
 }
 
 // FtmLatestBlockBurnList resolves a list of the latest block burns.
-func (rs *rootResolver) FtmLatestBlockBurnList(args struct{ Count int32 }) ([]types.FtmBurn, error) {
+func (rs *rootResolver) FtmLatestBlockBurnList(args struct{ Count int32 }) ([]*types.FtmBurn, error) {
 	if args.Count < 1 || args.Count > 50 {
 		args.Count = 25
 	}

@@ -60,19 +60,24 @@ func (bud *burnDispatcher) execute() {
 
 // process incoming transaction event to extract the burn information.
 func (bud *burnDispatcher) process(tx *eventTrx, burn *types.FtmBurn) *types.FtmBurn {
+	txFee, txTreasury, txBurn, txReward := bud.burnedFee(tx.trx)
+
 	// no previous burn to check against? make a new record
 	if burn == nil {
 		return &types.FtmBurn{
-			BlockNumber:  tx.blk.Number,
-			BlkTimeStamp: time.Unix(int64(tx.blk.TimeStamp), 0),
-			Amount:       hexutil.Big(*bud.burnedFee(tx.trx)),
-			TxList:       append(make([]common.Hash, 0), tx.trx.Hash),
+			BlockNumber:    tx.blk.Number,
+			BlkTimeStamp:   time.Unix(int64(tx.blk.TimeStamp), 0),
+			BurnAmount:     hexutil.Big(*txBurn),
+			FeeAmount:      hexutil.Big(*txFee),
+			TreasuryAmount: hexutil.Big(*txTreasury),
+			RewardsAmount:  hexutil.Big(*txReward),
+			TxList:         append(make([]common.Hash, 0), tx.trx.Hash),
 		}
 	}
 
 	// a new block may have been received
 	if tx.blk.Number != burn.BlockNumber {
-		val := float64(new(big.Int).Div((*big.Int)(&burn.Amount), types.BurnDecimalsCorrection).Int64()) / 1_000_000
+		val := float64(new(big.Int).Div((*big.Int)(&burn.BurnAmount), types.BurnDecimalsCorrection).Int64()) / 1_000_000
 		log.Debugf("collected block burn of %.4f FTM at #%d", val, burn.BlockNumber)
 
 		if err := repo.StoreFtmBurn(burn); err != nil {
@@ -80,35 +85,47 @@ func (bud *burnDispatcher) process(tx *eventTrx, burn *types.FtmBurn) *types.Ftm
 		}
 
 		return &types.FtmBurn{
-			BlockNumber:  tx.blk.Number,
-			BlkTimeStamp: time.Unix(int64(tx.blk.TimeStamp), 0),
-			Amount:       hexutil.Big(*bud.burnedFee(tx.trx)),
-			TxList:       append(make([]common.Hash, 0), tx.trx.Hash),
+			BlockNumber:    tx.blk.Number,
+			BlkTimeStamp:   time.Unix(int64(tx.blk.TimeStamp), 0),
+			BurnAmount:     hexutil.Big(*txBurn),
+			FeeAmount:      hexutil.Big(*txFee),
+			TreasuryAmount: hexutil.Big(*txTreasury),
+			RewardsAmount:  hexutil.Big(*txReward),
+			TxList:         append(make([]common.Hash, 0), tx.trx.Hash),
 		}
 	}
 
 	// just add this fee to the existing
-	burn.Amount = hexutil.Big(*new(big.Int).Add((*big.Int)(&burn.Amount), bud.burnedFee(tx.trx)))
+	burn.BurnAmount = hexutil.Big(*new(big.Int).Add((*big.Int)(&burn.BurnAmount), txBurn))
+	burn.FeeAmount = hexutil.Big(*new(big.Int).Add((*big.Int)(&burn.FeeAmount), txFee))
+	burn.TreasuryAmount = hexutil.Big(*new(big.Int).Add((*big.Int)(&burn.FeeAmount), txTreasury))
+	burn.RewardsAmount = hexutil.Big(*new(big.Int).Add((*big.Int)(&burn.RewardsAmount), txReward))
+
+	// remember the transaction ref
 	burn.TxList = append(burn.TxList, tx.trx.Hash)
 	return burn
 }
 
 // burnedFee calculates the amount of burned FTMs from the transaction fee.
-func (bud *burnDispatcher) burnedFee(trx *types.Transaction) *big.Int {
+func (bud *burnDispatcher) burnedFee(trx *types.Transaction) (*big.Int, *big.Int, *big.Int, *big.Int) {
 	// the transaction is pending, no fees are stashed yet
 	if trx.BlockNumber == nil {
-		return new(big.Int)
-	}
-
-	// find the appropriate share for this transaction block
-	share := repo.BurnTreasuryStashShareByBlock(uint64(*trx.BlockNumber))
-	if share == nil {
-		return new(big.Int)
+		return new(big.Int), new(big.Int), new(big.Int), new(big.Int)
 	}
 
 	// calculate the total amount of fee paid for the transaction in consumed gas
 	fee := new(big.Int).Mul((*big.Int)(&trx.GasPrice), big.NewInt(int64(*trx.GasUsed)))
 
+	// find the appropriate share for this transaction block
+	share := repo.BurnTreasuryStashShareByBlock(uint64(*trx.BlockNumber))
+	if share == nil {
+		return fee, new(big.Int), new(big.Int), new(big.Int)
+	}
+
 	// now get % by multiplying by 100 and dividing by 1000
-	return new(big.Int).Div(new(big.Int).Mul(fee, share.ToBurn), share.DigitCorrection)
+	treasury := new(big.Int).Div(new(big.Int).Mul(fee, share.ToTreasury), share.DigitCorrection)
+	burn := new(big.Int).Div(new(big.Int).Mul(fee, share.ToBurn), share.DigitCorrection)
+	reward := new(big.Int).Div(new(big.Int).Mul(fee, share.ToRewards), share.DigitCorrection)
+
+	return fee, treasury, burn, reward
 }

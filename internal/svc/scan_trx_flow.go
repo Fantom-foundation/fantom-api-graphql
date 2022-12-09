@@ -12,14 +12,16 @@ const (
 
 	// trxCountUpdaterPeriod represents the period in which the trx count estimation
 	// is updated from the underlying database.
-	trxCountUpdaterPeriod = 30 * time.Minute
+	trxCountUpdaterPeriod = 31 * time.Minute
+
+	// burnFlowUpdaterPeriod represents the period in which the burn aggregate
+	// is updated from the underlying database.
+	burnFlowUpdaterPeriod = 23 * time.Minute
 )
 
 // trxFlowMonitor represents a service for transaction flow monitoring.
 type trxFlowMonitor struct {
 	service
-	flowTicker  *time.Ticker
-	countTicker *time.Ticker
 }
 
 // name returns a human-readable name of the service used by the manager.
@@ -41,10 +43,6 @@ func (tfm *trxFlowMonitor) run() {
 
 // close terminates the gas price suggestion monitor.
 func (tfm *trxFlowMonitor) close() {
-	if tfm.flowTicker != nil {
-		tfm.flowTicker.Stop()
-		tfm.countTicker.Stop()
-	}
 	if tfm.sigStop != nil {
 		close(tfm.sigStop)
 	}
@@ -53,25 +51,32 @@ func (tfm *trxFlowMonitor) close() {
 // execute performs regular ticker based checks on the transaction flow
 // and sends the collected data to persistent repository.
 func (tfm *trxFlowMonitor) execute() {
+	// start to control the monitor
+	flowTicker := time.NewTicker(trxFlowUpdaterPeriod)
+	countTicker := time.NewTicker(trxCountUpdaterPeriod)
+	burnTicker := time.NewTicker(burnFlowUpdaterPeriod)
+
 	defer func() {
+		flowTicker.Stop()
+		countTicker.Stop()
+		burnTicker.Stop()
+
 		tfm.mgr.finished(tfm)
 	}()
 
 	// do initial trx count update
 	go tfm.updateCount()
 
-	// start to control the monitor
-	tfm.flowTicker = time.NewTicker(trxFlowUpdaterPeriod)
-	tfm.countTicker = time.NewTicker(trxCountUpdaterPeriod)
-
 	// loop here
 	for {
 		select {
 		case <-tfm.sigStop:
 			return
-		case <-tfm.flowTicker.C:
+		case <-flowTicker.C:
 			repo.TrxFlowUpdate()
-		case <-tfm.countTicker.C:
+		case <-burnTicker.C:
+			repo.BurnDailyUpdate()
+		case <-countTicker.C:
 			go tfm.updateCount()
 		}
 	}

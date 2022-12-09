@@ -22,6 +22,7 @@ type BurnTreasuryShare struct {
 	Until           int64
 	ToBurn          *big.Int
 	ToTreasury      *big.Int
+	ToRewards       *big.Int
 	DigitCorrection *big.Int
 }
 
@@ -35,6 +36,7 @@ var (
 			Until:           1665060100,
 			ToBurn:          big.NewInt(300),
 			ToTreasury:      new(big.Int),
+			ToRewards:       big.NewInt(700),
 			DigitCorrection: big.NewInt(1000),
 		},
 		{
@@ -44,6 +46,7 @@ var (
 			Until:           math.MaxInt64,
 			ToBurn:          big.NewInt(200),
 			ToTreasury:      big.NewInt(100),
+			ToRewards:       big.NewInt(700),
 			DigitCorrection: big.NewInt(1000),
 		},
 	}
@@ -61,7 +64,7 @@ func (p *proxy) FtmBurnTotal() (int64, error) {
 }
 
 // FtmBurnList provides list of per-block burned native FTM tokens.
-func (p *proxy) FtmBurnList(count int64) ([]types.FtmBurn, error) {
+func (p *proxy) FtmBurnList(count int64) ([]*types.FtmBurn, error) {
 	return p.db.BurnList(count)
 }
 
