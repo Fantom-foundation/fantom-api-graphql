@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/http"
+	"net/mail"
 	"net/url"
 	"regexp"
 	"time"
@@ -140,8 +141,8 @@ func (ftm *FtmBridge) isValidStakerInfo(info *types.StakerInfo) bool {
 	}
 
 	// check the contact URL
-	if !isValidStakerInfoUrl(info.Contact, false) {
-		ftm.log.Error("staker contact URL not valid")
+	if !isValidStakerInfoUrl(info.Contact, false) && !isValidEmailContact(info.Contact) {
+		ftm.log.Error("staker contact URL not valid link or email address")
 		return false
 	}
 	return true
@@ -160,4 +161,10 @@ func isValidStakerInfoUrl(addr *string, reqHttps bool) bool {
 		return false
 	}
 	return true
+}
+
+// isValidEmailContact validates contact as an email address.
+func isValidEmailContact(addr *string) bool {
+	_, err := mail.ParseAddress(*addr)
+	return err == nil
 }
