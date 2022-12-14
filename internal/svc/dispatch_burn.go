@@ -98,7 +98,7 @@ func (bud *burnDispatcher) process(tx *eventTrx, burn *types.FtmBurn) *types.Ftm
 	// just add this fee to the existing
 	burn.BurnAmount = hexutil.Big(*new(big.Int).Add((*big.Int)(&burn.BurnAmount), txBurn))
 	burn.FeeAmount = hexutil.Big(*new(big.Int).Add((*big.Int)(&burn.FeeAmount), txFee))
-	burn.TreasuryAmount = hexutil.Big(*new(big.Int).Add((*big.Int)(&burn.FeeAmount), txTreasury))
+	burn.TreasuryAmount = hexutil.Big(*new(big.Int).Add((*big.Int)(&burn.TreasuryAmount), txTreasury))
 	burn.RewardsAmount = hexutil.Big(*new(big.Int).Add((*big.Int)(&burn.RewardsAmount), txReward))
 
 	// remember the transaction ref
@@ -125,12 +125,5 @@ func (bud *burnDispatcher) burnedFee(trx *types.Transaction) (*big.Int, *big.Int
 	treasury := new(big.Int).Div(new(big.Int).Mul(fee, share.ToTreasury), share.DigitCorrection)
 	burn := new(big.Int).Div(new(big.Int).Mul(fee, share.ToBurn), share.DigitCorrection)
 	reward := new(big.Int).Div(new(big.Int).Mul(fee, share.ToRewards), share.DigitCorrection)
-
-	log.Noticef("block %d: fee=%f, treasury=%f, reward=%f, burn=%f", uint64(*trx.BlockNumber), toFTM(fee), toFTM(treasury), toFTM(reward), toFTM(burn))
 	return fee, treasury, burn, reward
-}
-
-// toFTM returns the value in FTM units.
-func toFTM(v *big.Int) float64 {
-	return float64(new(big.Int).Div(v, types.TransactionDecimalsCorrection).Int64()) / 1_000_000_000.0
 }

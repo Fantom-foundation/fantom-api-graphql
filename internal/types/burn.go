@@ -11,7 +11,7 @@ import (
 
 var (
 	// BurnDecimalsCorrection is used to reduce precision of an amount of burned FTM
-	BurnDecimalsCorrection = new(big.Int).SetUint64(10_000_000_000)
+	BurnDecimalsCorrection = new(big.Int).SetUint64(1_000_000_000)
 
 	// BurnFTMDecimalsCorrection is used to convert reduced precision burned amount to FTM units.
 	BurnFTMDecimalsCorrection = float64(100_000_000)
