@@ -126,6 +126,11 @@ func (bud *burnDispatcher) burnedFee(trx *types.Transaction) (*big.Int, *big.Int
 	burn := new(big.Int).Div(new(big.Int).Mul(fee, share.ToBurn), share.DigitCorrection)
 	reward := new(big.Int).Div(new(big.Int).Mul(fee, share.ToRewards), share.DigitCorrection)
 
-	log.Noticef("block %d: fee=%s, treasury=%s, reward=%s, burn=%s", uint64(*trx.BlockNumber), (*hexutil.Big)(fee).String(), (*hexutil.Big)(treasury).String(), (*hexutil.Big)(reward).String(), (*hexutil.Big)(burn).String())
+	log.Noticef("block %d: fee=%f, treasury=%f, reward=%f, burn=%f", uint64(*trx.BlockNumber), toFTM(fee), toFTM(treasury), toFTM(reward), toFTM(burn))
 	return fee, treasury, burn, reward
+}
+
+// toFTM returns the value in FTM units.
+func toFTM(v *big.Int) float64 {
+	return float64(new(big.Int).Div(v, types.TransactionDecimalsCorrection).Int64()) / 1_000_000_000.0
 }
