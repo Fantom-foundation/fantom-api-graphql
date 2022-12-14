@@ -122,10 +122,10 @@ func (bud *burnDispatcher) burnedFee(trx *types.Transaction) (*big.Int, *big.Int
 		return fee, new(big.Int), new(big.Int), new(big.Int)
 	}
 
-	// now get % by multiplying by 100 and dividing by 1000
 	treasury := new(big.Int).Div(new(big.Int).Mul(fee, share.ToTreasury), share.DigitCorrection)
 	burn := new(big.Int).Div(new(big.Int).Mul(fee, share.ToBurn), share.DigitCorrection)
 	reward := new(big.Int).Div(new(big.Int).Mul(fee, share.ToRewards), share.DigitCorrection)
 
+	log.Noticef("block %d: fee=%s, treasury=%s, reward=%s, burn=%s", uint64(*trx.BlockNumber), (*hexutil.Big)(fee).String(), (*hexutil.Big)(treasury).String(), (*hexutil.Big)(reward).String(), (*hexutil.Big)(burn).String())
 	return fee, treasury, burn, reward
 }

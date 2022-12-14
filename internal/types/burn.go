@@ -31,7 +31,7 @@ type FtmBurn struct {
 // FtmDailyBurn represents a burn of native tokens by days.
 type FtmDailyBurn struct {
 	Date           time.Time `bson:"_id"`
-	BlocksCount    int64     `bson:"blocks_count"`
+	BlocksCount    int       `bson:"blocks_count"`
 	BurnedAmount   int64     `bson:"burned_amount"`
 	TreasuryAmount int64     `bson:"treasury_amount"`
 	RewardsAmount  int64     `bson:"rewards_amount"`
