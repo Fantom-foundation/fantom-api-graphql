@@ -14,7 +14,7 @@ var (
 	BurnDecimalsCorrection = new(big.Int).SetUint64(1_000_000_000)
 
 	// BurnFTMDecimalsCorrection is used to convert reduced precision burned amount to FTM units.
-	BurnFTMDecimalsCorrection = float64(100_000_000)
+	BurnFTMDecimalsCorrection = float64(1_000_000_000)
 )
 
 // FtmBurn represents deflation of native tokens by burning.
@@ -30,9 +30,9 @@ type FtmBurn struct {
 
 // FtmDailyBurn represents a burn of native tokens by days.
 type FtmDailyBurn struct {
-	Date           time.Time `bson:"_id"`
-	BlocksCount    int       `bson:"blocks_count"`
-	BurnedAmount   int64     `bson:"burned_amount"`
+	TickDate       time.Time `bson:"_id"`
+	BlocksCount    int32     `bson:"blocks_count"`
+	BurnedAmount   int64     `bson:"burn_amount"`
 	TreasuryAmount int64     `bson:"treasury_amount"`
 	RewardsAmount  int64     `bson:"rewards_amount"`
 	FeeAmount      int64     `bson:"fee_amount"`

@@ -12,9 +12,16 @@ import (
 	"time"
 )
 
-// colBurns represents the name of the native FTM burns collection in database.
-const colBurns = "burns"
-const colBurnsAggregate = "burns_sum"
+const (
+	// colBurns represents the name of the native FTM burns collection in database.
+	colBurns = "burns"
+
+	// colBurnsAggregate represents the name of the aggregated FTM burns.
+	colBurnsAggregate = "burns_sum"
+
+	// colFeeFlowAggregate represents the name of the aggregated FTM fee flows.
+	colFeeFlowAggregate = "fee_stats"
+)
 
 // burnBaseAggregateDate represents the timestamp of the materialised burn aggregate
 var burnBaseAggregateDate = time.Unix(0, 0)
@@ -236,7 +243,7 @@ func (db *MongoDbBridge) BurnList(count int64) ([]*types.FtmBurn, error) {
 	return list, nil
 }
 
-// BurnDailyUpdate provides an aggregated amount of burned FTMs by days.
+// FeeFlowAggregateUpdate provides an aggregated amount of burned FTMs by days.
 /**
 db.burns.createIndex({"ts": -1},{unique: false})
 db.burns.aggregate([
@@ -275,9 +282,9 @@ db.burns.aggregate([
 	}
 ])
 */
-func (db *MongoDbBridge) BurnDailyUpdate(from time.Time, to time.Time) error {
+func (db *MongoDbBridge) FeeFlowAggregateUpdate(from time.Time, to time.Time) error {
 	// how many days do we have to pull off
-	days := to.Sub(from).Hours() / 24
+	days := int(to.Sub(from).Hours() / 24)
 	if days < 1 {
 		return fmt.Errorf("invalid date range %s to %s", from.String(), to.String())
 	}
@@ -310,7 +317,7 @@ func (db *MongoDbBridge) BurnDailyUpdate(from time.Time, to time.Time) error {
 			{Key: "blocks_count", Value: 1},
 		}}},
 		{{Key: "$merge", Value: bson.D{
-			{Key: "into", Value: "fee_stats"},
+			{Key: "into", Value: colFeeFlowAggregate},
 			{Key: "on", Value: "_id"},
 			{Key: "whenMatched", Value: "replace"},
 			{Key: "whenNotMatched", Value: "insert"},
@@ -323,4 +330,45 @@ func (db *MongoDbBridge) BurnDailyUpdate(from time.Time, to time.Time) error {
 
 	defer db.closeCursor(cur)
 	return nil
+}
+
+// FeeFlow loads a list of fee flow aggregates for the given date range.
+func (db *MongoDbBridge) FeeFlow(from, to time.Time) ([]*types.FtmDailyBurn, error) {
+	// how many days do we have to pull off
+	days := int(to.Sub(from).Hours() / 24)
+	if days < 1 {
+		return nil, fmt.Errorf("invalid date range %s to %s", from.String(), to.String())
+	}
+
+	// connect the DB
+	col := db.client.Database(db.dbName).Collection(colFeeFlowAggregate)
+
+	cur, err := col.Find(context.Background(), bson.D{
+		{Key: "_id", Value: bson.D{
+			{Key: "$gte", Value: from},
+			{Key: "$lte", Value: to},
+		}},
+	}, options.Find().SetSort(bson.D{{Key: "_id", Value: -1}}))
+	if err != nil {
+		return nil, err
+	}
+
+	// make sure to free resources
+	defer db.closeCursor(cur)
+
+	// alloc the output
+	list := make([]*types.FtmDailyBurn, 0, days)
+	for cur.Next(context.Background()) {
+		var row types.FtmDailyBurn
+		err := cur.Decode(&row)
+		if err != nil {
+			db.log.Criticalf("can not decode fee flow; %s", err.Error())
+			break
+		}
+
+		// add the row to the list (we already allocated enough space, so this will be cheap)
+		list = append(list, &row)
+	}
+
+	return list, nil
 }

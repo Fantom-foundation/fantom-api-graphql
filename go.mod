@@ -9,17 +9,13 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/ethereum/go-ethereum v1.10.26
-	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gballet/go-libpcsclite v0.0.0-20191108122812-4678299bea08 // indirect
-	github.com/go-stack/stack v1.8.1 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/graph-gophers/graphql-go v1.4.0
+	github.com/graph-gophers/graphql-go v1.5.0
 	github.com/graph-gophers/graphql-transport-ws v0.0.2
-	github.com/klauspost/compress v1.15.12
+	github.com/klauspost/compress v1.15.13
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
-	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/montanaflynn/stats v0.6.6 // indirect
 	github.com/onsi/gomega v1.19.0
@@ -45,5 +41,4 @@ require (
 	go.uber.org/atomic v1.10.0
 	golang.org/x/crypto v0.4.0 // indirect
 	golang.org/x/sync v0.1.0
-	gopkg.in/ini.v1 v1.67.0 // indirect
 )

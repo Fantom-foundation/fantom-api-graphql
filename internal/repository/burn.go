@@ -12,6 +12,7 @@ import (
 	"fantom-api-graphql/internal/types"
 	"math"
 	"math/big"
+	"time"
 )
 
 // BurnTreasuryShare is the share between burned and treasury fee.
@@ -86,4 +87,10 @@ func (p *proxy) BurnTreasuryStashShareByTimeStamp(ts int64) *BurnTreasuryShare {
 		}
 	}
 	return nil
+}
+
+// FeeFlow provides a list of fee flow aggregates for the given date range.
+func (p *proxy) FeeFlow(from, to time.Time) ([]*types.FtmDailyBurn, error) {
+	p.log.Infof("loading fee flow from %s to %s", from.String(), to.String())
+	return p.db.FeeFlow(from, to)
 }

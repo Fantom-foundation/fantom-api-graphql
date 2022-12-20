@@ -291,6 +291,9 @@ type Query {
     # ftmLatestBlockBurnList provides a list of latest burned native FTM tokens per-block.
     ftmLatestBlockBurnList(count: Int = 25): [FtmBlockBurn!]!
 
+    # dailyFeeFlow provides a list of fee distribution information aggregated by days.
+    dailyFeeFlow(from: Time, to: Time): [FeeFlowDaily!]!
+
     # ftmTreasuryTotal provides the total amount of native FTM tokens sent into treasury
     # by the chain from paid transaction fees in WEI units.
     ftmTreasuryTotal: BigInt!

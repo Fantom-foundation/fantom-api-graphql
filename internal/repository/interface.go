@@ -617,6 +617,9 @@ type Repository interface {
 	// FtmTreasuryTotal provides the total amount of native FTM sent into treasury.
 	FtmTreasuryTotal() (int64, error)
 
+	// FeeFlow provides a list of fee flow aggregates for the given date range.
+	FeeFlow(from, to time.Time) ([]*types.FtmDailyBurn, error)
+
 	// NetworkNode returns instance of Opera network node record by its ID.
 	NetworkNode(nid enode.ID) (*types.OperaNode, error)
 

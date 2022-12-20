@@ -1690,6 +1690,52 @@ type ERC1155Transaction {
     # of the ERC1155 transaction processing.
     timeStamp: Long!
 }
+# FeeFlowDaily represents daily aggregated flow of the transaction fee distribution in native FTM.
+type FeeFlowDaily {
+    # date is the signature date of the data point, the time part is set to 00:00:00Z.
+    date: Time!
+
+    # blocksCount represents the number of blocks included in the data point.
+    blocksCount: Int!
+
+    # fee is the amount of FTM collected from transaction fees;
+    # represented as fixed point decimal of FTM with 9 digits.
+    fee: Long!
+
+    # feeFTM is the amount of FTM collected from transaction fees;
+    # represented as floating point value in FTM units.
+    feeFTM: Float!
+
+    # burned is the amount of FTM burned;
+    # represented as fixed point decimal with 9 digits.
+    burned: Long!
+
+    # burnedFTM is the amount of FTM burned;
+    # represented as floating point value in FTM units.
+    burnedFTM: Float!
+
+    # treasury is the amount of FTM sent to treasury;
+    # represented as fixed point decimal with 9 digits.
+    treasury: Long!
+
+    # treasuryFTM is the amount of FTM sent to treasury;
+    # represented as floating point value in FTM units.
+    treasuryFTM: Float!
+
+    # rewards is the amount of FTM sent to rewards distribution;
+    # represented as fixed point decimal with 9 digits.
+    # -----------------------------------------------------------------------------------------------------------
+    # Please note this is the max amount of rewards available for distribution. The actual amount is scaled
+    # down based on locking period of individual stakers and the real amount distributed by the SFC contract
+    # will be lower in most cases. The remaining reward tokens after the scaling are effectively also burned
+    # and removed from the total supply, but this process is not reflected in this aggregated approximation.
+    # Please see the current Fantom SFC contract implementation for the rewards distribution details.
+    rewards: Long!
+
+    # rewardsFTM is the amount of FTM sent to rewards distribution;
+    # represented as floating point value in FTM units.
+    rewardsFTM: Float!
+}
 # ERC721Transaction represents a transaction on an ERC721 NFT token.
 type ERC721Transaction {
     # trxHash represents a hash of the transaction
@@ -2349,6 +2395,9 @@ type Query {
 
     # ftmLatestBlockBurnList provides a list of latest burned native FTM tokens per-block.
     ftmLatestBlockBurnList(count: Int = 25): [FtmBlockBurn!]!
+
+    # dailyFeeFlow provides a list of fee distribution information aggregated by days.
+    dailyFeeFlow(from: Time, to: Time): [FeeFlowDaily!]!
 
     # ftmTreasuryTotal provides the total amount of native FTM tokens sent into treasury
     # by the chain from paid transaction fees in WEI units.
