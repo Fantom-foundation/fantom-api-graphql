@@ -295,10 +295,9 @@ func (db *MongoDbBridge) FeeFlowAggregateUpdate(from time.Time, to time.Time) er
 	db.log.Infof("updating %d days of fee flow between %s and %s", days, from.String(), to.String())
 	col := db.client.Database(db.dbName).Collection(colBurns)
 
-	// create the result set using Mongo aggregation
-	cur, err := col.Aggregate(context.Background(), mongo.Pipeline{
+	pipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{
-			{Key: "tx", Value: bson.D{
+			{Key: "ts", Value: bson.D{
 				{Key: "$gte", Value: from},
 				{Key: "$lte", Value: to},
 			}},
@@ -325,7 +324,10 @@ func (db *MongoDbBridge) FeeFlowAggregateUpdate(from time.Time, to time.Time) er
 			{Key: "whenMatched", Value: "replace"},
 			{Key: "whenNotMatched", Value: "insert"},
 		}}},
-	})
+	}
+
+	// create the result set using Mongo aggregation
+	cur, err := col.Aggregate(context.Background(), pipe)
 	if err != nil {
 		db.log.Criticalf("can not load fee flow aggregate set; %s", err.Error())
 		return err
