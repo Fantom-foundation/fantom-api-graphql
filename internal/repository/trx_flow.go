@@ -59,7 +59,6 @@ func (p *proxy) BurnDailyUpdate() {
 	from := now.Add(time.Duration(-(h*3600 + m*60 + s)) * time.Second).Add(time.Duration(-now.Nanosecond()) * time.Nanosecond).Add(burnFlowUpdateRange)
 
 	// do the update
-	p.log.Noticef("updating fee flow from %s to %s", from.String(), now.String())
 	err := p.db.FeeFlowAggregateUpdate(from, now)
 	if err != nil {
 		p.log.Criticalf("can not update burn aggregate flow; %s", err.Error())

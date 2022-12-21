@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"math"
 	"time"
 )
 
@@ -284,12 +285,14 @@ db.burns.aggregate([
 */
 func (db *MongoDbBridge) FeeFlowAggregateUpdate(from time.Time, to time.Time) error {
 	// how many days do we have to pull off
-	days := int(to.Sub(from).Hours() / 24)
-	if days < 1 {
+	days := int(math.Abs(to.Sub(from).Hours() / 24.0))
+	if to.Before(from) || days < 1 {
+		db.log.Errorf("can not update fee flow; at least 1 day expected, got %d days", days)
 		return fmt.Errorf("invalid date range %s to %s", from.String(), to.String())
 	}
 
 	// connect the DB
+	db.log.Infof("updating %d days of fee flow between %s and %s", days, from.String(), to.String())
 	col := db.client.Database(db.dbName).Collection(colBurns)
 
 	// create the result set using Mongo aggregation
@@ -324,7 +327,7 @@ func (db *MongoDbBridge) FeeFlowAggregateUpdate(from time.Time, to time.Time) er
 		}}},
 	})
 	if err != nil {
-		db.log.Criticalf("can not load bootstrap set; %s", err.Error())
+		db.log.Criticalf("can not load fee flow aggregate set; %s", err.Error())
 		return err
 	}
 
