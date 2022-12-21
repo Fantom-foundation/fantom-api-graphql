@@ -17,7 +17,7 @@ import (
 const trxFlowUpdateRange = -2 * 24 * time.Hour
 
 // burnFlowUpdateRange represents the range for which we do the aggregated burn flow update.
-const burnFlowUpdateRange = -30 * 24 * time.Hour
+const burnFlowUpdateRange = -7 * 24 * time.Hour
 
 // TrxFlowVolume resolves the list of daily trx flow aggregations.
 func (p *proxy) TrxFlowVolume(from *time.Time, to *time.Time) ([]*types.DailyTrxVolume, error) {
@@ -56,9 +56,10 @@ func (p *proxy) BurnDailyUpdate() {
 	// calculate previous midnight
 	now := time.Now().UTC()
 	h, m, s := now.Clock()
-	from := now.Add(time.Duration(-(h*3600 + m*60 + s)) * time.Second).Add(time.Duration(-now.Nanosecond()) * time.Nanosecond).Add(trxFlowUpdateRange)
+	from := now.Add(time.Duration(-(h*3600 + m*60 + s)) * time.Second).Add(time.Duration(-now.Nanosecond()) * time.Nanosecond).Add(burnFlowUpdateRange)
 
 	// do the update
+	p.log.Noticef("updating fee flow from %s to %s", from.String(), now.String())
 	err := p.db.FeeFlowAggregateUpdate(from, now)
 	if err != nil {
 		p.log.Criticalf("can not update burn aggregate flow; %s", err.Error())
