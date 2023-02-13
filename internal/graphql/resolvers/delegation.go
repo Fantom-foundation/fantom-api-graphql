@@ -122,15 +122,16 @@ func (del Delegation) ClaimedReward() (hexutil.Big, error) {
 
 // WithdrawRequests resolves partial withdraw requests of the delegator.
 func (del Delegation) WithdrawRequests(args struct {
-	Cursor *Cursor
-	Count  int32
+	Cursor     *Cursor
+	Count      int32
+	ActiveOnly bool
 }) ([]WithdrawRequest, error) {
 	// limit query size; the count can be either positive or negative
 	// this controls the loading direction
 	args.Count = listLimitCount(args.Count, listMaxEdgesPerRequest)
 
 	// pull list of withdrawals
-	wr, err := repository.R().WithdrawRequests(&del.Address, del.Delegation.ToStakerId, (*string)(args.Cursor), args.Count)
+	wr, err := repository.R().WithdrawRequests(&del.Address, del.Delegation.ToStakerId, (*string)(args.Cursor), args.Count, args.ActiveOnly)
 	if err != nil {
 		return nil, err
 	}

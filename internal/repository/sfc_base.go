@@ -183,5 +183,12 @@ func (p *proxy) Epochs(cursor *string, count int32) (*types.EpochList, error) {
 
 // FtmTreasuryTotal provides the total amount of native FTM sent into treasury.
 func (p *proxy) FtmTreasuryTotal() (int64, error) {
-	return p.db.TreasuryTotal()
+	// pull the database value
+	val, err := p.db.TreasuryTotal()
+	if err != nil {
+		return 0, err
+	}
+
+	// add correction for the sponsored amount
+	return val, nil
 }

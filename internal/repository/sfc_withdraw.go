@@ -33,7 +33,7 @@ func (p *proxy) WithdrawRequest(addr *common.Address, valID *hexutil.Big, reqID 
 }
 
 // WithdrawRequests extracts a list of partial withdraw requests for the given address.
-func (p *proxy) WithdrawRequests(addr *common.Address, stakerID *hexutil.Big, cursor *string, count int32) (*types.WithdrawRequestList, error) {
+func (p *proxy) WithdrawRequests(addr *common.Address, stakerID *hexutil.Big, cursor *string, count int32, activeOnly bool) (*types.WithdrawRequestList, error) {
 	if addr == nil {
 		return nil, fmt.Errorf("address not given")
 	}
@@ -47,10 +47,16 @@ func (p *proxy) WithdrawRequests(addr *common.Address, stakerID *hexutil.Big, cu
 
 	// log the action and pull the list for specific address and val
 	p.log.Debugf("loading withdraw requests of %s to #%d", addr.String(), stakerID.ToInt().Uint64())
-	return p.db.Withdrawals(cursor, count, &bson.D{
+	filter := bson.D{
 		{Key: types.FiWithdrawalAddress, Value: addr.String()},
 		{Key: types.FiWithdrawalToValidator, Value: stakerID.String()},
-	})
+	}
+
+	// limit the output to active withdrawals only
+	if activeOnly {
+		filter = append(filter, bson.E{Key: types.FiWithdrawalFinTrx, Value: bson.D{{Key: "$type", Value: 10}}})
+	}
+	return p.db.Withdrawals(cursor, count, &filter)
 }
 
 // WithdrawRequestsPendingTotal is the total value of all pending withdrawal requests

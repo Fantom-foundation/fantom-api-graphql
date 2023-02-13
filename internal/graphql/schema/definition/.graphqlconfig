@@ -13,7 +13,7 @@
         "introspect": false
       },
       "XAPI1 Fantom.Network": {
-        "url": "https://xapi1.fantom.network/graphql",
+        "url": "https://xapi2.fantom.network/api",
         "introspect": false
       },
       "xAPI Node A": {
@@ -38,6 +38,22 @@
       },
       "xAPI Node F": {
         "url": "https://xapi-nodef.fantom.network/",
+        "introspect": false
+      },
+      "xAPI Node G": {
+        "url": "https://xapi-nodeg.fantom.network/",
+        "introspect": false
+      },
+      "xAPI Node H": {
+        "url": "https://xapi-nodeh.fantom.network/",
+        "introspect": false
+      },
+      "xAPI Node I": {
+        "url": "https://xapi-nodei.fantom.network/",
+        "introspect": false
+      },
+      "xAPI Node J": {
+        "url": "https://xapi-nodej.fantom.network/",
         "introspect": false
       },
       "XAPI1 TestNet.Fantom.Network": {

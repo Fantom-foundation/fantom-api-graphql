@@ -30,7 +30,7 @@ type Delegation {
 
     # List of withdraw requests of the delegation,
     # sorted fro the newest to the oldest requests.
-    withdrawRequests(cursor: Cursor, count: Int = 50): [WithdrawRequest!]!
+    withdrawRequests(cursor: Cursor, count: Int = 50, activeOnly: Boolean = false): [WithdrawRequest!]!
 
     # rewardClaims provides a list of reward claims
     # of the delegation as a scrollable list of edges with details of claims.

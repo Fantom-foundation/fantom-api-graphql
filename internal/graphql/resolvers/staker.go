@@ -113,7 +113,7 @@ func (st Staker) LockedFromEpoch() (hexutil.Uint64, error) {
 // We load withdraw requests of the stake only, not the stake delegators.
 func (st Staker) WithdrawRequests() ([]WithdrawRequest, error) {
 	// pull the requests list from remote server
-	wwl, err := repository.R().WithdrawRequests(&st.StakerAddress, nil, nil, 50)
+	wwl, err := repository.R().WithdrawRequests(&st.StakerAddress, nil, nil, 50, false)
 	if err != nil {
 		return nil, err
 	}

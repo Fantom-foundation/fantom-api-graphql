@@ -10,6 +10,8 @@ If you considering it as your deployment strategy, you should establish encrypte
 and Opera RPC interface with connection limited to specified endpoints.
 
 We strongly discourage opening Opera RPC interface for unrestricted Internet access.
+---
+curl -H "Content-Type: application/json" -X POST --data '{"method":"eth_call","params":[{"from":"0x0000000000000000000000000000000000000000","to":"0xFC00FACE00000000000000000000000000000000","gas":"0x1ec77","gasPrice":"0x92e59e9300","value":"0x0","data":"0xc5f956af"},"latest"],"id":1,"jsonrpc":"2.0"}' https://rpcapi-tracing.fantom.network/
 */
 package rpc
 
@@ -34,11 +36,15 @@ type sfcShards struct {
 	update    time.Time
 	lock      sync.Mutex
 	constants common.Address
+	treasury  common.Address
 }
 
 var (
 	// callSigConstAddress represents function signature for constants contract address
 	callSigConstAddress = []byte{0xd4, 0x6f, 0xa5, 0x18}
+
+	// callSigTreasuryAddress represents function signature for treasury address (treasuryAddress() 0xc5f956af)
+	callSigTreasuryAddress = []byte{0xc5, 0xf9, 0x56, 0xaf}
 
 	// callSigMinSelfStake represents function signature for minSelfStake() returning uint256
 	callSigMinSelfStake = []byte{0xc5, 0xf5, 0x30, 0xaf}
@@ -89,22 +95,45 @@ func (sha *sfcShards) assertShards() {
 	sha.loadConstantsAddress()
 }
 
+// callForAddress calls given contract and returns decoded address from the reponse.
+func callForAddress(contract common.Address, call []byte, client *ethclient.Client, log logger.Logger) (common.Address, error) {
+	data, err := client.CallContract(context.Background(), ethereum.CallMsg{
+		From: common.Address{},
+		To:   &contract,
+		Data: call,
+	}, nil)
+	if err != nil {
+		log.Criticalf("failed to get address; %s", err.Error())
+		return common.Address{}, err
+	}
+
+	// the address is at the tail of 32 bytes long ABI response; we skip bytes 0..11 and use the rest
+	adr := common.Address{}
+	adr.SetBytes(data[12:])
+	return adr, nil
+}
+
 // sfcLoadConstantsAddress loads SFC constants shard address from SFC contract.
 // function constsAddress() external view returns (address)
 func (sha *sfcShards) loadConstantsAddress() {
-	data, err := sha.client.CallContract(context.Background(), ethereum.CallMsg{
-		From: common.Address{},
-		To:   &sha.sfc,
-		Data: callSigConstAddress,
-	}, nil)
+	var err error
+
+	// get constants ref
+	sha.constants, err = callForAddress(sha.sfc, callSigConstAddress, sha.client, sha.log)
 	if err != nil {
 		sha.log.Criticalf("failed to get SFC constants address; %s", err.Error())
 		return
 	}
 
-	// the address is at the tail of 32 bytes long ABI response; we skip bytes 0..11 and use the rest
-	sha.constants.SetBytes(data[12:])
+	// get treasury vault ref
+	sha.treasury, err = callForAddress(sha.sfc, callSigTreasuryAddress, sha.client, sha.log)
+	if err != nil {
+		sha.log.Criticalf("failed to get SFC treasury address; %s", err.Error())
+		return
+	}
+
 	sha.log.Noticef("SFC constants address is %s", sha.constants.String())
+	sha.log.Noticef("SFC treasury address is %s", sha.treasury.String())
 }
 
 // sfcConstants provides address of SFC constants shard.
