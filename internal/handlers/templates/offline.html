@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Offline Validators</title>
+    <style>
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        th, td {
+            padding: 0.1rem 0.5rem;
+        }
+        thead tr {
+            background-color: #009879;
+            color: #ffffff;
+            text-align: left;
+        }
+        tbody .id {
+            text-align: center;
+            font-weight: bold;
+        }
+        tbody .value {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Address</th>
+        <th>Downtime</th>
+        <th>Down Blocks</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{ range . }}
+    <tr>
+        <td class="id">{{ .ID }}</td>
+        <td><a href="https://ftmscan.com/address/{{ .Address }}">{{ .Address }}</a></td>
+        <td class="value">{{ .DownTime }}</td>
+        <td class="value">{{ .DownBlocks }}</td>
+    </tr>
+    {{ end }}
+    </tbody>
+</table>
+</body>
+</html>

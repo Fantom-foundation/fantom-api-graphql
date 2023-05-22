@@ -1,4 +1,4 @@
-// Package handlers holds HTTP/WS handlers chain along with separate middleware implementations.
+// Package handlers hold an HTTP/WS handlers chain along with separate middleware implementations.
 package handlers
 
 import (
@@ -15,7 +15,7 @@ import (
 
 // Api constructs and return the API HTTP handlers chain for serving GraphQL API calls.
 func Api(cfg *config.Config, log logger.Logger, rs resolvers.ApiResolver) http.Handler {
-	// Create new CORS handler and attach the logger into it so we get information on Debug level if needed
+	// Create a new CORS handler and attach the logger into it, so we get information on Debug level if needed
 	corsHandler := cors.New(corsOptions(cfg))
 	corsHandler.Log = log
 
@@ -32,7 +32,7 @@ func Api(cfg *config.Config, log logger.Logger, rs resolvers.ApiResolver) http.H
 	}
 }
 
-// corsOptions constructs new set of options for the CORS handler based on provided configuration.
+// corsOptions constructs a new set of options for the CORS handler based on the provided configuration.
 func corsOptions(cfg *config.Config) cors.Options {
 	return cors.Options{
 		AllowedOrigins: cfg.Server.CorsOrigin,

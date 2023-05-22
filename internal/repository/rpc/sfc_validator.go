@@ -79,7 +79,7 @@ func (ftm *FtmBridge) ValidatorsCount() (uint64, error) {
 	return uint64(len(val)), nil
 }
 
-// Validator extract a staker information by numeric id.
+// Validator extract staker information by numeric id.
 func (ftm *FtmBridge) Validator(valID *big.Int) (*types.Validator, error) {
 	// no validator id?
 	if valID == nil {

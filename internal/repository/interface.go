@@ -2,7 +2,7 @@
 Package repository implements repository for handling fast and efficient access to data required
 by the resolvers of the API server.
 
-Internally it utilizes RPC to access Opera full node for blockchain interaction. Mongo database
+Internally, it utilizes RPC to access Opera full node for blockchain interaction. Mongo database
 for fast, robust and scalable off-chain data storage, especially for aggregated and pre-calculated data mining
 results. BigCache for in-memory object storage to speed up loading of frequently accessed entities.
 */
@@ -34,11 +34,11 @@ type Repository interface {
 	// AccountNonce returns the current number of sent transactions of an account at Opera blockchain.
 	AccountNonce(*common.Address) (*hexutil.Uint64, error)
 
-	// AccountTransactions returns list of transaction hashes for account at Opera blockchain.
+	// AccountTransactions returns list of transaction hashes for an account at Opera blockchain.
 	//
 	// String cursor represents cursor based on which the list is loaded. If null,
-	// it loads either from top, or bottom of the list, based on the value
-	// of the integer count. The integer represents the number of transaction loaded at most.
+	// it loads either from top or bottom of the list, based on the value
+	// of the integer count. The integer represents the number of transactions loaded at most.
 	//
 	// For positive number, the list starts right after the cursor
 	// (or on top without one) and loads at most defined number of transactions older than that.
@@ -50,7 +50,7 @@ type Repository interface {
 	// Transactions are always sorted from newer to older.
 	AccountTransactions(*common.Address, *common.Address, *string, int32) (*types.TransactionList, error)
 
-	// AccountsActive total number of accounts known to repository.
+	// AccountsActive total number of accounts known to the repository.
 	AccountsActive() (hexutil.Uint64, error)
 
 	// AccountIsKnown checks if the account of the given address is known to the API server.
@@ -65,7 +65,7 @@ type Repository interface {
 	// BlockHeight returns the current height of the Opera blockchain in blocks.
 	BlockHeight() (*hexutil.Big, error)
 
-	// LastKnownBlock returns number of the last block known to the repository.
+	// LastKnownBlock returns the number of the last block known to the repository.
 	LastKnownBlock() (uint64, error)
 
 	// UpdateLastKnownBlock update record about last known block.
@@ -76,23 +76,23 @@ type Repository interface {
 	ObservedHeaders() chan *etc.Header
 
 	// BlockByNumber returns a block at Opera blockchain represented by a number.
-	// Top block is returned if the number is not provided.
+	// The Top block is returned if the number is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
 	BlockByNumber(*hexutil.Uint64) (*types.Block, error)
 
 	// BlockByHash returns a block at Opera blockchain represented by a hash.
-	// Top block is returned if the hash is not provided.
+	// The Top block is returned if the hash is not provided.
 	// If the block is not found, ErrBlockNotFound error is returned.
 	BlockByHash(*common.Hash) (*types.Block, error)
 
-	// Blocks pulls list of blocks starting on the specified block number
+	// Blocks pull a list of blocks starting on the specified block number
 	// and going up, or down based on count number.
 	Blocks(*uint64, int32) (*types.BlockList, error)
 
 	// CacheBlock puts a block to the internal block ring cache.
 	CacheBlock(blk *types.Block)
 
-	// Contract extract a smart contract information by address if available.
+	// Contract extracts smart contract information by address if available.
 	Contract(*common.Address) (*types.Contract, error)
 
 	// Contracts returns list of smart contracts at Opera blockchain.
@@ -100,13 +100,13 @@ type Repository interface {
 
 	// ValidateContract tries to validate contract byte code using
 	// provided source code. If successful, the contract information
-	// is updated the the repository.
+	// is updated the repository.
 	ValidateContract(*types.Contract) error
 
 	// StoreContract updates the contract in repository.
 	StoreContract(*types.Contract) error
 
-	// SfcVersion returns current version of the SFC contract.
+	// SfcVersion returns a current version of the SFC contract.
 	SfcVersion() (hexutil.Uint64, error)
 
 	// SfcDecimalUnit returns the decimal unit adjustment used by the SFC contract.
@@ -124,13 +124,13 @@ type Repository interface {
 	// Epoch returns the id of the current epoch.
 	Epoch(*hexutil.Uint64) (*types.Epoch, error)
 
-	// CurrentSealedEpoch returns the data of the latest sealed epoch.
+	// CurrentSealedEpoch returns the data of the latest-sealed epoch.
 	CurrentSealedEpoch() (*types.Epoch, error)
 
-	// Epochs pulls list of epochs starting at the specified cursor.
+	// Epochs pull a list of epochs starting at the specified cursor.
 	Epochs(cursor *string, count int32) (*types.EpochList, error)
 
-	// TotalStaked calculates current total staked amount for all stakers.
+	// TotalStaked calculates the current total staked amount for all stakers.
 	TotalStaked() (*hexutil.Big, error)
 
 	// RewardsAllowed returns the reward lock status from SFC.
@@ -188,22 +188,24 @@ type Repository interface {
 	// ValidatorAddress extract a staker address for the given staker ID.
 	ValidatorAddress(*hexutil.Big) (*common.Address, error)
 
-	// Validator extract a staker information from SFC smart contract.
+	// Validator extracts staker information from SFC smart contract.
 	Validator(*hexutil.Big) (*types.Validator, error)
 
-	// ValidatorByAddress extract a staker information by address.
+	// ValidatorByAddress extract staker information by address.
 	ValidatorByAddress(*common.Address) (*types.Validator, error)
 
 	// ValidatorDowntime pulls information about validator downtime from the RPC interface.
 	ValidatorDowntime(*hexutil.Big) (uint64, uint64, error)
 
+	OfflineValidators() ([]types.OfflineValidator, error)
+
 	// SfcConfiguration provides SFC contract configuration.
 	SfcConfiguration() (*types.SfcConfig, error)
 
-	// SfcMaxDelegatedRatio extracts a ratio between self delegation and received stake.
+	// SfcMaxDelegatedRatio extracts a ratio between self-delegation and received stake.
 	SfcMaxDelegatedRatio() (*big.Int, error)
 
-	// PullStakerInfo extracts an extended staker information from smart contact.
+	// PullStakerInfo extracts extended staker information from smart contact.
 	PullStakerInfo(*hexutil.Big) (*types.StakerInfo, error)
 
 	// StoreStakerInfo stores staker information to in-memory cache for future use.
@@ -368,7 +370,7 @@ type Repository interface {
 	// UniswapPairs returns list of all token pairs managed by Uniswap core.
 	UniswapPairs() ([]common.Address, error)
 
-	// UniswapKnownPairs returns list of all known and whitelisted token pairs managed by Uniswap core.
+	// UniswapKnownPairs returns list of all known and recognized token pairs managed by Uniswap core.
 	UniswapKnownPairs() ([]common.Address, error)
 
 	// UniswapPair returns an address of an Uniswap pair for the given tokens.
@@ -548,7 +550,7 @@ type Repository interface {
 	// GovernanceVote provides a single vote in the Governance Proposal context.
 	GovernanceVote(*common.Address, *hexutil.Big, *common.Address, *common.Address) (*types.GovernanceVote, error)
 
-	// GovernanceProposals loads list of proposals from given set of Governance contracts.
+	// GovernanceProposals loads a list of proposals from given a set of Governance contracts.
 	GovernanceProposals([]common.Address, *string, int32, bool) (*types.GovernanceProposalList, error)
 
 	// GovernanceProposalFee returns the fee payable for a new proposal
@@ -614,7 +616,7 @@ type Repository interface {
 	// BurnTreasuryStashShareByTimeStamp finds treasury/burn share for the given time stamp.
 	BurnTreasuryStashShareByTimeStamp(ts int64) *BurnTreasuryShare
 
-	// FtmTreasuryTotal provides the total amount of native FTM sent into treasury.
+	// FtmTreasuryTotal provides the total amount of native FTM sent into the treasury.
 	FtmTreasuryTotal() (int64, error)
 
 	// FeeFlow provides a list of fee flow aggregates for the given date range.

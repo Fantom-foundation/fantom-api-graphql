@@ -49,17 +49,17 @@ func (p *proxy) ValidatorAddress(id *hexutil.Big) (*common.Address, error) {
 	return adr, nil
 }
 
-// Validator extract a staker information from SFC smart contract.
+// Validator extracts staker information from SFC smart contract.
 func (p *proxy) Validator(id *hexutil.Big) (*types.Validator, error) {
 	return p.rpc.Validator((*big.Int)(id))
 }
 
-// ValidatorByAddress extract a staker information by address.
+// ValidatorByAddress extract staker information by address.
 func (p *proxy) ValidatorByAddress(addr *common.Address) (*types.Validator, error) {
 	return p.rpc.ValidatorByAddress(addr)
 }
 
-// SfcMaxDelegatedRatio extracts a ratio between self delegation and received stake.
+// SfcMaxDelegatedRatio extracts a ratio between self-delegation and received stake.
 func (p *proxy) SfcMaxDelegatedRatio() (*big.Int, error) {
 	// try cache first
 	val := p.cache.PullSfcMaxDelegatedRatio()
@@ -81,4 +81,38 @@ func (p *proxy) SfcMaxDelegatedRatio() (*big.Int, error) {
 // ValidatorDowntime pulls information about validator downtime from the RPC interface.
 func (p *proxy) ValidatorDowntime(valID *hexutil.Big) (uint64, uint64, error) {
 	return p.rpc.ValidatorDowntime(valID)
+}
+
+// OfflineValidators provides a list of validators with non-zero downtime.
+func (p *proxy) OfflineValidators() ([]types.OfflineValidator, error) {
+	topID, err := p.LastValidatorId()
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]types.OfflineValidator, 0)
+	for i := uint64(0); i < topID; i++ {
+		ot, ob, err := p.ValidatorDowntime((*hexutil.Big)(big.NewInt(int64(i))))
+		if err != nil {
+			p.log.Errorf("could not get downtime of #%d; %s", i, err.Error())
+			continue
+		}
+
+		if ot > 0 {
+			adr, err := p.rpc.ValidatorAddress(big.NewInt(int64(i)))
+			if err != nil {
+				p.log.Errorf("could not get address of #%d; %s", i, err.Error())
+				continue
+			}
+
+			list = append(list, types.OfflineValidator{
+				ID:         i,
+				Address:    *adr,
+				DownTime:   types.Downtime(ot),
+				DownBlocks: ob,
+			})
+		}
+	}
+
+	return list, nil
 }
