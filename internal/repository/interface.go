@@ -197,7 +197,8 @@ type Repository interface {
 	// ValidatorDowntime pulls information about validator downtime from the RPC interface.
 	ValidatorDowntime(*hexutil.Big) (uint64, uint64, error)
 
-	OfflineValidators() ([]types.OfflineValidator, error)
+	// DownValidators provides a list of validators with non-zero downtime.
+	DownValidators() ([]types.OfflineValidator, error)
 
 	// SfcConfiguration provides SFC contract configuration.
 	SfcConfiguration() (*types.SfcConfig, error)

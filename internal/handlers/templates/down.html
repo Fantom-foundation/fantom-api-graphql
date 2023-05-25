@@ -2,23 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Offline Validators</title>
+    <title>Non-Emitting Validators</title>
     <style>
-        body{
+        body {
             font-family: Arial, Helvetica, sans-serif;
         }
+
         th, td {
             padding: 0.1rem 0.5rem;
         }
-        thead tr {
+
+        thead tr, tfoot tr {
             background-color: #009879;
             color: #ffffff;
             text-align: left;
         }
+
         tbody .id {
             text-align: center;
             font-weight: bold;
         }
+
         tbody .value {
             text-align: right;
         }
@@ -28,6 +32,9 @@
 <table>
     <thead>
     <tr>
+        <th colspan="4">Non-Emitting Validators</th>
+    </tr>
+    <tr>
         <th>ID</th>
         <th>Address</th>
         <th>Downtime</th>
@@ -35,15 +42,20 @@
     </tr>
     </thead>
     <tbody>
-    {{ range . }}
+    {{ range .Val }}
     <tr>
         <td class="id">{{ .ID }}</td>
         <td><a href="https://ftmscan.com/address/{{ .Address }}">{{ .Address }}</a></td>
         <td class="value">{{ .DownTime }}</td>
-        <td class="value">{{ .DownBlocks }}</td>
+        <td class="value">ç</td>
     </tr>
     {{ end }}
     </tbody>
+    <tfoot>
+    <tr>
+        <td colspan="4">{{ .Count }} validators found</td>
+    </tr>
+    </tfoot>
 </table>
 </body>
 </html>

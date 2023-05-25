@@ -83,8 +83,8 @@ func (p *proxy) ValidatorDowntime(valID *hexutil.Big) (uint64, uint64, error) {
 	return p.rpc.ValidatorDowntime(valID)
 }
 
-// OfflineValidators provides a list of validators with non-zero downtime.
-func (p *proxy) OfflineValidators() ([]types.OfflineValidator, error) {
+// DownValidators provides a list of validators with non-zero downtime.
+func (p *proxy) DownValidators() ([]types.OfflineValidator, error) {
 	topID, err := p.LastValidatorId()
 	if err != nil {
 		return nil, err

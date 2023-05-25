@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fantom-api-graphql/internal/logger"
 	"fantom-api-graphql/internal/repository"
+	"fantom-api-graphql/internal/types"
 	"io"
 	"net/http"
 	"text/template"
@@ -37,24 +38,27 @@ func GasPrice(log logger.Logger) http.Handler {
 	})
 }
 
-// OfflineValidators provides a textual list of validators with downtime.
-func OfflineValidators(log logger.Logger) http.Handler {
+// ValidatorsDownHandler provides a handler for a textual list of validators with downtime.
+func ValidatorsDownHandler(log logger.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func(Body io.ReadCloser) {
 			_ = Body.Close()
 		}(r.Body)
 
-		list, err := repository.R().OfflineValidators()
+		list, err := repository.R().DownValidators()
 		if err != nil {
 			log.Criticalf("can not get list of offline server; %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		tmp := template.Must(template.ParseFS(htmlTemplates, "templates/offline.html"))
+		tmp := template.Must(template.ParseFS(htmlTemplates, "templates/down.html"))
 
 		w.Header().Set("Content-Type", "text/html")
-		err = tmp.Execute(w, list)
+		err = tmp.Execute(w, struct {
+			Val   []types.OfflineValidator
+			Count int
+		}{Val: list, Count: len(list)})
 		if err != nil {
 			log.Criticalf("can not execute HTML templates; %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
