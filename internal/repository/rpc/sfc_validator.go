@@ -3,10 +3,10 @@ Package rpc implements bridge to Opera full node API interface.
 
 We recommend using local IPC for fast and the most efficient inter-process communication between the API server
 and an Opera/Opera node. Any remote RPC connection will work, but the performance may be significantly degraded
-by extra networking overhead of remote RPC calls.
+by the extra networking overhead of remote RPC calls.
 
-You should also consider security implications of opening Opera RPC interface for a remote access.
-If you considering it as your deployment strategy, you should establish encrypted channel between the API server
+You should also consider the security implications of opening Opera RPC interface for remote access.
+If you consider it as your deployment strategy, you should establish an encrypted channel between the API server
 and Opera RPC interface with connection limited to specified endpoints.
 
 We strongly discourage opening Opera RPC interface for unrestricted Internet access.
@@ -120,7 +120,7 @@ func (ftm *FtmBridge) validatorById(valID *big.Int) (*types.Validator, error) {
 
 	// keep track of the operation
 	ftm.log.Debugf("validator #%d is %s", valID.Uint64(), val.Auth.String())
-	return &types.Validator{
+	data := types.Validator{
 		Id:               (hexutil.Big)(*valID),
 		StakerAddress:    val.Auth,
 		TotalStake:       (*hexutil.Big)(val.ReceivedStake),
@@ -129,7 +129,14 @@ func (ftm *FtmBridge) validatorById(valID *big.Int) (*types.Validator, error) {
 		CreatedTime:      hexutil.Uint64(val.CreatedTime.Uint64()),
 		DeactivatedEpoch: deaEpoch,
 		DeactivatedTime:  deaTime,
-	}, nil
+	}
+
+	// validator #119 performs MEV; is marked as offender until SFC gets upgraded
+	if valID.Uint64() == 119 {
+		data.Status |= 1 << 7
+	}
+
+	return &data, nil
 }
 
 // ValidatorAddress extract a staker address for the given staker ID.
