@@ -8,11 +8,10 @@ require (
 	github.com/cespare/cp v1.1.1 // indirect
 	github.com/deckarep/golang-set/v2 v2.3.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
-	github.com/ethereum/go-ethereum v1.12.0
+	github.com/ethereum/go-ethereum v1.12.1
 	github.com/gballet/go-libpcsclite v0.0.0-20191108122812-4678299bea08 // indirect
 	github.com/graph-gophers/graphql-go v1.5.0
 	github.com/graph-gophers/graphql-transport-ws v0.0.2
-	github.com/holiman/uint256 v1.2.2 // indirect
 	github.com/huin/goupnp v1.2.0 // indirect
 	github.com/klauspost/compress v1.16.5
 	github.com/mattn/go-runewidth v0.0.13 // indirect
@@ -36,6 +35,5 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
 	go.mongodb.org/mongo-driver v1.11.6
 	go.uber.org/atomic v1.11.0
-	golang.org/x/crypto v0.9.0 // indirect
-	golang.org/x/sync v0.2.0
+	golang.org/x/sync v0.3.0
 )
