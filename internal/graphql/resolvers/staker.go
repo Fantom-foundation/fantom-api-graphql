@@ -222,7 +222,7 @@ func (st Staker) IsCheater() bool {
 
 // IsOffline signals if the validator is off-line.
 func (st Staker) IsOffline() bool {
-	return st.Status&sfcStatusOffline > 0
+	return st.Status > 0
 }
 
 // Downtime resolves the amount of time a validator is offline.
