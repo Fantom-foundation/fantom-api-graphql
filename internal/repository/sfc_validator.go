@@ -90,8 +90,8 @@ func (p *proxy) DownValidators() ([]types.OfflineValidator, error) {
 		return nil, err
 	}
 
-	list := make([]types.OfflineValidator, 0)
-	for i := uint64(0); i < topID; i++ {
+	list := make([]types.OfflineValidator, 0, topID)
+	for i := uint64(0); i <= topID; i++ {
 		ot, ob, err := p.ValidatorDowntime((*hexutil.Big)(big.NewInt(int64(i))))
 		if err != nil {
 			p.log.Errorf("could not get downtime of #%d; %s", i, err.Error())
