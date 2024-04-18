@@ -1,4 +1,4 @@
-# LendingPool represents a lendingpool instance.
+# LendingPool represents a lending pool instance.
 type LendingPool {
 
     # Returns all assets reserve addresses
@@ -17,7 +17,7 @@ type LendingPool {
     userDepositHistory(address: Address, asset: Address): [FLendDeposit!]!
 }
 
-# ReserveData represents a lendingpool asset data.
+# ReserveData represents a lending pool asset data.
 # Unit Ray is 1e27.
 type ReserveData {
 
@@ -62,7 +62,7 @@ type ReserveData {
 }
 
 
-# FLendUserData represents a lendingpool user data.
+# FLendUserData represents a lending pool user data.
 type FLendUserData {
 
     # total collateral in FUSD of the user
@@ -87,7 +87,7 @@ type FLendUserData {
     configurationData: BigInt!
 }
 
-# FLendDeposit represents a lendingpool deposit event data.
+# FLendDeposit represents a lending pool deposit event data.
 type FLendDeposit {
 
     # address of the asset

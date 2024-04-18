@@ -1,4 +1,4 @@
-# FMintAccount represents an informastion about account details
+# FMintAccount represents an information about account details
 # in DeFi/fMint protocol.
 type FMintAccount {
     # address of the DeFi account.

@@ -80,8 +80,8 @@ func (p *proxy) FMintCanPushRewards() (bool, error) {
 	return p.rpc.FMintCanPushRewards()
 }
 
-// FLendGetLendingPool resolves lending pool contract instace
-// to be able to get calls and informations from this contract
+// FLendGetLendingPool resolves lending pool contract instance
+// to be able to get calls and information from this contract
 func (p *proxy) FLendGetLendingPool() (*contracts.ILendingPool, error) {
 	return p.rpc.FLendGetLendingPool()
 }

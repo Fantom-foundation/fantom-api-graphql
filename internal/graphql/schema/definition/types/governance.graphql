@@ -26,7 +26,7 @@ type GovernanceContract {
     delegationsBy(from: Address!): [Address!]!
 
     # canVote checks if the given address can submit votes to Proposals
-    # of this Governance conract. The ability to vote is bound
+    # of this Governance contract. The ability to vote is bound
     # to the governed contract logic and can be unavailable
     # to some network participants on certain situation.
     canVote(from: Address!): Boolean!

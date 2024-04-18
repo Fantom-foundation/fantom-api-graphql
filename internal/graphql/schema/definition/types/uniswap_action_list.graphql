@@ -29,7 +29,7 @@ type UniswapAction {
     # pairAddress is address of the action's uniswap pair
     pairAddress: Address!
 
-    # transactionHash represents the hash for this acstion transaction
+    # transactionHash represents the hash for this action transaction
     transactionHash: Bytes32!
 
     # sender is address of action owner account

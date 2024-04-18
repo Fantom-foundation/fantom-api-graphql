@@ -1,6 +1,6 @@
 // Package gqlschema provides GraphQL schema definition used by GraphQL handler
 // to validate requests and build responses on the API interface.
-package gqlschema
+package schema
 
 import (
 	"github.com/onsi/gomega"

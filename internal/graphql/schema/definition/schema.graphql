@@ -264,7 +264,7 @@ type Query {
 
     # trxSpeed provides the recent speed of the network
     # as number of transactions processed per second
-    # calculated for the given range denominated in secods. I.e. range:300 means last 5 minutes.
+    # calculated for the given range denominated in seconds. I.e. range:300 means last 5 minutes.
     # Minimal range is 60 seconds, any range below this value will be adjusted to 60 seconds.
     trxSpeed(range: Int = 1200): Float!
 

@@ -1,7 +1,4 @@
-package gqlschema
-
-// Auto generated GraphQL schema bundle
-const schema = `
+## Auto generated GraphQL schema bundle
 # FMintUserToken represents a pair of fMint protocol user
 # and a token used by the user for a specific operation
 # as reported by fMint users listings.
@@ -1002,7 +999,7 @@ type UniswapAction {
     # pairAddress is address of the action's uniswap pair
     pairAddress: Address!
 
-    # transactionHash represents the hash for this acstion transaction
+    # transactionHash represents the hash for this action transaction
     transactionHash: Bytes32!
 
     # sender is address of action owner account
@@ -1138,7 +1135,7 @@ type ERC1155TransactionListEdge {
     trx: ERC1155Transaction!
 }
 
-# FMintAccount represents an informastion about account details
+# FMintAccount represents an information about account details
 # in DeFi/fMint protocol.
 type FMintAccount {
     # address of the DeFi account.
@@ -1486,7 +1483,7 @@ type DefiTimeReserve {
     # with the token position.
     reserveClose: [BigInt!]!
 }
-# LendingPool represents a lendingpool instance.
+# LendingPool represents a lending pool instance.
 type LendingPool {
 
     # Returns all assets reserve addresses
@@ -1505,7 +1502,7 @@ type LendingPool {
     userDepositHistory(address: Address, asset: Address): [FLendDeposit!]!
 }
 
-# ReserveData represents a lendingpool asset data.
+# ReserveData represents a lending pool asset data.
 # Unit Ray is 1e27.
 type ReserveData {
 
@@ -1550,7 +1547,7 @@ type ReserveData {
 }
 
 
-# FLendUserData represents a lendingpool user data.
+# FLendUserData represents a lending pool user data.
 type FLendUserData {
 
     # total collateral in FUSD of the user
@@ -1575,7 +1572,7 @@ type FLendUserData {
     configurationData: BigInt!
 }
 
-# FLendDeposit represents a lendingpool deposit event data.
+# FLendDeposit represents a lending pool deposit event data.
 type FLendDeposit {
 
     # address of the asset
@@ -1895,7 +1892,7 @@ type GovernanceContract {
     delegationsBy(from: Address!): [Address!]!
 
     # canVote checks if the given address can submit votes to Proposals
-    # of this Governance conract. The ability to vote is bound
+    # of this Governance contract. The ability to vote is bound
     # to the governed contract logic and can be unavailable
     # to some network participants on certain situation.
     canVote(from: Address!): Boolean!
@@ -2369,7 +2366,7 @@ type Query {
 
     # trxSpeed provides the recent speed of the network
     # as number of transactions processed per second
-    # calculated for the given range denominated in secods. I.e. range:300 means last 5 minutes.
+    # calculated for the given range denominated in seconds. I.e. range:300 means last 5 minutes.
     # Minimal range is 60 seconds, any range below this value will be adjusted to 60 seconds.
     trxSpeed(range: Int = 1200): Float!
 
@@ -2434,4 +2431,3 @@ type Subscription {
     onTransaction: Transaction!
 }
 
-`

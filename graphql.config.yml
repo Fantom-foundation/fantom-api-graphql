@@ -1,0 +1,21 @@
+schema: ./internal/graphql/schema/schema.graphql
+extensions:
+  endpoints:
+    Local GraphQL Endpoint:
+      url: http://localhost:16761/api
+      introspect: false
+    xAPI Node A:
+      url: https://xapi-nodea.fantom.network/
+      introspect: false
+    xAPI Node B:
+      url: https://xapi-nodeb.fantom.network/
+      introspect: false
+    xAPI Node C:
+      url: https://xapi-nodec.fantom.network/
+      introspect: false
+    xAPI Node D:
+      url: https://xapi-noded.fantom.network/
+      introspect: false
+    xAPI Node E:
+      url: https://xapi-nodee.fantom.network/
+      introspect: false
