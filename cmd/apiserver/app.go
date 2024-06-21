@@ -116,6 +116,7 @@ func (app *apiServer) setupHandlers(mux *http.ServeMux) {
 		time.Second*time.Duration(app.cfg.Server.ResolverTimeout),
 		"Service timeout.",
 	)
+
 	mux.Handle("/api", h)
 	mux.Handle("/graphql", h)
 
@@ -125,6 +126,9 @@ func (app *apiServer) setupHandlers(mux *http.ServeMux) {
 
 	// handle GraphiQL interface
 	mux.Handle("/graphi", handlers.GraphiHandler(app.cfg.Server.DomainAddress, app.log))
+
+	// default root is the GraphQL
+	mux.Handle("/", h)
 }
 
 // observeSignals setups terminate signals observation.
