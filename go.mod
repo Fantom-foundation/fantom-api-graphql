@@ -12,7 +12,7 @@ require (
 	github.com/onsi/gomega v1.19.0
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/oschwald/geoip2-golang v1.9.0
-	github.com/rs/cors v1.10.1
+	github.com/rs/cors v1.11.0
 	github.com/spf13/viper v1.17.0
 	github.com/status-im/keycard-go v0.3.0
 	go.mongodb.org/mongo-driver v1.12.1
