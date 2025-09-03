@@ -11,7 +11,7 @@ type EpochList struct {
 	types.EpochList
 }
 
-// EpochListEdge represents a single edge of an epoch list list structure.
+// EpochListEdge represents a single edge of an epoch list structure.
 type EpochListEdge struct {
 	Epoch *Epoch
 }

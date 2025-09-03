@@ -67,10 +67,7 @@ func (r *Ring) List(length int) []unsafe.Pointer {
 	defer r.RUnlock()
 
 	// make sure to limit the pulled range to the ring depth
-	tl := length
-	if tl > r.depth {
-		tl = r.depth
-	}
+	tl := min(length, r.depth)
 
 	l := make([]unsafe.Pointer, tl)
 
