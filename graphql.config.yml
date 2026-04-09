@@ -10,3 +10,6 @@ extensions:
     Sonic xAPI:
       url: https://xapi.sonic.soniclabs.com/
       introspect: false
+    Opera xAPI:
+      url: https://xapi.fantom.network/
+      introspect: false
