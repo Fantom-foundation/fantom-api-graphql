@@ -16,9 +16,10 @@ package rpc
 import (
 	"fantom-api-graphql/internal/types"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // BlockTypeLatest represents the latest available block in blockchain.
@@ -31,7 +32,7 @@ const (
 // of the blockchain. It returns nil if the block height can not be pulled.
 func (ftm *FtmBridge) MustBlockHeight() *big.Int {
 	var val hexutil.Big
-	if err := ftm.rpc.Call(&val, "ftm_blockNumber"); err != nil {
+	if err := ftm.rpc.Call(&val, "eth_blockNumber"); err != nil {
 		ftm.log.Errorf("failed block height check; %s", err.Error())
 		return nil
 	}
@@ -45,7 +46,7 @@ func (ftm *FtmBridge) BlockHeight() (*hexutil.Big, error) {
 
 	// call for data
 	var height hexutil.Big
-	err := ftm.rpc.Call(&height, "ftm_blockNumber")
+	err := ftm.rpc.Call(&height, "eth_blockNumber")
 	if err != nil {
 		ftm.log.Error("block height could not be obtained")
 		return nil, err
@@ -64,7 +65,7 @@ func (ftm *FtmBridge) Block(numTag *string) (*types.Block, error) {
 
 	// call for data
 	var block types.Block
-	err := ftm.rpc.Call(&block, "ftm_getBlockByNumber", numTag, false)
+	err := ftm.rpc.Call(&block, "eth_getBlockByNumber", numTag, false)
 	if err != nil {
 		ftm.log.Error("block could not be extracted")
 		return nil, err
@@ -89,7 +90,7 @@ func (ftm *FtmBridge) BlockByHash(hash *string) (*types.Block, error) {
 
 	// call for data
 	var block types.Block
-	err := ftm.rpc.Call(&block, "ftm_getBlockByHash", hash, false)
+	err := ftm.rpc.Call(&block, "eth_getBlockByHash", hash, false)
 	if err != nil {
 		ftm.log.Error("block could not be extracted")
 		return nil, err

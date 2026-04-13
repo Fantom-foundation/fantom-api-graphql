@@ -22,7 +22,7 @@ import (
 func (ftm *FtmBridge) AccountBalance(addr *common.Address) (*hexutil.Big, error) {
 	// use RPC to make the call
 	var balance string
-	err := ftm.rpc.Call(&balance, "ftm_getBalance", addr.Hex(), "latest")
+	err := ftm.rpc.Call(&balance, "eth_getBalance", addr.Hex(), "latest")
 	if err != nil {
 		ftm.log.Errorf("can not get balance of account [%s]", addr.Hex())
 		return nil, err
@@ -41,7 +41,7 @@ func (ftm *FtmBridge) AccountBalance(addr *common.Address) (*hexutil.Big, error)
 // AccountNonce returns the total number of transaction of account from Opera node.
 func (ftm *FtmBridge) AccountNonce(addr *common.Address) (*hexutil.Uint64, error) {
 	var nonce hexutil.Uint64
-	err := ftm.rpc.Call(&nonce, "ftm_getTransactionCount", addr.Hex(), "latest")
+	err := ftm.rpc.Call(&nonce, "eth_getTransactionCount", addr.Hex(), "latest")
 	if err != nil {
 		ftm.log.Errorf("can not get number of transaction of account [%s]", addr.Hex())
 		return nil, err
