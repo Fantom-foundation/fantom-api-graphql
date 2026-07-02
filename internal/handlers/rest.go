@@ -66,3 +66,25 @@ func ValidatorsDownHandler(log logger.Logger) http.Handler {
 		}
 	})
 }
+
+func ValidatorsDownJsonHandler(log logger.Logger) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func(Body io.ReadCloser) {
+			_ = Body.Close()
+		}(r.Body)
+
+		list, err := repository.R().DownValidators()
+		if err != nil {
+			log.Criticalf("can not get list of offline server; %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(list)
+		if err != nil {
+			log.Criticalf("can not encode JSON list of offline servers; %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	})
+}

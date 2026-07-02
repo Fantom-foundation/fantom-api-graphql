@@ -2,9 +2,10 @@
 package types
 
 import (
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"time"
 )
 
 // Validator represents a validator information.
@@ -21,10 +22,10 @@ type Validator struct {
 
 // OfflineValidator represents a validator with current downtime.
 type OfflineValidator struct {
-	ID         uint64
-	Address    common.Address
-	DownTime   Downtime
-	DownBlocks uint64
+	ID         uint64         `json:"id"`
+	Address    common.Address `json:"address"`
+	DownTime   Downtime       `json:"downtime"`
+	DownBlocks uint64         `json:"downBlocks"`
 }
 
 type Downtime uint64
