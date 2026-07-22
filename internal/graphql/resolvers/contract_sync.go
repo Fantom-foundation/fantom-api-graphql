@@ -51,7 +51,7 @@ func contractSyncInput(con *types.Contract) ContractValidationInput {
 	return cInput
 }
 
-// constructMutation creates the GraphQL mutation query string
+// constructMutationPayload creates the GraphQL mutation query string
 // for the contract provided.
 func constructMutationPayload(con *types.Contract) (bytes.Buffer, error) {
 	// prepare the payload

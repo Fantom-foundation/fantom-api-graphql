@@ -59,7 +59,7 @@ func (db *MongoDbBridge) AddRewardClaim(rc *types.RewardClaim) error {
 	return nil
 }
 
-// isDelegationKnown checks if the given delegation exists in the database.
+// isRewardClaimKnown checks if the given RewardClaim exists in the database.
 func (db *MongoDbBridge) isRewardClaimKnown(col *mongo.Collection, rc *types.RewardClaim) bool {
 	// try to find the delegation in the database
 	sr := col.FindOne(context.Background(), bson.D{

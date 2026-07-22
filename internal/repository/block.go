@@ -218,7 +218,7 @@ func (p *proxy) pullBlocks(num *uint64, count int32, toPull int32, current *type
 	list.IsStart, list.IsEnd = checkBlocksListBoundary(count, next, list)
 }
 
-// checkListBoundary verifies if the list of blocks is on one of the edges.
+// checkBlocksListBoundary verifies if the list of blocks is on one of the edges.
 func checkBlocksListBoundary(count int32, next *types.Block, list *types.BlockList) (bool, bool) {
 	return list.IsStart || (count < 0 && next == nil), list.IsEnd || (count > 0 && next == nil)
 }
