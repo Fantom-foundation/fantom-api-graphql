@@ -43,7 +43,7 @@ func (rs *rootResolver) TrxVolume(args struct {
 	return list, nil
 }
 
-// TrxGasSpeed resolves the gas consumption speed speed
+// TrxGasSpeed resolves the gas consumption speed
 // of the network in transactions processed per second.
 func (rs *rootResolver) TrxGasSpeed(args struct {
 	Range int32
